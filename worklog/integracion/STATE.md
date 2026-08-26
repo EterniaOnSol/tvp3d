@@ -2,7 +2,7 @@
 
 Estado: LISTO_PARA_REVISION
 Ultimo agente: codex
-Ultima actualizacion: 2026-08-26T07:12:13-06:00
+Ultima actualizacion: 2026-08-26T07:26:36-06:00
 Contrato publicado: SI
 
 ## Depende de
@@ -57,5 +57,5 @@ Ensamblar configuracion, escenas, comandos de arranque y empaquetado.
 - `PREPARAR TVP3D.bat` paso Godot, config y RSA, pero reporto Docker Desktop no
   iniciado en la primera comprobacion; tras iniciar Docker Desktop, el
   preflight paso, Compose arranco y la prueba legacy completo correctamente.
-- El apagado automatico de Compose quedo bloqueado por la API local de Docker;
-  los puertos 7171, 7172, 3371 y 8071 pueden cerrarse desde Docker Desktop.
+- Compose se detuvo limpiamente despues de la validacion; los puertos 7171,
+  7172, 3371 y 8071 quedaron libres y los volumenes no se eliminaron.
