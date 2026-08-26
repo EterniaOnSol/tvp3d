@@ -2,7 +2,7 @@
 
 Estado: EN_CURSO
 Ultimo agente: codex
-Ultima actualizacion: 2026-08-25T16:46:00-06:00
+Ultima actualizacion: 2026-08-26T07:41:02-06:00
 Contrato publicado: SI
 
 ## Depende de
@@ -27,15 +27,22 @@ Probar contratos, recorridos completos, concurrencia, fixtures y regresiones.
 - Integrado inspector conectado en `mundo3d.gd`: seleccion por Shift+click,
   toggle F4, stack vivo y flags/metadatos IR por chunks; escena principal carga
   en headless sin errores.
+- Runner local en `pruebas/matriz_qa_local.gd` ejecuta la checklist en procesos
+  Godot separados y escribe `generated/reports/qa_matrix_local.json`.
+- Matriz local ejecutada 6/6: coordenadas, controles, formas, chunks, modelo
+  de proyecto y escena del editor pasan.
+- Reporte versionado en `generated/reports/qa_matrix_local.json`.
 
 ## Falta
 
-- Completar matriz de pruebas de todos los recorridos y errores.
-- Implementar checklist ejecutable y reporte.
+- Completar matriz de red de todos los recorridos y errores contra un servidor
+  legacy disponible.
+- Repetir la checklist desde un clon limpio para la prueba de entrega.
 
 ## Bloqueos activos
 
-- No puede cerrar integracion hasta que existan implementaciones revisables.
+- El daemon Docker quedó inestable durante la segunda ejecución QA y no
+  permitió completar la matriz de red en este turno.
 
 ## Decisiones
 
@@ -47,3 +54,5 @@ Probar contratos, recorridos completos, concurrencia, fixtures y regresiones.
 
 - La revision cruzada debe hacerla un agente que no haya implementado el
   carril revisado.
+- El runner local no arranca servidores ni toca datos persistentes; las
+  pruebas de red siguen siendo explícitas y secuenciales.

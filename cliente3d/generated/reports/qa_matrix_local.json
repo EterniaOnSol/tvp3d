@@ -1,0 +1,44 @@
+{
+	"failed": 0,
+	"format": "tvp3d.qa.matrix.v1",
+	"passed": 6,
+	"results": [
+		{
+			"codigo": 0,
+			"nombre": "coordenadas",
+			"ok": true,
+			"salida": "Godot Engine v4.7.2.stable.official.ed1daf0bf - https://godotengine.org\r\n\r\n  OK  round-trip (32369, 32241, 7)\r\n  OK  round-trip (32370, 32242, 6)\r\n  OK  round-trip (32300, 32100, 0)\r\n  OK  round-trip (32400, 32300, 15)\r\n  OK  ancla queda en origen\r\n  OK  piso z=6 sube una unidad\r\n  OK  chunk positivo\r\n  OK  local de chunk\r\nCoordenadas Tibia3D: 0 falla(s)\r\n"
+		},
+		{
+			"codigo": 0,
+			"nombre": "controles",
+			"ok": true,
+			"salida": "Godot Engine v4.7.2.stable.official.ed1daf0bf - https://godotengine.org\r\n\r\n  OK  8 entradas de teclado\r\n  OK  W sin giro es norte\r\n  OK  D sin giro es este\r\n  OK  W a 45 grados cae en octante noroeste\r\n  OK  diagonal noroeste usa opcode 0x6D\r\n  OK  diagonal sureste usa opcode 0x6B\r\n  OK  map click calcula ruta sin diagonales\r\nControles TVP3D: 0 falla(s)\r\n"
+		},
+		{
+			"codigo": 0,
+			"nombre": "formas_render",
+			"ok": true,
+			"salida": "Godot Engine v4.7.2.stable.official.ed1daf0bf - https://godotengine.org\r\n\r\n  OK  borde de pasto usa forma acostada\r\n  OK  bandera borde_suelo se carga\r\n  OK  counter usa forma acostada\r\n  OK  counter conserva bloqueo\r\n  OK  big table usa forma acostada\r\n  OK  table usa forma acostada\r\n  OK  pared de casa usa volumen de pared\r\n  OK  campfire no se convierte en plataforma\r\n  OK  sewer grate queda horizontal\r\n  OK  stairs queda horizontal\r\n  OK  ladder queda horizontal\r\n  OK  tree usa prototipo cubico 3D\r\n  OK  small fir tree usa prototipo cubico 3D\r\n  OK  blueberry bush usa prototipo cubico 3D\r\n  OK  mailbox usa prototipo cubico 3D\r\n  OK  sign usa prototipo cubico 3D\r\nFormas de render TVP3D: 0 falla(s)\r\n"
+		},
+		{
+			"codigo": 0,
+			"nombre": "ir_trozos",
+			"ok": true,
+			"salida": "Godot Engine v4.7.2.stable.official.ed1daf0bf - https://godotengine.org\r\n\r\n[ir_trozos] OK: ventanas=81/81 tiles, cache=1->1 chunks\r\n"
+		},
+		{
+			"codigo": 0,
+			"nombre": "proyecto_editor",
+			"ok": true,
+			"salida": "Godot Engine v4.7.2.stable.official.ed1daf0bf - https://godotengine.org\r\n\r\nProyecto editor self-test: OK\r\n"
+		},
+		{
+			"codigo": 0,
+			"nombre": "escena_editor",
+			"ok": true,
+			"salida": "Godot Engine v4.7.2.stable.official.ed1daf0bf - https://godotengine.org\r\n\r\nEditor3D OK | casillas=7309 | item=870\r\n"
+		}
+	],
+	"scope": "local"
+}
