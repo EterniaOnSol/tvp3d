@@ -15,7 +15,13 @@ echo  Rueda del mouse para acercar y alejar
 echo  ESC para salir
 echo.
 
-"C:\Users\dell\3DTIBIA\herramientas\godot\Godot_v4.7.2-stable_win64_console.exe" --path "%~dp0cliente3d" main.tscn
+call "%~dp0herramientas\resolver_godot.bat"
+if not defined TVP3D_GODOT_EXE (
+  pause
+  exit /b 1
+)
+
+"%TVP3D_GODOT_EXE%" --path "%~dp0cliente3d" main.tscn
 
 echo.
 pause

@@ -26,8 +26,11 @@ Estado real al **26 de agosto de 2026**:
   matriz de opcodes 7.72 y conectar sus estados a UI, efectos y ventanas;
 - el inventario detallado de opcodes y su estado de implementacion esta en
   `worklog/OPCODES_772.md`;
-- no hay commits disponibles en este entorno: el avance se registra en
-  `worklog/EVENTS.jsonl` con el bloqueo `GIT_NO_DISPONIBLE`.
+- repositorio privado: `https://github.com/EterniaOnSol/tvp3d.git`;
+  `main` esta sincronizada con el commit `fa2631b`;
+- `servidor/config.lua` y `servidor/key.pem` estan versionados para este
+  perfil privado de desarrollo, asi que un clon puede arrancar con la misma
+  configuracion local.
 
 Para abrirlo en Windows:
 
@@ -53,9 +56,31 @@ La captura grafica no se debe ejecutar con `--headless`: el renderer dummy no
 crea viewport y `get_viewport().get_texture()` devuelve `null`. Para capturas
 usa el ejecutable normal sin `--headless`.
 
+### Preparar otra maquina
+
+1. Clona el repositorio privado.
+2. Instala Docker Desktop y Godot 4.7.x.
+3. Ejecuta `PREPARAR TVP3D.bat`.
+4. Ejecuta `ARRANCAR SERVIDOR.bat` y despues `JUGAR.bat`.
+
+Los `.bat` usan rutas relativas. El resolver busca Godot en `herramientas/godot/`,
+en el PATH y en la variable opcional `TVP3D_GODOT`. Por ejemplo:
+
+```powershell
+$env:TVP3D_GODOT = 'D:/Herramientas/Godot/Godot_v4.7.2-stable_win64.exe'
+```
+
+La primera compilacion del servidor se hace dentro de Docker y puede tardar.
+No se deben borrar los volumenes de Docker si se quiere conservar la base de
+datos local.
+
 ---
 
 ## Arrancar
+
+Primero ejecuta `PREPARAR TVP3D.bat` en una maquina nueva. El script comprueba
+Docker Desktop, Godot, `servidor/config.lua` y `servidor/key.pem` sin imprimir
+credenciales.
 
 | Doble clic en | Qué hace |
 |---|---|

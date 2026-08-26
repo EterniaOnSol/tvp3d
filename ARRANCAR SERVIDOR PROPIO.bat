@@ -2,8 +2,9 @@
 title TVP3D - Servidor Godot propio
 cd /d "%~dp0"
 
-set "GODOT=C:\Users\dell\3DTIBIA\herramientas\godot\Godot_v4.7.2-stable_win64_console.exe"
-if not exist "%GODOT%" set "GODOT=godot"
+call "%~dp0herramientas\resolver_godot.bat"
+set "GODOT=%TVP3D_GODOT_CONSOLE_EXE%"
+if not defined GODOT exit /b 1
 
 echo ==========================================
 echo   TVP3D - Servidor Godot propio

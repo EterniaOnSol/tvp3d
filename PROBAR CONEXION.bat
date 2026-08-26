@@ -15,7 +15,13 @@ echo  El servidor tiene que estar andando
 echo  ("ARRANCAR SERVIDOR.bat").
 echo.
 
-"C:\Users\dell\3DTIBIA\herramientas\godot\Godot_v4.7.2-stable_win64_console.exe" --headless --path "%~dp0cliente3d" pruebas/prueba_login.tscn
+call "%~dp0herramientas\resolver_godot.bat"
+if not defined TVP3D_GODOT_CONSOLE_EXE (
+  pause
+  exit /b 1
+)
+
+"%TVP3D_GODOT_CONSOLE_EXE%" --headless --path "%~dp0cliente3d" pruebas/prueba_login.tscn
 
 echo.
 pause

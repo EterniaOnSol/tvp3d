@@ -13,11 +13,9 @@
 **/Release/
 **/*.log
 
-# Local server secrets and mutable state
+# Local server mutable state
 servidor/.git/
 servidor/.git.*
-servidor/key.pem
-servidor/config.lua
 servidor/gamedata/
 
 # Local recordings and extracted QA frames

@@ -17,6 +17,17 @@ echo.
 echo  Cuenta 123456 / clave 123456 / personaje GOD
 echo.
 
+if not exist "%~dp0servidor\config.lua" (
+  echo ERROR: falta servidor\config.lua. Ejecuta PREPARAR TVP3D.bat.
+  pause
+  exit /b 1
+)
+if not exist "%~dp0servidor\key.pem" (
+  echo ERROR: falta servidor\key.pem. Ejecuta PREPARAR TVP3D.bat.
+  pause
+  exit /b 1
+)
+
 docker compose up --build -d
 
 echo.

@@ -1,4 +1,4 @@
----------------------------------------------
+﻿---------------------------------------------
 -- THE VIOLET PROJECT - CONFIGURATION FILE --
 ---------------------------------------------
 
@@ -71,7 +71,7 @@ mapRefreshTileVisibilityInterval = 60 * 60 * 1000
 -- worldType options: "pvp", "no-pvp" and "pvp-enforced".
 -- deathLosePercent: use -1 for modern Tibia formula. 10 for oldschool formulas.
 -- banDaysLength: total days to ban the player when exceeding killsToBan
--- onlyOneFragPerKill: if true, either last hit or most damage gets the unjust, 
+-- onlyOneFragPerKill: if true, either last hit or most damage gets the unjust,
 -- 					   most damage only gets unjust if there is no valid last hit or it was a justified last hit
 worldType = "pvp"
 protectionLevel = 1
@@ -174,7 +174,7 @@ spawnsResetTimerOnFailedSpawn = true
 -- Tibia 8.1+ has this as false
 spawnOneMonsterAtATime = true
 
--- Show aggressive spell effects in protection areas as a GM? 
+-- Show aggressive spell effects in protection areas as a GM?
 -- Default: false
 gamemasterDamageProtectOnZoneEffects = false
 
@@ -192,7 +192,7 @@ houseDoorsDisplayHouseInfo = false
 
 -- Allow searching for a valid container inside inner containers of a player?
 -- This only applies for using an item from a distance
-deepPlayerContainerSearch = false 
+deepPlayerContainerSearch = false
 
 -- Allow sending parcels and letters with trash on top of mailboxes
 trashableMailbox = true
