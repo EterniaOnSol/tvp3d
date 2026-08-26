@@ -10,6 +10,7 @@ const DISCO := preload("res://red/mapa_disco.gd")
 const CATALOGO := preload("res://red/mapa772.gd")
 const SPRITES := preload("res://red/sprites772.gd")
 const COORD := preload("res://comun/coordenadas_tibia.gd")
+const PROYECTO := preload("res://editor/proyecto_tvp3d.gd")
 
 const ARCHIVO_MAPPING := "res://assets/mappings/items.json"
 const LADO := COORD.SQM_WORLD_SIZE
@@ -20,10 +21,14 @@ const GROSOR_PARED_POR_DEFECTO := 0.20
 
 const PRIMITIVAS := ["auto", "flat", "card", "wall", "box"]
 const NOMBRES_PRIMITIVAS := ["Auto", "Suelo horizontal", "Sprite vertical", "Pared", "Caja"]
+const TIPOS_TILE := ["Suelo", "Pared", "Agua", "Arbol", "Roca", "Decoracion", "Escalera"]
+const RUTA_PROYECTO_DEFECTO := "res://assets/proyectos/rookgaard_editable.tvp3d.json"
+const RUTA_EXPORTACION_DEFECTO := "res://assets/proyectos/rookgaard_exportado.tvp3d.json"
 
 var _disco
 var _catalogo
 var _sprites
+var _proyecto
 var _centro := Vector3i(32091, 32187, 7)
 var _mapa_visible := {}
 var _mappings := {}
@@ -47,6 +52,8 @@ var _y_edit: LineEdit
 var _z_edit: LineEdit
 var _items_select: OptionButton
 var _primitiva_select: OptionButton
+var _tipo_tile_select: OptionButton
+var _proyecto_ruta_edit: LineEdit
 var _alto_spin: SpinBox
 var _grosor_spin: SpinBox
 var _sprite_preview: TextureRect
@@ -59,6 +66,8 @@ func _ready() -> void:
 	_disco = DISCO.new()
 	_catalogo = CATALOGO.new()
 	_sprites = SPRITES.new()
+	_proyecto = PROYECTO.new()
+	_proyecto.configurar_fuente("generated/maps/rookgaard_100sqm.json", _centro, RADIO)
 	_cargar_mappings()
 	_armar_escena_3d()
 	_armar_interfaz()
@@ -130,9 +139,13 @@ func _armar_interfaz() -> void:
 	margen.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
 	panel.add_child(margen)
 
+	var scroll := ScrollContainer.new()
+	scroll.size_flags_vertical = Control.SIZE_EXPAND_FILL
+	margen.add_child(scroll)
+
 	var columna := VBoxContainer.new()
 	columna.add_theme_constant_override("separation", 7)
-	margen.add_child(columna)
+	scroll.add_child(columna)
 
 	var titulo := Label.new()
 	titulo.text = "TVP3D MAP EDITOR"
@@ -143,6 +156,44 @@ func _armar_interfaz() -> void:
 	subtitulo.text = "Mapa real | mapping visual por itemId"
 	subtitulo.modulate = Color(0.70, 0.74, 0.82)
 	columna.add_child(subtitulo)
+	columna.add_child(_etiqueta("PROYECTO EDITABLE"))
+	_proyecto_ruta_edit = _entrada("ruta del proyecto", RUTA_PROYECTO_DEFECTO)
+	_proyecto_ruta_edit.custom_minimum_size.x = 260
+	columna.add_child(_proyecto_ruta_edit)
+	var acciones_proyecto := HBoxContainer.new()
+	acciones_proyecto.add_theme_constant_override("separation", 4)
+	var nuevo_proyecto := Button.new()
+	nuevo_proyecto.text = "Nuevo"
+	nuevo_proyecto.tooltip_text = "Crear un proyecto vacio para la region actual"
+	nuevo_proyecto.pressed.connect(_nuevo_proyecto)
+	acciones_proyecto.add_child(nuevo_proyecto)
+	var abrir_proyecto := Button.new()
+	abrir_proyecto.text = "Abrir"
+	abrir_proyecto.tooltip_text = "Cargar y validar el proyecto escrito en la ruta"
+	abrir_proyecto.pressed.connect(_abrir_proyecto)
+	acciones_proyecto.add_child(abrir_proyecto)
+	var guardar_proyecto := Button.new()
+	guardar_proyecto.text = "Guardar"
+	guardar_proyecto.tooltip_text = "Guardar tiles y perfiles editados"
+	guardar_proyecto.pressed.connect(_guardar_proyecto)
+	acciones_proyecto.add_child(guardar_proyecto)
+	columna.add_child(acciones_proyecto)
+	var historial := HBoxContainer.new()
+	historial.add_theme_constant_override("separation", 4)
+	var deshacer := Button.new()
+	deshacer.text = "Deshacer"
+	deshacer.pressed.connect(_deshacer_proyecto)
+	historial.add_child(deshacer)
+	var rehacer := Button.new()
+	rehacer.text = "Rehacer"
+	rehacer.pressed.connect(_rehacer_proyecto)
+	historial.add_child(rehacer)
+	var exportar := Button.new()
+	exportar.text = "Exportar"
+	exportar.tooltip_text = "Exportar una copia normalizada del proyecto"
+	exportar.pressed.connect(_exportar_proyecto)
+	historial.add_child(exportar)
+	columna.add_child(historial)
 
 	columna.add_child(HSeparator.new())
 	columna.add_child(_etiqueta("REGION"))
@@ -165,6 +216,19 @@ func _armar_interfaz() -> void:
 	_tile_info.custom_minimum_size.y = 72
 	_tile_info.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
 	columna.add_child(_tile_info)
+	columna.add_child(_etiqueta("OVERRIDE DE TILE"))
+	var fila_tile := HBoxContainer.new()
+	fila_tile.add_theme_constant_override("separation", 5)
+	_tipo_tile_select = OptionButton.new()
+	for nombre_tipo in TIPOS_TILE:
+		_tipo_tile_select.add_item(nombre_tipo)
+	fila_tile.add_child(_tipo_tile_select)
+	var aplicar_tile := Button.new()
+	aplicar_tile.text = "Aplicar tile"
+	aplicar_tile.tooltip_text = "Guardar el tipo seleccionado en el proyecto"
+	aplicar_tile.pressed.connect(_aplicar_tipo_tile)
+	fila_tile.add_child(aplicar_tile)
+	columna.add_child(fila_tile)
 
 	columna.add_child(HSeparator.new())
 	columna.add_child(_etiqueta("ITEM DEL SQM"))
@@ -303,6 +367,85 @@ func _cargar_region(centro: Vector3i) -> void:
 		_mapa_visible.size(), _disco.trozos_cargados()]
 
 
+func _nuevo_proyecto() -> void:
+	_proyecto = PROYECTO.new()
+	_proyecto.configurar_fuente("generated/maps/rookgaard_100sqm.json", _centro, RADIO)
+	_reconstruir_mundo()
+	_seleccionar_tile(_seleccionado_tile if _seleccionado_tile.z >= 0 else _centro)
+	_estado.text = "Proyecto nuevo: sin cambios guardados"
+
+
+func _abrir_proyecto() -> void:
+	var ruta := _ruta_proyecto()
+	var resultado: Dictionary = PROYECTO.cargar_validado(ruta)
+	if not bool(resultado.get("ok", false)):
+		_estado.text = "ERROR %s: %s" % [ruta, resultado.get("error", "PROYECTO_INVALIDO")]
+		return
+	_proyecto = resultado["proyecto"]
+	_reconstruir_mundo()
+	_seleccionar_tile(_seleccionado_tile if _seleccionado_tile.z >= 0 else _centro)
+	_estado.text = "Proyecto cargado: %s" % ruta
+
+
+func _guardar_proyecto() -> void:
+	var ruta := _ruta_proyecto()
+	var resultado: Dictionary = _proyecto.guardar(ruta)
+	if bool(resultado.get("ok", false)):
+		_estado.text = "Proyecto guardado: %s" % ruta
+	else:
+		_estado.text = "ERROR %s: %s" % [ruta, resultado.get("error", "PROYECTO_NO_ESCRIBIBLE")]
+
+
+func _exportar_proyecto() -> void:
+	var resultado: Dictionary = _proyecto.exportar(RUTA_EXPORTACION_DEFECTO)
+	if bool(resultado.get("ok", false)):
+		_estado.text = "Proyecto exportado: %s" % RUTA_EXPORTACION_DEFECTO
+	else:
+		_estado.text = "ERROR exportando: %s" % resultado.get("error", "PROYECTO_NO_ESCRIBIBLE")
+
+
+func _deshacer_proyecto() -> void:
+	var resultado: Dictionary = _proyecto.deshacer()
+	if bool(resultado.get("ok", false)):
+		_reconstruir_mundo()
+		_seleccionar_tile(_seleccionado_tile)
+		_estado.text = "Cambio deshecho"
+	else:
+		_estado.text = "Sin cambios para deshacer"
+
+
+func _rehacer_proyecto() -> void:
+	var resultado: Dictionary = _proyecto.rehacer()
+	if bool(resultado.get("ok", false)):
+		_reconstruir_mundo()
+		_seleccionar_tile(_seleccionado_tile)
+		_estado.text = "Cambio rehecho"
+	else:
+		_estado.text = "Sin cambios para rehacer"
+
+
+func _aplicar_tipo_tile() -> void:
+	if _seleccionado_tile.z < 0:
+		_estado.text = "Selecciona un SQM antes de aplicar un tile"
+		return
+	var resultado: Dictionary = _proyecto.editar_tile(
+		_seleccionado_tile, _tipo_tile_select.selected)
+	if not bool(resultado.get("ok", false)):
+		_estado.text = "ERROR tile: %s" % resultado.get("error", "PROYECTO_TILE_INVALIDO")
+		return
+	_reconstruir_mundo()
+	_seleccionar_tile(_seleccionado_tile)
+	_estado.text = "Tile %s aplicado en (%d, %d, %d)" % [
+		TIPOS_TILE[_tipo_tile_select.selected], _seleccionado_tile.x,
+		_seleccionado_tile.y, _seleccionado_tile.z]
+
+
+func _ruta_proyecto() -> String:
+	if _proyecto_ruta_edit == null or _proyecto_ruta_edit.text.strip_edges().is_empty():
+		return RUTA_PROYECTO_DEFECTO
+	return _proyecto_ruta_edit.text.strip_edges()
+
+
 func _reconstruir_mundo() -> void:
 	for hijo in _mundo.get_children():
 		hijo.queue_free()
@@ -337,7 +480,76 @@ func _reconstruir_mundo() -> void:
 	claves.sort()
 	for clave in claves:
 		_volcar_grupo(grupos[clave])
+	_dibujar_overrides()
 	_estado.text = "Region: %d grupos | selecciona un SQM" % grupos.size()
+
+
+func _dibujar_overrides() -> void:
+	if _proyecto == null:
+		return
+	var documento: Dictionary = _proyecto.a_diccionario()
+	for tile_valor in documento.get("tiles", []):
+		var tile: Dictionary = tile_valor
+		var donde := Vector3i(int(tile["x"]), int(tile["y"]), int(tile["z"]))
+		if donde.z != _centro.z or not _mapa_visible.has(donde):
+			continue
+		var tipo := int(tile["tipo"])
+		var alto := _alto_tile(tipo)
+		var malla := BoxMesh.new()
+		malla.size = Vector3(0.78, alto, 0.78)
+		var nodo := MeshInstance3D.new()
+		nodo.mesh = malla
+		nodo.position = COORD.tibia_a_mundo(donde, _centro, LADO, ALTO_PISO)
+		nodo.position.y += alto * 0.5 + 0.04
+		nodo.material_override = _material_tile(tipo)
+		nodo.set_meta("proyecto_override", true)
+		_mundo.add_child(nodo)
+
+
+func _alto_tile(tipo: int) -> float:
+	match tipo:
+		1:
+			return 1.05
+		2, 6:
+			return 0.12
+		3:
+			return 0.85
+		4:
+			return 0.55
+		5:
+			return 0.45
+	return 0.08
+
+
+func _material_tile(tipo: int) -> StandardMaterial3D:
+	var clave := "override_%d" % tipo
+	if _materiales.has(clave):
+		return _materiales[clave]
+	var material := StandardMaterial3D.new()
+	material.albedo_color = _color_tile(tipo)
+	material.transparency = BaseMaterial3D.TRANSPARENCY_ALPHA
+	material.albedo_color.a = 0.78
+	_materiales[clave] = material
+	return material
+
+
+func _color_tile(tipo: int) -> Color:
+	match tipo:
+		0:
+			return Color("#6f8f62")
+		1:
+			return Color("#c06458")
+		2:
+			return Color("#4d9fca")
+		3:
+			return Color("#62a65d")
+		4:
+			return Color("#a99a7c")
+		5:
+			return Color("#d09656")
+		6:
+			return Color("#d2aa5d")
+	return Color.WHITE
 
 
 func _volcar_grupo(grupo: Dictionary) -> void:
@@ -494,6 +706,9 @@ func _color_de(cid: int, ficha) -> Color:
 
 func _seleccionar_tile(donde: Vector3i) -> void:
 	_seleccionado_tile = donde
+	if _tipo_tile_select != null:
+		var tipo_override: int = _proyecto.tipo_en(donde) if _proyecto != null else -1
+		_tipo_tile_select.select(maxi(0, tipo_override))
 	var ids: PackedInt32Array = _mapa_visible.get(donde, PackedInt32Array())
 	_items_select.clear()
 	for cid_variant in ids:
@@ -567,6 +782,9 @@ func _guardar_mapping_seleccionado() -> void:
 		"thickness": _grosor_spin.value,
 		"source": "tvp3d-map-editor",
 	}
+	if _proyecto != null:
+		_proyecto.editar_perfil(_seleccionado_cid, primitiva,
+			_alto_spin.value, _grosor_spin.value)
 	if _guardar_mappings():
 		_mapping_info.text = "Mapping guardado para %d: %s" % [_seleccionado_cid, primitiva]
 		_reconstruir_mundo()
