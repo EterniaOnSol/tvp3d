@@ -70,7 +70,7 @@ Ejemplo de frame `MOVE`:
 10 00 00 00 04 7B 22 64 78 22 3A 31 2C 22 64 79 22 3A 30 7D
 ```
 
-El ejemplo tiene body de 11 bytes: opcode `04` seguido de
+El ejemplo tiene body de 16 bytes: opcode `04` seguido de
 `{"dx":1,"dy":0}` en UTF-8.
 
 ### API del codec

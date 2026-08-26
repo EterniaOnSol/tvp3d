@@ -1,0 +1,6 @@
+[gd_scene load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://servidor_propio/prueba_dos_clientes.gd" id="1"]
+
+[node name="PruebaDosClientes" type="Node"]
+script = ExtResource("1")
