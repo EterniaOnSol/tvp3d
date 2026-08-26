@@ -2,7 +2,7 @@
 
 Estado: LISTO_PARA_REVISION
 Ultimo agente: codex
-Ultima actualizacion: 2026-08-26T06:48:25-06:00
+Ultima actualizacion: 2026-08-26T07:12:13-06:00
 Contrato publicado: SI
 
 ## Depende de
@@ -25,16 +25,20 @@ Ensamblar configuracion, escenas, comandos de arranque y empaquetado.
   el servidor Godot headless.
 - El editor versionado ya esta publicado y `ABRIR MAP EDITOR.bat` conserva una
   ruta relativa al repositorio.
+- `PREPARAR TVP3D.bat` y `ARRANCAR SERVIDOR.bat` pasaron con Docker Desktop
+  activo; Compose construyo la imagen y dejo MariaDB saludable.
+- `PROBAR CONEXION.bat` completo login, entrada al mundo y cuatro movimientos:
+  11 mensajes recibidos.
 
 ## Falta
 
-- Validar el primer arranque legacy desde un clon limpio con Docker Desktop.
+- Repetir el primer arranque legacy desde un clon limpio cuando se haga la
+  prueba de entrega.
 - Mantener la revision cruzada de los perfiles legacy y propio.
 
 ## Bloqueos activos
 
-- `DOCKER_DESKTOP_NO_INICIADO_EN_ENTORNO`: el perfil legacy no puede validar
-  runtime Docker en esta maquina.
+- Ninguno para la integracion validada en este entorno.
 
 ## Decisiones
 
@@ -51,4 +55,7 @@ Ensamblar configuracion, escenas, comandos de arranque y empaquetado.
 - `PREPARAR TVP3D PROPIO.bat` paso; con el servidor iniciado, `PROBAR SERVIDOR
   PROPIO.bat` paso con dos clientes y rechazo de ocupacion.
 - `PREPARAR TVP3D.bat` paso Godot, config y RSA, pero reporto Docker Desktop no
-  iniciado; queda pendiente solo el runtime legacy en Docker.
+  iniciado en la primera comprobacion; tras iniciar Docker Desktop, el
+  preflight paso, Compose arranco y la prueba legacy completo correctamente.
+- El apagado automatico de Compose quedo bloqueado por la API local de Docker;
+  los puertos 7171, 7172, 3371 y 8071 pueden cerrarse desde Docker Desktop.
