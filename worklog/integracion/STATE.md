@@ -1,16 +1,16 @@
 # Estado: integracion
 
-Estado: LISTO_PARA_REVISION
+Estado: EN_CURSO
 Ultimo agente: codex
-Ultima actualizacion: 2026-08-26T02:05:00-06:00
+Ultima actualizacion: 2026-08-26T06:23:39-06:00
 Contrato publicado: SI
 
 ## Depende de
 
-- `servidor`: falta contrato.
-- `cliente`: falta contrato.
+- `servidor`: contrato publicado.
+- `cliente`: contrato publicado.
 - `editor`: falta contrato.
-- `assets`: falta contrato.
+- `assets`: contrato publicado.
 
 ## Le toca
 
@@ -19,19 +19,22 @@ Ensamblar configuracion, escenas, comandos de arranque y empaquetado.
 ## Hecho
 
 - Andamiaje creado.
+- Flujo propio documentado: preparar, arrancar, jugar y probar dos clientes.
+- `PREPARAR TVP3D PROPIO.bat` valida Godot y las escenas sin exigir Docker.
+- `PROBAR SERVIDOR PROPIO.bat` ejecuta el recorrido real de dos clientes con
+  el servidor Godot headless.
 
 ## Falta
 
-- Contrato de ejecucion portable publicado.
-- Resolver comun de Godot agregado y usado por los comandos Windows.
-- Configuracion Docker y RSA de desarrollo versionadas.
-- `test_controles.tscn` y `test_formas_render.tscn` pasan con 0 fallas.
-- `docker compose config --quiet` valida la configuracion.
+- Integrar el contrato y escena del editor para cerrar el flujo completo.
+- Validar el primer arranque legacy desde un clon limpio con Docker Desktop.
+- Mantener la revision cruzada de los perfiles legacy y propio.
 
 ## Bloqueos activos
 
-- Ejecutar el servidor real en una maquina con Docker Desktop iniciado.
-- Validar el primer arranque desde un clon limpio.
+- `EDITOR_SIN_CONTRATO`: la integracion completa aun depende del carril editor.
+- `DOCKER_DESKTOP_NO_INICIADO_EN_ENTORNO`: el perfil legacy no puede validar
+  runtime Docker en esta maquina.
 
 ## Decisiones
 

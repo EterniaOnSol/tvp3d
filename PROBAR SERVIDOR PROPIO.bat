@@ -12,6 +12,6 @@ echo ==========================================
 echo   El servidor propio debe estar corriendo.
 echo.
 
-"%GODOT%" --headless --path "%~dp0cliente3d" pruebas/prueba_servidor_propio.tscn
+"%GODOT%" --headless --path "%~dp0cliente3d" servidor_propio/prueba_dos_clientes.tscn
 
 pause

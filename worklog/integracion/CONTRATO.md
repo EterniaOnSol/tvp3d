@@ -8,8 +8,8 @@ Depende de: servidor, cliente, editor, assets
 ## Proposito
 
 Permitir que una maquina limpia clone TVP3D, prepare sus herramientas y
-arranque el servidor TVP 7.72, el cliente 3D y el editor usando rutas relativas
-al repositorio.
+arranque tanto el perfil legacy TVP 7.72 como el perfil propio Godot usando
+rutas relativas al repositorio.
 
 ## Requisitos de maquina
 
@@ -37,6 +37,10 @@ al repositorio.
 | `ABRIR MAP EDITOR.bat` | Abre el editor 3D del mapa |
 | `PROBAR CONEXION.bat` | Ejecuta la prueba de login y movimiento |
 | `PARAR SERVIDOR.bat` | Detiene los contenedores sin borrar la base |
+| `PREPARAR TVP3D PROPIO.bat` | Verifica Godot y las escenas del perfil propio |
+| `ARRANCAR SERVIDOR PROPIO.bat` | Arranca el servidor Godot headless en `7277` |
+| `JUGAR PROPIO.bat` | Abre el cliente propio 3D en `7277` |
+| `PROBAR SERVIDOR PROPIO.bat` | Comprueba dos clientes, estado compartido y ocupacion |
 
 Todos los comandos se resuelven desde `%~dp0`; no dependen de
 `C:\Users\dell\...` ni de un directorio de trabajo externo.
@@ -48,13 +52,17 @@ Todos los comandos se resuelven desde `%~dp0`; no dependen de
 - MariaDB desde Windows: `3371`.
 - phpMyAdmin: `8071`.
 - Dentro de Docker, el servidor usa `mariadb:3306`.
+- Perfil propio: TCP `127.0.0.1:7277`, sin Docker ni MariaDB.
 
 ## Criterio de aceptacion
 
 Una maquina con Docker Desktop y Godot instalados puede ejecutar `PREPARAR
 TVP3D.bat`, luego `ARRANCAR SERVIDOR.bat` y `JUGAR.bat`; el cliente llega a la
-pantalla de juego con la cuenta de desarrollo y el mapa completo. Los modelos
-3D de criaturas se pueden agregar bajo `cliente3d/assets/` y conectarse al
+pantalla de juego con la cuenta de desarrollo y el mapa completo. Sin Docker,
+el perfil propio debe pasar `PREPARAR TVP3D PROPIO.bat`, luego
+`ARRANCAR SERVIDOR PROPIO.bat` y `JUGAR PROPIO.bat`; el recorrido de dos
+clientes se valida con `PROBAR SERVIDOR PROPIO.bat`. Los modelos 3D de
+criaturas se pueden agregar bajo `cliente3d/assets/` y conectarse al
 identificador/nombre conservado por el renderer de cubos.
 
 ## Errores

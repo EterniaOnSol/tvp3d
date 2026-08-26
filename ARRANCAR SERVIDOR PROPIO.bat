@@ -12,6 +12,7 @@ echo ==========================================
 echo   Escuchando en 127.0.0.1:7277
 echo.
 
+if not defined TVP3D_MAPA_MODO set "TVP3D_MAPA_MODO=demo"
 "%GODOT%" --headless --path "%~dp0cliente3d" servidor_propio/servidor.tscn
 
 pause
