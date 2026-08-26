@@ -1,0 +1,17 @@
+{
+	"events": [],
+	"source": {
+		"opcode": "0x78",
+		"protocol": "TVP 7.72"
+	},
+	"summary": {
+		"error": "servidor rechazo el movimiento: There is no way.",
+		"final_position": {
+			"x": 32080,
+			"y": 32202,
+			"z": 6
+		},
+		"passed": false
+	},
+	"version": 1
+}

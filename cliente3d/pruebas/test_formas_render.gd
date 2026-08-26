@@ -1,0 +1,63 @@
+extends Node
+
+const MUNDO := preload("res://mundo3d.gd")
+const CATALOGO := preload("res://red/mapa772.gd")
+const SPRITES := preload("res://red/sprites772.gd")
+
+var _fallas := 0
+
+
+func _ready() -> void:
+	var mundo = MUNDO.new()
+	mundo._catalogo = CATALOGO.new()
+	mundo._sprites = SPRITES.new()
+
+	var pasto: Dictionary = mundo._catalogo.info_item(4531)
+	_comprobar("borde de pasto usa forma acostada",
+		mundo._debe_ir_acostado(4531, pasto))
+	_comprobar("bandera borde_suelo se carga",
+		mundo._catalogo.es_borde_suelo(4531))
+
+	var counter: Dictionary = mundo._catalogo.info_item(2317)
+	_comprobar("counter usa forma acostada",
+		mundo._forma_de_item(2317, counter) == MUNDO.Forma.ACOSTADA)
+	_comprobar("counter conserva bloqueo",
+		bool(counter.get("bloquea", false)))
+
+	_comprobar("big table usa forma acostada",
+		mundo._forma_de_item(2302, mundo._catalogo.info_item(2302)) == MUNDO.Forma.ACOSTADA)
+	_comprobar("table usa forma acostada",
+		mundo._forma_de_item(2322, mundo._catalogo.info_item(2322)) == MUNDO.Forma.ACOSTADA)
+
+	_comprobar("pared de casa usa volumen de pared",
+		mundo._forma_de_item(1585, mundo._catalogo.info_item(1585)) == MUNDO.Forma.CAJA)
+	_comprobar("campfire no se convierte en plataforma",
+		mundo._forma_de_item(2002, mundo._catalogo.info_item(2002)) == MUNDO.Forma.LAMINA)
+	_comprobar("sewer grate queda horizontal",
+		mundo._forma_de_item(435, mundo._catalogo.info_item(435)) == MUNDO.Forma.ACOSTADA)
+	_comprobar("stairs queda horizontal",
+		mundo._forma_de_item(437, mundo._catalogo.info_item(437)) == MUNDO.Forma.ACOSTADA)
+	_comprobar("ladder queda horizontal",
+		mundo._forma_de_item(1948, mundo._catalogo.info_item(1948)) == MUNDO.Forma.ACOSTADA)
+	_comprobar("tree usa prototipo cubico 3D",
+		mundo._forma_de_item(3614, mundo._catalogo.info_item(3614)) == MUNDO.Forma.PROTOTIPO)
+	_comprobar("small fir tree usa prototipo cubico 3D",
+		mundo._forma_de_item(3682, mundo._catalogo.info_item(3682)) == MUNDO.Forma.PROTOTIPO)
+	_comprobar("blueberry bush usa prototipo cubico 3D",
+		mundo._forma_de_item(3699, mundo._catalogo.info_item(3699)) == MUNDO.Forma.PROTOTIPO)
+	_comprobar("mailbox usa prototipo cubico 3D",
+		mundo._forma_de_item(3501, mundo._catalogo.info_item(3501)) == MUNDO.Forma.PROTOTIPO)
+	_comprobar("sign usa prototipo cubico 3D",
+		mundo._forma_de_item(2012, mundo._catalogo.info_item(2012)) == MUNDO.Forma.PROTOTIPO)
+
+	print("Formas de render TVP3D: %d falla(s)" % _fallas)
+	mundo.free()
+	get_tree().quit(1 if _fallas > 0 else 0)
+
+
+func _comprobar(nombre: String, correcto: bool) -> void:
+	if correcto:
+		print("  OK  " + nombre)
+	else:
+		print("  FAIL " + nombre)
+		_fallas += 1

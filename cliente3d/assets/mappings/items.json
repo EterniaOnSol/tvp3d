@@ -1,0 +1,26 @@
+{
+	"format": "tvp3d.item-mapping.v1",
+	"items": {
+    "435": {
+      "primitive": "flat",
+      "vertical_offset": 0.02,
+      "source": "tvp3d-floor-access"
+    },
+    "437": {
+      "primitive": "flat",
+      "vertical_offset": 0.02,
+      "vertical_offset": 0.02,
+      "source": "tvp3d-floor-access"
+    },
+    "1948": {
+      "primitive": "flat",
+      "source": "tvp3d-floor-access"
+    },
+    "870": {
+			"height": 1.05,
+			"primitive": "auto",
+			"source": "tvp3d-map-editor",
+			"thickness": 0.2
+		}
+	}
+}

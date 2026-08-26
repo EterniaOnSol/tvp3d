@@ -1,0 +1,19 @@
+{
+  "region": [
+    32047,
+    32146,
+    32169,
+    32268,
+    6,
+    8
+  ],
+  "sqm_volume": 30000,
+  "tiles_found": 20240,
+  "empty_tiles": 9760,
+  "items_found": 25272,
+  "unique_items": 432,
+  "mapped_item_occurrences": 25271,
+  "unmapped_item_occurrences": 1,
+  "unmapped_unique_items": 1,
+  "output": "generated\\maps\\rookgaard_100sqm.json"
+}

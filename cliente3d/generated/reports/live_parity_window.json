@@ -1,0 +1,24 @@
+{
+	"mismatches": [],
+	"source": {
+		"ir": "res://generated/maps/rookgaard_100sqm.json",
+		"live_protocol": "TVP 7.72 map description 0x64",
+		"state_parser": "red/estado_mundo.gd"
+	},
+	"summary": {
+		"creatures_ignored": 1,
+		"matches": 81,
+		"mismatches": 0,
+		"tiles_compared": 81
+	},
+	"version": 1,
+	"window": {
+		"center": {
+			"x": 32097,
+			"y": 32206,
+			"z": 7
+		},
+		"radius": 4,
+		"z": 7
+	}
+}

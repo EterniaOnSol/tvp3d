@@ -1,0 +1,12 @@
+# Ajustes locales de TVP3D. Docker Compose lee este archivo solo, sin que
+# haya que nombrarlo, y NO modifica el docker-compose.yaml del repo.
+#
+# Por que existe: al apagarse, el servidor guarda el mapa y las casas, y eso
+# le lleva unos 14 segundos. Docker por defecto espera 10 y despues lo mata.
+# El resultado fue un `gamedata/map.tvpm` de 43 bytes en vez de 70 MB: el
+# mundo entero vacio, sin pueblos ni casas, y los personajes rebotados al
+# entrar. Con 120 segundos termina de guardar tranquilo.
+
+services:
+  server:
+    stop_grace_period: 120s

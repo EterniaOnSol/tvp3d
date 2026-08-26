@@ -1,0 +1,58 @@
+version: "3.7"
+
+services:
+  mariadb:
+    image: mariadb:latest
+    environment:
+      MYSQL_ROOT_PASSWORD: root
+      MYSQL_DATABASE: tvp
+      MYSQL_USER: tvp
+      MYSQL_PASSWORD: tvp
+    volumes:
+      - ./schema.sql:/docker-entrypoint-initdb.d/01-schema.sql
+      - ./docker/data/02-data.sql:/docker-entrypoint-initdb.d/02-data.sql
+      - mariadb_data:/var/lib/mysql
+    ports:
+      - "3371:3306"
+    networks:
+      - tvp_network
+    healthcheck:
+      test: ["CMD", "healthcheck.sh", "--connect", "--innodb_initialized"]
+      interval: 5s
+      timeout: 3s
+      retries: 10
+      start_period: 30s
+
+  phpmyadmin:
+    image: phpmyadmin:latest
+    environment:
+      PMA_HOST: mariadb
+      PMA_USER: root
+      PMA_PASSWORD: root
+    ports:
+      - "8071:80"
+    depends_on:
+      - mariadb
+    networks:
+      - tvp_network
+
+  server:
+    build:
+      context: .
+    volumes:
+      - .:/srv
+    ports:
+      - "7171:7171"
+      - "7172:7172"
+    depends_on:
+      mariadb:
+        condition: service_healthy
+    networks:
+      - tvp_network
+
+volumes:
+  mariadb_data:
+
+networks:
+  tvp_network:
+    driver: bridge

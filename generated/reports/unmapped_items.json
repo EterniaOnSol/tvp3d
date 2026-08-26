@@ -1,0 +1,17 @@
+[
+  {
+    "server_id": 459,
+    "client_id": 469,
+    "name": "stairs",
+    "category": "GROUND",
+    "occurrence_count": 1,
+    "sample_coordinates": [
+      {
+        "x": 32093,
+        "y": 32235,
+        "z": 6
+      }
+    ],
+    "mapped": false
+  }
+]

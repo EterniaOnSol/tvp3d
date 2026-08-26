@@ -1,0 +1,5181 @@
+{
+  "version": 1,
+  "chunk": {
+    "key": "1003_1007_6",
+    "x": 1003,
+    "y": 1007,
+    "z": 6,
+    "min_x": 32096,
+    "max_x": 32127,
+    "min_y": 32224,
+    "max_y": 32255,
+    "tile_count": 74,
+    "item_count": 102,
+    "file": "chunk_1003_1007_6.json"
+  },
+  "tiles": [
+    {
+      "position": {
+        "x": 32096,
+        "y": 32226,
+        "z": 6
+      },
+      "house_id": 0,
+      "tile_flags": [
+        "REFRESH"
+      ],
+      "tile_flags_value": 32,
+      "ground": {
+        "server_id": 4541,
+        "client_id": 4530,
+        "name": "grass",
+        "category": "GROUND",
+        "count": 1,
+        "subtype": null,
+        "attributes": {},
+        "attributes_present": [],
+        "mapped": true,
+        "flags": {
+          "ground": true,
+          "blocking": false,
+          "block_pathfind": false,
+          "block_projectile": false,
+          "stackable": false,
+          "liquid": false,
+          "movable": false,
+          "pickupable": false,
+          "has_height": false
+        }
+      },
+      "items": [
+        {
+          "server_id": 4541,
+          "client_id": 4530,
+          "name": "grass",
+          "category": "GROUND",
+          "count": 1,
+          "subtype": null,
+          "attributes": {},
+          "attributes_present": [],
+          "mapped": true,
+          "flags": {
+            "ground": true,
+            "blocking": false,
+            "block_pathfind": false,
+            "block_projectile": false,
+            "stackable": false,
+            "liquid": false,
+            "movable": false,
+            "pickupable": false,
+            "has_height": false
+          }
+        },
+        {
+          "server_id": 891,
+          "client_id": 1100,
+          "name": "rocks",
+          "category": "DECORATION",
+          "count": 1,
+          "subtype": null,
+          "attributes": {},
+          "attributes_present": [],
+          "mapped": true,
+          "flags": {
+            "ground": false,
+            "blocking": false,
+            "block_pathfind": false,
+            "block_projectile": false,
+            "stackable": false,
+            "liquid": false,
+            "movable": false,
+            "pickupable": false,
+            "has_height": false
+          }
+        }
+      ],
+      "walkable": true,
+      "queryadd_walkable": true,
+      "blocking": false,
+      "source": {
+        "file": "servidor/data/world/map.otbm"
+      }
+    },
+    {
+      "position": {
+        "x": 32096,
+        "y": 32227,
+        "z": 6
+      },
+      "house_id": 0,
+      "tile_flags": [
+        "REFRESH"
+      ],
+      "tile_flags_value": 32,
+      "ground": {
+        "server_id": 4526,
+        "client_id": 4515,
+        "name": "grass",
+        "category": "GROUND",
+        "count": 1,
+        "subtype": null,
+        "attributes": {},
+        "attributes_present": [],
+        "mapped": true,
+        "flags": {
+          "ground": true,
+          "blocking": false,
+          "block_pathfind": false,
+          "block_projectile": false,
+          "stackable": false,
+          "liquid": false,
+          "movable": false,
+          "pickupable": false,
+          "has_height": false
+        }
+      },
+      "items": [
+        {
+          "server_id": 4526,
+          "client_id": 4515,
+          "name": "grass",
+          "category": "GROUND",
+          "count": 1,
+          "subtype": null,
+          "attributes": {},
+          "attributes_present": [],
+          "mapped": true,
+          "flags": {
+            "ground": true,
+            "blocking": false,
+            "block_pathfind": false,
+            "block_projectile": false,
+            "stackable": false,
+            "liquid": false,
+            "movable": false,
+            "pickupable": false,
+            "has_height": false
+          }
+        }
+      ],
+      "walkable": true,
+      "queryadd_walkable": true,
+      "blocking": false,
+      "source": {
+        "file": "servidor/data/world/map.otbm"
+      }
+    },
+    {
+      "position": {
+        "x": 32096,
+        "y": 32228,
+        "z": 6
+      },
+      "house_id": 0,
+      "tile_flags": [
+        "REFRESH"
+      ],
+      "tile_flags_value": 32,
+      "ground": {
+        "server_id": 4526,
+        "client_id": 4515,
+        "name": "grass",
+        "category": "GROUND",
+        "count": 1,
+        "subtype": null,
+        "attributes": {},
+        "attributes_present": [],
+        "mapped": true,
+        "flags": {
+          "ground": true,
+          "blocking": false,
+          "block_pathfind": false,
+          "block_projectile": false,
+          "stackable": false,
+          "liquid": false,
+          "movable": false,
+          "pickupable": false,
+          "has_height": false
+        }
+      },
+      "items": [
+        {
+          "server_id": 4526,
+          "client_id": 4515,
+          "name": "grass",
+          "category": "GROUND",
+          "count": 1,
+          "subtype": null,
+          "attributes": {},
+          "attributes_present": [],
+          "mapped": true,
+          "flags": {
+            "ground": true,
+            "blocking": false,
+            "block_pathfind": false,
+            "block_projectile": false,
+            "stackable": false,
+            "liquid": false,
+            "movable": false,
+            "pickupable": false,
+            "has_height": false
+          }
+        }
+      ],
+      "walkable": true,
+      "queryadd_walkable": true,
+      "blocking": false,
+      "source": {
+        "file": "servidor/data/world/map.otbm"
+      }
+    },
+    {
+      "position": {
+        "x": 32096,
+        "y": 32229,
+        "z": 6
+      },
+      "house_id": 0,
+      "tile_flags": [
+        "REFRESH"
+      ],
+      "tile_flags_value": 32,
+      "ground": {
+        "server_id": 4531,
+        "client_id": 4520,
+        "name": "grass",
+        "category": "GROUND",
+        "count": 1,
+        "subtype": null,
+        "attributes": {},
+        "attributes_present": [],
+        "mapped": true,
+        "flags": {
+          "ground": true,
+          "blocking": false,
+          "block_pathfind": false,
+          "block_projectile": false,
+          "stackable": false,
+          "liquid": false,
+          "movable": false,
+          "pickupable": false,
+          "has_height": false
+        }
+      },
+      "items": [
+        {
+          "server_id": 4531,
+          "client_id": 4520,
+          "name": "grass",
+          "category": "GROUND",
+          "count": 1,
+          "subtype": null,
+          "attributes": {},
+          "attributes_present": [],
+          "mapped": true,
+          "flags": {
+            "ground": true,
+            "blocking": false,
+            "block_pathfind": false,
+            "block_projectile": false,
+            "stackable": false,
+            "liquid": false,
+            "movable": false,
+            "pickupable": false,
+            "has_height": false
+          }
+        }
+      ],
+      "walkable": true,
+      "queryadd_walkable": true,
+      "blocking": false,
+      "source": {
+        "file": "servidor/data/world/map.otbm"
+      }
+    },
+    {
+      "position": {
+        "x": 32096,
+        "y": 32230,
+        "z": 6
+      },
+      "house_id": 0,
+      "tile_flags": [
+        "REFRESH"
+      ],
+      "tile_flags_value": 32,
+      "ground": {
+        "server_id": 4526,
+        "client_id": 4515,
+        "name": "grass",
+        "category": "GROUND",
+        "count": 1,
+        "subtype": null,
+        "attributes": {},
+        "attributes_present": [],
+        "mapped": true,
+        "flags": {
+          "ground": true,
+          "blocking": false,
+          "block_pathfind": false,
+          "block_projectile": false,
+          "stackable": false,
+          "liquid": false,
+          "movable": false,
+          "pickupable": false,
+          "has_height": false
+        }
+      },
+      "items": [
+        {
+          "server_id": 4526,
+          "client_id": 4515,
+          "name": "grass",
+          "category": "GROUND",
+          "count": 1,
+          "subtype": null,
+          "attributes": {},
+          "attributes_present": [],
+          "mapped": true,
+          "flags": {
+            "ground": true,
+            "blocking": false,
+            "block_pathfind": false,
+            "block_projectile": false,
+            "stackable": false,
+            "liquid": false,
+            "movable": false,
+            "pickupable": false,
+            "has_height": false
+          }
+        }
+      ],
+      "walkable": true,
+      "queryadd_walkable": true,
+      "blocking": false,
+      "source": {
+        "file": "servidor/data/world/map.otbm"
+      }
+    },
+    {
+      "position": {
+        "x": 32096,
+        "y": 32231,
+        "z": 6
+      },
+      "house_id": 0,
+      "tile_flags": [
+        "REFRESH"
+      ],
+      "tile_flags_value": 32,
+      "ground": {
+        "server_id": 4526,
+        "client_id": 4515,
+        "name": "grass",
+        "category": "GROUND",
+        "count": 1,
+        "subtype": null,
+        "attributes": {},
+        "attributes_present": [],
+        "mapped": true,
+        "flags": {
+          "ground": true,
+          "blocking": false,
+          "block_pathfind": false,
+          "block_projectile": false,
+          "stackable": false,
+          "liquid": false,
+          "movable": false,
+          "pickupable": false,
+          "has_height": false
+        }
+      },
+      "items": [
+        {
+          "server_id": 4526,
+          "client_id": 4515,
+          "name": "grass",
+          "category": "GROUND",
+          "count": 1,
+          "subtype": null,
+          "attributes": {},
+          "attributes_present": [],
+          "mapped": true,
+          "flags": {
+            "ground": true,
+            "blocking": false,
+            "block_pathfind": false,
+            "block_projectile": false,
+            "stackable": false,
+            "liquid": false,
+            "movable": false,
+            "pickupable": false,
+            "has_height": false
+          }
+        },
+        {
+          "server_id": 893,
+          "client_id": 1102,
+          "name": "rocks",
+          "category": "DECORATION",
+          "count": 1,
+          "subtype": null,
+          "attributes": {},
+          "attributes_present": [],
+          "mapped": true,
+          "flags": {
+            "ground": false,
+            "blocking": false,
+            "block_pathfind": false,
+            "block_projectile": false,
+            "stackable": false,
+            "liquid": false,
+            "movable": false,
+            "pickupable": false,
+            "has_height": false
+          }
+        }
+      ],
+      "walkable": true,
+      "queryadd_walkable": true,
+      "blocking": false,
+      "source": {
+        "file": "servidor/data/world/map.otbm"
+      }
+    },
+    {
+      "position": {
+        "x": 32097,
+        "y": 32226,
+        "z": 6
+      },
+      "house_id": 0,
+      "tile_flags": [
+        "REFRESH"
+      ],
+      "tile_flags_value": 32,
+      "ground": {
+        "server_id": 4540,
+        "client_id": 4529,
+        "name": "grass",
+        "category": "GROUND",
+        "count": 1,
+        "subtype": null,
+        "attributes": {},
+        "attributes_present": [],
+        "mapped": true,
+        "flags": {
+          "ground": true,
+          "blocking": false,
+          "block_pathfind": false,
+          "block_projectile": false,
+          "stackable": false,
+          "liquid": false,
+          "movable": false,
+          "pickupable": false,
+          "has_height": false
+        }
+      },
+      "items": [
+        {
+          "server_id": 4540,
+          "client_id": 4529,
+          "name": "grass",
+          "category": "GROUND",
+          "count": 1,
+          "subtype": null,
+          "attributes": {},
+          "attributes_present": [],
+          "mapped": true,
+          "flags": {
+            "ground": true,
+            "blocking": false,
+            "block_pathfind": false,
+            "block_projectile": false,
+            "stackable": false,
+            "liquid": false,
+            "movable": false,
+            "pickupable": false,
+            "has_height": false
+          }
+        },
+        {
+          "server_id": 891,
+          "client_id": 1100,
+          "name": "rocks",
+          "category": "DECORATION",
+          "count": 1,
+          "subtype": null,
+          "attributes": {},
+          "attributes_present": [],
+          "mapped": true,
+          "flags": {
+            "ground": false,
+            "blocking": false,
+            "block_pathfind": false,
+            "block_projectile": false,
+            "stackable": false,
+            "liquid": false,
+            "movable": false,
+            "pickupable": false,
+            "has_height": false
+          }
+        }
+      ],
+      "walkable": true,
+      "queryadd_walkable": true,
+      "blocking": false,
+      "source": {
+        "file": "servidor/data/world/map.otbm"
+      }
+    },
+    {
+      "position": {
+        "x": 32097,
+        "y": 32227,
+        "z": 6
+      },
+      "house_id": 0,
+      "tile_flags": [
+        "REFRESH"
+      ],
+      "tile_flags_value": 32,
+      "ground": {
+        "server_id": 4529,
+        "client_id": 4518,
+        "name": "grass",
+        "category": "GROUND",
+        "count": 1,
+        "subtype": null,
+        "attributes": {},
+        "attributes_present": [],
+        "mapped": true,
+        "flags": {
+          "ground": true,
+          "blocking": false,
+          "block_pathfind": false,
+          "block_projectile": false,
+          "stackable": false,
+          "liquid": false,
+          "movable": false,
+          "pickupable": false,
+          "has_height": false
+        }
+      },
+      "items": [
+        {
+          "server_id": 4529,
+          "client_id": 4518,
+          "name": "grass",
+          "category": "GROUND",
+          "count": 1,
+          "subtype": null,
+          "attributes": {},
+          "attributes_present": [],
+          "mapped": true,
+          "flags": {
+            "ground": true,
+            "blocking": false,
+            "block_pathfind": false,
+            "block_projectile": false,
+            "stackable": false,
+            "liquid": false,
+            "movable": false,
+            "pickupable": false,
+            "has_height": false
+          }
+        },
+        {
+          "server_id": 2741,
+          "client_id": 3655,
+          "name": "moon flower",
+          "category": "VEGETATION",
+          "count": 1,
+          "subtype": null,
+          "attributes": {},
+          "attributes_present": [],
+          "mapped": true,
+          "flags": {
+            "ground": false,
+            "blocking": false,
+            "block_pathfind": false,
+            "block_projectile": false,
+            "stackable": false,
+            "liquid": false,
+            "movable": true,
+            "pickupable": true,
+            "has_height": false
+          }
+        }
+      ],
+      "walkable": true,
+      "queryadd_walkable": true,
+      "blocking": false,
+      "source": {
+        "file": "servidor/data/world/map.otbm"
+      }
+    },
+    {
+      "position": {
+        "x": 32097,
+        "y": 32228,
+        "z": 6
+      },
+      "house_id": 0,
+      "tile_flags": [
+        "REFRESH"
+      ],
+      "tile_flags_value": 32,
+      "ground": {
+        "server_id": 4534,
+        "client_id": 4523,
+        "name": "grass",
+        "category": "GROUND",
+        "count": 1,
+        "subtype": null,
+        "attributes": {},
+        "attributes_present": [],
+        "mapped": true,
+        "flags": {
+          "ground": true,
+          "blocking": false,
+          "block_pathfind": false,
+          "block_projectile": false,
+          "stackable": false,
+          "liquid": false,
+          "movable": false,
+          "pickupable": false,
+          "has_height": false
+        }
+      },
+      "items": [
+        {
+          "server_id": 4534,
+          "client_id": 4523,
+          "name": "grass",
+          "category": "GROUND",
+          "count": 1,
+          "subtype": null,
+          "attributes": {},
+          "attributes_present": [],
+          "mapped": true,
+          "flags": {
+            "ground": true,
+            "blocking": false,
+            "block_pathfind": false,
+            "block_projectile": false,
+            "stackable": false,
+            "liquid": false,
+            "movable": false,
+            "pickupable": false,
+            "has_height": false
+          }
+        }
+      ],
+      "walkable": true,
+      "queryadd_walkable": true,
+      "blocking": false,
+      "source": {
+        "file": "servidor/data/world/map.otbm"
+      }
+    },
+    {
+      "position": {
+        "x": 32097,
+        "y": 32229,
+        "z": 6
+      },
+      "house_id": 0,
+      "tile_flags": [
+        "REFRESH"
+      ],
+      "tile_flags_value": 32,
+      "ground": {
+        "server_id": 4535,
+        "client_id": 4524,
+        "name": "grass",
+        "category": "GROUND",
+        "count": 1,
+        "subtype": null,
+        "attributes": {},
+        "attributes_present": [],
+        "mapped": true,
+        "flags": {
+          "ground": true,
+          "blocking": false,
+          "block_pathfind": false,
+          "block_projectile": false,
+          "stackable": false,
+          "liquid": false,
+          "movable": false,
+          "pickupable": false,
+          "has_height": false
+        }
+      },
+      "items": [
+        {
+          "server_id": 4535,
+          "client_id": 4524,
+          "name": "grass",
+          "category": "GROUND",
+          "count": 1,
+          "subtype": null,
+          "attributes": {},
+          "attributes_present": [],
+          "mapped": true,
+          "flags": {
+            "ground": true,
+            "blocking": false,
+            "block_pathfind": false,
+            "block_projectile": false,
+            "stackable": false,
+            "liquid": false,
+            "movable": false,
+            "pickupable": false,
+            "has_height": false
+          }
+        },
+        {
+          "server_id": 897,
+          "client_id": 1106,
+          "name": "rocks",
+          "category": "DECORATION",
+          "count": 1,
+          "subtype": null,
+          "attributes": {},
+          "attributes_present": [],
+          "mapped": true,
+          "flags": {
+            "ground": false,
+            "blocking": false,
+            "block_pathfind": false,
+            "block_projectile": false,
+            "stackable": false,
+            "liquid": false,
+            "movable": false,
+            "pickupable": false,
+            "has_height": false
+          }
+        }
+      ],
+      "walkable": true,
+      "queryadd_walkable": true,
+      "blocking": false,
+      "source": {
+        "file": "servidor/data/world/map.otbm"
+      }
+    },
+    {
+      "position": {
+        "x": 32097,
+        "y": 32230,
+        "z": 6
+      },
+      "house_id": 0,
+      "tile_flags": [
+        "REFRESH"
+      ],
+      "tile_flags_value": 32,
+      "ground": {
+        "server_id": 4526,
+        "client_id": 4515,
+        "name": "grass",
+        "category": "GROUND",
+        "count": 1,
+        "subtype": null,
+        "attributes": {},
+        "attributes_present": [],
+        "mapped": true,
+        "flags": {
+          "ground": true,
+          "blocking": false,
+          "block_pathfind": false,
+          "block_projectile": false,
+          "stackable": false,
+          "liquid": false,
+          "movable": false,
+          "pickupable": false,
+          "has_height": false
+        }
+      },
+      "items": [
+        {
+          "server_id": 4526,
+          "client_id": 4515,
+          "name": "grass",
+          "category": "GROUND",
+          "count": 1,
+          "subtype": null,
+          "attributes": {},
+          "attributes_present": [],
+          "mapped": true,
+          "flags": {
+            "ground": true,
+            "blocking": false,
+            "block_pathfind": false,
+            "block_projectile": false,
+            "stackable": false,
+            "liquid": false,
+            "movable": false,
+            "pickupable": false,
+            "has_height": false
+          }
+        },
+        {
+          "server_id": 892,
+          "client_id": 1101,
+          "name": "rocks",
+          "category": "DECORATION",
+          "count": 1,
+          "subtype": null,
+          "attributes": {},
+          "attributes_present": [],
+          "mapped": true,
+          "flags": {
+            "ground": false,
+            "blocking": false,
+            "block_pathfind": false,
+            "block_projectile": false,
+            "stackable": false,
+            "liquid": false,
+            "movable": false,
+            "pickupable": false,
+            "has_height": false
+          }
+        }
+      ],
+      "walkable": true,
+      "queryadd_walkable": true,
+      "blocking": false,
+      "source": {
+        "file": "servidor/data/world/map.otbm"
+      }
+    },
+    {
+      "position": {
+        "x": 32097,
+        "y": 32231,
+        "z": 6
+      },
+      "house_id": 0,
+      "tile_flags": [
+        "REFRESH"
+      ],
+      "tile_flags_value": 32,
+      "ground": {
+        "server_id": 4535,
+        "client_id": 4524,
+        "name": "grass",
+        "category": "GROUND",
+        "count": 1,
+        "subtype": null,
+        "attributes": {},
+        "attributes_present": [],
+        "mapped": true,
+        "flags": {
+          "ground": true,
+          "blocking": false,
+          "block_pathfind": false,
+          "block_projectile": false,
+          "stackable": false,
+          "liquid": false,
+          "movable": false,
+          "pickupable": false,
+          "has_height": false
+        }
+      },
+      "items": [
+        {
+          "server_id": 4535,
+          "client_id": 4524,
+          "name": "grass",
+          "category": "GROUND",
+          "count": 1,
+          "subtype": null,
+          "attributes": {},
+          "attributes_present": [],
+          "mapped": true,
+          "flags": {
+            "ground": true,
+            "blocking": false,
+            "block_pathfind": false,
+            "block_projectile": false,
+            "stackable": false,
+            "liquid": false,
+            "movable": false,
+            "pickupable": false,
+            "has_height": false
+          }
+        },
+        {
+          "server_id": 901,
+          "client_id": 1110,
+          "name": "rocks",
+          "category": "DECORATION",
+          "count": 1,
+          "subtype": null,
+          "attributes": {},
+          "attributes_present": [],
+          "mapped": true,
+          "flags": {
+            "ground": false,
+            "blocking": false,
+            "block_pathfind": false,
+            "block_projectile": false,
+            "stackable": false,
+            "liquid": false,
+            "movable": false,
+            "pickupable": false,
+            "has_height": false
+          }
+        }
+      ],
+      "walkable": true,
+      "queryadd_walkable": true,
+      "blocking": false,
+      "source": {
+        "file": "servidor/data/world/map.otbm"
+      }
+    },
+    {
+      "position": {
+        "x": 32098,
+        "y": 32226,
+        "z": 6
+      },
+      "house_id": 0,
+      "tile_flags": [
+        "REFRESH"
+      ],
+      "tile_flags_value": 32,
+      "ground": {
+        "server_id": 4526,
+        "client_id": 4515,
+        "name": "grass",
+        "category": "GROUND",
+        "count": 1,
+        "subtype": null,
+        "attributes": {},
+        "attributes_present": [],
+        "mapped": true,
+        "flags": {
+          "ground": true,
+          "blocking": false,
+          "block_pathfind": false,
+          "block_projectile": false,
+          "stackable": false,
+          "liquid": false,
+          "movable": false,
+          "pickupable": false,
+          "has_height": false
+        }
+      },
+      "items": [
+        {
+          "server_id": 4526,
+          "client_id": 4515,
+          "name": "grass",
+          "category": "GROUND",
+          "count": 1,
+          "subtype": null,
+          "attributes": {},
+          "attributes_present": [],
+          "mapped": true,
+          "flags": {
+            "ground": true,
+            "blocking": false,
+            "block_pathfind": false,
+            "block_projectile": false,
+            "stackable": false,
+            "liquid": false,
+            "movable": false,
+            "pickupable": false,
+            "has_height": false
+          }
+        },
+        {
+          "server_id": 891,
+          "client_id": 1100,
+          "name": "rocks",
+          "category": "DECORATION",
+          "count": 1,
+          "subtype": null,
+          "attributes": {},
+          "attributes_present": [],
+          "mapped": true,
+          "flags": {
+            "ground": false,
+            "blocking": false,
+            "block_pathfind": false,
+            "block_projectile": false,
+            "stackable": false,
+            "liquid": false,
+            "movable": false,
+            "pickupable": false,
+            "has_height": false
+          }
+        }
+      ],
+      "walkable": true,
+      "queryadd_walkable": true,
+      "blocking": false,
+      "source": {
+        "file": "servidor/data/world/map.otbm"
+      }
+    },
+    {
+      "position": {
+        "x": 32098,
+        "y": 32227,
+        "z": 6
+      },
+      "house_id": 0,
+      "tile_flags": [
+        "REFRESH"
+      ],
+      "tile_flags_value": 32,
+      "ground": {
+        "server_id": 4529,
+        "client_id": 4518,
+        "name": "grass",
+        "category": "GROUND",
+        "count": 1,
+        "subtype": null,
+        "attributes": {},
+        "attributes_present": [],
+        "mapped": true,
+        "flags": {
+          "ground": true,
+          "blocking": false,
+          "block_pathfind": false,
+          "block_projectile": false,
+          "stackable": false,
+          "liquid": false,
+          "movable": false,
+          "pickupable": false,
+          "has_height": false
+        }
+      },
+      "items": [
+        {
+          "server_id": 4529,
+          "client_id": 4518,
+          "name": "grass",
+          "category": "GROUND",
+          "count": 1,
+          "subtype": null,
+          "attributes": {},
+          "attributes_present": [],
+          "mapped": true,
+          "flags": {
+            "ground": true,
+            "blocking": false,
+            "block_pathfind": false,
+            "block_projectile": false,
+            "stackable": false,
+            "liquid": false,
+            "movable": false,
+            "pickupable": false,
+            "has_height": false
+          }
+        },
+        {
+          "server_id": 2785,
+          "client_id": 3699,
+          "name": "blueberry bush",
+          "category": "VEGETATION",
+          "count": 1,
+          "subtype": null,
+          "attributes": {},
+          "attributes_present": [],
+          "mapped": true,
+          "flags": {
+            "ground": false,
+            "blocking": true,
+            "block_pathfind": false,
+            "block_projectile": false,
+            "stackable": false,
+            "liquid": false,
+            "movable": false,
+            "pickupable": false,
+            "has_height": false
+          }
+        }
+      ],
+      "walkable": false,
+      "queryadd_walkable": true,
+      "blocking": true,
+      "source": {
+        "file": "servidor/data/world/map.otbm"
+      }
+    },
+    {
+      "position": {
+        "x": 32098,
+        "y": 32228,
+        "z": 6
+      },
+      "house_id": 0,
+      "tile_flags": [
+        "REFRESH"
+      ],
+      "tile_flags_value": 32,
+      "ground": {
+        "server_id": 4527,
+        "client_id": 4516,
+        "name": "grass",
+        "category": "GROUND",
+        "count": 1,
+        "subtype": null,
+        "attributes": {},
+        "attributes_present": [],
+        "mapped": true,
+        "flags": {
+          "ground": true,
+          "blocking": false,
+          "block_pathfind": false,
+          "block_projectile": false,
+          "stackable": false,
+          "liquid": false,
+          "movable": false,
+          "pickupable": false,
+          "has_height": false
+        }
+      },
+      "items": [
+        {
+          "server_id": 4527,
+          "client_id": 4516,
+          "name": "grass",
+          "category": "GROUND",
+          "count": 1,
+          "subtype": null,
+          "attributes": {},
+          "attributes_present": [],
+          "mapped": true,
+          "flags": {
+            "ground": true,
+            "blocking": false,
+            "block_pathfind": false,
+            "block_projectile": false,
+            "stackable": false,
+            "liquid": false,
+            "movable": false,
+            "pickupable": false,
+            "has_height": false
+          }
+        }
+      ],
+      "walkable": true,
+      "queryadd_walkable": true,
+      "blocking": false,
+      "source": {
+        "file": "servidor/data/world/map.otbm"
+      }
+    },
+    {
+      "position": {
+        "x": 32098,
+        "y": 32229,
+        "z": 6
+      },
+      "house_id": 0,
+      "tile_flags": [
+        "REFRESH"
+      ],
+      "tile_flags_value": 32,
+      "ground": {
+        "server_id": 4526,
+        "client_id": 4515,
+        "name": "grass",
+        "category": "GROUND",
+        "count": 1,
+        "subtype": null,
+        "attributes": {},
+        "attributes_present": [],
+        "mapped": true,
+        "flags": {
+          "ground": true,
+          "blocking": false,
+          "block_pathfind": false,
+          "block_projectile": false,
+          "stackable": false,
+          "liquid": false,
+          "movable": false,
+          "pickupable": false,
+          "has_height": false
+        }
+      },
+      "items": [
+        {
+          "server_id": 4526,
+          "client_id": 4515,
+          "name": "grass",
+          "category": "GROUND",
+          "count": 1,
+          "subtype": null,
+          "attributes": {},
+          "attributes_present": [],
+          "mapped": true,
+          "flags": {
+            "ground": true,
+            "blocking": false,
+            "block_pathfind": false,
+            "block_projectile": false,
+            "stackable": false,
+            "liquid": false,
+            "movable": false,
+            "pickupable": false,
+            "has_height": false
+          }
+        },
+        {
+          "server_id": 893,
+          "client_id": 1102,
+          "name": "rocks",
+          "category": "DECORATION",
+          "count": 1,
+          "subtype": null,
+          "attributes": {},
+          "attributes_present": [],
+          "mapped": true,
+          "flags": {
+            "ground": false,
+            "blocking": false,
+            "block_pathfind": false,
+            "block_projectile": false,
+            "stackable": false,
+            "liquid": false,
+            "movable": false,
+            "pickupable": false,
+            "has_height": false
+          }
+        }
+      ],
+      "walkable": true,
+      "queryadd_walkable": true,
+      "blocking": false,
+      "source": {
+        "file": "servidor/data/world/map.otbm"
+      }
+    },
+    {
+      "position": {
+        "x": 32099,
+        "y": 32226,
+        "z": 6
+      },
+      "house_id": 0,
+      "tile_flags": [
+        "REFRESH"
+      ],
+      "tile_flags_value": 32,
+      "ground": {
+        "server_id": 4537,
+        "client_id": 4526,
+        "name": "grass",
+        "category": "GROUND",
+        "count": 1,
+        "subtype": null,
+        "attributes": {},
+        "attributes_present": [],
+        "mapped": true,
+        "flags": {
+          "ground": true,
+          "blocking": false,
+          "block_pathfind": false,
+          "block_projectile": false,
+          "stackable": false,
+          "liquid": false,
+          "movable": false,
+          "pickupable": false,
+          "has_height": false
+        }
+      },
+      "items": [
+        {
+          "server_id": 4537,
+          "client_id": 4526,
+          "name": "grass",
+          "category": "GROUND",
+          "count": 1,
+          "subtype": null,
+          "attributes": {},
+          "attributes_present": [],
+          "mapped": true,
+          "flags": {
+            "ground": true,
+            "blocking": false,
+            "block_pathfind": false,
+            "block_projectile": false,
+            "stackable": false,
+            "liquid": false,
+            "movable": false,
+            "pickupable": false,
+            "has_height": false
+          }
+        },
+        {
+          "server_id": 891,
+          "client_id": 1100,
+          "name": "rocks",
+          "category": "DECORATION",
+          "count": 1,
+          "subtype": null,
+          "attributes": {},
+          "attributes_present": [],
+          "mapped": true,
+          "flags": {
+            "ground": false,
+            "blocking": false,
+            "block_pathfind": false,
+            "block_projectile": false,
+            "stackable": false,
+            "liquid": false,
+            "movable": false,
+            "pickupable": false,
+            "has_height": false
+          }
+        }
+      ],
+      "walkable": true,
+      "queryadd_walkable": true,
+      "blocking": false,
+      "source": {
+        "file": "servidor/data/world/map.otbm"
+      }
+    },
+    {
+      "position": {
+        "x": 32099,
+        "y": 32227,
+        "z": 6
+      },
+      "house_id": 0,
+      "tile_flags": [
+        "REFRESH"
+      ],
+      "tile_flags_value": 32,
+      "ground": {
+        "server_id": 4526,
+        "client_id": 4515,
+        "name": "grass",
+        "category": "GROUND",
+        "count": 1,
+        "subtype": null,
+        "attributes": {},
+        "attributes_present": [],
+        "mapped": true,
+        "flags": {
+          "ground": true,
+          "blocking": false,
+          "block_pathfind": false,
+          "block_projectile": false,
+          "stackable": false,
+          "liquid": false,
+          "movable": false,
+          "pickupable": false,
+          "has_height": false
+        }
+      },
+      "items": [
+        {
+          "server_id": 4526,
+          "client_id": 4515,
+          "name": "grass",
+          "category": "GROUND",
+          "count": 1,
+          "subtype": null,
+          "attributes": {},
+          "attributes_present": [],
+          "mapped": true,
+          "flags": {
+            "ground": true,
+            "blocking": false,
+            "block_pathfind": false,
+            "block_projectile": false,
+            "stackable": false,
+            "liquid": false,
+            "movable": false,
+            "pickupable": false,
+            "has_height": false
+          }
+        },
+        {
+          "server_id": 2768,
+          "client_id": 3682,
+          "name": "small fir tree",
+          "category": "VEGETATION",
+          "count": 1,
+          "subtype": null,
+          "attributes": {},
+          "attributes_present": [],
+          "mapped": true,
+          "flags": {
+            "ground": false,
+            "blocking": true,
+            "block_pathfind": false,
+            "block_projectile": false,
+            "stackable": false,
+            "liquid": false,
+            "movable": false,
+            "pickupable": false,
+            "has_height": false
+          }
+        }
+      ],
+      "walkable": false,
+      "queryadd_walkable": true,
+      "blocking": true,
+      "source": {
+        "file": "servidor/data/world/map.otbm"
+      }
+    },
+    {
+      "position": {
+        "x": 32099,
+        "y": 32228,
+        "z": 6
+      },
+      "house_id": 0,
+      "tile_flags": [
+        "REFRESH"
+      ],
+      "tile_flags_value": 32,
+      "ground": {
+        "server_id": 4526,
+        "client_id": 4515,
+        "name": "grass",
+        "category": "GROUND",
+        "count": 1,
+        "subtype": null,
+        "attributes": {},
+        "attributes_present": [],
+        "mapped": true,
+        "flags": {
+          "ground": true,
+          "blocking": false,
+          "block_pathfind": false,
+          "block_projectile": false,
+          "stackable": false,
+          "liquid": false,
+          "movable": false,
+          "pickupable": false,
+          "has_height": false
+        }
+      },
+      "items": [
+        {
+          "server_id": 4526,
+          "client_id": 4515,
+          "name": "grass",
+          "category": "GROUND",
+          "count": 1,
+          "subtype": null,
+          "attributes": {},
+          "attributes_present": [],
+          "mapped": true,
+          "flags": {
+            "ground": true,
+            "blocking": false,
+            "block_pathfind": false,
+            "block_projectile": false,
+            "stackable": false,
+            "liquid": false,
+            "movable": false,
+            "pickupable": false,
+            "has_height": false
+          }
+        }
+      ],
+      "walkable": true,
+      "queryadd_walkable": true,
+      "blocking": false,
+      "source": {
+        "file": "servidor/data/world/map.otbm"
+      }
+    },
+    {
+      "position": {
+        "x": 32099,
+        "y": 32229,
+        "z": 6
+      },
+      "house_id": 0,
+      "tile_flags": [
+        "REFRESH"
+      ],
+      "tile_flags_value": 32,
+      "ground": {
+        "server_id": 4529,
+        "client_id": 4518,
+        "name": "grass",
+        "category": "GROUND",
+        "count": 1,
+        "subtype": null,
+        "attributes": {},
+        "attributes_present": [],
+        "mapped": true,
+        "flags": {
+          "ground": true,
+          "blocking": false,
+          "block_pathfind": false,
+          "block_projectile": false,
+          "stackable": false,
+          "liquid": false,
+          "movable": false,
+          "pickupable": false,
+          "has_height": false
+        }
+      },
+      "items": [
+        {
+          "server_id": 4529,
+          "client_id": 4518,
+          "name": "grass",
+          "category": "GROUND",
+          "count": 1,
+          "subtype": null,
+          "attributes": {},
+          "attributes_present": [],
+          "mapped": true,
+          "flags": {
+            "ground": true,
+            "blocking": false,
+            "block_pathfind": false,
+            "block_projectile": false,
+            "stackable": false,
+            "liquid": false,
+            "movable": false,
+            "pickupable": false,
+            "has_height": false
+          }
+        },
+        {
+          "server_id": 893,
+          "client_id": 1102,
+          "name": "rocks",
+          "category": "DECORATION",
+          "count": 1,
+          "subtype": null,
+          "attributes": {},
+          "attributes_present": [],
+          "mapped": true,
+          "flags": {
+            "ground": false,
+            "blocking": false,
+            "block_pathfind": false,
+            "block_projectile": false,
+            "stackable": false,
+            "liquid": false,
+            "movable": false,
+            "pickupable": false,
+            "has_height": false
+          }
+        }
+      ],
+      "walkable": true,
+      "queryadd_walkable": true,
+      "blocking": false,
+      "source": {
+        "file": "servidor/data/world/map.otbm"
+      }
+    },
+    {
+      "position": {
+        "x": 32100,
+        "y": 32226,
+        "z": 6
+      },
+      "house_id": 0,
+      "tile_flags": [
+        "REFRESH"
+      ],
+      "tile_flags_value": 32,
+      "ground": {
+        "server_id": 4526,
+        "client_id": 4515,
+        "name": "grass",
+        "category": "GROUND",
+        "count": 1,
+        "subtype": null,
+        "attributes": {},
+        "attributes_present": [],
+        "mapped": true,
+        "flags": {
+          "ground": true,
+          "blocking": false,
+          "block_pathfind": false,
+          "block_projectile": false,
+          "stackable": false,
+          "liquid": false,
+          "movable": false,
+          "pickupable": false,
+          "has_height": false
+        }
+      },
+      "items": [
+        {
+          "server_id": 4526,
+          "client_id": 4515,
+          "name": "grass",
+          "category": "GROUND",
+          "count": 1,
+          "subtype": null,
+          "attributes": {},
+          "attributes_present": [],
+          "mapped": true,
+          "flags": {
+            "ground": true,
+            "blocking": false,
+            "block_pathfind": false,
+            "block_projectile": false,
+            "stackable": false,
+            "liquid": false,
+            "movable": false,
+            "pickupable": false,
+            "has_height": false
+          }
+        },
+        {
+          "server_id": 891,
+          "client_id": 1100,
+          "name": "rocks",
+          "category": "DECORATION",
+          "count": 1,
+          "subtype": null,
+          "attributes": {},
+          "attributes_present": [],
+          "mapped": true,
+          "flags": {
+            "ground": false,
+            "blocking": false,
+            "block_pathfind": false,
+            "block_projectile": false,
+            "stackable": false,
+            "liquid": false,
+            "movable": false,
+            "pickupable": false,
+            "has_height": false
+          }
+        }
+      ],
+      "walkable": true,
+      "queryadd_walkable": true,
+      "blocking": false,
+      "source": {
+        "file": "servidor/data/world/map.otbm"
+      }
+    },
+    {
+      "position": {
+        "x": 32100,
+        "y": 32227,
+        "z": 6
+      },
+      "house_id": 0,
+      "tile_flags": [
+        "REFRESH"
+      ],
+      "tile_flags_value": 32,
+      "ground": {
+        "server_id": 4526,
+        "client_id": 4515,
+        "name": "grass",
+        "category": "GROUND",
+        "count": 1,
+        "subtype": null,
+        "attributes": {},
+        "attributes_present": [],
+        "mapped": true,
+        "flags": {
+          "ground": true,
+          "blocking": false,
+          "block_pathfind": false,
+          "block_projectile": false,
+          "stackable": false,
+          "liquid": false,
+          "movable": false,
+          "pickupable": false,
+          "has_height": false
+        }
+      },
+      "items": [
+        {
+          "server_id": 4526,
+          "client_id": 4515,
+          "name": "grass",
+          "category": "GROUND",
+          "count": 1,
+          "subtype": null,
+          "attributes": {},
+          "attributes_present": [],
+          "mapped": true,
+          "flags": {
+            "ground": true,
+            "blocking": false,
+            "block_pathfind": false,
+            "block_projectile": false,
+            "stackable": false,
+            "liquid": false,
+            "movable": false,
+            "pickupable": false,
+            "has_height": false
+          }
+        },
+        {
+          "server_id": 897,
+          "client_id": 1106,
+          "name": "rocks",
+          "category": "DECORATION",
+          "count": 1,
+          "subtype": null,
+          "attributes": {},
+          "attributes_present": [],
+          "mapped": true,
+          "flags": {
+            "ground": false,
+            "blocking": false,
+            "block_pathfind": false,
+            "block_projectile": false,
+            "stackable": false,
+            "liquid": false,
+            "movable": false,
+            "pickupable": false,
+            "has_height": false
+          }
+        }
+      ],
+      "walkable": true,
+      "queryadd_walkable": true,
+      "blocking": false,
+      "source": {
+        "file": "servidor/data/world/map.otbm"
+      }
+    },
+    {
+      "position": {
+        "x": 32100,
+        "y": 32228,
+        "z": 6
+      },
+      "house_id": 0,
+      "tile_flags": [
+        "REFRESH"
+      ],
+      "tile_flags_value": 32,
+      "ground": {
+        "server_id": 4526,
+        "client_id": 4515,
+        "name": "grass",
+        "category": "GROUND",
+        "count": 1,
+        "subtype": null,
+        "attributes": {},
+        "attributes_present": [],
+        "mapped": true,
+        "flags": {
+          "ground": true,
+          "blocking": false,
+          "block_pathfind": false,
+          "block_projectile": false,
+          "stackable": false,
+          "liquid": false,
+          "movable": false,
+          "pickupable": false,
+          "has_height": false
+        }
+      },
+      "items": [
+        {
+          "server_id": 4526,
+          "client_id": 4515,
+          "name": "grass",
+          "category": "GROUND",
+          "count": 1,
+          "subtype": null,
+          "attributes": {},
+          "attributes_present": [],
+          "mapped": true,
+          "flags": {
+            "ground": true,
+            "blocking": false,
+            "block_pathfind": false,
+            "block_projectile": false,
+            "stackable": false,
+            "liquid": false,
+            "movable": false,
+            "pickupable": false,
+            "has_height": false
+          }
+        },
+        {
+          "server_id": 892,
+          "client_id": 1101,
+          "name": "rocks",
+          "category": "DECORATION",
+          "count": 1,
+          "subtype": null,
+          "attributes": {},
+          "attributes_present": [],
+          "mapped": true,
+          "flags": {
+            "ground": false,
+            "blocking": false,
+            "block_pathfind": false,
+            "block_projectile": false,
+            "stackable": false,
+            "liquid": false,
+            "movable": false,
+            "pickupable": false,
+            "has_height": false
+          }
+        }
+      ],
+      "walkable": true,
+      "queryadd_walkable": true,
+      "blocking": false,
+      "source": {
+        "file": "servidor/data/world/map.otbm"
+      }
+    },
+    {
+      "position": {
+        "x": 32100,
+        "y": 32229,
+        "z": 6
+      },
+      "house_id": 0,
+      "tile_flags": [
+        "REFRESH"
+      ],
+      "tile_flags_value": 32,
+      "ground": {
+        "server_id": 4536,
+        "client_id": 4525,
+        "name": "grass",
+        "category": "GROUND",
+        "count": 1,
+        "subtype": null,
+        "attributes": {},
+        "attributes_present": [],
+        "mapped": true,
+        "flags": {
+          "ground": true,
+          "blocking": false,
+          "block_pathfind": false,
+          "block_projectile": false,
+          "stackable": false,
+          "liquid": false,
+          "movable": false,
+          "pickupable": false,
+          "has_height": false
+        }
+      },
+      "items": [
+        {
+          "server_id": 4536,
+          "client_id": 4525,
+          "name": "grass",
+          "category": "GROUND",
+          "count": 1,
+          "subtype": null,
+          "attributes": {},
+          "attributes_present": [],
+          "mapped": true,
+          "flags": {
+            "ground": true,
+            "blocking": false,
+            "block_pathfind": false,
+            "block_projectile": false,
+            "stackable": false,
+            "liquid": false,
+            "movable": false,
+            "pickupable": false,
+            "has_height": false
+          }
+        },
+        {
+          "server_id": 901,
+          "client_id": 1110,
+          "name": "rocks",
+          "category": "DECORATION",
+          "count": 1,
+          "subtype": null,
+          "attributes": {},
+          "attributes_present": [],
+          "mapped": true,
+          "flags": {
+            "ground": false,
+            "blocking": false,
+            "block_pathfind": false,
+            "block_projectile": false,
+            "stackable": false,
+            "liquid": false,
+            "movable": false,
+            "pickupable": false,
+            "has_height": false
+          }
+        }
+      ],
+      "walkable": true,
+      "queryadd_walkable": true,
+      "blocking": false,
+      "source": {
+        "file": "servidor/data/world/map.otbm"
+      }
+    },
+    {
+      "position": {
+        "x": 32101,
+        "y": 32226,
+        "z": 6
+      },
+      "house_id": 0,
+      "tile_flags": [
+        "REFRESH"
+      ],
+      "tile_flags_value": 32,
+      "ground": {
+        "server_id": 4526,
+        "client_id": 4515,
+        "name": "grass",
+        "category": "GROUND",
+        "count": 1,
+        "subtype": null,
+        "attributes": {},
+        "attributes_present": [],
+        "mapped": true,
+        "flags": {
+          "ground": true,
+          "blocking": false,
+          "block_pathfind": false,
+          "block_projectile": false,
+          "stackable": false,
+          "liquid": false,
+          "movable": false,
+          "pickupable": false,
+          "has_height": false
+        }
+      },
+      "items": [
+        {
+          "server_id": 4526,
+          "client_id": 4515,
+          "name": "grass",
+          "category": "GROUND",
+          "count": 1,
+          "subtype": null,
+          "attributes": {},
+          "attributes_present": [],
+          "mapped": true,
+          "flags": {
+            "ground": true,
+            "blocking": false,
+            "block_pathfind": false,
+            "block_projectile": false,
+            "stackable": false,
+            "liquid": false,
+            "movable": false,
+            "pickupable": false,
+            "has_height": false
+          }
+        },
+        {
+          "server_id": 891,
+          "client_id": 1100,
+          "name": "rocks",
+          "category": "DECORATION",
+          "count": 1,
+          "subtype": null,
+          "attributes": {},
+          "attributes_present": [],
+          "mapped": true,
+          "flags": {
+            "ground": false,
+            "blocking": false,
+            "block_pathfind": false,
+            "block_projectile": false,
+            "stackable": false,
+            "liquid": false,
+            "movable": false,
+            "pickupable": false,
+            "has_height": false
+          }
+        }
+      ],
+      "walkable": true,
+      "queryadd_walkable": true,
+      "blocking": false,
+      "source": {
+        "file": "servidor/data/world/map.otbm"
+      }
+    },
+    {
+      "position": {
+        "x": 32101,
+        "y": 32227,
+        "z": 6
+      },
+      "house_id": 0,
+      "tile_flags": [
+        "REFRESH"
+      ],
+      "tile_flags_value": 32,
+      "ground": {
+        "server_id": 4526,
+        "client_id": 4515,
+        "name": "grass",
+        "category": "GROUND",
+        "count": 1,
+        "subtype": null,
+        "attributes": {},
+        "attributes_present": [],
+        "mapped": true,
+        "flags": {
+          "ground": true,
+          "blocking": false,
+          "block_pathfind": false,
+          "block_projectile": false,
+          "stackable": false,
+          "liquid": false,
+          "movable": false,
+          "pickupable": false,
+          "has_height": false
+        }
+      },
+      "items": [
+        {
+          "server_id": 4526,
+          "client_id": 4515,
+          "name": "grass",
+          "category": "GROUND",
+          "count": 1,
+          "subtype": null,
+          "attributes": {},
+          "attributes_present": [],
+          "mapped": true,
+          "flags": {
+            "ground": true,
+            "blocking": false,
+            "block_pathfind": false,
+            "block_projectile": false,
+            "stackable": false,
+            "liquid": false,
+            "movable": false,
+            "pickupable": false,
+            "has_height": false
+          }
+        },
+        {
+          "server_id": 893,
+          "client_id": 1102,
+          "name": "rocks",
+          "category": "DECORATION",
+          "count": 1,
+          "subtype": null,
+          "attributes": {},
+          "attributes_present": [],
+          "mapped": true,
+          "flags": {
+            "ground": false,
+            "blocking": false,
+            "block_pathfind": false,
+            "block_projectile": false,
+            "stackable": false,
+            "liquid": false,
+            "movable": false,
+            "pickupable": false,
+            "has_height": false
+          }
+        }
+      ],
+      "walkable": true,
+      "queryadd_walkable": true,
+      "blocking": false,
+      "source": {
+        "file": "servidor/data/world/map.otbm"
+      }
+    },
+    {
+      "position": {
+        "x": 32102,
+        "y": 32226,
+        "z": 6
+      },
+      "house_id": 0,
+      "tile_flags": [
+        "REFRESH"
+      ],
+      "tile_flags_value": 32,
+      "ground": {
+        "server_id": 4526,
+        "client_id": 4515,
+        "name": "grass",
+        "category": "GROUND",
+        "count": 1,
+        "subtype": null,
+        "attributes": {},
+        "attributes_present": [],
+        "mapped": true,
+        "flags": {
+          "ground": true,
+          "blocking": false,
+          "block_pathfind": false,
+          "block_projectile": false,
+          "stackable": false,
+          "liquid": false,
+          "movable": false,
+          "pickupable": false,
+          "has_height": false
+        }
+      },
+      "items": [
+        {
+          "server_id": 4526,
+          "client_id": 4515,
+          "name": "grass",
+          "category": "GROUND",
+          "count": 1,
+          "subtype": null,
+          "attributes": {},
+          "attributes_present": [],
+          "mapped": true,
+          "flags": {
+            "ground": true,
+            "blocking": false,
+            "block_pathfind": false,
+            "block_projectile": false,
+            "stackable": false,
+            "liquid": false,
+            "movable": false,
+            "pickupable": false,
+            "has_height": false
+          }
+        },
+        {
+          "server_id": 900,
+          "client_id": 1109,
+          "name": "rocks",
+          "category": "DECORATION",
+          "count": 1,
+          "subtype": null,
+          "attributes": {},
+          "attributes_present": [],
+          "mapped": true,
+          "flags": {
+            "ground": false,
+            "blocking": false,
+            "block_pathfind": false,
+            "block_projectile": false,
+            "stackable": false,
+            "liquid": false,
+            "movable": false,
+            "pickupable": false,
+            "has_height": false
+          }
+        }
+      ],
+      "walkable": true,
+      "queryadd_walkable": true,
+      "blocking": false,
+      "source": {
+        "file": "servidor/data/world/map.otbm"
+      }
+    },
+    {
+      "position": {
+        "x": 32102,
+        "y": 32227,
+        "z": 6
+      },
+      "house_id": 0,
+      "tile_flags": [
+        "REFRESH"
+      ],
+      "tile_flags_value": 32,
+      "ground": {
+        "server_id": 4526,
+        "client_id": 4515,
+        "name": "grass",
+        "category": "GROUND",
+        "count": 1,
+        "subtype": null,
+        "attributes": {},
+        "attributes_present": [],
+        "mapped": true,
+        "flags": {
+          "ground": true,
+          "blocking": false,
+          "block_pathfind": false,
+          "block_projectile": false,
+          "stackable": false,
+          "liquid": false,
+          "movable": false,
+          "pickupable": false,
+          "has_height": false
+        }
+      },
+      "items": [
+        {
+          "server_id": 4526,
+          "client_id": 4515,
+          "name": "grass",
+          "category": "GROUND",
+          "count": 1,
+          "subtype": null,
+          "attributes": {},
+          "attributes_present": [],
+          "mapped": true,
+          "flags": {
+            "ground": true,
+            "blocking": false,
+            "block_pathfind": false,
+            "block_projectile": false,
+            "stackable": false,
+            "liquid": false,
+            "movable": false,
+            "pickupable": false,
+            "has_height": false
+          }
+        },
+        {
+          "server_id": 901,
+          "client_id": 1110,
+          "name": "rocks",
+          "category": "DECORATION",
+          "count": 1,
+          "subtype": null,
+          "attributes": {},
+          "attributes_present": [],
+          "mapped": true,
+          "flags": {
+            "ground": false,
+            "blocking": false,
+            "block_pathfind": false,
+            "block_projectile": false,
+            "stackable": false,
+            "liquid": false,
+            "movable": false,
+            "pickupable": false,
+            "has_height": false
+          }
+        }
+      ],
+      "walkable": true,
+      "queryadd_walkable": true,
+      "blocking": false,
+      "source": {
+        "file": "servidor/data/world/map.otbm"
+      }
+    },
+    {
+      "position": {
+        "x": 32108,
+        "y": 32243,
+        "z": 6
+      },
+      "house_id": 0,
+      "tile_flags": [
+        "REFRESH"
+      ],
+      "tile_flags_value": 32,
+      "ground": null,
+      "items": [
+        {
+          "server_id": 923,
+          "client_id": 1155,
+          "name": "flat roof",
+          "category": "DECORATION",
+          "count": 1,
+          "subtype": null,
+          "attributes": {},
+          "attributes_present": [],
+          "mapped": true,
+          "flags": {
+            "ground": false,
+            "blocking": true,
+            "block_pathfind": false,
+            "block_projectile": false,
+            "stackable": false,
+            "liquid": false,
+            "movable": false,
+            "pickupable": false,
+            "has_height": false
+          }
+        }
+      ],
+      "walkable": false,
+      "queryadd_walkable": false,
+      "blocking": true,
+      "source": {
+        "file": "servidor/data/world/map.otbm"
+      }
+    },
+    {
+      "position": {
+        "x": 32108,
+        "y": 32244,
+        "z": 6
+      },
+      "house_id": 0,
+      "tile_flags": [
+        "REFRESH"
+      ],
+      "tile_flags_value": 32,
+      "ground": null,
+      "items": [
+        {
+          "server_id": 922,
+          "client_id": 1154,
+          "name": "flat roof",
+          "category": "DECORATION",
+          "count": 1,
+          "subtype": null,
+          "attributes": {},
+          "attributes_present": [],
+          "mapped": true,
+          "flags": {
+            "ground": false,
+            "blocking": true,
+            "block_pathfind": false,
+            "block_projectile": false,
+            "stackable": false,
+            "liquid": false,
+            "movable": false,
+            "pickupable": false,
+            "has_height": false
+          }
+        }
+      ],
+      "walkable": false,
+      "queryadd_walkable": false,
+      "blocking": true,
+      "source": {
+        "file": "servidor/data/world/map.otbm"
+      }
+    },
+    {
+      "position": {
+        "x": 32108,
+        "y": 32245,
+        "z": 6
+      },
+      "house_id": 0,
+      "tile_flags": [
+        "REFRESH"
+      ],
+      "tile_flags_value": 32,
+      "ground": null,
+      "items": [
+        {
+          "server_id": 922,
+          "client_id": 1154,
+          "name": "flat roof",
+          "category": "DECORATION",
+          "count": 1,
+          "subtype": null,
+          "attributes": {},
+          "attributes_present": [],
+          "mapped": true,
+          "flags": {
+            "ground": false,
+            "blocking": true,
+            "block_pathfind": false,
+            "block_projectile": false,
+            "stackable": false,
+            "liquid": false,
+            "movable": false,
+            "pickupable": false,
+            "has_height": false
+          }
+        }
+      ],
+      "walkable": false,
+      "queryadd_walkable": false,
+      "blocking": true,
+      "source": {
+        "file": "servidor/data/world/map.otbm"
+      }
+    },
+    {
+      "position": {
+        "x": 32108,
+        "y": 32246,
+        "z": 6
+      },
+      "house_id": 0,
+      "tile_flags": [
+        "REFRESH"
+      ],
+      "tile_flags_value": 32,
+      "ground": null,
+      "items": [
+        {
+          "server_id": 922,
+          "client_id": 1154,
+          "name": "flat roof",
+          "category": "DECORATION",
+          "count": 1,
+          "subtype": null,
+          "attributes": {},
+          "attributes_present": [],
+          "mapped": true,
+          "flags": {
+            "ground": false,
+            "blocking": true,
+            "block_pathfind": false,
+            "block_projectile": false,
+            "stackable": false,
+            "liquid": false,
+            "movable": false,
+            "pickupable": false,
+            "has_height": false
+          }
+        }
+      ],
+      "walkable": false,
+      "queryadd_walkable": false,
+      "blocking": true,
+      "source": {
+        "file": "servidor/data/world/map.otbm"
+      }
+    },
+    {
+      "position": {
+        "x": 32108,
+        "y": 32247,
+        "z": 6
+      },
+      "house_id": 0,
+      "tile_flags": [
+        "REFRESH"
+      ],
+      "tile_flags_value": 32,
+      "ground": null,
+      "items": [
+        {
+          "server_id": 922,
+          "client_id": 1154,
+          "name": "flat roof",
+          "category": "DECORATION",
+          "count": 1,
+          "subtype": null,
+          "attributes": {},
+          "attributes_present": [],
+          "mapped": true,
+          "flags": {
+            "ground": false,
+            "blocking": true,
+            "block_pathfind": false,
+            "block_projectile": false,
+            "stackable": false,
+            "liquid": false,
+            "movable": false,
+            "pickupable": false,
+            "has_height": false
+          }
+        }
+      ],
+      "walkable": false,
+      "queryadd_walkable": false,
+      "blocking": true,
+      "source": {
+        "file": "servidor/data/world/map.otbm"
+      }
+    },
+    {
+      "position": {
+        "x": 32109,
+        "y": 32243,
+        "z": 6
+      },
+      "house_id": 0,
+      "tile_flags": [
+        "REFRESH"
+      ],
+      "tile_flags_value": 32,
+      "ground": null,
+      "items": [
+        {
+          "server_id": 921,
+          "client_id": 1153,
+          "name": "flat roof",
+          "category": "DECORATION",
+          "count": 1,
+          "subtype": null,
+          "attributes": {},
+          "attributes_present": [],
+          "mapped": true,
+          "flags": {
+            "ground": false,
+            "blocking": true,
+            "block_pathfind": false,
+            "block_projectile": false,
+            "stackable": false,
+            "liquid": false,
+            "movable": false,
+            "pickupable": false,
+            "has_height": false
+          }
+        }
+      ],
+      "walkable": false,
+      "queryadd_walkable": false,
+      "blocking": true,
+      "source": {
+        "file": "servidor/data/world/map.otbm"
+      }
+    },
+    {
+      "position": {
+        "x": 32109,
+        "y": 32244,
+        "z": 6
+      },
+      "house_id": 0,
+      "tile_flags": [
+        "REFRESH"
+      ],
+      "tile_flags_value": 32,
+      "ground": {
+        "server_id": 408,
+        "client_id": 411,
+        "name": "trapdoor",
+        "category": "GROUND",
+        "count": 1,
+        "subtype": null,
+        "attributes": {},
+        "attributes_present": [],
+        "mapped": true,
+        "flags": {
+          "ground": true,
+          "blocking": false,
+          "block_pathfind": true,
+          "block_projectile": false,
+          "stackable": false,
+          "liquid": false,
+          "movable": false,
+          "pickupable": false,
+          "has_height": false
+        }
+      },
+      "items": [
+        {
+          "server_id": 408,
+          "client_id": 411,
+          "name": "trapdoor",
+          "category": "GROUND",
+          "count": 1,
+          "subtype": null,
+          "attributes": {},
+          "attributes_present": [],
+          "mapped": true,
+          "flags": {
+            "ground": true,
+            "blocking": false,
+            "block_pathfind": true,
+            "block_projectile": false,
+            "stackable": false,
+            "liquid": false,
+            "movable": false,
+            "pickupable": false,
+            "has_height": false
+          }
+        }
+      ],
+      "walkable": true,
+      "queryadd_walkable": false,
+      "blocking": false,
+      "source": {
+        "file": "servidor/data/world/map.otbm"
+      }
+    },
+    {
+      "position": {
+        "x": 32109,
+        "y": 32245,
+        "z": 6
+      },
+      "house_id": 0,
+      "tile_flags": [
+        "REFRESH"
+      ],
+      "tile_flags_value": 32,
+      "ground": {
+        "server_id": 920,
+        "client_id": 1152,
+        "name": "flat roof",
+        "category": "GROUND",
+        "count": 1,
+        "subtype": null,
+        "attributes": {},
+        "attributes_present": [],
+        "mapped": true,
+        "flags": {
+          "ground": true,
+          "blocking": false,
+          "block_pathfind": false,
+          "block_projectile": false,
+          "stackable": false,
+          "liquid": false,
+          "movable": false,
+          "pickupable": false,
+          "has_height": false
+        }
+      },
+      "items": [
+        {
+          "server_id": 920,
+          "client_id": 1152,
+          "name": "flat roof",
+          "category": "GROUND",
+          "count": 1,
+          "subtype": null,
+          "attributes": {},
+          "attributes_present": [],
+          "mapped": true,
+          "flags": {
+            "ground": true,
+            "blocking": false,
+            "block_pathfind": false,
+            "block_projectile": false,
+            "stackable": false,
+            "liquid": false,
+            "movable": false,
+            "pickupable": false,
+            "has_height": false
+          }
+        }
+      ],
+      "walkable": true,
+      "queryadd_walkable": true,
+      "blocking": false,
+      "source": {
+        "file": "servidor/data/world/map.otbm"
+      }
+    },
+    {
+      "position": {
+        "x": 32109,
+        "y": 32246,
+        "z": 6
+      },
+      "house_id": 0,
+      "tile_flags": [
+        "REFRESH"
+      ],
+      "tile_flags_value": 32,
+      "ground": {
+        "server_id": 920,
+        "client_id": 1152,
+        "name": "flat roof",
+        "category": "GROUND",
+        "count": 1,
+        "subtype": null,
+        "attributes": {},
+        "attributes_present": [],
+        "mapped": true,
+        "flags": {
+          "ground": true,
+          "blocking": false,
+          "block_pathfind": false,
+          "block_projectile": false,
+          "stackable": false,
+          "liquid": false,
+          "movable": false,
+          "pickupable": false,
+          "has_height": false
+        }
+      },
+      "items": [
+        {
+          "server_id": 920,
+          "client_id": 1152,
+          "name": "flat roof",
+          "category": "GROUND",
+          "count": 1,
+          "subtype": null,
+          "attributes": {},
+          "attributes_present": [],
+          "mapped": true,
+          "flags": {
+            "ground": true,
+            "blocking": false,
+            "block_pathfind": false,
+            "block_projectile": false,
+            "stackable": false,
+            "liquid": false,
+            "movable": false,
+            "pickupable": false,
+            "has_height": false
+          }
+        }
+      ],
+      "walkable": true,
+      "queryadd_walkable": true,
+      "blocking": false,
+      "source": {
+        "file": "servidor/data/world/map.otbm"
+      }
+    },
+    {
+      "position": {
+        "x": 32109,
+        "y": 32247,
+        "z": 6
+      },
+      "house_id": 0,
+      "tile_flags": [
+        "REFRESH"
+      ],
+      "tile_flags_value": 32,
+      "ground": {
+        "server_id": 920,
+        "client_id": 1152,
+        "name": "flat roof",
+        "category": "GROUND",
+        "count": 1,
+        "subtype": null,
+        "attributes": {},
+        "attributes_present": [],
+        "mapped": true,
+        "flags": {
+          "ground": true,
+          "blocking": false,
+          "block_pathfind": false,
+          "block_projectile": false,
+          "stackable": false,
+          "liquid": false,
+          "movable": false,
+          "pickupable": false,
+          "has_height": false
+        }
+      },
+      "items": [
+        {
+          "server_id": 920,
+          "client_id": 1152,
+          "name": "flat roof",
+          "category": "GROUND",
+          "count": 1,
+          "subtype": null,
+          "attributes": {},
+          "attributes_present": [],
+          "mapped": true,
+          "flags": {
+            "ground": true,
+            "blocking": false,
+            "block_pathfind": false,
+            "block_projectile": false,
+            "stackable": false,
+            "liquid": false,
+            "movable": false,
+            "pickupable": false,
+            "has_height": false
+          }
+        }
+      ],
+      "walkable": true,
+      "queryadd_walkable": true,
+      "blocking": false,
+      "source": {
+        "file": "servidor/data/world/map.otbm"
+      }
+    },
+    {
+      "position": {
+        "x": 32110,
+        "y": 32243,
+        "z": 6
+      },
+      "house_id": 0,
+      "tile_flags": [
+        "REFRESH"
+      ],
+      "tile_flags_value": 32,
+      "ground": null,
+      "items": [
+        {
+          "server_id": 921,
+          "client_id": 1153,
+          "name": "flat roof",
+          "category": "DECORATION",
+          "count": 1,
+          "subtype": null,
+          "attributes": {},
+          "attributes_present": [],
+          "mapped": true,
+          "flags": {
+            "ground": false,
+            "blocking": true,
+            "block_pathfind": false,
+            "block_projectile": false,
+            "stackable": false,
+            "liquid": false,
+            "movable": false,
+            "pickupable": false,
+            "has_height": false
+          }
+        }
+      ],
+      "walkable": false,
+      "queryadd_walkable": false,
+      "blocking": true,
+      "source": {
+        "file": "servidor/data/world/map.otbm"
+      }
+    },
+    {
+      "position": {
+        "x": 32110,
+        "y": 32244,
+        "z": 6
+      },
+      "house_id": 0,
+      "tile_flags": [
+        "REFRESH"
+      ],
+      "tile_flags_value": 32,
+      "ground": {
+        "server_id": 920,
+        "client_id": 1152,
+        "name": "flat roof",
+        "category": "GROUND",
+        "count": 1,
+        "subtype": null,
+        "attributes": {},
+        "attributes_present": [],
+        "mapped": true,
+        "flags": {
+          "ground": true,
+          "blocking": false,
+          "block_pathfind": false,
+          "block_projectile": false,
+          "stackable": false,
+          "liquid": false,
+          "movable": false,
+          "pickupable": false,
+          "has_height": false
+        }
+      },
+      "items": [
+        {
+          "server_id": 920,
+          "client_id": 1152,
+          "name": "flat roof",
+          "category": "GROUND",
+          "count": 1,
+          "subtype": null,
+          "attributes": {},
+          "attributes_present": [],
+          "mapped": true,
+          "flags": {
+            "ground": true,
+            "blocking": false,
+            "block_pathfind": false,
+            "block_projectile": false,
+            "stackable": false,
+            "liquid": false,
+            "movable": false,
+            "pickupable": false,
+            "has_height": false
+          }
+        }
+      ],
+      "walkable": true,
+      "queryadd_walkable": true,
+      "blocking": false,
+      "source": {
+        "file": "servidor/data/world/map.otbm"
+      }
+    },
+    {
+      "position": {
+        "x": 32110,
+        "y": 32245,
+        "z": 6
+      },
+      "house_id": 0,
+      "tile_flags": [
+        "REFRESH"
+      ],
+      "tile_flags_value": 32,
+      "ground": {
+        "server_id": 920,
+        "client_id": 1152,
+        "name": "flat roof",
+        "category": "GROUND",
+        "count": 1,
+        "subtype": null,
+        "attributes": {},
+        "attributes_present": [],
+        "mapped": true,
+        "flags": {
+          "ground": true,
+          "blocking": false,
+          "block_pathfind": false,
+          "block_projectile": false,
+          "stackable": false,
+          "liquid": false,
+          "movable": false,
+          "pickupable": false,
+          "has_height": false
+        }
+      },
+      "items": [
+        {
+          "server_id": 920,
+          "client_id": 1152,
+          "name": "flat roof",
+          "category": "GROUND",
+          "count": 1,
+          "subtype": null,
+          "attributes": {},
+          "attributes_present": [],
+          "mapped": true,
+          "flags": {
+            "ground": true,
+            "blocking": false,
+            "block_pathfind": false,
+            "block_projectile": false,
+            "stackable": false,
+            "liquid": false,
+            "movable": false,
+            "pickupable": false,
+            "has_height": false
+          }
+        }
+      ],
+      "walkable": true,
+      "queryadd_walkable": true,
+      "blocking": false,
+      "source": {
+        "file": "servidor/data/world/map.otbm"
+      }
+    },
+    {
+      "position": {
+        "x": 32110,
+        "y": 32246,
+        "z": 6
+      },
+      "house_id": 0,
+      "tile_flags": [
+        "REFRESH"
+      ],
+      "tile_flags_value": 32,
+      "ground": {
+        "server_id": 920,
+        "client_id": 1152,
+        "name": "flat roof",
+        "category": "GROUND",
+        "count": 1,
+        "subtype": null,
+        "attributes": {},
+        "attributes_present": [],
+        "mapped": true,
+        "flags": {
+          "ground": true,
+          "blocking": false,
+          "block_pathfind": false,
+          "block_projectile": false,
+          "stackable": false,
+          "liquid": false,
+          "movable": false,
+          "pickupable": false,
+          "has_height": false
+        }
+      },
+      "items": [
+        {
+          "server_id": 920,
+          "client_id": 1152,
+          "name": "flat roof",
+          "category": "GROUND",
+          "count": 1,
+          "subtype": null,
+          "attributes": {},
+          "attributes_present": [],
+          "mapped": true,
+          "flags": {
+            "ground": true,
+            "blocking": false,
+            "block_pathfind": false,
+            "block_projectile": false,
+            "stackable": false,
+            "liquid": false,
+            "movable": false,
+            "pickupable": false,
+            "has_height": false
+          }
+        }
+      ],
+      "walkable": true,
+      "queryadd_walkable": true,
+      "blocking": false,
+      "source": {
+        "file": "servidor/data/world/map.otbm"
+      }
+    },
+    {
+      "position": {
+        "x": 32110,
+        "y": 32247,
+        "z": 6
+      },
+      "house_id": 0,
+      "tile_flags": [
+        "REFRESH"
+      ],
+      "tile_flags_value": 32,
+      "ground": {
+        "server_id": 920,
+        "client_id": 1152,
+        "name": "flat roof",
+        "category": "GROUND",
+        "count": 1,
+        "subtype": null,
+        "attributes": {},
+        "attributes_present": [],
+        "mapped": true,
+        "flags": {
+          "ground": true,
+          "blocking": false,
+          "block_pathfind": false,
+          "block_projectile": false,
+          "stackable": false,
+          "liquid": false,
+          "movable": false,
+          "pickupable": false,
+          "has_height": false
+        }
+      },
+      "items": [
+        {
+          "server_id": 920,
+          "client_id": 1152,
+          "name": "flat roof",
+          "category": "GROUND",
+          "count": 1,
+          "subtype": null,
+          "attributes": {},
+          "attributes_present": [],
+          "mapped": true,
+          "flags": {
+            "ground": true,
+            "blocking": false,
+            "block_pathfind": false,
+            "block_projectile": false,
+            "stackable": false,
+            "liquid": false,
+            "movable": false,
+            "pickupable": false,
+            "has_height": false
+          }
+        }
+      ],
+      "walkable": true,
+      "queryadd_walkable": true,
+      "blocking": false,
+      "source": {
+        "file": "servidor/data/world/map.otbm"
+      }
+    },
+    {
+      "position": {
+        "x": 32111,
+        "y": 32243,
+        "z": 6
+      },
+      "house_id": 0,
+      "tile_flags": [
+        "REFRESH"
+      ],
+      "tile_flags_value": 32,
+      "ground": null,
+      "items": [
+        {
+          "server_id": 921,
+          "client_id": 1153,
+          "name": "flat roof",
+          "category": "DECORATION",
+          "count": 1,
+          "subtype": null,
+          "attributes": {},
+          "attributes_present": [],
+          "mapped": true,
+          "flags": {
+            "ground": false,
+            "blocking": true,
+            "block_pathfind": false,
+            "block_projectile": false,
+            "stackable": false,
+            "liquid": false,
+            "movable": false,
+            "pickupable": false,
+            "has_height": false
+          }
+        }
+      ],
+      "walkable": false,
+      "queryadd_walkable": false,
+      "blocking": true,
+      "source": {
+        "file": "servidor/data/world/map.otbm"
+      }
+    },
+    {
+      "position": {
+        "x": 32111,
+        "y": 32244,
+        "z": 6
+      },
+      "house_id": 0,
+      "tile_flags": [
+        "REFRESH"
+      ],
+      "tile_flags_value": 32,
+      "ground": {
+        "server_id": 920,
+        "client_id": 1152,
+        "name": "flat roof",
+        "category": "GROUND",
+        "count": 1,
+        "subtype": null,
+        "attributes": {},
+        "attributes_present": [],
+        "mapped": true,
+        "flags": {
+          "ground": true,
+          "blocking": false,
+          "block_pathfind": false,
+          "block_projectile": false,
+          "stackable": false,
+          "liquid": false,
+          "movable": false,
+          "pickupable": false,
+          "has_height": false
+        }
+      },
+      "items": [
+        {
+          "server_id": 920,
+          "client_id": 1152,
+          "name": "flat roof",
+          "category": "GROUND",
+          "count": 1,
+          "subtype": null,
+          "attributes": {},
+          "attributes_present": [],
+          "mapped": true,
+          "flags": {
+            "ground": true,
+            "blocking": false,
+            "block_pathfind": false,
+            "block_projectile": false,
+            "stackable": false,
+            "liquid": false,
+            "movable": false,
+            "pickupable": false,
+            "has_height": false
+          }
+        }
+      ],
+      "walkable": true,
+      "queryadd_walkable": true,
+      "blocking": false,
+      "source": {
+        "file": "servidor/data/world/map.otbm"
+      }
+    },
+    {
+      "position": {
+        "x": 32111,
+        "y": 32245,
+        "z": 6
+      },
+      "house_id": 0,
+      "tile_flags": [
+        "REFRESH"
+      ],
+      "tile_flags_value": 32,
+      "ground": {
+        "server_id": 920,
+        "client_id": 1152,
+        "name": "flat roof",
+        "category": "GROUND",
+        "count": 1,
+        "subtype": null,
+        "attributes": {},
+        "attributes_present": [],
+        "mapped": true,
+        "flags": {
+          "ground": true,
+          "blocking": false,
+          "block_pathfind": false,
+          "block_projectile": false,
+          "stackable": false,
+          "liquid": false,
+          "movable": false,
+          "pickupable": false,
+          "has_height": false
+        }
+      },
+      "items": [
+        {
+          "server_id": 920,
+          "client_id": 1152,
+          "name": "flat roof",
+          "category": "GROUND",
+          "count": 1,
+          "subtype": null,
+          "attributes": {},
+          "attributes_present": [],
+          "mapped": true,
+          "flags": {
+            "ground": true,
+            "blocking": false,
+            "block_pathfind": false,
+            "block_projectile": false,
+            "stackable": false,
+            "liquid": false,
+            "movable": false,
+            "pickupable": false,
+            "has_height": false
+          }
+        }
+      ],
+      "walkable": true,
+      "queryadd_walkable": true,
+      "blocking": false,
+      "source": {
+        "file": "servidor/data/world/map.otbm"
+      }
+    },
+    {
+      "position": {
+        "x": 32111,
+        "y": 32246,
+        "z": 6
+      },
+      "house_id": 0,
+      "tile_flags": [
+        "REFRESH"
+      ],
+      "tile_flags_value": 32,
+      "ground": {
+        "server_id": 920,
+        "client_id": 1152,
+        "name": "flat roof",
+        "category": "GROUND",
+        "count": 1,
+        "subtype": null,
+        "attributes": {},
+        "attributes_present": [],
+        "mapped": true,
+        "flags": {
+          "ground": true,
+          "blocking": false,
+          "block_pathfind": false,
+          "block_projectile": false,
+          "stackable": false,
+          "liquid": false,
+          "movable": false,
+          "pickupable": false,
+          "has_height": false
+        }
+      },
+      "items": [
+        {
+          "server_id": 920,
+          "client_id": 1152,
+          "name": "flat roof",
+          "category": "GROUND",
+          "count": 1,
+          "subtype": null,
+          "attributes": {},
+          "attributes_present": [],
+          "mapped": true,
+          "flags": {
+            "ground": true,
+            "blocking": false,
+            "block_pathfind": false,
+            "block_projectile": false,
+            "stackable": false,
+            "liquid": false,
+            "movable": false,
+            "pickupable": false,
+            "has_height": false
+          }
+        }
+      ],
+      "walkable": true,
+      "queryadd_walkable": true,
+      "blocking": false,
+      "source": {
+        "file": "servidor/data/world/map.otbm"
+      }
+    },
+    {
+      "position": {
+        "x": 32111,
+        "y": 32247,
+        "z": 6
+      },
+      "house_id": 0,
+      "tile_flags": [
+        "REFRESH"
+      ],
+      "tile_flags_value": 32,
+      "ground": {
+        "server_id": 920,
+        "client_id": 1152,
+        "name": "flat roof",
+        "category": "GROUND",
+        "count": 1,
+        "subtype": null,
+        "attributes": {},
+        "attributes_present": [],
+        "mapped": true,
+        "flags": {
+          "ground": true,
+          "blocking": false,
+          "block_pathfind": false,
+          "block_projectile": false,
+          "stackable": false,
+          "liquid": false,
+          "movable": false,
+          "pickupable": false,
+          "has_height": false
+        }
+      },
+      "items": [
+        {
+          "server_id": 920,
+          "client_id": 1152,
+          "name": "flat roof",
+          "category": "GROUND",
+          "count": 1,
+          "subtype": null,
+          "attributes": {},
+          "attributes_present": [],
+          "mapped": true,
+          "flags": {
+            "ground": true,
+            "blocking": false,
+            "block_pathfind": false,
+            "block_projectile": false,
+            "stackable": false,
+            "liquid": false,
+            "movable": false,
+            "pickupable": false,
+            "has_height": false
+          }
+        }
+      ],
+      "walkable": true,
+      "queryadd_walkable": true,
+      "blocking": false,
+      "source": {
+        "file": "servidor/data/world/map.otbm"
+      }
+    },
+    {
+      "position": {
+        "x": 32112,
+        "y": 32243,
+        "z": 6
+      },
+      "house_id": 0,
+      "tile_flags": [
+        "REFRESH"
+      ],
+      "tile_flags_value": 32,
+      "ground": null,
+      "items": [
+        {
+          "server_id": 921,
+          "client_id": 1153,
+          "name": "flat roof",
+          "category": "DECORATION",
+          "count": 1,
+          "subtype": null,
+          "attributes": {},
+          "attributes_present": [],
+          "mapped": true,
+          "flags": {
+            "ground": false,
+            "blocking": true,
+            "block_pathfind": false,
+            "block_projectile": false,
+            "stackable": false,
+            "liquid": false,
+            "movable": false,
+            "pickupable": false,
+            "has_height": false
+          }
+        }
+      ],
+      "walkable": false,
+      "queryadd_walkable": false,
+      "blocking": true,
+      "source": {
+        "file": "servidor/data/world/map.otbm"
+      }
+    },
+    {
+      "position": {
+        "x": 32112,
+        "y": 32244,
+        "z": 6
+      },
+      "house_id": 0,
+      "tile_flags": [
+        "REFRESH"
+      ],
+      "tile_flags_value": 32,
+      "ground": {
+        "server_id": 920,
+        "client_id": 1152,
+        "name": "flat roof",
+        "category": "GROUND",
+        "count": 1,
+        "subtype": null,
+        "attributes": {},
+        "attributes_present": [],
+        "mapped": true,
+        "flags": {
+          "ground": true,
+          "blocking": false,
+          "block_pathfind": false,
+          "block_projectile": false,
+          "stackable": false,
+          "liquid": false,
+          "movable": false,
+          "pickupable": false,
+          "has_height": false
+        }
+      },
+      "items": [
+        {
+          "server_id": 920,
+          "client_id": 1152,
+          "name": "flat roof",
+          "category": "GROUND",
+          "count": 1,
+          "subtype": null,
+          "attributes": {},
+          "attributes_present": [],
+          "mapped": true,
+          "flags": {
+            "ground": true,
+            "blocking": false,
+            "block_pathfind": false,
+            "block_projectile": false,
+            "stackable": false,
+            "liquid": false,
+            "movable": false,
+            "pickupable": false,
+            "has_height": false
+          }
+        }
+      ],
+      "walkable": true,
+      "queryadd_walkable": true,
+      "blocking": false,
+      "source": {
+        "file": "servidor/data/world/map.otbm"
+      }
+    },
+    {
+      "position": {
+        "x": 32112,
+        "y": 32245,
+        "z": 6
+      },
+      "house_id": 0,
+      "tile_flags": [
+        "REFRESH"
+      ],
+      "tile_flags_value": 32,
+      "ground": {
+        "server_id": 920,
+        "client_id": 1152,
+        "name": "flat roof",
+        "category": "GROUND",
+        "count": 1,
+        "subtype": null,
+        "attributes": {},
+        "attributes_present": [],
+        "mapped": true,
+        "flags": {
+          "ground": true,
+          "blocking": false,
+          "block_pathfind": false,
+          "block_projectile": false,
+          "stackable": false,
+          "liquid": false,
+          "movable": false,
+          "pickupable": false,
+          "has_height": false
+        }
+      },
+      "items": [
+        {
+          "server_id": 920,
+          "client_id": 1152,
+          "name": "flat roof",
+          "category": "GROUND",
+          "count": 1,
+          "subtype": null,
+          "attributes": {},
+          "attributes_present": [],
+          "mapped": true,
+          "flags": {
+            "ground": true,
+            "blocking": false,
+            "block_pathfind": false,
+            "block_projectile": false,
+            "stackable": false,
+            "liquid": false,
+            "movable": false,
+            "pickupable": false,
+            "has_height": false
+          }
+        }
+      ],
+      "walkable": true,
+      "queryadd_walkable": true,
+      "blocking": false,
+      "source": {
+        "file": "servidor/data/world/map.otbm"
+      }
+    },
+    {
+      "position": {
+        "x": 32112,
+        "y": 32246,
+        "z": 6
+      },
+      "house_id": 0,
+      "tile_flags": [
+        "REFRESH"
+      ],
+      "tile_flags_value": 32,
+      "ground": {
+        "server_id": 920,
+        "client_id": 1152,
+        "name": "flat roof",
+        "category": "GROUND",
+        "count": 1,
+        "subtype": null,
+        "attributes": {},
+        "attributes_present": [],
+        "mapped": true,
+        "flags": {
+          "ground": true,
+          "blocking": false,
+          "block_pathfind": false,
+          "block_projectile": false,
+          "stackable": false,
+          "liquid": false,
+          "movable": false,
+          "pickupable": false,
+          "has_height": false
+        }
+      },
+      "items": [
+        {
+          "server_id": 920,
+          "client_id": 1152,
+          "name": "flat roof",
+          "category": "GROUND",
+          "count": 1,
+          "subtype": null,
+          "attributes": {},
+          "attributes_present": [],
+          "mapped": true,
+          "flags": {
+            "ground": true,
+            "blocking": false,
+            "block_pathfind": false,
+            "block_projectile": false,
+            "stackable": false,
+            "liquid": false,
+            "movable": false,
+            "pickupable": false,
+            "has_height": false
+          }
+        }
+      ],
+      "walkable": true,
+      "queryadd_walkable": true,
+      "blocking": false,
+      "source": {
+        "file": "servidor/data/world/map.otbm"
+      }
+    },
+    {
+      "position": {
+        "x": 32112,
+        "y": 32247,
+        "z": 6
+      },
+      "house_id": 0,
+      "tile_flags": [
+        "REFRESH"
+      ],
+      "tile_flags_value": 32,
+      "ground": {
+        "server_id": 920,
+        "client_id": 1152,
+        "name": "flat roof",
+        "category": "GROUND",
+        "count": 1,
+        "subtype": null,
+        "attributes": {},
+        "attributes_present": [],
+        "mapped": true,
+        "flags": {
+          "ground": true,
+          "blocking": false,
+          "block_pathfind": false,
+          "block_projectile": false,
+          "stackable": false,
+          "liquid": false,
+          "movable": false,
+          "pickupable": false,
+          "has_height": false
+        }
+      },
+      "items": [
+        {
+          "server_id": 920,
+          "client_id": 1152,
+          "name": "flat roof",
+          "category": "GROUND",
+          "count": 1,
+          "subtype": null,
+          "attributes": {},
+          "attributes_present": [],
+          "mapped": true,
+          "flags": {
+            "ground": true,
+            "blocking": false,
+            "block_pathfind": false,
+            "block_projectile": false,
+            "stackable": false,
+            "liquid": false,
+            "movable": false,
+            "pickupable": false,
+            "has_height": false
+          }
+        }
+      ],
+      "walkable": true,
+      "queryadd_walkable": true,
+      "blocking": false,
+      "source": {
+        "file": "servidor/data/world/map.otbm"
+      }
+    },
+    {
+      "position": {
+        "x": 32116,
+        "y": 32224,
+        "z": 6
+      },
+      "house_id": 0,
+      "tile_flags": [
+        "REFRESH"
+      ],
+      "tile_flags_value": 32,
+      "ground": {
+        "server_id": 918,
+        "client_id": 1127,
+        "name": "mountain",
+        "category": "GROUND",
+        "count": 1,
+        "subtype": null,
+        "attributes": {},
+        "attributes_present": [],
+        "mapped": true,
+        "flags": {
+          "ground": true,
+          "blocking": true,
+          "block_pathfind": false,
+          "block_projectile": true,
+          "stackable": false,
+          "liquid": false,
+          "movable": false,
+          "pickupable": false,
+          "has_height": false
+        }
+      },
+      "items": [
+        {
+          "server_id": 918,
+          "client_id": 1127,
+          "name": "mountain",
+          "category": "GROUND",
+          "count": 1,
+          "subtype": null,
+          "attributes": {},
+          "attributes_present": [],
+          "mapped": true,
+          "flags": {
+            "ground": true,
+            "blocking": true,
+            "block_pathfind": false,
+            "block_projectile": true,
+            "stackable": false,
+            "liquid": false,
+            "movable": false,
+            "pickupable": false,
+            "has_height": false
+          }
+        }
+      ],
+      "walkable": true,
+      "queryadd_walkable": true,
+      "blocking": false,
+      "source": {
+        "file": "servidor/data/world/map.otbm"
+      }
+    },
+    {
+      "position": {
+        "x": 32116,
+        "y": 32225,
+        "z": 6
+      },
+      "house_id": 0,
+      "tile_flags": [
+        "REFRESH"
+      ],
+      "tile_flags_value": 32,
+      "ground": {
+        "server_id": 918,
+        "client_id": 1127,
+        "name": "mountain",
+        "category": "GROUND",
+        "count": 1,
+        "subtype": null,
+        "attributes": {},
+        "attributes_present": [],
+        "mapped": true,
+        "flags": {
+          "ground": true,
+          "blocking": true,
+          "block_pathfind": false,
+          "block_projectile": true,
+          "stackable": false,
+          "liquid": false,
+          "movable": false,
+          "pickupable": false,
+          "has_height": false
+        }
+      },
+      "items": [
+        {
+          "server_id": 918,
+          "client_id": 1127,
+          "name": "mountain",
+          "category": "GROUND",
+          "count": 1,
+          "subtype": null,
+          "attributes": {},
+          "attributes_present": [],
+          "mapped": true,
+          "flags": {
+            "ground": true,
+            "blocking": true,
+            "block_pathfind": false,
+            "block_projectile": true,
+            "stackable": false,
+            "liquid": false,
+            "movable": false,
+            "pickupable": false,
+            "has_height": false
+          }
+        },
+        {
+          "server_id": 2741,
+          "client_id": 3655,
+          "name": "moon flower",
+          "category": "VEGETATION",
+          "count": 1,
+          "subtype": null,
+          "attributes": {},
+          "attributes_present": [],
+          "mapped": true,
+          "flags": {
+            "ground": false,
+            "blocking": false,
+            "block_pathfind": false,
+            "block_projectile": false,
+            "stackable": false,
+            "liquid": false,
+            "movable": true,
+            "pickupable": true,
+            "has_height": false
+          }
+        }
+      ],
+      "walkable": true,
+      "queryadd_walkable": true,
+      "blocking": false,
+      "source": {
+        "file": "servidor/data/world/map.otbm"
+      }
+    },
+    {
+      "position": {
+        "x": 32117,
+        "y": 32224,
+        "z": 6
+      },
+      "house_id": 0,
+      "tile_flags": [
+        "REFRESH"
+      ],
+      "tile_flags_value": 32,
+      "ground": {
+        "server_id": 918,
+        "client_id": 1127,
+        "name": "mountain",
+        "category": "GROUND",
+        "count": 1,
+        "subtype": null,
+        "attributes": {},
+        "attributes_present": [],
+        "mapped": true,
+        "flags": {
+          "ground": true,
+          "blocking": true,
+          "block_pathfind": false,
+          "block_projectile": true,
+          "stackable": false,
+          "liquid": false,
+          "movable": false,
+          "pickupable": false,
+          "has_height": false
+        }
+      },
+      "items": [
+        {
+          "server_id": 918,
+          "client_id": 1127,
+          "name": "mountain",
+          "category": "GROUND",
+          "count": 1,
+          "subtype": null,
+          "attributes": {},
+          "attributes_present": [],
+          "mapped": true,
+          "flags": {
+            "ground": true,
+            "blocking": true,
+            "block_pathfind": false,
+            "block_projectile": true,
+            "stackable": false,
+            "liquid": false,
+            "movable": false,
+            "pickupable": false,
+            "has_height": false
+          }
+        },
+        {
+          "server_id": 1302,
+          "client_id": 1789,
+          "name": "stone",
+          "category": "DECORATION",
+          "count": 1,
+          "subtype": null,
+          "attributes": {},
+          "attributes_present": [],
+          "mapped": true,
+          "flags": {
+            "ground": false,
+            "blocking": true,
+            "block_pathfind": false,
+            "block_projectile": false,
+            "stackable": false,
+            "liquid": false,
+            "movable": false,
+            "pickupable": false,
+            "has_height": false
+          }
+        }
+      ],
+      "walkable": false,
+      "queryadd_walkable": true,
+      "blocking": true,
+      "source": {
+        "file": "servidor/data/world/map.otbm"
+      }
+    },
+    {
+      "position": {
+        "x": 32117,
+        "y": 32225,
+        "z": 6
+      },
+      "house_id": 0,
+      "tile_flags": [
+        "REFRESH"
+      ],
+      "tile_flags_value": 32,
+      "ground": {
+        "server_id": 918,
+        "client_id": 1127,
+        "name": "mountain",
+        "category": "GROUND",
+        "count": 1,
+        "subtype": null,
+        "attributes": {},
+        "attributes_present": [],
+        "mapped": true,
+        "flags": {
+          "ground": true,
+          "blocking": true,
+          "block_pathfind": false,
+          "block_projectile": true,
+          "stackable": false,
+          "liquid": false,
+          "movable": false,
+          "pickupable": false,
+          "has_height": false
+        }
+      },
+      "items": [
+        {
+          "server_id": 918,
+          "client_id": 1127,
+          "name": "mountain",
+          "category": "GROUND",
+          "count": 1,
+          "subtype": null,
+          "attributes": {},
+          "attributes_present": [],
+          "mapped": true,
+          "flags": {
+            "ground": true,
+            "blocking": true,
+            "block_pathfind": false,
+            "block_projectile": true,
+            "stackable": false,
+            "liquid": false,
+            "movable": false,
+            "pickupable": false,
+            "has_height": false
+          }
+        }
+      ],
+      "walkable": true,
+      "queryadd_walkable": true,
+      "blocking": false,
+      "source": {
+        "file": "servidor/data/world/map.otbm"
+      }
+    },
+    {
+      "position": {
+        "x": 32118,
+        "y": 32224,
+        "z": 6
+      },
+      "house_id": 0,
+      "tile_flags": [
+        "REFRESH"
+      ],
+      "tile_flags_value": 32,
+      "ground": {
+        "server_id": 918,
+        "client_id": 1127,
+        "name": "mountain",
+        "category": "GROUND",
+        "count": 1,
+        "subtype": null,
+        "attributes": {},
+        "attributes_present": [],
+        "mapped": true,
+        "flags": {
+          "ground": true,
+          "blocking": true,
+          "block_pathfind": false,
+          "block_projectile": true,
+          "stackable": false,
+          "liquid": false,
+          "movable": false,
+          "pickupable": false,
+          "has_height": false
+        }
+      },
+      "items": [
+        {
+          "server_id": 918,
+          "client_id": 1127,
+          "name": "mountain",
+          "category": "GROUND",
+          "count": 1,
+          "subtype": null,
+          "attributes": {},
+          "attributes_present": [],
+          "mapped": true,
+          "flags": {
+            "ground": true,
+            "blocking": true,
+            "block_pathfind": false,
+            "block_projectile": true,
+            "stackable": false,
+            "liquid": false,
+            "movable": false,
+            "pickupable": false,
+            "has_height": false
+          }
+        },
+        {
+          "server_id": 1303,
+          "client_id": 1790,
+          "name": "stone",
+          "category": "DECORATION",
+          "count": 1,
+          "subtype": null,
+          "attributes": {},
+          "attributes_present": [],
+          "mapped": true,
+          "flags": {
+            "ground": false,
+            "blocking": true,
+            "block_pathfind": false,
+            "block_projectile": false,
+            "stackable": false,
+            "liquid": false,
+            "movable": false,
+            "pickupable": false,
+            "has_height": false
+          }
+        }
+      ],
+      "walkable": false,
+      "queryadd_walkable": true,
+      "blocking": true,
+      "source": {
+        "file": "servidor/data/world/map.otbm"
+      }
+    },
+    {
+      "position": {
+        "x": 32118,
+        "y": 32225,
+        "z": 6
+      },
+      "house_id": 0,
+      "tile_flags": [
+        "REFRESH"
+      ],
+      "tile_flags_value": 32,
+      "ground": {
+        "server_id": 918,
+        "client_id": 1127,
+        "name": "mountain",
+        "category": "GROUND",
+        "count": 1,
+        "subtype": null,
+        "attributes": {},
+        "attributes_present": [],
+        "mapped": true,
+        "flags": {
+          "ground": true,
+          "blocking": true,
+          "block_pathfind": false,
+          "block_projectile": true,
+          "stackable": false,
+          "liquid": false,
+          "movable": false,
+          "pickupable": false,
+          "has_height": false
+        }
+      },
+      "items": [
+        {
+          "server_id": 918,
+          "client_id": 1127,
+          "name": "mountain",
+          "category": "GROUND",
+          "count": 1,
+          "subtype": null,
+          "attributes": {},
+          "attributes_present": [],
+          "mapped": true,
+          "flags": {
+            "ground": true,
+            "blocking": true,
+            "block_pathfind": false,
+            "block_projectile": true,
+            "stackable": false,
+            "liquid": false,
+            "movable": false,
+            "pickupable": false,
+            "has_height": false
+          }
+        }
+      ],
+      "walkable": true,
+      "queryadd_walkable": true,
+      "blocking": false,
+      "source": {
+        "file": "servidor/data/world/map.otbm"
+      }
+    },
+    {
+      "position": {
+        "x": 32118,
+        "y": 32226,
+        "z": 6
+      },
+      "house_id": 0,
+      "tile_flags": [
+        "REFRESH"
+      ],
+      "tile_flags_value": 32,
+      "ground": {
+        "server_id": 918,
+        "client_id": 1127,
+        "name": "mountain",
+        "category": "GROUND",
+        "count": 1,
+        "subtype": null,
+        "attributes": {},
+        "attributes_present": [],
+        "mapped": true,
+        "flags": {
+          "ground": true,
+          "blocking": true,
+          "block_pathfind": false,
+          "block_projectile": true,
+          "stackable": false,
+          "liquid": false,
+          "movable": false,
+          "pickupable": false,
+          "has_height": false
+        }
+      },
+      "items": [
+        {
+          "server_id": 918,
+          "client_id": 1127,
+          "name": "mountain",
+          "category": "GROUND",
+          "count": 1,
+          "subtype": null,
+          "attributes": {},
+          "attributes_present": [],
+          "mapped": true,
+          "flags": {
+            "ground": true,
+            "blocking": true,
+            "block_pathfind": false,
+            "block_projectile": true,
+            "stackable": false,
+            "liquid": false,
+            "movable": false,
+            "pickupable": false,
+            "has_height": false
+          }
+        }
+      ],
+      "walkable": true,
+      "queryadd_walkable": true,
+      "blocking": false,
+      "source": {
+        "file": "servidor/data/world/map.otbm"
+      }
+    },
+    {
+      "position": {
+        "x": 32119,
+        "y": 32224,
+        "z": 6
+      },
+      "house_id": 0,
+      "tile_flags": [
+        "REFRESH"
+      ],
+      "tile_flags_value": 32,
+      "ground": {
+        "server_id": 918,
+        "client_id": 1127,
+        "name": "mountain",
+        "category": "GROUND",
+        "count": 1,
+        "subtype": null,
+        "attributes": {},
+        "attributes_present": [],
+        "mapped": true,
+        "flags": {
+          "ground": true,
+          "blocking": true,
+          "block_pathfind": false,
+          "block_projectile": true,
+          "stackable": false,
+          "liquid": false,
+          "movable": false,
+          "pickupable": false,
+          "has_height": false
+        }
+      },
+      "items": [
+        {
+          "server_id": 918,
+          "client_id": 1127,
+          "name": "mountain",
+          "category": "GROUND",
+          "count": 1,
+          "subtype": null,
+          "attributes": {},
+          "attributes_present": [],
+          "mapped": true,
+          "flags": {
+            "ground": true,
+            "blocking": true,
+            "block_pathfind": false,
+            "block_projectile": true,
+            "stackable": false,
+            "liquid": false,
+            "movable": false,
+            "pickupable": false,
+            "has_height": false
+          }
+        }
+      ],
+      "walkable": true,
+      "queryadd_walkable": true,
+      "blocking": false,
+      "source": {
+        "file": "servidor/data/world/map.otbm"
+      }
+    },
+    {
+      "position": {
+        "x": 32119,
+        "y": 32225,
+        "z": 6
+      },
+      "house_id": 0,
+      "tile_flags": [
+        "REFRESH"
+      ],
+      "tile_flags_value": 32,
+      "ground": {
+        "server_id": 918,
+        "client_id": 1127,
+        "name": "mountain",
+        "category": "GROUND",
+        "count": 1,
+        "subtype": null,
+        "attributes": {},
+        "attributes_present": [],
+        "mapped": true,
+        "flags": {
+          "ground": true,
+          "blocking": true,
+          "block_pathfind": false,
+          "block_projectile": true,
+          "stackable": false,
+          "liquid": false,
+          "movable": false,
+          "pickupable": false,
+          "has_height": false
+        }
+      },
+      "items": [
+        {
+          "server_id": 918,
+          "client_id": 1127,
+          "name": "mountain",
+          "category": "GROUND",
+          "count": 1,
+          "subtype": null,
+          "attributes": {},
+          "attributes_present": [],
+          "mapped": true,
+          "flags": {
+            "ground": true,
+            "blocking": true,
+            "block_pathfind": false,
+            "block_projectile": true,
+            "stackable": false,
+            "liquid": false,
+            "movable": false,
+            "pickupable": false,
+            "has_height": false
+          }
+        }
+      ],
+      "walkable": true,
+      "queryadd_walkable": true,
+      "blocking": false,
+      "source": {
+        "file": "servidor/data/world/map.otbm"
+      }
+    },
+    {
+      "position": {
+        "x": 32119,
+        "y": 32226,
+        "z": 6
+      },
+      "house_id": 0,
+      "tile_flags": [
+        "REFRESH"
+      ],
+      "tile_flags_value": 32,
+      "ground": {
+        "server_id": 918,
+        "client_id": 1127,
+        "name": "mountain",
+        "category": "GROUND",
+        "count": 1,
+        "subtype": null,
+        "attributes": {},
+        "attributes_present": [],
+        "mapped": true,
+        "flags": {
+          "ground": true,
+          "blocking": true,
+          "block_pathfind": false,
+          "block_projectile": true,
+          "stackable": false,
+          "liquid": false,
+          "movable": false,
+          "pickupable": false,
+          "has_height": false
+        }
+      },
+      "items": [
+        {
+          "server_id": 918,
+          "client_id": 1127,
+          "name": "mountain",
+          "category": "GROUND",
+          "count": 1,
+          "subtype": null,
+          "attributes": {},
+          "attributes_present": [],
+          "mapped": true,
+          "flags": {
+            "ground": true,
+            "blocking": true,
+            "block_pathfind": false,
+            "block_projectile": true,
+            "stackable": false,
+            "liquid": false,
+            "movable": false,
+            "pickupable": false,
+            "has_height": false
+          }
+        }
+      ],
+      "walkable": true,
+      "queryadd_walkable": true,
+      "blocking": false,
+      "source": {
+        "file": "servidor/data/world/map.otbm"
+      }
+    },
+    {
+      "position": {
+        "x": 32120,
+        "y": 32224,
+        "z": 6
+      },
+      "house_id": 0,
+      "tile_flags": [
+        "REFRESH"
+      ],
+      "tile_flags_value": 32,
+      "ground": {
+        "server_id": 918,
+        "client_id": 1127,
+        "name": "mountain",
+        "category": "GROUND",
+        "count": 1,
+        "subtype": null,
+        "attributes": {},
+        "attributes_present": [],
+        "mapped": true,
+        "flags": {
+          "ground": true,
+          "blocking": true,
+          "block_pathfind": false,
+          "block_projectile": true,
+          "stackable": false,
+          "liquid": false,
+          "movable": false,
+          "pickupable": false,
+          "has_height": false
+        }
+      },
+      "items": [
+        {
+          "server_id": 918,
+          "client_id": 1127,
+          "name": "mountain",
+          "category": "GROUND",
+          "count": 1,
+          "subtype": null,
+          "attributes": {},
+          "attributes_present": [],
+          "mapped": true,
+          "flags": {
+            "ground": true,
+            "blocking": true,
+            "block_pathfind": false,
+            "block_projectile": true,
+            "stackable": false,
+            "liquid": false,
+            "movable": false,
+            "pickupable": false,
+            "has_height": false
+          }
+        }
+      ],
+      "walkable": true,
+      "queryadd_walkable": true,
+      "blocking": false,
+      "source": {
+        "file": "servidor/data/world/map.otbm"
+      }
+    },
+    {
+      "position": {
+        "x": 32120,
+        "y": 32225,
+        "z": 6
+      },
+      "house_id": 0,
+      "tile_flags": [
+        "REFRESH"
+      ],
+      "tile_flags_value": 32,
+      "ground": {
+        "server_id": 918,
+        "client_id": 1127,
+        "name": "mountain",
+        "category": "GROUND",
+        "count": 1,
+        "subtype": null,
+        "attributes": {},
+        "attributes_present": [],
+        "mapped": true,
+        "flags": {
+          "ground": true,
+          "blocking": true,
+          "block_pathfind": false,
+          "block_projectile": true,
+          "stackable": false,
+          "liquid": false,
+          "movable": false,
+          "pickupable": false,
+          "has_height": false
+        }
+      },
+      "items": [
+        {
+          "server_id": 918,
+          "client_id": 1127,
+          "name": "mountain",
+          "category": "GROUND",
+          "count": 1,
+          "subtype": null,
+          "attributes": {},
+          "attributes_present": [],
+          "mapped": true,
+          "flags": {
+            "ground": true,
+            "blocking": true,
+            "block_pathfind": false,
+            "block_projectile": true,
+            "stackable": false,
+            "liquid": false,
+            "movable": false,
+            "pickupable": false,
+            "has_height": false
+          }
+        },
+        {
+          "server_id": 1285,
+          "client_id": 1772,
+          "name": "stone",
+          "category": "DECORATION",
+          "count": 1,
+          "subtype": null,
+          "attributes": {},
+          "attributes_present": [],
+          "mapped": true,
+          "flags": {
+            "ground": false,
+            "blocking": true,
+            "block_pathfind": false,
+            "block_projectile": false,
+            "stackable": false,
+            "liquid": false,
+            "movable": false,
+            "pickupable": false,
+            "has_height": false
+          }
+        }
+      ],
+      "walkable": false,
+      "queryadd_walkable": true,
+      "blocking": true,
+      "source": {
+        "file": "servidor/data/world/map.otbm"
+      }
+    },
+    {
+      "position": {
+        "x": 32120,
+        "y": 32226,
+        "z": 6
+      },
+      "house_id": 0,
+      "tile_flags": [
+        "REFRESH"
+      ],
+      "tile_flags_value": 32,
+      "ground": {
+        "server_id": 918,
+        "client_id": 1127,
+        "name": "mountain",
+        "category": "GROUND",
+        "count": 1,
+        "subtype": null,
+        "attributes": {},
+        "attributes_present": [],
+        "mapped": true,
+        "flags": {
+          "ground": true,
+          "blocking": true,
+          "block_pathfind": false,
+          "block_projectile": true,
+          "stackable": false,
+          "liquid": false,
+          "movable": false,
+          "pickupable": false,
+          "has_height": false
+        }
+      },
+      "items": [
+        {
+          "server_id": 918,
+          "client_id": 1127,
+          "name": "mountain",
+          "category": "GROUND",
+          "count": 1,
+          "subtype": null,
+          "attributes": {},
+          "attributes_present": [],
+          "mapped": true,
+          "flags": {
+            "ground": true,
+            "blocking": true,
+            "block_pathfind": false,
+            "block_projectile": true,
+            "stackable": false,
+            "liquid": false,
+            "movable": false,
+            "pickupable": false,
+            "has_height": false
+          }
+        }
+      ],
+      "walkable": true,
+      "queryadd_walkable": true,
+      "blocking": false,
+      "source": {
+        "file": "servidor/data/world/map.otbm"
+      }
+    },
+    {
+      "position": {
+        "x": 32120,
+        "y": 32227,
+        "z": 6
+      },
+      "house_id": 0,
+      "tile_flags": [
+        "REFRESH"
+      ],
+      "tile_flags_value": 32,
+      "ground": {
+        "server_id": 918,
+        "client_id": 1127,
+        "name": "mountain",
+        "category": "GROUND",
+        "count": 1,
+        "subtype": null,
+        "attributes": {},
+        "attributes_present": [],
+        "mapped": true,
+        "flags": {
+          "ground": true,
+          "blocking": true,
+          "block_pathfind": false,
+          "block_projectile": true,
+          "stackable": false,
+          "liquid": false,
+          "movable": false,
+          "pickupable": false,
+          "has_height": false
+        }
+      },
+      "items": [
+        {
+          "server_id": 918,
+          "client_id": 1127,
+          "name": "mountain",
+          "category": "GROUND",
+          "count": 1,
+          "subtype": null,
+          "attributes": {},
+          "attributes_present": [],
+          "mapped": true,
+          "flags": {
+            "ground": true,
+            "blocking": true,
+            "block_pathfind": false,
+            "block_projectile": true,
+            "stackable": false,
+            "liquid": false,
+            "movable": false,
+            "pickupable": false,
+            "has_height": false
+          }
+        }
+      ],
+      "walkable": true,
+      "queryadd_walkable": true,
+      "blocking": false,
+      "source": {
+        "file": "servidor/data/world/map.otbm"
+      }
+    },
+    {
+      "position": {
+        "x": 32121,
+        "y": 32224,
+        "z": 6
+      },
+      "house_id": 0,
+      "tile_flags": [
+        "REFRESH"
+      ],
+      "tile_flags_value": 32,
+      "ground": {
+        "server_id": 918,
+        "client_id": 1127,
+        "name": "mountain",
+        "category": "GROUND",
+        "count": 1,
+        "subtype": null,
+        "attributes": {},
+        "attributes_present": [],
+        "mapped": true,
+        "flags": {
+          "ground": true,
+          "blocking": true,
+          "block_pathfind": false,
+          "block_projectile": true,
+          "stackable": false,
+          "liquid": false,
+          "movable": false,
+          "pickupable": false,
+          "has_height": false
+        }
+      },
+      "items": [
+        {
+          "server_id": 918,
+          "client_id": 1127,
+          "name": "mountain",
+          "category": "GROUND",
+          "count": 1,
+          "subtype": null,
+          "attributes": {},
+          "attributes_present": [],
+          "mapped": true,
+          "flags": {
+            "ground": true,
+            "blocking": true,
+            "block_pathfind": false,
+            "block_projectile": true,
+            "stackable": false,
+            "liquid": false,
+            "movable": false,
+            "pickupable": false,
+            "has_height": false
+          }
+        }
+      ],
+      "walkable": true,
+      "queryadd_walkable": true,
+      "blocking": false,
+      "source": {
+        "file": "servidor/data/world/map.otbm"
+      }
+    },
+    {
+      "position": {
+        "x": 32121,
+        "y": 32225,
+        "z": 6
+      },
+      "house_id": 0,
+      "tile_flags": [
+        "REFRESH"
+      ],
+      "tile_flags_value": 32,
+      "ground": {
+        "server_id": 918,
+        "client_id": 1127,
+        "name": "mountain",
+        "category": "GROUND",
+        "count": 1,
+        "subtype": null,
+        "attributes": {},
+        "attributes_present": [],
+        "mapped": true,
+        "flags": {
+          "ground": true,
+          "blocking": true,
+          "block_pathfind": false,
+          "block_projectile": true,
+          "stackable": false,
+          "liquid": false,
+          "movable": false,
+          "pickupable": false,
+          "has_height": false
+        }
+      },
+      "items": [
+        {
+          "server_id": 918,
+          "client_id": 1127,
+          "name": "mountain",
+          "category": "GROUND",
+          "count": 1,
+          "subtype": null,
+          "attributes": {},
+          "attributes_present": [],
+          "mapped": true,
+          "flags": {
+            "ground": true,
+            "blocking": true,
+            "block_pathfind": false,
+            "block_projectile": true,
+            "stackable": false,
+            "liquid": false,
+            "movable": false,
+            "pickupable": false,
+            "has_height": false
+          }
+        },
+        {
+          "server_id": 2769,
+          "client_id": 3683,
+          "name": "shadow plant",
+          "category": "DECORATION",
+          "count": 1,
+          "subtype": null,
+          "attributes": {},
+          "attributes_present": [],
+          "mapped": true,
+          "flags": {
+            "ground": false,
+            "blocking": true,
+            "block_pathfind": false,
+            "block_projectile": false,
+            "stackable": false,
+            "liquid": false,
+            "movable": false,
+            "pickupable": false,
+            "has_height": false
+          }
+        }
+      ],
+      "walkable": false,
+      "queryadd_walkable": true,
+      "blocking": true,
+      "source": {
+        "file": "servidor/data/world/map.otbm"
+      }
+    },
+    {
+      "position": {
+        "x": 32121,
+        "y": 32226,
+        "z": 6
+      },
+      "house_id": 0,
+      "tile_flags": [
+        "REFRESH"
+      ],
+      "tile_flags_value": 32,
+      "ground": {
+        "server_id": 918,
+        "client_id": 1127,
+        "name": "mountain",
+        "category": "GROUND",
+        "count": 1,
+        "subtype": null,
+        "attributes": {},
+        "attributes_present": [],
+        "mapped": true,
+        "flags": {
+          "ground": true,
+          "blocking": true,
+          "block_pathfind": false,
+          "block_projectile": true,
+          "stackable": false,
+          "liquid": false,
+          "movable": false,
+          "pickupable": false,
+          "has_height": false
+        }
+      },
+      "items": [
+        {
+          "server_id": 918,
+          "client_id": 1127,
+          "name": "mountain",
+          "category": "GROUND",
+          "count": 1,
+          "subtype": null,
+          "attributes": {},
+          "attributes_present": [],
+          "mapped": true,
+          "flags": {
+            "ground": true,
+            "blocking": true,
+            "block_pathfind": false,
+            "block_projectile": true,
+            "stackable": false,
+            "liquid": false,
+            "movable": false,
+            "pickupable": false,
+            "has_height": false
+          }
+        }
+      ],
+      "walkable": true,
+      "queryadd_walkable": true,
+      "blocking": false,
+      "source": {
+        "file": "servidor/data/world/map.otbm"
+      }
+    },
+    {
+      "position": {
+        "x": 32121,
+        "y": 32227,
+        "z": 6
+      },
+      "house_id": 0,
+      "tile_flags": [
+        "REFRESH"
+      ],
+      "tile_flags_value": 32,
+      "ground": {
+        "server_id": 918,
+        "client_id": 1127,
+        "name": "mountain",
+        "category": "GROUND",
+        "count": 1,
+        "subtype": null,
+        "attributes": {},
+        "attributes_present": [],
+        "mapped": true,
+        "flags": {
+          "ground": true,
+          "blocking": true,
+          "block_pathfind": false,
+          "block_projectile": true,
+          "stackable": false,
+          "liquid": false,
+          "movable": false,
+          "pickupable": false,
+          "has_height": false
+        }
+      },
+      "items": [
+        {
+          "server_id": 918,
+          "client_id": 1127,
+          "name": "mountain",
+          "category": "GROUND",
+          "count": 1,
+          "subtype": null,
+          "attributes": {},
+          "attributes_present": [],
+          "mapped": true,
+          "flags": {
+            "ground": true,
+            "blocking": true,
+            "block_pathfind": false,
+            "block_projectile": true,
+            "stackable": false,
+            "liquid": false,
+            "movable": false,
+            "pickupable": false,
+            "has_height": false
+          }
+        },
+        {
+          "server_id": 1292,
+          "client_id": 1779,
+          "name": "stone",
+          "category": "DECORATION",
+          "count": 1,
+          "subtype": null,
+          "attributes": {},
+          "attributes_present": [],
+          "mapped": true,
+          "flags": {
+            "ground": false,
+            "blocking": true,
+            "block_pathfind": false,
+            "block_projectile": false,
+            "stackable": false,
+            "liquid": false,
+            "movable": false,
+            "pickupable": false,
+            "has_height": false
+          }
+        }
+      ],
+      "walkable": false,
+      "queryadd_walkable": true,
+      "blocking": true,
+      "source": {
+        "file": "servidor/data/world/map.otbm"
+      }
+    },
+    {
+      "position": {
+        "x": 32122,
+        "y": 32225,
+        "z": 6
+      },
+      "house_id": 0,
+      "tile_flags": [
+        "REFRESH"
+      ],
+      "tile_flags_value": 32,
+      "ground": {
+        "server_id": 918,
+        "client_id": 1127,
+        "name": "mountain",
+        "category": "GROUND",
+        "count": 1,
+        "subtype": null,
+        "attributes": {},
+        "attributes_present": [],
+        "mapped": true,
+        "flags": {
+          "ground": true,
+          "blocking": true,
+          "block_pathfind": false,
+          "block_projectile": true,
+          "stackable": false,
+          "liquid": false,
+          "movable": false,
+          "pickupable": false,
+          "has_height": false
+        }
+      },
+      "items": [
+        {
+          "server_id": 918,
+          "client_id": 1127,
+          "name": "mountain",
+          "category": "GROUND",
+          "count": 1,
+          "subtype": null,
+          "attributes": {},
+          "attributes_present": [],
+          "mapped": true,
+          "flags": {
+            "ground": true,
+            "blocking": true,
+            "block_pathfind": false,
+            "block_projectile": true,
+            "stackable": false,
+            "liquid": false,
+            "movable": false,
+            "pickupable": false,
+            "has_height": false
+          }
+        }
+      ],
+      "walkable": true,
+      "queryadd_walkable": true,
+      "blocking": false,
+      "source": {
+        "file": "servidor/data/world/map.otbm"
+      }
+    },
+    {
+      "position": {
+        "x": 32122,
+        "y": 32226,
+        "z": 6
+      },
+      "house_id": 0,
+      "tile_flags": [
+        "REFRESH"
+      ],
+      "tile_flags_value": 32,
+      "ground": {
+        "server_id": 918,
+        "client_id": 1127,
+        "name": "mountain",
+        "category": "GROUND",
+        "count": 1,
+        "subtype": null,
+        "attributes": {},
+        "attributes_present": [],
+        "mapped": true,
+        "flags": {
+          "ground": true,
+          "blocking": true,
+          "block_pathfind": false,
+          "block_projectile": true,
+          "stackable": false,
+          "liquid": false,
+          "movable": false,
+          "pickupable": false,
+          "has_height": false
+        }
+      },
+      "items": [
+        {
+          "server_id": 918,
+          "client_id": 1127,
+          "name": "mountain",
+          "category": "GROUND",
+          "count": 1,
+          "subtype": null,
+          "attributes": {},
+          "attributes_present": [],
+          "mapped": true,
+          "flags": {
+            "ground": true,
+            "blocking": true,
+            "block_pathfind": false,
+            "block_projectile": true,
+            "stackable": false,
+            "liquid": false,
+            "movable": false,
+            "pickupable": false,
+            "has_height": false
+          }
+        }
+      ],
+      "walkable": true,
+      "queryadd_walkable": true,
+      "blocking": false,
+      "source": {
+        "file": "servidor/data/world/map.otbm"
+      }
+    },
+    {
+      "position": {
+        "x": 32122,
+        "y": 32227,
+        "z": 6
+      },
+      "house_id": 0,
+      "tile_flags": [
+        "REFRESH"
+      ],
+      "tile_flags_value": 32,
+      "ground": {
+        "server_id": 918,
+        "client_id": 1127,
+        "name": "mountain",
+        "category": "GROUND",
+        "count": 1,
+        "subtype": null,
+        "attributes": {},
+        "attributes_present": [],
+        "mapped": true,
+        "flags": {
+          "ground": true,
+          "blocking": true,
+          "block_pathfind": false,
+          "block_projectile": true,
+          "stackable": false,
+          "liquid": false,
+          "movable": false,
+          "pickupable": false,
+          "has_height": false
+        }
+      },
+      "items": [
+        {
+          "server_id": 918,
+          "client_id": 1127,
+          "name": "mountain",
+          "category": "GROUND",
+          "count": 1,
+          "subtype": null,
+          "attributes": {},
+          "attributes_present": [],
+          "mapped": true,
+          "flags": {
+            "ground": true,
+            "blocking": true,
+            "block_pathfind": false,
+            "block_projectile": true,
+            "stackable": false,
+            "liquid": false,
+            "movable": false,
+            "pickupable": false,
+            "has_height": false
+          }
+        },
+        {
+          "server_id": 1291,
+          "client_id": 1778,
+          "name": "stone",
+          "category": "DECORATION",
+          "count": 1,
+          "subtype": null,
+          "attributes": {},
+          "attributes_present": [],
+          "mapped": true,
+          "flags": {
+            "ground": false,
+            "blocking": true,
+            "block_pathfind": false,
+            "block_projectile": false,
+            "stackable": false,
+            "liquid": false,
+            "movable": false,
+            "pickupable": false,
+            "has_height": false
+          }
+        }
+      ],
+      "walkable": false,
+      "queryadd_walkable": true,
+      "blocking": true,
+      "source": {
+        "file": "servidor/data/world/map.otbm"
+      }
+    }
+  ]
+}

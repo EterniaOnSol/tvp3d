@@ -1,0 +1,26 @@
+{
+	"messages": [
+		"Your last visit in TVP3D: 26. Aug 2026 00:27:14 UTC."
+	],
+	"quest": {
+		"aid": 1224,
+		"inventory_slot": 10,
+		"name": "doublet",
+		"reward_client_id": 3379,
+		"reward_server_id": 2485,
+		"trigger": {
+			"x": 32084,
+			"y": 32181,
+			"z": 8
+		}
+	},
+	"source": {
+		"opcode": "0x82",
+		"protocol": "TVP 7.72"
+	},
+	"summary": {
+		"messages": 1,
+		"passed": true
+	},
+	"version": 1
+}

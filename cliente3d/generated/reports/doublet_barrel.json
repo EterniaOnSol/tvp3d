@@ -1,0 +1,69 @@
+{
+	"events": [
+		{
+			"barrel_present": false,
+			"opcode": "0x6C",
+			"position": {
+				"x": 32084,
+				"y": 32181,
+				"z": 8
+			}
+		},
+		{
+			"barrel_present": true,
+			"opcode": "0x6A",
+			"position": {
+				"x": 32084,
+				"y": 32182,
+				"z": 8
+			}
+		},
+		{
+			"barrel_present": false,
+			"opcode": "0x6C",
+			"position": {
+				"x": 32084,
+				"y": 32182,
+				"z": 8
+			}
+		},
+		{
+			"barrel_present": true,
+			"opcode": "0x6A",
+			"position": {
+				"x": 32084,
+				"y": 32181,
+				"z": 8
+			}
+		}
+	],
+	"quest": {
+		"aid": 1224,
+		"barrel": {
+			"x": 32084,
+			"y": 32181,
+			"z": 8
+		},
+		"destination": {
+			"x": 32084,
+			"y": 32182,
+			"z": 8
+		},
+		"name": "doublet"
+	},
+	"source": {
+		"opcode": "0x78",
+		"protocol": "TVP 7.72"
+	},
+	"summary": {
+		"events": 4,
+		"final_position": {
+			"x": 32085,
+			"y": 32181,
+			"z": 8
+		},
+		"passed": true,
+		"restored": true
+	},
+	"version": 1
+}

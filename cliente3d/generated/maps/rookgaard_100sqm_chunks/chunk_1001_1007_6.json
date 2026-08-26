@@ -1,0 +1,1857 @@
+{
+  "version": 1,
+  "chunk": {
+    "key": "1001_1007_6",
+    "x": 1001,
+    "y": 1007,
+    "z": 6,
+    "min_x": 32032,
+    "max_x": 32063,
+    "min_y": 32224,
+    "max_y": 32255,
+    "tile_count": 33,
+    "item_count": 33,
+    "file": "chunk_1001_1007_6.json"
+  },
+  "tiles": [
+    {
+      "position": {
+        "x": 32053,
+        "y": 32239,
+        "z": 6
+      },
+      "house_id": 0,
+      "tile_flags": [
+        "REFRESH"
+      ],
+      "tile_flags_value": 32,
+      "ground": null,
+      "items": [
+        {
+          "server_id": 923,
+          "client_id": 1155,
+          "name": "flat roof",
+          "category": "DECORATION",
+          "count": 1,
+          "subtype": null,
+          "attributes": {},
+          "attributes_present": [],
+          "mapped": true,
+          "flags": {
+            "ground": false,
+            "blocking": true,
+            "block_pathfind": false,
+            "block_projectile": false,
+            "stackable": false,
+            "liquid": false,
+            "movable": false,
+            "pickupable": false,
+            "has_height": false
+          }
+        }
+      ],
+      "walkable": false,
+      "queryadd_walkable": false,
+      "blocking": true,
+      "source": {
+        "file": "servidor/data/world/map.otbm"
+      }
+    },
+    {
+      "position": {
+        "x": 32053,
+        "y": 32240,
+        "z": 6
+      },
+      "house_id": 0,
+      "tile_flags": [
+        "REFRESH"
+      ],
+      "tile_flags_value": 32,
+      "ground": null,
+      "items": [
+        {
+          "server_id": 922,
+          "client_id": 1154,
+          "name": "flat roof",
+          "category": "DECORATION",
+          "count": 1,
+          "subtype": null,
+          "attributes": {},
+          "attributes_present": [],
+          "mapped": true,
+          "flags": {
+            "ground": false,
+            "blocking": true,
+            "block_pathfind": false,
+            "block_projectile": false,
+            "stackable": false,
+            "liquid": false,
+            "movable": false,
+            "pickupable": false,
+            "has_height": false
+          }
+        }
+      ],
+      "walkable": false,
+      "queryadd_walkable": false,
+      "blocking": true,
+      "source": {
+        "file": "servidor/data/world/map.otbm"
+      }
+    },
+    {
+      "position": {
+        "x": 32053,
+        "y": 32241,
+        "z": 6
+      },
+      "house_id": 0,
+      "tile_flags": [
+        "REFRESH"
+      ],
+      "tile_flags_value": 32,
+      "ground": null,
+      "items": [
+        {
+          "server_id": 922,
+          "client_id": 1154,
+          "name": "flat roof",
+          "category": "DECORATION",
+          "count": 1,
+          "subtype": null,
+          "attributes": {},
+          "attributes_present": [],
+          "mapped": true,
+          "flags": {
+            "ground": false,
+            "blocking": true,
+            "block_pathfind": false,
+            "block_projectile": false,
+            "stackable": false,
+            "liquid": false,
+            "movable": false,
+            "pickupable": false,
+            "has_height": false
+          }
+        }
+      ],
+      "walkable": false,
+      "queryadd_walkable": false,
+      "blocking": true,
+      "source": {
+        "file": "servidor/data/world/map.otbm"
+      }
+    },
+    {
+      "position": {
+        "x": 32053,
+        "y": 32242,
+        "z": 6
+      },
+      "house_id": 0,
+      "tile_flags": [
+        "REFRESH"
+      ],
+      "tile_flags_value": 32,
+      "ground": null,
+      "items": [
+        {
+          "server_id": 922,
+          "client_id": 1154,
+          "name": "flat roof",
+          "category": "DECORATION",
+          "count": 1,
+          "subtype": null,
+          "attributes": {},
+          "attributes_present": [],
+          "mapped": true,
+          "flags": {
+            "ground": false,
+            "blocking": true,
+            "block_pathfind": false,
+            "block_projectile": false,
+            "stackable": false,
+            "liquid": false,
+            "movable": false,
+            "pickupable": false,
+            "has_height": false
+          }
+        }
+      ],
+      "walkable": false,
+      "queryadd_walkable": false,
+      "blocking": true,
+      "source": {
+        "file": "servidor/data/world/map.otbm"
+      }
+    },
+    {
+      "position": {
+        "x": 32053,
+        "y": 32243,
+        "z": 6
+      },
+      "house_id": 0,
+      "tile_flags": [
+        "REFRESH"
+      ],
+      "tile_flags_value": 32,
+      "ground": null,
+      "items": [
+        {
+          "server_id": 922,
+          "client_id": 1154,
+          "name": "flat roof",
+          "category": "DECORATION",
+          "count": 1,
+          "subtype": null,
+          "attributes": {},
+          "attributes_present": [],
+          "mapped": true,
+          "flags": {
+            "ground": false,
+            "blocking": true,
+            "block_pathfind": false,
+            "block_projectile": false,
+            "stackable": false,
+            "liquid": false,
+            "movable": false,
+            "pickupable": false,
+            "has_height": false
+          }
+        }
+      ],
+      "walkable": false,
+      "queryadd_walkable": false,
+      "blocking": true,
+      "source": {
+        "file": "servidor/data/world/map.otbm"
+      }
+    },
+    {
+      "position": {
+        "x": 32054,
+        "y": 32239,
+        "z": 6
+      },
+      "house_id": 0,
+      "tile_flags": [
+        "REFRESH"
+      ],
+      "tile_flags_value": 32,
+      "ground": null,
+      "items": [
+        {
+          "server_id": 921,
+          "client_id": 1153,
+          "name": "flat roof",
+          "category": "DECORATION",
+          "count": 1,
+          "subtype": null,
+          "attributes": {},
+          "attributes_present": [],
+          "mapped": true,
+          "flags": {
+            "ground": false,
+            "blocking": true,
+            "block_pathfind": false,
+            "block_projectile": false,
+            "stackable": false,
+            "liquid": false,
+            "movable": false,
+            "pickupable": false,
+            "has_height": false
+          }
+        }
+      ],
+      "walkable": false,
+      "queryadd_walkable": false,
+      "blocking": true,
+      "source": {
+        "file": "servidor/data/world/map.otbm"
+      }
+    },
+    {
+      "position": {
+        "x": 32054,
+        "y": 32240,
+        "z": 6
+      },
+      "house_id": 0,
+      "tile_flags": [
+        "REFRESH"
+      ],
+      "tile_flags_value": 32,
+      "ground": {
+        "server_id": 408,
+        "client_id": 411,
+        "name": "trapdoor",
+        "category": "GROUND",
+        "count": 1,
+        "subtype": null,
+        "attributes": {},
+        "attributes_present": [],
+        "mapped": true,
+        "flags": {
+          "ground": true,
+          "blocking": false,
+          "block_pathfind": true,
+          "block_projectile": false,
+          "stackable": false,
+          "liquid": false,
+          "movable": false,
+          "pickupable": false,
+          "has_height": false
+        }
+      },
+      "items": [
+        {
+          "server_id": 408,
+          "client_id": 411,
+          "name": "trapdoor",
+          "category": "GROUND",
+          "count": 1,
+          "subtype": null,
+          "attributes": {},
+          "attributes_present": [],
+          "mapped": true,
+          "flags": {
+            "ground": true,
+            "blocking": false,
+            "block_pathfind": true,
+            "block_projectile": false,
+            "stackable": false,
+            "liquid": false,
+            "movable": false,
+            "pickupable": false,
+            "has_height": false
+          }
+        }
+      ],
+      "walkable": true,
+      "queryadd_walkable": false,
+      "blocking": false,
+      "source": {
+        "file": "servidor/data/world/map.otbm"
+      }
+    },
+    {
+      "position": {
+        "x": 32054,
+        "y": 32241,
+        "z": 6
+      },
+      "house_id": 0,
+      "tile_flags": [
+        "REFRESH"
+      ],
+      "tile_flags_value": 32,
+      "ground": {
+        "server_id": 920,
+        "client_id": 1152,
+        "name": "flat roof",
+        "category": "GROUND",
+        "count": 1,
+        "subtype": null,
+        "attributes": {},
+        "attributes_present": [],
+        "mapped": true,
+        "flags": {
+          "ground": true,
+          "blocking": false,
+          "block_pathfind": false,
+          "block_projectile": false,
+          "stackable": false,
+          "liquid": false,
+          "movable": false,
+          "pickupable": false,
+          "has_height": false
+        }
+      },
+      "items": [
+        {
+          "server_id": 920,
+          "client_id": 1152,
+          "name": "flat roof",
+          "category": "GROUND",
+          "count": 1,
+          "subtype": null,
+          "attributes": {},
+          "attributes_present": [],
+          "mapped": true,
+          "flags": {
+            "ground": true,
+            "blocking": false,
+            "block_pathfind": false,
+            "block_projectile": false,
+            "stackable": false,
+            "liquid": false,
+            "movable": false,
+            "pickupable": false,
+            "has_height": false
+          }
+        }
+      ],
+      "walkable": true,
+      "queryadd_walkable": true,
+      "blocking": false,
+      "source": {
+        "file": "servidor/data/world/map.otbm"
+      }
+    },
+    {
+      "position": {
+        "x": 32054,
+        "y": 32242,
+        "z": 6
+      },
+      "house_id": 0,
+      "tile_flags": [
+        "REFRESH"
+      ],
+      "tile_flags_value": 32,
+      "ground": {
+        "server_id": 920,
+        "client_id": 1152,
+        "name": "flat roof",
+        "category": "GROUND",
+        "count": 1,
+        "subtype": null,
+        "attributes": {},
+        "attributes_present": [],
+        "mapped": true,
+        "flags": {
+          "ground": true,
+          "blocking": false,
+          "block_pathfind": false,
+          "block_projectile": false,
+          "stackable": false,
+          "liquid": false,
+          "movable": false,
+          "pickupable": false,
+          "has_height": false
+        }
+      },
+      "items": [
+        {
+          "server_id": 920,
+          "client_id": 1152,
+          "name": "flat roof",
+          "category": "GROUND",
+          "count": 1,
+          "subtype": null,
+          "attributes": {},
+          "attributes_present": [],
+          "mapped": true,
+          "flags": {
+            "ground": true,
+            "blocking": false,
+            "block_pathfind": false,
+            "block_projectile": false,
+            "stackable": false,
+            "liquid": false,
+            "movable": false,
+            "pickupable": false,
+            "has_height": false
+          }
+        }
+      ],
+      "walkable": true,
+      "queryadd_walkable": true,
+      "blocking": false,
+      "source": {
+        "file": "servidor/data/world/map.otbm"
+      }
+    },
+    {
+      "position": {
+        "x": 32054,
+        "y": 32243,
+        "z": 6
+      },
+      "house_id": 0,
+      "tile_flags": [
+        "REFRESH"
+      ],
+      "tile_flags_value": 32,
+      "ground": {
+        "server_id": 920,
+        "client_id": 1152,
+        "name": "flat roof",
+        "category": "GROUND",
+        "count": 1,
+        "subtype": null,
+        "attributes": {},
+        "attributes_present": [],
+        "mapped": true,
+        "flags": {
+          "ground": true,
+          "blocking": false,
+          "block_pathfind": false,
+          "block_projectile": false,
+          "stackable": false,
+          "liquid": false,
+          "movable": false,
+          "pickupable": false,
+          "has_height": false
+        }
+      },
+      "items": [
+        {
+          "server_id": 920,
+          "client_id": 1152,
+          "name": "flat roof",
+          "category": "GROUND",
+          "count": 1,
+          "subtype": null,
+          "attributes": {},
+          "attributes_present": [],
+          "mapped": true,
+          "flags": {
+            "ground": true,
+            "blocking": false,
+            "block_pathfind": false,
+            "block_projectile": false,
+            "stackable": false,
+            "liquid": false,
+            "movable": false,
+            "pickupable": false,
+            "has_height": false
+          }
+        }
+      ],
+      "walkable": true,
+      "queryadd_walkable": true,
+      "blocking": false,
+      "source": {
+        "file": "servidor/data/world/map.otbm"
+      }
+    },
+    {
+      "position": {
+        "x": 32055,
+        "y": 32239,
+        "z": 6
+      },
+      "house_id": 0,
+      "tile_flags": [
+        "REFRESH"
+      ],
+      "tile_flags_value": 32,
+      "ground": null,
+      "items": [
+        {
+          "server_id": 921,
+          "client_id": 1153,
+          "name": "flat roof",
+          "category": "DECORATION",
+          "count": 1,
+          "subtype": null,
+          "attributes": {},
+          "attributes_present": [],
+          "mapped": true,
+          "flags": {
+            "ground": false,
+            "blocking": true,
+            "block_pathfind": false,
+            "block_projectile": false,
+            "stackable": false,
+            "liquid": false,
+            "movable": false,
+            "pickupable": false,
+            "has_height": false
+          }
+        }
+      ],
+      "walkable": false,
+      "queryadd_walkable": false,
+      "blocking": true,
+      "source": {
+        "file": "servidor/data/world/map.otbm"
+      }
+    },
+    {
+      "position": {
+        "x": 32055,
+        "y": 32240,
+        "z": 6
+      },
+      "house_id": 0,
+      "tile_flags": [
+        "REFRESH"
+      ],
+      "tile_flags_value": 32,
+      "ground": {
+        "server_id": 920,
+        "client_id": 1152,
+        "name": "flat roof",
+        "category": "GROUND",
+        "count": 1,
+        "subtype": null,
+        "attributes": {},
+        "attributes_present": [],
+        "mapped": true,
+        "flags": {
+          "ground": true,
+          "blocking": false,
+          "block_pathfind": false,
+          "block_projectile": false,
+          "stackable": false,
+          "liquid": false,
+          "movable": false,
+          "pickupable": false,
+          "has_height": false
+        }
+      },
+      "items": [
+        {
+          "server_id": 920,
+          "client_id": 1152,
+          "name": "flat roof",
+          "category": "GROUND",
+          "count": 1,
+          "subtype": null,
+          "attributes": {},
+          "attributes_present": [],
+          "mapped": true,
+          "flags": {
+            "ground": true,
+            "blocking": false,
+            "block_pathfind": false,
+            "block_projectile": false,
+            "stackable": false,
+            "liquid": false,
+            "movable": false,
+            "pickupable": false,
+            "has_height": false
+          }
+        }
+      ],
+      "walkable": true,
+      "queryadd_walkable": true,
+      "blocking": false,
+      "source": {
+        "file": "servidor/data/world/map.otbm"
+      }
+    },
+    {
+      "position": {
+        "x": 32055,
+        "y": 32241,
+        "z": 6
+      },
+      "house_id": 0,
+      "tile_flags": [
+        "REFRESH"
+      ],
+      "tile_flags_value": 32,
+      "ground": {
+        "server_id": 920,
+        "client_id": 1152,
+        "name": "flat roof",
+        "category": "GROUND",
+        "count": 1,
+        "subtype": null,
+        "attributes": {},
+        "attributes_present": [],
+        "mapped": true,
+        "flags": {
+          "ground": true,
+          "blocking": false,
+          "block_pathfind": false,
+          "block_projectile": false,
+          "stackable": false,
+          "liquid": false,
+          "movable": false,
+          "pickupable": false,
+          "has_height": false
+        }
+      },
+      "items": [
+        {
+          "server_id": 920,
+          "client_id": 1152,
+          "name": "flat roof",
+          "category": "GROUND",
+          "count": 1,
+          "subtype": null,
+          "attributes": {},
+          "attributes_present": [],
+          "mapped": true,
+          "flags": {
+            "ground": true,
+            "blocking": false,
+            "block_pathfind": false,
+            "block_projectile": false,
+            "stackable": false,
+            "liquid": false,
+            "movable": false,
+            "pickupable": false,
+            "has_height": false
+          }
+        }
+      ],
+      "walkable": true,
+      "queryadd_walkable": true,
+      "blocking": false,
+      "source": {
+        "file": "servidor/data/world/map.otbm"
+      }
+    },
+    {
+      "position": {
+        "x": 32055,
+        "y": 32242,
+        "z": 6
+      },
+      "house_id": 0,
+      "tile_flags": [
+        "REFRESH"
+      ],
+      "tile_flags_value": 32,
+      "ground": {
+        "server_id": 920,
+        "client_id": 1152,
+        "name": "flat roof",
+        "category": "GROUND",
+        "count": 1,
+        "subtype": null,
+        "attributes": {},
+        "attributes_present": [],
+        "mapped": true,
+        "flags": {
+          "ground": true,
+          "blocking": false,
+          "block_pathfind": false,
+          "block_projectile": false,
+          "stackable": false,
+          "liquid": false,
+          "movable": false,
+          "pickupable": false,
+          "has_height": false
+        }
+      },
+      "items": [
+        {
+          "server_id": 920,
+          "client_id": 1152,
+          "name": "flat roof",
+          "category": "GROUND",
+          "count": 1,
+          "subtype": null,
+          "attributes": {},
+          "attributes_present": [],
+          "mapped": true,
+          "flags": {
+            "ground": true,
+            "blocking": false,
+            "block_pathfind": false,
+            "block_projectile": false,
+            "stackable": false,
+            "liquid": false,
+            "movable": false,
+            "pickupable": false,
+            "has_height": false
+          }
+        }
+      ],
+      "walkable": true,
+      "queryadd_walkable": true,
+      "blocking": false,
+      "source": {
+        "file": "servidor/data/world/map.otbm"
+      }
+    },
+    {
+      "position": {
+        "x": 32055,
+        "y": 32243,
+        "z": 6
+      },
+      "house_id": 0,
+      "tile_flags": [
+        "REFRESH"
+      ],
+      "tile_flags_value": 32,
+      "ground": {
+        "server_id": 920,
+        "client_id": 1152,
+        "name": "flat roof",
+        "category": "GROUND",
+        "count": 1,
+        "subtype": null,
+        "attributes": {},
+        "attributes_present": [],
+        "mapped": true,
+        "flags": {
+          "ground": true,
+          "blocking": false,
+          "block_pathfind": false,
+          "block_projectile": false,
+          "stackable": false,
+          "liquid": false,
+          "movable": false,
+          "pickupable": false,
+          "has_height": false
+        }
+      },
+      "items": [
+        {
+          "server_id": 920,
+          "client_id": 1152,
+          "name": "flat roof",
+          "category": "GROUND",
+          "count": 1,
+          "subtype": null,
+          "attributes": {},
+          "attributes_present": [],
+          "mapped": true,
+          "flags": {
+            "ground": true,
+            "blocking": false,
+            "block_pathfind": false,
+            "block_projectile": false,
+            "stackable": false,
+            "liquid": false,
+            "movable": false,
+            "pickupable": false,
+            "has_height": false
+          }
+        }
+      ],
+      "walkable": true,
+      "queryadd_walkable": true,
+      "blocking": false,
+      "source": {
+        "file": "servidor/data/world/map.otbm"
+      }
+    },
+    {
+      "position": {
+        "x": 32056,
+        "y": 32239,
+        "z": 6
+      },
+      "house_id": 0,
+      "tile_flags": [
+        "REFRESH"
+      ],
+      "tile_flags_value": 32,
+      "ground": null,
+      "items": [
+        {
+          "server_id": 921,
+          "client_id": 1153,
+          "name": "flat roof",
+          "category": "DECORATION",
+          "count": 1,
+          "subtype": null,
+          "attributes": {},
+          "attributes_present": [],
+          "mapped": true,
+          "flags": {
+            "ground": false,
+            "blocking": true,
+            "block_pathfind": false,
+            "block_projectile": false,
+            "stackable": false,
+            "liquid": false,
+            "movable": false,
+            "pickupable": false,
+            "has_height": false
+          }
+        }
+      ],
+      "walkable": false,
+      "queryadd_walkable": false,
+      "blocking": true,
+      "source": {
+        "file": "servidor/data/world/map.otbm"
+      }
+    },
+    {
+      "position": {
+        "x": 32056,
+        "y": 32240,
+        "z": 6
+      },
+      "house_id": 0,
+      "tile_flags": [
+        "REFRESH"
+      ],
+      "tile_flags_value": 32,
+      "ground": {
+        "server_id": 920,
+        "client_id": 1152,
+        "name": "flat roof",
+        "category": "GROUND",
+        "count": 1,
+        "subtype": null,
+        "attributes": {},
+        "attributes_present": [],
+        "mapped": true,
+        "flags": {
+          "ground": true,
+          "blocking": false,
+          "block_pathfind": false,
+          "block_projectile": false,
+          "stackable": false,
+          "liquid": false,
+          "movable": false,
+          "pickupable": false,
+          "has_height": false
+        }
+      },
+      "items": [
+        {
+          "server_id": 920,
+          "client_id": 1152,
+          "name": "flat roof",
+          "category": "GROUND",
+          "count": 1,
+          "subtype": null,
+          "attributes": {},
+          "attributes_present": [],
+          "mapped": true,
+          "flags": {
+            "ground": true,
+            "blocking": false,
+            "block_pathfind": false,
+            "block_projectile": false,
+            "stackable": false,
+            "liquid": false,
+            "movable": false,
+            "pickupable": false,
+            "has_height": false
+          }
+        }
+      ],
+      "walkable": true,
+      "queryadd_walkable": true,
+      "blocking": false,
+      "source": {
+        "file": "servidor/data/world/map.otbm"
+      }
+    },
+    {
+      "position": {
+        "x": 32056,
+        "y": 32241,
+        "z": 6
+      },
+      "house_id": 0,
+      "tile_flags": [
+        "REFRESH"
+      ],
+      "tile_flags_value": 32,
+      "ground": {
+        "server_id": 920,
+        "client_id": 1152,
+        "name": "flat roof",
+        "category": "GROUND",
+        "count": 1,
+        "subtype": null,
+        "attributes": {},
+        "attributes_present": [],
+        "mapped": true,
+        "flags": {
+          "ground": true,
+          "blocking": false,
+          "block_pathfind": false,
+          "block_projectile": false,
+          "stackable": false,
+          "liquid": false,
+          "movable": false,
+          "pickupable": false,
+          "has_height": false
+        }
+      },
+      "items": [
+        {
+          "server_id": 920,
+          "client_id": 1152,
+          "name": "flat roof",
+          "category": "GROUND",
+          "count": 1,
+          "subtype": null,
+          "attributes": {},
+          "attributes_present": [],
+          "mapped": true,
+          "flags": {
+            "ground": true,
+            "blocking": false,
+            "block_pathfind": false,
+            "block_projectile": false,
+            "stackable": false,
+            "liquid": false,
+            "movable": false,
+            "pickupable": false,
+            "has_height": false
+          }
+        }
+      ],
+      "walkable": true,
+      "queryadd_walkable": true,
+      "blocking": false,
+      "source": {
+        "file": "servidor/data/world/map.otbm"
+      }
+    },
+    {
+      "position": {
+        "x": 32056,
+        "y": 32242,
+        "z": 6
+      },
+      "house_id": 0,
+      "tile_flags": [
+        "REFRESH"
+      ],
+      "tile_flags_value": 32,
+      "ground": {
+        "server_id": 920,
+        "client_id": 1152,
+        "name": "flat roof",
+        "category": "GROUND",
+        "count": 1,
+        "subtype": null,
+        "attributes": {},
+        "attributes_present": [],
+        "mapped": true,
+        "flags": {
+          "ground": true,
+          "blocking": false,
+          "block_pathfind": false,
+          "block_projectile": false,
+          "stackable": false,
+          "liquid": false,
+          "movable": false,
+          "pickupable": false,
+          "has_height": false
+        }
+      },
+      "items": [
+        {
+          "server_id": 920,
+          "client_id": 1152,
+          "name": "flat roof",
+          "category": "GROUND",
+          "count": 1,
+          "subtype": null,
+          "attributes": {},
+          "attributes_present": [],
+          "mapped": true,
+          "flags": {
+            "ground": true,
+            "blocking": false,
+            "block_pathfind": false,
+            "block_projectile": false,
+            "stackable": false,
+            "liquid": false,
+            "movable": false,
+            "pickupable": false,
+            "has_height": false
+          }
+        }
+      ],
+      "walkable": true,
+      "queryadd_walkable": true,
+      "blocking": false,
+      "source": {
+        "file": "servidor/data/world/map.otbm"
+      }
+    },
+    {
+      "position": {
+        "x": 32056,
+        "y": 32243,
+        "z": 6
+      },
+      "house_id": 0,
+      "tile_flags": [
+        "REFRESH"
+      ],
+      "tile_flags_value": 32,
+      "ground": {
+        "server_id": 920,
+        "client_id": 1152,
+        "name": "flat roof",
+        "category": "GROUND",
+        "count": 1,
+        "subtype": null,
+        "attributes": {},
+        "attributes_present": [],
+        "mapped": true,
+        "flags": {
+          "ground": true,
+          "blocking": false,
+          "block_pathfind": false,
+          "block_projectile": false,
+          "stackable": false,
+          "liquid": false,
+          "movable": false,
+          "pickupable": false,
+          "has_height": false
+        }
+      },
+      "items": [
+        {
+          "server_id": 920,
+          "client_id": 1152,
+          "name": "flat roof",
+          "category": "GROUND",
+          "count": 1,
+          "subtype": null,
+          "attributes": {},
+          "attributes_present": [],
+          "mapped": true,
+          "flags": {
+            "ground": true,
+            "blocking": false,
+            "block_pathfind": false,
+            "block_projectile": false,
+            "stackable": false,
+            "liquid": false,
+            "movable": false,
+            "pickupable": false,
+            "has_height": false
+          }
+        }
+      ],
+      "walkable": true,
+      "queryadd_walkable": true,
+      "blocking": false,
+      "source": {
+        "file": "servidor/data/world/map.otbm"
+      }
+    },
+    {
+      "position": {
+        "x": 32057,
+        "y": 32239,
+        "z": 6
+      },
+      "house_id": 0,
+      "tile_flags": [
+        "REFRESH"
+      ],
+      "tile_flags_value": 32,
+      "ground": null,
+      "items": [
+        {
+          "server_id": 921,
+          "client_id": 1153,
+          "name": "flat roof",
+          "category": "DECORATION",
+          "count": 1,
+          "subtype": null,
+          "attributes": {},
+          "attributes_present": [],
+          "mapped": true,
+          "flags": {
+            "ground": false,
+            "blocking": true,
+            "block_pathfind": false,
+            "block_projectile": false,
+            "stackable": false,
+            "liquid": false,
+            "movable": false,
+            "pickupable": false,
+            "has_height": false
+          }
+        }
+      ],
+      "walkable": false,
+      "queryadd_walkable": false,
+      "blocking": true,
+      "source": {
+        "file": "servidor/data/world/map.otbm"
+      }
+    },
+    {
+      "position": {
+        "x": 32057,
+        "y": 32240,
+        "z": 6
+      },
+      "house_id": 0,
+      "tile_flags": [
+        "REFRESH"
+      ],
+      "tile_flags_value": 32,
+      "ground": {
+        "server_id": 920,
+        "client_id": 1152,
+        "name": "flat roof",
+        "category": "GROUND",
+        "count": 1,
+        "subtype": null,
+        "attributes": {},
+        "attributes_present": [],
+        "mapped": true,
+        "flags": {
+          "ground": true,
+          "blocking": false,
+          "block_pathfind": false,
+          "block_projectile": false,
+          "stackable": false,
+          "liquid": false,
+          "movable": false,
+          "pickupable": false,
+          "has_height": false
+        }
+      },
+      "items": [
+        {
+          "server_id": 920,
+          "client_id": 1152,
+          "name": "flat roof",
+          "category": "GROUND",
+          "count": 1,
+          "subtype": null,
+          "attributes": {},
+          "attributes_present": [],
+          "mapped": true,
+          "flags": {
+            "ground": true,
+            "blocking": false,
+            "block_pathfind": false,
+            "block_projectile": false,
+            "stackable": false,
+            "liquid": false,
+            "movable": false,
+            "pickupable": false,
+            "has_height": false
+          }
+        }
+      ],
+      "walkable": true,
+      "queryadd_walkable": true,
+      "blocking": false,
+      "source": {
+        "file": "servidor/data/world/map.otbm"
+      }
+    },
+    {
+      "position": {
+        "x": 32057,
+        "y": 32241,
+        "z": 6
+      },
+      "house_id": 0,
+      "tile_flags": [
+        "REFRESH"
+      ],
+      "tile_flags_value": 32,
+      "ground": {
+        "server_id": 920,
+        "client_id": 1152,
+        "name": "flat roof",
+        "category": "GROUND",
+        "count": 1,
+        "subtype": null,
+        "attributes": {},
+        "attributes_present": [],
+        "mapped": true,
+        "flags": {
+          "ground": true,
+          "blocking": false,
+          "block_pathfind": false,
+          "block_projectile": false,
+          "stackable": false,
+          "liquid": false,
+          "movable": false,
+          "pickupable": false,
+          "has_height": false
+        }
+      },
+      "items": [
+        {
+          "server_id": 920,
+          "client_id": 1152,
+          "name": "flat roof",
+          "category": "GROUND",
+          "count": 1,
+          "subtype": null,
+          "attributes": {},
+          "attributes_present": [],
+          "mapped": true,
+          "flags": {
+            "ground": true,
+            "blocking": false,
+            "block_pathfind": false,
+            "block_projectile": false,
+            "stackable": false,
+            "liquid": false,
+            "movable": false,
+            "pickupable": false,
+            "has_height": false
+          }
+        }
+      ],
+      "walkable": true,
+      "queryadd_walkable": true,
+      "blocking": false,
+      "source": {
+        "file": "servidor/data/world/map.otbm"
+      }
+    },
+    {
+      "position": {
+        "x": 32057,
+        "y": 32242,
+        "z": 6
+      },
+      "house_id": 0,
+      "tile_flags": [
+        "REFRESH"
+      ],
+      "tile_flags_value": 32,
+      "ground": {
+        "server_id": 920,
+        "client_id": 1152,
+        "name": "flat roof",
+        "category": "GROUND",
+        "count": 1,
+        "subtype": null,
+        "attributes": {},
+        "attributes_present": [],
+        "mapped": true,
+        "flags": {
+          "ground": true,
+          "blocking": false,
+          "block_pathfind": false,
+          "block_projectile": false,
+          "stackable": false,
+          "liquid": false,
+          "movable": false,
+          "pickupable": false,
+          "has_height": false
+        }
+      },
+      "items": [
+        {
+          "server_id": 920,
+          "client_id": 1152,
+          "name": "flat roof",
+          "category": "GROUND",
+          "count": 1,
+          "subtype": null,
+          "attributes": {},
+          "attributes_present": [],
+          "mapped": true,
+          "flags": {
+            "ground": true,
+            "blocking": false,
+            "block_pathfind": false,
+            "block_projectile": false,
+            "stackable": false,
+            "liquid": false,
+            "movable": false,
+            "pickupable": false,
+            "has_height": false
+          }
+        }
+      ],
+      "walkable": true,
+      "queryadd_walkable": true,
+      "blocking": false,
+      "source": {
+        "file": "servidor/data/world/map.otbm"
+      }
+    },
+    {
+      "position": {
+        "x": 32057,
+        "y": 32243,
+        "z": 6
+      },
+      "house_id": 0,
+      "tile_flags": [
+        "REFRESH"
+      ],
+      "tile_flags_value": 32,
+      "ground": {
+        "server_id": 920,
+        "client_id": 1152,
+        "name": "flat roof",
+        "category": "GROUND",
+        "count": 1,
+        "subtype": null,
+        "attributes": {},
+        "attributes_present": [],
+        "mapped": true,
+        "flags": {
+          "ground": true,
+          "blocking": false,
+          "block_pathfind": false,
+          "block_projectile": false,
+          "stackable": false,
+          "liquid": false,
+          "movable": false,
+          "pickupable": false,
+          "has_height": false
+        }
+      },
+      "items": [
+        {
+          "server_id": 920,
+          "client_id": 1152,
+          "name": "flat roof",
+          "category": "GROUND",
+          "count": 1,
+          "subtype": null,
+          "attributes": {},
+          "attributes_present": [],
+          "mapped": true,
+          "flags": {
+            "ground": true,
+            "blocking": false,
+            "block_pathfind": false,
+            "block_projectile": false,
+            "stackable": false,
+            "liquid": false,
+            "movable": false,
+            "pickupable": false,
+            "has_height": false
+          }
+        }
+      ],
+      "walkable": true,
+      "queryadd_walkable": true,
+      "blocking": false,
+      "source": {
+        "file": "servidor/data/world/map.otbm"
+      }
+    },
+    {
+      "position": {
+        "x": 32062,
+        "y": 32224,
+        "z": 6
+      },
+      "house_id": 0,
+      "tile_flags": [
+        "REFRESH"
+      ],
+      "tile_flags_value": 32,
+      "ground": null,
+      "items": [
+        {
+          "server_id": 922,
+          "client_id": 1154,
+          "name": "flat roof",
+          "category": "DECORATION",
+          "count": 1,
+          "subtype": null,
+          "attributes": {},
+          "attributes_present": [],
+          "mapped": true,
+          "flags": {
+            "ground": false,
+            "blocking": true,
+            "block_pathfind": false,
+            "block_projectile": false,
+            "stackable": false,
+            "liquid": false,
+            "movable": false,
+            "pickupable": false,
+            "has_height": false
+          }
+        }
+      ],
+      "walkable": false,
+      "queryadd_walkable": false,
+      "blocking": true,
+      "source": {
+        "file": "servidor/data/world/map.otbm"
+      }
+    },
+    {
+      "position": {
+        "x": 32062,
+        "y": 32225,
+        "z": 6
+      },
+      "house_id": 0,
+      "tile_flags": [
+        "REFRESH"
+      ],
+      "tile_flags_value": 32,
+      "ground": null,
+      "items": [
+        {
+          "server_id": 922,
+          "client_id": 1154,
+          "name": "flat roof",
+          "category": "DECORATION",
+          "count": 1,
+          "subtype": null,
+          "attributes": {},
+          "attributes_present": [],
+          "mapped": true,
+          "flags": {
+            "ground": false,
+            "blocking": true,
+            "block_pathfind": false,
+            "block_projectile": false,
+            "stackable": false,
+            "liquid": false,
+            "movable": false,
+            "pickupable": false,
+            "has_height": false
+          }
+        }
+      ],
+      "walkable": false,
+      "queryadd_walkable": false,
+      "blocking": true,
+      "source": {
+        "file": "servidor/data/world/map.otbm"
+      }
+    },
+    {
+      "position": {
+        "x": 32062,
+        "y": 32226,
+        "z": 6
+      },
+      "house_id": 0,
+      "tile_flags": [
+        "REFRESH"
+      ],
+      "tile_flags_value": 32,
+      "ground": null,
+      "items": [
+        {
+          "server_id": 922,
+          "client_id": 1154,
+          "name": "flat roof",
+          "category": "DECORATION",
+          "count": 1,
+          "subtype": null,
+          "attributes": {},
+          "attributes_present": [],
+          "mapped": true,
+          "flags": {
+            "ground": false,
+            "blocking": true,
+            "block_pathfind": false,
+            "block_projectile": false,
+            "stackable": false,
+            "liquid": false,
+            "movable": false,
+            "pickupable": false,
+            "has_height": false
+          }
+        }
+      ],
+      "walkable": false,
+      "queryadd_walkable": false,
+      "blocking": true,
+      "source": {
+        "file": "servidor/data/world/map.otbm"
+      }
+    },
+    {
+      "position": {
+        "x": 32062,
+        "y": 32227,
+        "z": 6
+      },
+      "house_id": 0,
+      "tile_flags": [
+        "REFRESH"
+      ],
+      "tile_flags_value": 32,
+      "ground": null,
+      "items": [
+        {
+          "server_id": 922,
+          "client_id": 1154,
+          "name": "flat roof",
+          "category": "DECORATION",
+          "count": 1,
+          "subtype": null,
+          "attributes": {},
+          "attributes_present": [],
+          "mapped": true,
+          "flags": {
+            "ground": false,
+            "blocking": true,
+            "block_pathfind": false,
+            "block_projectile": false,
+            "stackable": false,
+            "liquid": false,
+            "movable": false,
+            "pickupable": false,
+            "has_height": false
+          }
+        }
+      ],
+      "walkable": false,
+      "queryadd_walkable": false,
+      "blocking": true,
+      "source": {
+        "file": "servidor/data/world/map.otbm"
+      }
+    },
+    {
+      "position": {
+        "x": 32063,
+        "y": 32224,
+        "z": 6
+      },
+      "house_id": 0,
+      "tile_flags": [
+        "REFRESH"
+      ],
+      "tile_flags_value": 32,
+      "ground": {
+        "server_id": 920,
+        "client_id": 1152,
+        "name": "flat roof",
+        "category": "GROUND",
+        "count": 1,
+        "subtype": null,
+        "attributes": {},
+        "attributes_present": [],
+        "mapped": true,
+        "flags": {
+          "ground": true,
+          "blocking": false,
+          "block_pathfind": false,
+          "block_projectile": false,
+          "stackable": false,
+          "liquid": false,
+          "movable": false,
+          "pickupable": false,
+          "has_height": false
+        }
+      },
+      "items": [
+        {
+          "server_id": 920,
+          "client_id": 1152,
+          "name": "flat roof",
+          "category": "GROUND",
+          "count": 1,
+          "subtype": null,
+          "attributes": {},
+          "attributes_present": [],
+          "mapped": true,
+          "flags": {
+            "ground": true,
+            "blocking": false,
+            "block_pathfind": false,
+            "block_projectile": false,
+            "stackable": false,
+            "liquid": false,
+            "movable": false,
+            "pickupable": false,
+            "has_height": false
+          }
+        }
+      ],
+      "walkable": true,
+      "queryadd_walkable": true,
+      "blocking": false,
+      "source": {
+        "file": "servidor/data/world/map.otbm"
+      }
+    },
+    {
+      "position": {
+        "x": 32063,
+        "y": 32225,
+        "z": 6
+      },
+      "house_id": 0,
+      "tile_flags": [
+        "REFRESH"
+      ],
+      "tile_flags_value": 32,
+      "ground": {
+        "server_id": 920,
+        "client_id": 1152,
+        "name": "flat roof",
+        "category": "GROUND",
+        "count": 1,
+        "subtype": null,
+        "attributes": {},
+        "attributes_present": [],
+        "mapped": true,
+        "flags": {
+          "ground": true,
+          "blocking": false,
+          "block_pathfind": false,
+          "block_projectile": false,
+          "stackable": false,
+          "liquid": false,
+          "movable": false,
+          "pickupable": false,
+          "has_height": false
+        }
+      },
+      "items": [
+        {
+          "server_id": 920,
+          "client_id": 1152,
+          "name": "flat roof",
+          "category": "GROUND",
+          "count": 1,
+          "subtype": null,
+          "attributes": {},
+          "attributes_present": [],
+          "mapped": true,
+          "flags": {
+            "ground": true,
+            "blocking": false,
+            "block_pathfind": false,
+            "block_projectile": false,
+            "stackable": false,
+            "liquid": false,
+            "movable": false,
+            "pickupable": false,
+            "has_height": false
+          }
+        }
+      ],
+      "walkable": true,
+      "queryadd_walkable": true,
+      "blocking": false,
+      "source": {
+        "file": "servidor/data/world/map.otbm"
+      }
+    },
+    {
+      "position": {
+        "x": 32063,
+        "y": 32226,
+        "z": 6
+      },
+      "house_id": 0,
+      "tile_flags": [
+        "REFRESH"
+      ],
+      "tile_flags_value": 32,
+      "ground": {
+        "server_id": 920,
+        "client_id": 1152,
+        "name": "flat roof",
+        "category": "GROUND",
+        "count": 1,
+        "subtype": null,
+        "attributes": {},
+        "attributes_present": [],
+        "mapped": true,
+        "flags": {
+          "ground": true,
+          "blocking": false,
+          "block_pathfind": false,
+          "block_projectile": false,
+          "stackable": false,
+          "liquid": false,
+          "movable": false,
+          "pickupable": false,
+          "has_height": false
+        }
+      },
+      "items": [
+        {
+          "server_id": 920,
+          "client_id": 1152,
+          "name": "flat roof",
+          "category": "GROUND",
+          "count": 1,
+          "subtype": null,
+          "attributes": {},
+          "attributes_present": [],
+          "mapped": true,
+          "flags": {
+            "ground": true,
+            "blocking": false,
+            "block_pathfind": false,
+            "block_projectile": false,
+            "stackable": false,
+            "liquid": false,
+            "movable": false,
+            "pickupable": false,
+            "has_height": false
+          }
+        }
+      ],
+      "walkable": true,
+      "queryadd_walkable": true,
+      "blocking": false,
+      "source": {
+        "file": "servidor/data/world/map.otbm"
+      }
+    },
+    {
+      "position": {
+        "x": 32063,
+        "y": 32227,
+        "z": 6
+      },
+      "house_id": 0,
+      "tile_flags": [
+        "REFRESH"
+      ],
+      "tile_flags_value": 32,
+      "ground": {
+        "server_id": 920,
+        "client_id": 1152,
+        "name": "flat roof",
+        "category": "GROUND",
+        "count": 1,
+        "subtype": null,
+        "attributes": {},
+        "attributes_present": [],
+        "mapped": true,
+        "flags": {
+          "ground": true,
+          "blocking": false,
+          "block_pathfind": false,
+          "block_projectile": false,
+          "stackable": false,
+          "liquid": false,
+          "movable": false,
+          "pickupable": false,
+          "has_height": false
+        }
+      },
+      "items": [
+        {
+          "server_id": 920,
+          "client_id": 1152,
+          "name": "flat roof",
+          "category": "GROUND",
+          "count": 1,
+          "subtype": null,
+          "attributes": {},
+          "attributes_present": [],
+          "mapped": true,
+          "flags": {
+            "ground": true,
+            "blocking": false,
+            "block_pathfind": false,
+            "block_projectile": false,
+            "stackable": false,
+            "liquid": false,
+            "movable": false,
+            "pickupable": false,
+            "has_height": false
+          }
+        }
+      ],
+      "walkable": true,
+      "queryadd_walkable": true,
+      "blocking": false,
+      "source": {
+        "file": "servidor/data/world/map.otbm"
+      }
+    }
+  ]
+}

@@ -1,0 +1,71 @@
+{
+  "format": "tvp3d.world-mapper.v1",
+  "source": {
+    "map": "servidor\\data\\world\\map.otbm",
+    "items": "servidor/data/items/items.otb + items.xml",
+    "coordinates": "Tibia x,y,z; z=7 surface in Rookgaard"
+  },
+  "summary": {
+    "tiles": 7786904,
+    "objects": 8385638,
+    "houses": 862,
+    "house_definitions": 862,
+    "houses_without_definition": 0,
+    "floors": {
+      "0": 11305,
+      "1": 15957,
+      "10": 731494,
+      "11": 607140,
+      "12": 516840,
+      "13": 430772,
+      "14": 419028,
+      "15": 363198,
+      "2": 23707,
+      "3": 35443,
+      "4": 60163,
+      "5": 105173,
+      "6": 149549,
+      "7": 2357954,
+      "8": 1031041,
+      "9": 928140
+    }
+  },
+  "semantic_categories": {
+    "container": 3099,
+    "crate": 3272,
+    "decoration": 127031,
+    "door": 4169,
+    "furniture": 19254,
+    "ground": 7698561,
+    "interactive": 13708,
+    "mailbox": 120,
+    "nature": 213655,
+    "roof": 39397,
+    "sign": 443,
+    "stair": 17792,
+    "structure": 101941,
+    "wall": 139694,
+    "window": 3502
+  },
+  "non_ground_objects": {
+    "container": 3099,
+    "crate": 3272,
+    "decoration": 127031,
+    "door": 4169,
+    "furniture": 19254,
+    "interactive": 13708,
+    "mailbox": 120,
+    "nature": 213655,
+    "roof": 39397,
+    "sign": 443,
+    "stair": 17792,
+    "structure": 101941,
+    "wall": 139694,
+    "window": 3502
+  },
+  "outputs": {
+    "houses": "houses.json",
+    "house_tiles": "house_tiles.jsonl",
+    "world_objects": "world_objects.jsonl"
+  }
+}

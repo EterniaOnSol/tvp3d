@@ -1,0 +1,32 @@
+# Godot/editor output
+**/.godot/
+**/*.uid
+**/*.import
+
+# Python/build/runtime output
+**/__pycache__/
+**/*.pyc
+**/build/
+**/bin/
+**/obj/
+**/Debug/
+**/Release/
+**/*.log
+
+# Local server secrets and mutable state
+servidor/.git/
+servidor/.git.*
+servidor/key.pem
+servidor/config.lua
+servidor/gamedata/
+
+# Local recordings and extracted QA frames
+worklog/video_ref*/
+worklog/*.mp4
+worklog/*.webm
+
+# Local/editor noise
+Thumbs.db
+Desktop.ini
+*.tmp
+*.bak

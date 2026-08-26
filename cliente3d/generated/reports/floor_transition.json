@@ -1,0 +1,168 @@
+{
+	"expected": {
+		"direct_floor_opcodes": [
+			"0xBE",
+			"0xBF"
+		],
+		"lower": {
+			"x": 32080,
+			"y": 32202,
+			"z": 6
+		},
+		"origin": {
+			"x": 32080,
+			"y": 32202,
+			"z": 6
+		},
+		"teleport_fallback_opcode": "0x64",
+		"upper_return": {
+			"x": 32080,
+			"y": 32204,
+			"z": 7
+		}
+	},
+	"floor_packets": [
+		{
+			"kind": "map_description_floor_fallback",
+			"opcode": "0x64",
+			"phase": 5,
+			"position": {
+				"x": 32080,
+				"y": 32204,
+				"z": 7
+			}
+		},
+		{
+			"kind": "map_description_floor_fallback",
+			"opcode": "0x64",
+			"phase": 2,
+			"position": {
+				"x": 32080,
+				"y": 32202,
+				"z": 6
+			}
+		},
+		{
+			"kind": "map_description_floor_fallback",
+			"opcode": "0x64",
+			"phase": 3,
+			"position": {
+				"x": 32080,
+				"y": 32204,
+				"z": 7
+			}
+		},
+		{
+			"kind": "map_description_floor_fallback",
+			"opcode": "0x64",
+			"phase": 7,
+			"position": {
+				"x": 32080,
+				"y": 32202,
+				"z": 6
+			}
+		}
+	],
+	"phases": [
+		{
+			"from": {
+				"x": 32080,
+				"y": 32204,
+				"z": 7
+			},
+			"name": "acercamiento",
+			"steps": 0,
+			"to": {
+				"x": 32080,
+				"y": 32204,
+				"z": 7
+			}
+		},
+		{
+			"expected_to": {
+				"x": 32080,
+				"y": 32202,
+				"z": 6
+			},
+			"from": {
+				"x": 32080,
+				"y": 32204,
+				"z": 7
+			},
+			"name": "bajar",
+			"opcode": "0xBE",
+			"stair": {
+				"x": 32080,
+				"y": 32203,
+				"z": 7
+			}
+		},
+		{
+			"expected_to": {
+				"x": 32080,
+				"y": 32204,
+				"z": 7
+			},
+			"from": {
+				"x": 32080,
+				"y": 32202,
+				"z": 6
+			},
+			"name": "subir",
+			"opcode": "0xBF",
+			"stair": {
+				"x": 32080,
+				"y": 32203,
+				"z": 6
+			}
+		},
+		{
+			"from": {
+				"x": 32080,
+				"y": 32204,
+				"z": 7
+			},
+			"name": "regreso_al_origen_inferior",
+			"steps_to_stair": 0,
+			"to": {
+				"x": 32080,
+				"y": 32202,
+				"z": 6
+			}
+		}
+	],
+	"source": {
+		"ir": "res://generated/maps/rookgaard_100sqm.json",
+		"protocol": "TVP 7.72",
+		"state_parser": "red/estado_mundo.gd"
+	},
+	"stair": {
+		"client_id": 1958,
+		"floorchange": "north",
+		"name": "wooden stairs",
+		"position": {
+			"x": 32080,
+			"y": 32203,
+			"z": 7
+		},
+		"server_id": 1396
+	},
+	"summary": {
+		"direct_floor_packets": 0,
+		"error": "",
+		"final_position": {
+			"x": 32080,
+			"y": 32202,
+			"z": 6
+		},
+		"floor_packets": 4,
+		"map_description_floor_fallbacks": 4,
+		"observed_opcodes": [
+			"0x64"
+		],
+		"passed": true,
+		"protocol_path": "0x64 map description",
+		"restored": true
+	},
+	"version": 1
+}
