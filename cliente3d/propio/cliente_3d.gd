@@ -5,28 +5,43 @@ extends Node3D
 ## importacion de sprites reemplazaran estos materiales por assets reales.
 
 const PROTOCOLO := preload("res://comun/protocolo_tvp3d.gd")
+const MAPA := preload("res://comun/mapa_tvp3d.gd")
 
 const HOST := "127.0.0.1"
 const PUERTO := 7277
 const VELOCIDAD_PASO := 0.18
+const REINTENTO_CONEXION := 1.0
+const HOST_ENV := "TVP3D_HOST"
+const PUERTO_ENV := "TVP3D_PUERTO"
+const NOMBRE_ENV := "TVP3D_NOMBRE"
+const SUPERFICIE_Z := 7
 
 const SUELO := 0
 const PARED := 1
 const AGUA := 2
 const ARBOL := 3
 const ROCA := 4
+const DECORACION := 5
+const ESCALERA := 6
 
 var _peer := StreamPeerTCP.new()
 var _buffer := PackedByteArray()
 var _conectado := false
 var _listo := false
+var _hello_enviado := false
+var _estado_conexion := "DESCONECTADO"
 var _reloj := 0.0
 var _reloj_paso := VELOCIDAD_PASO
+var _reloj_reconexion := REINTENTO_CONEXION
 var _mi_id := 0
 var _mi_pos := Vector3i.ZERO
 var _origen := Vector3i.ZERO
 var _mapa: Dictionary = {}
+var _mapa_valido := false
 var _jugadores: Dictionary = {}
+var _host := HOST
+var _puerto := PUERTO
+var _nombre := "Aventurero"
 
 var _mapa_nodo: Node3D
 var _jugadores_nodo: Node3D
@@ -36,12 +51,10 @@ var _materiales: Dictionary = {}
 
 
 func _ready() -> void:
+	_cargar_configuracion()
 	_armar_escena()
 	_actualizar_cartel("Conectando al servidor Godot propio...")
-	var resultado := _peer.connect_to_host(HOST, PUERTO)
-	if resultado != OK:
-		_actualizar_cartel("No se pudo abrir 127.0.0.1:%d" % PUERTO)
-		return
+	_conectar()
 
 
 func _armar_escena() -> void:
@@ -85,18 +98,22 @@ func _armar_escena() -> void:
 func _process(delta: float) -> void:
 	_reloj += delta
 	_reloj_paso += delta
+	if _estado_conexion == "DESCONECTADO":
+		_reloj_reconexion += delta
+		if _reloj_reconexion >= REINTENTO_CONEXION:
+			_conectar()
+		return
 	_peer.poll()
 	if _peer.get_status() == StreamPeerTCP.STATUS_ERROR \
 			or _peer.get_status() == StreamPeerTCP.STATUS_NONE:
-		if _conectado:
-			_conectado = false
-			_listo = false
-			_actualizar_cartel("Conexion cerrada. Arranca el servidor propio.")
+		_manejar_desconexion("CONEXION_PERDIDA")
 		return
 
-	if not _conectado and _peer.get_status() == StreamPeerTCP.STATUS_CONNECTED:
+	if not _hello_enviado and _peer.get_status() == StreamPeerTCP.STATUS_CONNECTED:
+		_estado_conexion = "CONECTANDO"
 		_conectado = true
-		_enviar(PROTOCOLO.Tipo.HELLO, {"nombre": "Aventurero"})
+		_hello_enviado = true
+		_enviar(PROTOCOLO.Tipo.HELLO, {"nombre": _nombre})
 		_actualizar_cartel("Entrando al mundo...")
 
 	_leer_red()
@@ -118,7 +135,7 @@ func _leer_red() -> void:
 	var resultado: Dictionary = PROTOCOLO.extraer(_buffer)
 	_buffer = resultado["buffer"]
 	if resultado["error"] != "":
-		_actualizar_cartel("Protocolo invalido: %s" % resultado["error"])
+		_manejar_desconexion("PROTOCOLO_INVALIDO: %s" % resultado["error"])
 		return
 	for mensaje in resultado["mensajes"]:
 		_recibir(mensaje)
@@ -128,20 +145,28 @@ func _recibir(mensaje: Dictionary) -> void:
 	match int(mensaje["tipo"]):
 		PROTOCOLO.Tipo.WELCOME:
 			var datos: Dictionary = mensaje["datos"]
+			if not _validar_welcome(datos):
+				_manejar_desconexion("MAPA_RECIBIDO_INVALIDO")
+				return
 			_mi_id = int(datos["id"])
 			_mi_pos = PROTOCOLO.diccionario_a_posicion(datos["pos"])
 			_mapa = datos.get("mapa", {})
+			_mapa_valido = true
 			var origen_datos: Dictionary = _mapa.get("origen", {})
 			_origen = Vector3i(
 				int(origen_datos.get("x", 0)),
 				int(origen_datos.get("y", 0)),
 				int(origen_datos.get("z", 7)))
 			_listo = true
+			_estado_conexion = "EN_MUNDO"
 			_renderizar_mapa()
 			_actualizar_cartel("Mundo propio conectado. WASD/flechas para caminar.")
 		PROTOCOLO.Tipo.STATE:
+			if not _listo:
+				return
 			var jugadores: Array = mensaje["datos"].get("jugadores", [])
 			_jugadores.clear()
+			var encontre_mi_entidad := false
 			for jugador in jugadores:
 				var id := int(jugador["id"])
 				var copia: Dictionary = jugador.duplicate(true)
@@ -149,6 +174,10 @@ func _recibir(mensaje: Dictionary) -> void:
 				_jugadores[id] = copia
 				if id == _mi_id:
 					_mi_pos = copia["pos"]
+					encontre_mi_entidad = true
+			if not encontre_mi_entidad:
+				_manejar_desconexion("STATE_SIN_JUGADOR_LOCAL")
+				return
 			_renderizar_jugadores()
 			_actualizar_cartel("TVP3D propio  |  posicion (%d, %d, %d)  |  jugadores %d\nWASD o flechas: caminar   ESC: salir" % [
 				_mi_pos.x, _mi_pos.y, _mi_pos.z, _jugadores.size()])
@@ -199,6 +228,12 @@ func _renderizar_mapa() -> void:
 				_agregar_esfera(columna, Vector3(0, 1.05, 0), 0.52, _color_de(ARBOL))
 			ROCA:
 				_agregar_esfera(columna, Vector3(0, 0.32, 0), 0.38, _color_de(ROCA))
+			DECORACION:
+				_agregar_cubo(columna, Vector3(0.48, 0.48, 0.48), Vector3(0, 0.24, 0), _color_de(DECORACION))
+			ESCALERA:
+				_agregar_cubo(columna, Vector3(0.9, 0.18, 0.28), Vector3(-0.25, 0.09, -0.28), _color_de(ESCALERA))
+				_agregar_cubo(columna, Vector3(0.9, 0.36, 0.28), Vector3(0.0, 0.18, 0.0), _color_de(ESCALERA))
+				_agregar_cubo(columna, Vector3(0.9, 0.54, 0.28), Vector3(0.25, 0.27, 0.28), _color_de(ESCALERA))
 
 
 func _renderizar_jugadores() -> void:
@@ -229,7 +264,10 @@ func _mover_camara(delta: float) -> void:
 
 
 func _a_posicion_3d(posicion: Vector3i) -> Vector3:
-	return Vector3(posicion.x - _origen.x, 0, posicion.y - _origen.y)
+	return Vector3(
+		posicion.x - _origen.x,
+		float(SUPERFICIE_Z - posicion.z),
+		posicion.y - _origen.y)
 
 
 func _agregar_cubo(padre: Node3D, tamano: Vector3, posicion: Vector3, color: Color) -> void:
@@ -275,6 +313,10 @@ func _color_de(tipo: int) -> Color:
 			return Color("#3d7a4b")
 		ROCA:
 			return Color("#9a8d7b")
+		DECORACION:
+			return Color("#c28a55")
+		ESCALERA:
+			return Color("#a97845")
 	return Color.WHITE
 
 
@@ -289,9 +331,126 @@ func _material(color: Color) -> StandardMaterial3D:
 	return material
 
 
+func _cargar_configuracion() -> void:
+	var host_configurado := OS.get_environment(HOST_ENV).strip_edges()
+	if not host_configurado.is_empty():
+		_host = host_configurado
+	var puerto_configurado := OS.get_environment(PUERTO_ENV).strip_edges()
+	if not puerto_configurado.is_empty():
+		var puerto_configurado_int := int(puerto_configurado)
+		if puerto_configurado_int > 0 and puerto_configurado_int <= 65535:
+			_puerto = puerto_configurado_int
+	var nombre_configurado := OS.get_environment(NOMBRE_ENV).strip_edges()
+	if not nombre_configurado.is_empty():
+		_nombre = nombre_configurado.left(24)
+
+
+func _conectar() -> void:
+	if _estado_conexion == "CONECTANDO" or _estado_conexion == "EN_MUNDO":
+		return
+	_peer = StreamPeerTCP.new()
+	_buffer = PackedByteArray()
+	_hello_enviado = false
+	_conectado = false
+	_listo = false
+	_estado_conexion = "CONECTANDO"
+	_reloj_reconexion = 0.0
+	var resultado := _peer.connect_to_host(_host, _puerto)
+	if resultado != OK:
+		_manejar_desconexion("CONEXION_RECHAZADA")
+
+
+func _manejar_desconexion(motivo: String) -> void:
+	_conectado = false
+	_listo = false
+	_hello_enviado = false
+	_estado_conexion = "DESCONECTADO"
+	_reloj_reconexion = 0.0
+	_buffer = PackedByteArray()
+	_mi_id = 0
+	_mi_pos = Vector3i.ZERO
+	_origen = Vector3i.ZERO
+	_mapa.clear()
+	_mapa_valido = false
+	_jugadores.clear()
+	_limpiar_vista()
+	if _peer.get_status() == StreamPeerTCP.STATUS_CONNECTED \
+			or _peer.get_status() == StreamPeerTCP.STATUS_CONNECTING:
+		_peer.disconnect_from_host()
+	_actualizar_cartel("%s. Reintentando..." % motivo)
+
+
+func _limpiar_vista() -> void:
+	if _mapa_nodo != null:
+		for hijo in _mapa_nodo.get_children():
+			hijo.queue_free()
+	if _jugadores_nodo != null:
+		for hijo in _jugadores_nodo.get_children():
+			hijo.queue_free()
+
+
+func _validar_welcome(datos: Dictionary) -> bool:
+	if int(datos.get("id", 0)) <= 0:
+		return false
+	var nombre: Variant = datos.get("nombre", null)
+	if typeof(nombre) != TYPE_STRING or str(nombre).length() < 1 \
+			or str(nombre).length() > 24:
+		return false
+	if not _posicion_valida(datos.get("pos", null)):
+		return false
+	var mapa_valor: Variant = datos.get("mapa", null)
+	if typeof(mapa_valor) != TYPE_DICTIONARY:
+		return false
+	var mapa: Dictionary = mapa_valor
+	if int(mapa.get("version", -1)) != PROTOCOLO.VERSION:
+		return false
+	var origen_valor: Variant = mapa.get("origen", null)
+	if not _posicion_valida(origen_valor):
+		return false
+	var ancho := int(mapa.get("ancho", -1))
+	var alto := int(mapa.get("alto", -1))
+	if ancho < 3 or ancho > 128 or alto < 3 or alto > 128:
+		return false
+	var celdas_valor: Variant = mapa.get("celdas", null)
+	if typeof(celdas_valor) != TYPE_ARRAY or celdas_valor.is_empty():
+		return false
+	var vistas: Dictionary = {}
+	for celda_valor in celdas_valor:
+		if typeof(celda_valor) != TYPE_DICTIONARY:
+			return false
+		var celda: Dictionary = celda_valor
+		var x := int(celda.get("x", -1))
+		var y := int(celda.get("y", -1))
+		var tipo := int(celda.get("tipo", -1))
+		if x < 0 or x >= ancho or y < 0 or y >= alto:
+			return false
+		if not MAPA.es_tipo_valido(tipo):
+			return false
+		var clave := "%d,%d" % [x, y]
+		if vistas.has(clave):
+			return false
+		vistas[clave] = true
+	return true
+
+
+func _posicion_valida(valor: Variant) -> bool:
+	if typeof(valor) != TYPE_DICTIONARY:
+		return false
+	var posicion: Dictionary = valor
+	if typeof(posicion.get("x", null)) != TYPE_INT \
+			or typeof(posicion.get("y", null)) != TYPE_INT \
+			or typeof(posicion.get("z", null)) != TYPE_INT:
+		return false
+	return int(posicion["z"]) >= 0 and int(posicion["z"]) <= 15
+
+
 func _enviar(tipo: int, datos: Dictionary) -> void:
 	if _peer.get_status() == StreamPeerTCP.STATUS_CONNECTED:
-		_peer.put_data(PROTOCOLO.empaquetar(tipo, datos))
+		var paquete := PROTOCOLO.empaquetar(tipo, datos)
+		if paquete.is_empty():
+			return
+		if _peer.put_data(paquete) != OK:
+			_manejar_desconexion("CONEXION_PERDIDA")
 
 
 func _actualizar_cartel(texto: String) -> void:
@@ -301,5 +460,8 @@ func _actualizar_cartel(texto: String) -> void:
 
 func _unhandled_input(evento: InputEvent) -> void:
 	if evento is InputEventKey and evento.pressed and evento.keycode == KEY_ESCAPE:
+		_estado_conexion = "CERRANDO"
 		_enviar(PROTOCOLO.Tipo.GOODBYE, {})
+		if _peer.get_status() == StreamPeerTCP.STATUS_CONNECTED:
+			_peer.disconnect_from_host()
 		get_tree().quit()
