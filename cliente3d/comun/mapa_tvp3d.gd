@@ -11,6 +11,8 @@ enum Tipo {
 	AGUA = 2,
 	ARBOL = 3,
 	ROCA = 4,
+	DECORACION = 5,
+	ESCALERA = 6,
 }
 
 const VERSION := 1
@@ -23,6 +25,7 @@ var origen := ORIGEN_POR_DEFECTO
 var ancho := ANCHO_POR_DEFECTO
 var alto := ALTO_POR_DEFECTO
 var _celdas: Dictionary = {}
+var ultimo_error := ""
 
 
 func _init() -> void:
@@ -30,18 +33,63 @@ func _init() -> void:
 
 
 static func cargar(ruta: String = RUTA_MAPA) -> MapaTVP3D:
+	var resultado := cargar_validado(ruta)
+	if bool(resultado.get("ok", false)):
+		return resultado["mapa"]
+	# Preserve the original convenience API for the offline demo, but expose
+	# the reason so callers can report it instead of silently accepting data.
+	var fallback := MapaTVP3D.new()
+	fallback.ultimo_error = str(resultado.get("error", "MAPA_INVALIDO"))
+	return fallback
+
+
+static func cargar_validado(ruta: String = RUTA_MAPA) -> Dictionary:
 	var mapa := MapaTVP3D.new()
+	mapa.ultimo_error = ""
 	if not FileAccess.file_exists(ruta):
-		return mapa
+		return _resultado_error(mapa, "MAPA_ARCHIVO_AUSENTE")
 
 	var archivo := FileAccess.open(ruta, FileAccess.READ)
 	if archivo == null:
-		return mapa
+		return _resultado_error(mapa, "MAPA_ARCHIVO_ILEGIBLE")
 	var datos: Variant = JSON.parse_string(archivo.get_as_text())
 	if typeof(datos) != TYPE_DICTIONARY:
-		return mapa
+		return _resultado_error(mapa, "MAPA_JSON_INVALIDO")
+
+	var version := int(datos.get("version", -1))
+	if version != VERSION:
+		return _resultado_error(mapa, "MAPA_VERSION_NO_SOPORTADA")
+	var origen_datos: Variant = datos.get("origen", null)
+	if typeof(origen_datos) != TYPE_DICTIONARY:
+		return _resultado_error(mapa, "MAPA_ORIGEN_INVALIDO")
+	if int(origen_datos.get("z", -1)) < 0 or int(origen_datos.get("z", -1)) > 15:
+		return _resultado_error(mapa, "COORDENADA_Z_INVALIDA")
+	var ancho_datos := int(datos.get("ancho", -1))
+	var alto_datos := int(datos.get("alto", -1))
+	if ancho_datos < 3 or ancho_datos > 128 or alto_datos < 3 or alto_datos > 128:
+		return _resultado_error(mapa, "MAPA_DIMENSION_INVALIDA")
+	var celdas: Variant = datos.get("celdas", null)
+	if typeof(celdas) != TYPE_ARRAY or celdas.is_empty():
+		return _resultado_error(mapa, "MAPA_SIN_CELDAS")
+
+	var vistas: Dictionary = {}
+	for celda in celdas:
+		if typeof(celda) != TYPE_DICTIONARY:
+			return _resultado_error(mapa, "MAPA_CELDA_INVALIDA")
+		var x := int(celda.get("x", -1))
+		var y := int(celda.get("y", -1))
+		var tipo := int(celda.get("tipo", -1))
+		if x < 0 or x >= ancho_datos or y < 0 or y >= alto_datos:
+			return _resultado_error(mapa, "MAPA_CELDA_FUERA_DE_RANGO")
+		if not es_tipo_valido(tipo):
+			return _resultado_error(mapa, "TIPO_TILE_DESCONOCIDO")
+		var clave := "%d,%d" % [x, y]
+		if vistas.has(clave):
+			return _resultado_error(mapa, "MAPA_CELDA_DUPLICADA")
+		vistas[clave] = true
+
 	mapa._cargar_diccionario(datos)
-	return mapa
+	return {"ok": true, "mapa": mapa, "error": ""}
 
 
 func crear_demo() -> void:
@@ -93,7 +141,8 @@ func es_caminable(posicion: Vector3i) -> bool:
 	var local := _a_local(posicion)
 	if not _dentro(local.x, local.y):
 		return false
-	return tipo_en(posicion) == Tipo.SUELO
+	var tipo := tipo_en(posicion)
+	return tipo == Tipo.SUELO or tipo == Tipo.ESCALERA
 
 
 func tipo_en(posicion: Vector3i) -> int:
@@ -110,7 +159,7 @@ func tipo_local(x: int, y: int) -> int:
 
 
 func poner_local(x: int, y: int, tipo: int) -> bool:
-	if not _dentro(x, y) or tipo < Tipo.SUELO or tipo > Tipo.ROCA:
+	if not _dentro(x, y) or not es_tipo_valido(tipo):
 		return false
 	_poner_local(x, y, tipo)
 	return true
@@ -150,7 +199,15 @@ func nombre_tipo(tipo: int) -> String:
 			return "arbol"
 		Tipo.ROCA:
 			return "roca"
+		Tipo.DECORACION:
+			return "decoracion"
+		Tipo.ESCALERA:
+			return "escalera"
 	return "desconocido"
+
+
+static func es_tipo_valido(tipo: int) -> bool:
+	return tipo >= Tipo.SUELO and tipo <= Tipo.ESCALERA
 
 
 func _cargar_diccionario(datos: Dictionary) -> void:
@@ -168,7 +225,7 @@ func _cargar_diccionario(datos: Dictionary) -> void:
 		var x := int(celda.get("x", -1))
 		var y := int(celda.get("y", -1))
 		var tipo := int(celda.get("tipo", Tipo.SUELO))
-		if _dentro(x, y) and tipo >= Tipo.SUELO and tipo <= Tipo.ROCA:
+		if _dentro(x, y) and es_tipo_valido(tipo):
 			_poner_local(x, y, tipo)
 	if _celdas.is_empty():
 		crear_demo()
@@ -188,3 +245,8 @@ func _dentro(x: int, y: int) -> bool:
 
 func _clave(x: int, y: int) -> String:
 	return "%d,%d" % [x, y]
+
+
+static func _resultado_error(mapa: MapaTVP3D, codigo: String) -> Dictionary:
+	mapa.ultimo_error = codigo
+	return {"ok": false, "mapa": mapa, "error": codigo}
