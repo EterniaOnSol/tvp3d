@@ -20,6 +20,9 @@ var _cuerpo_contenedor: VBoxContainer
 var _plegada := false
 var _arrastrando := false
 var _agarre := Vector2.ZERO
+var _redimensionando := false
+var _tamano_redimension := Vector2.ZERO
+var _mouse_redimension := Vector2.ZERO
 var reordenable := false
 signal pidio_reordenar(pos_global: Vector2)
 
@@ -83,6 +86,22 @@ func _init(texto: String = "Window", con_cerrar: bool = false) -> void:
 	exterior.add_child(_cuerpo_contenedor)
 	cuerpo = _cuerpo_contenedor
 
+	# Todas las ventanas comparten este asa, incluidas las que viven dentro
+	# de los docks. El minimo sigue evitando que el contenido desaparezca,
+	# pero el jugador puede ampliar cada panel a su gusto.
+	var pie := HBoxContainer.new()
+	pie.alignment = BoxContainer.ALIGNMENT_END
+	pie.custom_minimum_size.y = 9
+	pie.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	var asa := Control.new()
+	asa.name = "AsaRedimension"
+	asa.custom_minimum_size = Vector2(13, 9)
+	asa.mouse_filter = Control.MOUSE_FILTER_STOP
+	asa.mouse_default_cursor_shape = Control.CURSOR_FDIAGSIZE
+	asa.gui_input.connect(_al_input_de_asa)
+	pie.add_child(asa)
+	exterior.add_child(pie)
+
 
 func alternar_plegado() -> void:
 	_plegada = not _plegada
@@ -93,6 +112,30 @@ func alternar_plegado() -> void:
 func fijar_titulo(texto: String) -> void:
 	if _titulo != null:
 		_titulo.text = texto
+
+
+func _al_input_de_asa(evento: InputEvent) -> void:
+	if evento is InputEventMouseButton and evento.button_index == MOUSE_BUTTON_LEFT:
+		if evento.pressed:
+			_redimensionando = true
+			_tamano_redimension = size
+			_mouse_redimension = get_global_mouse_position()
+			_marco.border_color = BORDE_ACTIVO
+			_marco.set_border_width_all(2)
+			accept_event()
+		else:
+			_redimensionando = false
+			_marco.border_color = BORDE
+			_marco.set_border_width_all(1)
+			accept_event()
+	elif evento is InputEventMouseMotion and _redimensionando:
+		var delta := get_global_mouse_position() - _mouse_redimension
+		var nuevo := Vector2(
+			maxf(150.0, _tamano_redimension.x + delta.x),
+			maxf(40.0, _tamano_redimension.y + delta.y))
+		custom_minimum_size = nuevo
+		size = nuevo
+		accept_event()
 
 
 func _al_input_de_barra(evento: InputEvent) -> void:

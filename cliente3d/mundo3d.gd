@@ -47,6 +47,10 @@ const CATALOGO := preload("res://red/mapa772.gd")
 const IR_TROZOS := preload("res://red/ir_trozos.gd")
 const COORD := preload("res://comun/coordenadas_tibia.gd")
 const INTERFAZ := preload("res://ui/interfaz.gd")
+const LOGIN := preload("res://ui/login.gd")
+const GUION_MAGIC_WALL := preload("res://mundo/magic_wall_3d.gd")
+const GUION_NUMERO_DANO := preload("res://numero_dano_3d.gd")
+const GUION_DIALOGO := preload("res://dialogo_3d.gd")
 
 const ARCHIVO_MAPPING := "res://assets/mappings/items.json"
 const ARCHIVO_INDICE_IR := "res://generated/maps/rookgaard_100sqm_chunks/index.json"
@@ -57,11 +61,19 @@ const ARCHIVO_INDICE_IR := "res://generated/maps/rookgaard_100sqm_chunks/index.j
 const IDS_BORDES_AGUA := [4633, 4634, 4635, 4636, 4637, 4638, 4639,
 	4640, 4641, 4642, 4643, 4644]
 const ID_SPRITE_PASTO_BORDE := 4515
+## Estados visuales de la palanca 7.72. Son dos sprites existentes del
+## cliente, no geometria nueva: el servidor transforma 1945 <-> 1946 y el
+## traductor del mapa los entrega como 2772 <-> 2773.
+const ESTADOS_PALANCA := {2772: 2773, 2773: 2772}
+## El servidor 1497 llega por la red como el client id 2128. 2129 es la
+## variante persistente; ambas comparten el muro animado de 3DTIBIA.
+const IDS_MAGIC_WALL := [2128, 2129]
+## Monedas que el servidor transforma al acuñar: oro -> platino -> cristal.
+# El protocolo transporta client IDs, no los IDs internos del servidor.
+const IDS_MONEDAS := [3031, 3035, 3043]
+const ARCHIVO_CURSOR_USO := "res://assets/ui/cursor_uso.svg"
 const HOST := "127.0.0.1"
 const PUERTO_LOGIN := 7171
-## En 7.72 la cuenta es un NUMERO (protocollogin.cpp:156).
-const CUENTA := 123456
-const CLAVE := "123456"
 
 const LADO := COORD.SQM_WORLD_SIZE
 const ALTO_PISO := COORD.FLOOR_WORLD_HEIGHT
@@ -97,6 +109,9 @@ const MAX_CASILLAS_RUTA := 8192
 ## Los items animados (agua, fuego, antorchas) cambian de dibujo a este
 ## ritmo. Es el mismo del cliente original.
 const FOTOGRAMAS_POR_SEGUNDO := 5.0
+## La palanca no tiene fases internas: 2772 y 2773 son sus dos dibujos de
+## estado. Se muestran en una transicion corta al recibir el cambio real.
+const DURACION_ANIMACION_PALANCA := 0.20
 
 ## Cada cuanto se puede mandar un paso (el servidor tiene su propio ritmo).
 const ESPERA_ENTRE_PASOS := 0.25
@@ -149,15 +164,25 @@ var _con
 var _estado
 var _disco
 var _catalogo
+var _interfaz
+var _login
+var _cuenta_login := 0
+var _clave_login := ""
+var _seleccion_automatica := false
 
 var _piso_mundo: Node3D
 var _piso_bichos: Node3D
 var _jugador_nodo: Node3D
 var _jugador_malla: MeshInstance3D
+var _jugador_visual: Node3D
+var _jugador_cabeza: MeshInstance3D
+var _jugador_nariz: MeshInstance3D
 var _camara: Camera3D
 var _sol: DirectionalLight3D
 var _entorno: Environment
 var _cartel: Label
+var _capa_efectos: CanvasLayer
+var _indicador_uso: Label
 var _inspector_panel: PanelContainer
 var _inspector_texto: Label
 
@@ -183,6 +208,16 @@ var _desde_ultimo_paso := 0.0
 ## Si el servidor ya dijo POR QUE nos echa, no lo tapamos con un
 ## "se corto la conexion" generico.
 var _rechazados := false
+## El servidor 7.72 cierra la conexion de login despues de entregar la lista.
+## Ese cierre es normal y no debe reemplazar la lista por un mensaje de error.
+var _lista_personajes_recibida := false
+## Operacion de salida solicitada por el jugador: "personajes" vuelve a la
+## lista de personajes y "login" vuelve al formulario de cuenta.
+var _salida_pendiente := ""
+## 0x64 es la descripcion completa que el servidor envia al entrar o al
+## teletransportar. Se consume junto con `cambio`, antes de que el usuario
+## pueda hacer otro map-click.
+var _mapa_completo_pendiente := false
 
 var _sprites
 var _malla_losa: PlaneMesh
@@ -191,12 +226,18 @@ var _materiales := {}
 var _mappings := {}
 ## Parametros editables durante la ejecucion. El modo de ajuste reconstruye
 ## solo la ventana visible para poder comparar sin reiniciar Godot.
-var _alto_pared_visual := ALTO_PISO * 1.05
-var _grosor_pared_visual := LADO * 0.20
+## Las casas deben tener presencia junto al personaje authored de 3DTIBIA.
+## Solo crece la geometria visual: la grilla, el bloqueo y la huella siguen
+## siendo los mismos SQM del mapa.
+var _alto_pared_visual := ALTO_PISO * 2.0
+var _grosor_pared_visual := LADO * 0.28
 var _ajuste_vivo := false
 var _reloj_animacion := 0.0
 var _tiempo_dia_noche := 0.0
 var _animados: Array = []
+var _animaciones_palanca: Array = []
+var _animaciones_criaturas: Array = []
+var _efectos_visuales: Array = []
 var _desconocidos := 0
 var _mapa_visible := {}
 var _bloqueo_disco_cache := {}
@@ -224,13 +265,28 @@ var _rearmado_en_curso := false
 var _centro_rearmado_pendiente := Vector3i(-9999, -9999, -9999)
 var _destino_volcado: Node3D
 var _animados_volcado: Array = []
+var _animaciones_palanca_volcado: Array = []
 var _construccion_activa := false
 var _dibujadas_construccion := 0
 var _desconocidos_construccion := 0
+## Instancias base agrupadas por casilla. Permite ocultar solo el dibujo viejo
+## cuando el servidor cambia un tile, sin reconstruir todo el mapa.
+var _instancias_por_casilla := {}
+var _instancias_en_construccion := {}
+var _parches_casilla := {}
+var _monedas_por_casilla := {}
+var _actualizando_casilla := false
 var _ultimo_movimiento_acceso := {}
 var _acceso_reintento_pos := Vector3i(-9999, -9999, -9999)
 var _acceso_reintento_pendiente := false
 var _ataque_pendiente_id := 0
+## 0x78 se resuelve en la cola del servidor. Guardamos el siguiente paso
+## localmente para que caminar no cancele un push o un drop todavía pendiente.
+var _objeto_pendiente := {}
+var _direccion_diferida := Vector2i.ZERO
+var _objetivo_diferido := Vector3i(-9999, -9999, -9999)
+## Runa seleccionada para la segunda mitad de un "Use With".
+var _uso_con_pendiente := {}
 
 
 func _pedido_de_mirar():
@@ -274,7 +330,8 @@ func _ready() -> void:
 		_estado.mi_pos = donde
 		# El visor local tambien monta el HUD: permite revisar la lectura
 		# visual de casas y la interfaz sin levantar el servidor.
-		add_child(INTERFAZ.new(self, _estado, _sprites, _catalogo))
+		_interfaz = INTERFAZ.new(self, _estado, _sprites, _catalogo)
+		add_child(_interfaz)
 		_rearmar_escenario(donde)
 		_avisar("Map viewer - (%d, %d, %d)" % [donde.x, donde.y, donde.z])
 		return
@@ -282,18 +339,39 @@ func _ready() -> void:
 	_estado = ESTADO.new()
 	_estado.cambio.connect(_al_cambiar)
 	_estado.paso_cancelado.connect(_al_paso_cancelado)
+	_estado.entramos.connect(_al_entramos)
+	_estado.mapa_recibido.connect(_al_mapa_recibido)
+	_estado.casilla_actualizada.connect(_al_casilla_actualizada)
+	_estado.efecto_mapa.connect(_al_efecto_mapa)
+	_estado.texto_animado.connect(_al_texto_animado)
+	_estado.disparo_distancia.connect(_al_disparo_distancia)
+	_estado.dialogo_recibido.connect(_al_dialogo_recibido)
+	_estado.mensaje_pantalla.connect(_al_mensaje_pantalla)
+	_estado.cuadrado_criatura.connect(_al_cuadrado_criatura)
 	# El servidor pregunta cada 5 segundos si seguimos vivos
 	# (protocolgame.cpp:1628-1638). Hay que contestarle.
 	_estado.pedido_ping.connect(func(): _con.enviar_juego(PackedByteArray([0x1E])))
 	_estado.rechazados.connect(_al_ser_rechazados)
+	_estado.mensaje_servidor.connect(_al_mensaje_servidor)
 	_con = CONEXION.new()
 	add_child(_con)
 	_con.error_red.connect(_al_fallar)
 	_con.lista_personajes.connect(_al_recibir_personajes)
 	_con.cerrada.connect(_al_cerrarse)
-	add_child(INTERFAZ.new(self, _estado, _sprites, _catalogo))
-	_avisar("Connecting...")
-	_con.pedir_personajes(HOST, PUERTO_LOGIN, CUENTA, CLAVE)
+	_interfaz = INTERFAZ.new(self, _estado, _sprites, _catalogo)
+	_interfaz.visible = false
+	add_child(_interfaz)
+	_login = LOGIN.new()
+	_login.solicito_login.connect(_solicitar_login)
+	_login.solicito_personaje.connect(_seleccionar_personaje)
+	add_child(_login)
+	_login.mostrar_login()
+	var credenciales := _credenciales_de_arranque()
+	if not credenciales.is_empty():
+		_seleccion_automatica = true
+		_solicitar_login(int(credenciales["cuenta"]), str(credenciales["clave"]))
+	else:
+		_avisar("Log in to enter the world.")
 
 
 # --------------------------------------------------------------------
@@ -348,6 +426,25 @@ func _armar_escena() -> void:
 	_cartel.add_theme_constant_override("outline_size", 5)
 	capa.add_child(_cartel)
 	_armar_inspector(capa)
+	_capa_efectos = CanvasLayer.new()
+	_capa_efectos.name = "EfectosCombate"
+	_capa_efectos.layer = 20
+	add_child(_capa_efectos)
+	_indicador_uso = Label.new()
+	_indicador_uso.name = "IndicadorUsoCon"
+	_indicador_uso.set_anchors_preset(Control.PRESET_TOP_WIDE)
+	_indicador_uso.offset_top = 52.0
+	_indicador_uso.offset_bottom = 82.0
+	_indicador_uso.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+	_indicador_uso.vertical_alignment = VERTICAL_ALIGNMENT_CENTER
+	_indicador_uso.add_theme_font_size_override("font_size", 14)
+	_indicador_uso.add_theme_color_override("font_color", Color(0.64, 1.0, 0.72))
+	_indicador_uso.add_theme_color_override("font_outline_color", Color(0.02, 0.08, 0.04))
+	_indicador_uso.add_theme_constant_override("outline_size", 6)
+	_indicador_uso.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	_indicador_uso.visible = false
+	_capa_efectos.add_child(_indicador_uso)
+	_actualizar_cursor_uso()
 
 
 func _armar_inspector(capa: CanvasLayer) -> void:
@@ -427,23 +524,188 @@ func _avisar(texto: String) -> void:
 # --------------------------------------------------------------------
 #  Conexion
 # --------------------------------------------------------------------
-func _al_recibir_personajes(_motd: String, personajes: Array) -> void:
+func _credenciales_de_arranque() -> Dictionary:
+	"""Permite pruebas automatizadas sin dejar una clave en el repositorio.
+
+	En una partida normal las credenciales siempre vienen del formulario.
+	Para una captura o QA se aceptan variables de entorno o argumentos de
+	proceso, pero nunca se imprimen ni se guardan en disco.
+	"""
+	var cuenta_texto := OS.get_environment("TVP3D_ACCOUNT").strip_edges()
+	var clave_texto := OS.get_environment("TVP3D_PASSWORD")
+	var args := OS.get_cmdline_user_args()
+	var i_cuenta := args.find("--cuenta")
+	if i_cuenta >= 0 and i_cuenta + 1 < args.size():
+		cuenta_texto = str(args[i_cuenta + 1]).strip_edges()
+	var i_clave := args.find("--clave")
+	if i_clave >= 0 and i_clave + 1 < args.size():
+		clave_texto = str(args[i_clave + 1])
+	if cuenta_texto.is_empty() or int(cuenta_texto) <= 0 or clave_texto.is_empty():
+		return {}
+	return {"cuenta": int(cuenta_texto), "clave": clave_texto}
+
+
+func _solicitar_login(cuenta: int, clave: String) -> void:
+	if cuenta <= 0 or clave.is_empty() or _estado.adentro:
+		return
+	_cuenta_login = cuenta
+	_clave_login = clave
+	_rechazados = false
+	_lista_personajes_recibida = false
+	_login.mostrar_estado("Connecting to account server...")
+	if _con != null:
+		_con.cerrar()
+		_con.queue_free()
+	_con = CONEXION.new()
+	add_child(_con)
+	_con.error_red.connect(_al_fallar)
+	_con.lista_personajes.connect(_al_recibir_personajes)
+	_con.cerrada.connect(_al_cerrarse)
+	_con.pedir_personajes(HOST, PUERTO_LOGIN, _cuenta_login, _clave_login)
+
+
+func _al_recibir_personajes(motd: String, personajes: Array) -> void:
+	_lista_personajes_recibida = true
 	if personajes.is_empty():
+		_login.mostrar_personajes(motd, personajes)
 		_avisar("This account has no characters.")
 		return
-	var p: Dictionary = personajes[0]
-	_con.cerrar()
-	_con.queue_free()
+	_login.mostrar_personajes(motd, personajes)
+	if not _seleccion_automatica:
+		_avisar("Choose a character to enter the world.")
+		return
+	_seleccion_automatica = false
+	_seleccionar_personaje(personajes[0])
+
+
+func _pedir_lista_despues_de_logout() -> void:
+	_lista_personajes_recibida = false
+	_rechazados = false
+	_con = CONEXION.new()
+	add_child(_con)
+	_con.error_red.connect(_al_fallar)
+	_con.lista_personajes.connect(_al_recibir_personajes)
+	_con.cerrada.connect(_al_cerrarse)
+	_login.mostrar_estado("Loading characters...")
+	_con.pedir_personajes(HOST, PUERTO_LOGIN, _cuenta_login, _clave_login)
+
+
+func _seleccionar_personaje(personaje: Dictionary) -> void:
+	if _cuenta_login <= 0 or _clave_login.is_empty():
+		return
+	var p: Dictionary = personaje
+	_lista_personajes_recibida = false
+	if _con != null:
+		_con.cerrar()
+		_con.queue_free()
 	_con = CONEXION.new()
 	add_child(_con)
 	_con.error_red.connect(_al_fallar)
 	_con.paquete_juego.connect(_al_recibir_paquete)
 	_con.cerrada.connect(_al_cerrarse)
+	_login.mostrar_estado("Entering the world as %s..." % str(p.get("nombre", "Character")))
 	_avisar("Entering the world as %s..." % p["nombre"])
-	_con.entrar_al_mundo(p["ip"], p["puerto"], CUENTA, p["nombre"], CLAVE)
+	_con.entrar_al_mundo(p["ip"], p["puerto"], _cuenta_login, p["nombre"], _clave_login)
+
+
+func _al_entramos() -> void:
+	_salida_pendiente = ""
+	if _login != null:
+		_login.visible = false
+	if _interfaz != null:
+		_interfaz.visible = true
+	if _con != null:
+		# El cliente deja el modo ofensivo y el chase activos para que el
+		# objetivo seleccionado por Battle dispare el ciclo de combate real.
+		_con.enviar_modos_combate(1, 1, 1)
+	_avisar("Connected. Select a creature in Battle or click it to attack.")
+
+
+func solicitar_cambio_personaje() -> void:
+	"""Ctrl+G: pide logout limpio y vuelve a la lista de personajes.
+
+	La condicion de combate se lee del icono SWORDS que manda el servidor.
+	La PZ y las zonas sin logout siguen siendo autoridad del servidor: dentro
+	de PZ el 0x14 se acepta; si no corresponde, llega un cancel message.
+	"""
+	if _solo_mirar or _con == null or not _estado.adentro:
+		return
+	if _estado.en_combate:
+		_avisar("You may not logout during or immediately after a fight!")
+		return
+	_iniciar_salida("personajes")
+
+
+func solicitar_logout() -> void:
+	"""Ctrl+Q/Ctrl+L: logout limpio y regreso al formulario de cuenta."""
+	if _solo_mirar or _con == null or not _estado.adentro:
+		return
+	if _estado.en_combate:
+		_avisar("You may not logout during or immediately after a fight!")
+		return
+	_iniciar_salida("login")
+
+
+func _iniciar_salida(destino: String) -> void:
+	if not _salida_pendiente.is_empty():
+		return
+	_salida_pendiente = destino
+	_login.mostrar_estado("Logging out...")
+	_login.visible = true
+	_interfaz.visible = false
+	_avisar("Logging out...")
+	_con.enviar_logout()
+
+
+func _al_mensaje_servidor(texto: String) -> void:
+	# ProtocolGame usa el mismo 0xB4 para las respuestas de logout. Si el
+	# servidor rechazo la solicitud, seguimos jugando con la misma conexion.
+	if not _salida_pendiente.is_empty() \
+			and texto.to_lower().contains("logout"):
+		_salida_pendiente = ""
+		_login.visible = false
+		_interfaz.visible = true
+		_avisar(texto)
+
+
+func _actualizar_cursor_uso() -> void:
+	"""Hace visible que una runa esta armada para el siguiente objetivo."""
+	if _uso_con_pendiente.is_empty():
+		Input.set_custom_mouse_cursor(null, Input.CURSOR_ARROW)
+		Input.set_default_cursor_shape(Input.CURSOR_ARROW)
+		if _indicador_uso != null:
+			_indicador_uso.visible = false
+		return
+	var cursor := load(ARCHIVO_CURSOR_USO) as Texture2D
+	if cursor != null:
+		Input.set_custom_mouse_cursor(cursor, Input.CURSOR_ARROW, Vector2(4, 4))
+	else:
+		Input.set_default_cursor_shape(Input.CURSOR_CROSS)
+	if _indicador_uso != null:
+		_indicador_uso.text = "USE WITH  •  %s  •  click target  •  Esc cancels" % \
+			str(_uso_con_pendiente.get("nombre", "spell rune"))
+		_indicador_uso.visible = true
+
+
+func lanzar_hechizo(palabras: String) -> bool:
+	"""Lanza las palabras exactas de un Spell definido por el servidor.
+
+	La validacion de mana, nivel, vocacion, cooldown y efecto sigue en TVP
+	7.72. El cliente solo envia el mismo texto que aceptaria el chat.
+	"""
+	if _solo_mirar or _con == null or not _estado.adentro:
+		return false
+	var limpio := palabras.strip_edges()
+	if limpio.is_empty():
+		return false
+	_con.enviar_hablar(limpio)
+	_avisar("Casting: " + limpio)
+	return true
 
 
 func _al_fallar(texto: String) -> void:
+	if _estado != null and not _estado.adentro and _login != null:
+		_login.mostrar_error(texto)
 	_avisar(texto)
 
 
@@ -451,15 +713,39 @@ func _al_ser_rechazados(motivo: String) -> void:
 	"""El servidor no nos dejo entrar y explico por que. Se muestra tal
 	cual: es mucho mas util que un "se corto la conexion"."""
 	_rechazados = true
+	if _login != null:
+		_login.mostrar_error(motivo)
 	_avisar(motivo)
 	print("El servidor no nos dejo entrar: %s" % motivo)
 
 
 func _al_cerrarse() -> void:
+	if not _salida_pendiente.is_empty():
+		var destino := _salida_pendiente
+		_salida_pendiente = ""
+		_estado.reiniciar_sesion()
+		if _con != null:
+			_con.queue_free()
+		_con = null
+		_uso_con_pendiente.clear()
+		_actualizar_cursor_uso()
+		_interfaz.visible = false
+		_login.visible = true
+		if destino == "personajes":
+			_pedir_lista_despues_de_logout()
+		else:
+			_login.mostrar_login()
+			_avisar("Logged out.")
+		return
 	if _rechazados:
 		return   # el motivo de verdad ya esta en pantalla
+	if _lista_personajes_recibida:
+		return   # el cierre del login despues de la lista es normal en 7.72
 	if _estado.adentro:
 		_avisar("Connection lost.")
+	elif _login != null:
+		_login.mostrar_error("The server closed the connection before we got in.")
+		_avisar("The server closed the connection before we got in.\nIs it running?")
 	else:
 		_avisar("The server closed the connection before we got in.\nIs it running? Start the server and try again.")
 
@@ -468,8 +754,332 @@ func _al_recibir_paquete(msg) -> void:
 	_estado.procesar(msg)
 
 
+func _al_efecto_mapa(posicion: Vector3i, tipo: int) -> void:
+	if _capa_efectos == null or _camara == null \
+			or _centro_escenario.x < -9000:
+		return
+	var cuadro: Dictionary = _sprites.cuadro_efecto(tipo, 0)
+	if not cuadro.is_empty():
+		var fases := maxi(1, _sprites.fases_de_efecto(tipo))
+		var sprite := _crear_sprite_animado(cuadro, 64.0)
+		_efectos_visuales.append({
+			"tipo": "efecto",
+			"nodo": sprite,
+			"efecto": tipo,
+			"posicion": posicion,
+			"tiempo": 0.0,
+			"duracion": maxf(0.30, float(fases) / FOTOGRAMAS_POR_SEGUNDO),
+		})
+		return
+	# Si un servidor envia un ID que no existe en el DAT local, se mantiene
+	# visible una marca discreta en vez de perder por completo el evento.
+	var marca := Label.new()
+	marca.text = "*"
+	marca.add_theme_font_size_override("font_size", 30)
+	marca.add_theme_color_override("font_color", _color_efecto(tipo))
+	marca.add_theme_color_override("font_outline_color", Color.BLACK)
+	marca.add_theme_constant_override("outline_size", 5)
+	marca.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	_capa_efectos.add_child(marca)
+	_efectos_visuales.append({
+		"tipo": "marca",
+		"nodo": marca,
+		"posicion": posicion,
+		"tiempo": 0.0,
+		"duracion": 0.48,
+	})
+
+
+func _al_texto_animado(posicion: Vector3i, color: int, texto: String) -> void:
+	if texto.strip_edges().is_empty() or _centro_escenario.x < -9000:
+		return
+	var donde := COORD.tibia_a_mundo(posicion, _centro_escenario,
+		LADO, ALTO_PISO) + Vector3(0.0, 1.18, 0.0)
+	GUION_NUMERO_DANO.crear(texto, donde, _color_texto_servidor(color, texto),
+		self, 1.0)
+
+
+func _color_texto_servidor(color: int, texto: String) -> Color:
+	# TextColor_t de Tibia 7.72; el fallback mantiene legible cualquier color
+	# que el servidor custom pueda enviar.
+	match color:
+		5:
+			return Color(0.38, 0.67, 1.0)       # azul
+		30:
+			return Color(0.40, 1.0, 0.50)       # curacion
+		35:
+			return Color(0.44, 0.88, 1.0)
+		108:
+			return Color(0.62, 0.12, 0.10)
+		129:
+			return Color(0.80, 0.80, 0.82)
+		180:
+			return Color(1.0, 0.24, 0.18)       # dano
+		198:
+			return Color(1.0, 0.52, 0.18)
+		210:
+			return Color(1.0, 0.88, 0.28)
+		215:
+			return Color.WHITE
+	return _color_texto_combate(texto)
+
+
+func _al_dialogo_recibido(quien: String, texto: String,
+		posicion: Vector3i, clase: int) -> void:
+	if texto.strip_edges().is_empty() or _centro_escenario.x < -9000:
+		return
+	var donde_tibia := posicion
+	if donde_tibia.x < -9000:
+		for id in _estado.criaturas:
+			var criatura: Dictionary = _estado.criaturas[id]
+			if str(criatura.get("nombre", "")) == quien:
+				donde_tibia = criatura.get("pos", donde_tibia)
+				break
+	if donde_tibia.x < -9000:
+		return
+	var donde := COORD.tibia_a_mundo(donde_tibia, _centro_escenario,
+		LADO, ALTO_PISO) + Vector3(0.0, 1.56, 0.0)
+	GUION_DIALOGO.crear(quien, texto, donde, _color_dialogo(clase), self)
+
+
+func _color_dialogo(clase: int) -> Color:
+	match clase:
+		0x02:
+			return Color(0.70, 0.88, 1.0)
+		0x03, 0x10, 0x11:
+			return Color(1.0, 0.54, 0.38)
+		_:
+			return Color(1.0, 0.92, 0.55)
+
+
+func _al_mensaje_pantalla(texto: String, clase: int) -> void:
+	if _capa_efectos == null or texto.strip_edges().is_empty():
+		return
+	var mensaje := Label.new()
+	mensaje.text = texto
+	mensaje.set_anchors_preset(Control.PRESET_TOP_WIDE)
+	mensaje.offset_top = 88.0
+	mensaje.offset_bottom = 122.0
+	mensaje.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+	mensaje.vertical_alignment = VERTICAL_ALIGNMENT_CENTER
+	mensaje.add_theme_font_size_override("font_size", 18)
+	mensaje.add_theme_color_override("font_color", _color_mensaje(clase))
+	mensaje.add_theme_color_override("font_outline_color", Color(0.02, 0.02, 0.02, 0.96))
+	mensaje.add_theme_constant_override("outline_size", 6)
+	mensaje.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	_capa_efectos.add_child(mensaje)
+	_efectos_visuales.append({
+		"tipo": "mensaje_centro",
+		"nodo": mensaje,
+		"tiempo": 0.0,
+		"duracion": 2.4,
+	})
+
+
+func _color_mensaje(clase: int) -> Color:
+	match clase:
+		0x12, 0x19:
+			return Color(1.0, 0.30, 0.24)
+		0x16:
+			return Color(0.40, 1.0, 0.52)       # MESSAGE_INFO_DESCR: verde
+		0x11:
+			return Color(1.0, 0.60, 0.25)
+		0x01, 0x04, 0x18:
+			return Color(0.52, 0.78, 1.0)
+		_:
+			return Color(0.96, 0.96, 0.94)
+
+
+func _al_cuadrado_criatura(id: int, color: int) -> void:
+	var criatura: Dictionary = _estado.criaturas.get(id, {})
+	var posicion: Vector3i = criatura.get("pos", Vector3i(-9999, -9999, -9999))
+	if id == _estado.mi_id:
+		posicion = _estado.mi_pos
+	if posicion.x < -9000 or _centro_escenario.x < -9000:
+		return
+	var donde := COORD.tibia_a_mundo(posicion, _centro_escenario,
+		LADO, ALTO_PISO) + Vector3(0.0, 1.22, 0.0)
+	GUION_NUMERO_DANO.crear("!", donde, _color_texto_servidor(color, "!"),
+		self, 0.48)
+
+
+func _al_disparo_distancia(origen: Vector3i, destino: Vector3i, tipo: int) -> void:
+	if _capa_efectos == null or _camara == null \
+			or _centro_escenario.x < -9000:
+		return
+	var cuadro: Dictionary = _sprites.cuadro_proyectil(tipo, 0)
+	if not cuadro.is_empty():
+		var sprite := _crear_sprite_animado(cuadro, 42.0)
+		_efectos_visuales.append({
+			"tipo": "proyectil",
+			"nodo": sprite,
+			"proyectil": tipo,
+			"origen": origen,
+			"destino": destino,
+			"tiempo": 0.0,
+			"duracion": 0.22,
+		})
+		return
+	var linea := Line2D.new()
+	linea.width = 3.0
+	linea.default_color = _color_efecto(tipo)
+	linea.antialiased = false
+	linea.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	_capa_efectos.add_child(linea)
+	_efectos_visuales.append({
+		"tipo": "disparo",
+		"nodo": linea,
+		"origen": origen,
+		"destino": destino,
+		"tiempo": 0.0,
+		"duracion": 0.22,
+	})
+
+
+func _textura_de_cuadro(cuadro: Dictionary) -> Texture2D:
+	if cuadro.is_empty() or not cuadro.has("lamina"):
+		return null
+	var atlas := AtlasTexture.new()
+	atlas.atlas = cuadro["lamina"]
+	var escala: Vector3 = cuadro.get("escala", Vector3.ONE)
+	var corrimiento: Vector3 = cuadro.get("corrimiento", Vector3.ZERO)
+	const LADO_LAMINA := 2048.0
+	atlas.region = Rect2(corrimiento.x * LADO_LAMINA,
+		corrimiento.y * LADO_LAMINA, escala.x * LADO_LAMINA,
+		escala.y * LADO_LAMINA)
+	return atlas
+
+
+func _crear_sprite_animado(cuadro: Dictionary, tamano: float) -> TextureRect:
+	var sprite := TextureRect.new()
+	sprite.texture = _textura_de_cuadro(cuadro)
+	sprite.expand_mode = TextureRect.EXPAND_IGNORE_SIZE
+	sprite.stretch_mode = TextureRect.STRETCH_KEEP_ASPECT_CENTERED
+	sprite.texture_filter = CanvasItem.TEXTURE_FILTER_NEAREST
+	sprite.size = Vector2(tamano, tamano)
+	sprite.custom_minimum_size = sprite.size
+	sprite.pivot_offset = sprite.size * 0.5
+	sprite.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	_capa_efectos.add_child(sprite)
+	return sprite
+
+
+func _color_efecto(tipo: int) -> Color:
+	var colores := [
+		Color(1.0, 0.86, 0.30), Color(1.0, 0.35, 0.22),
+		Color(0.35, 0.75, 1.0), Color(0.65, 0.35, 1.0),
+		Color(0.35, 1.0, 0.45),
+	]
+	return colores[absi(tipo) % colores.size()]
+
+
+func _color_texto_combate(texto: String) -> Color:
+	if texto.begins_with("-"):
+		return Color(1.0, 0.30, 0.22)
+	if texto.is_valid_int():
+		return Color(1.0, 0.88, 0.28)
+	return Color(1.0, 1.0, 1.0)
+
+
 func _al_paso_cancelado() -> void:
 	_avisar("Blocked.")
+
+
+func detener_movimiento_para_uso() -> void:
+	"""Corta el auto-walk al armar un objeto para usar con otro.
+
+	El chat no llama a esta funcion: escribir permite que el auto-walk ya
+	enviado termine. Para un objeto pendiente si detenemos el camino antes de
+	seleccionar el objetivo, evitando que cambie la posicion entre ambos clics.
+	0x69 es la orden oficial de detener solo ese camino.
+	"""
+	if _solo_mirar or _con == null or _estado == null or not _estado.adentro:
+		return
+	_uso_con_pendiente.clear()
+	_actualizar_cursor_uso()
+	_ataque_pendiente_id = 0
+	_direccion_diferida = Vector2i.ZERO
+	_objetivo_diferido = Vector3i(-9999, -9999, -9999)
+	_con.enviar_detener_auto_camino()
+
+
+func preparar_uso_con(tipo: String, id_contenedor: int, slot: int,
+		cosa: Dictionary) -> bool:
+	"""Selecciona una runa para usarla con una criatura o una casilla.
+
+	El servidor 7.72 distingue 0x84 (Use With Creature) de 0x83 (Use With
+	Item/tile). La primera mitad se guarda aqui; el destino se elige con el
+	siguiente clic del jugador.
+	"""
+	if _solo_mirar or _con == null or _estado == null or not _estado.adentro:
+		return false
+	var cid := int(cosa.get("cid", 0))
+	if cid <= 0 or slot < 0:
+		return false
+	if tipo == "contenedor" and id_contenedor < 0:
+		return false
+	detener_movimiento_para_uso()
+	var origen := Vector3i(0xFFFF, slot, 0)
+	if tipo == "contenedor":
+		origen = Vector3i(0xFFFF, 0x40 | id_contenedor, slot)
+	_uso_con_pendiente = {
+		"origen": origen,
+		"cid": cid,
+		"nombre": str(cosa.get("nombre", "spell rune")),
+	}
+	_actualizar_cursor_uso()
+	_avisar("Use with %s: click a creature or map tile. Esc cancels." %
+		str(cosa.get("nombre", "spell rune")))
+	return true
+
+
+func esta_esperando_uso_con() -> bool:
+	return not _uso_con_pendiente.is_empty()
+
+
+func usar_con_criatura_pendiente(id: int) -> bool:
+	if _uso_con_pendiente.is_empty() or _con == null or id <= 0:
+		return false
+	var criatura: Dictionary = _estado.criaturas.get(id, {})
+	if criatura.is_empty() or id == _estado.mi_id:
+		return false
+	var origen: Vector3i = _uso_con_pendiente.get("origen", Vector3i.ZERO)
+	var cid := int(_uso_con_pendiente.get("cid", 0))
+	var nombre := str(_uso_con_pendiente.get("nombre", "spell rune"))
+	_con.enviar_usar_con_criatura(origen, cid, 0, id)
+	_uso_con_pendiente.clear()
+	_actualizar_cursor_uso()
+	_avisar("Using %s with %s..." % [nombre, str(criatura.get("nombre", "creature"))])
+	return true
+
+
+func _usar_con_clic(posicion_mouse: Vector2) -> void:
+	if _uso_con_pendiente.is_empty() or _con == null:
+		return
+	var posicion = _casilla_bajo_mouse(posicion_mouse)
+	if posicion == null or posicion.z != _estado.mi_pos.z:
+		_avisar("Choose a target inside the game map.")
+		return
+	var criatura_id := _criatura_bajo_mouse(posicion_mouse)
+	if criatura_id == 0:
+		criatura_id = _criatura_en_casilla(posicion)
+	if criatura_id != 0 and usar_con_criatura_pendiente(criatura_id):
+		return
+	var destino := _item_para_usar_en_casilla(posicion)
+	var destino_cid := 0
+	var destino_pila := 0
+	if not destino.is_empty():
+		var cosa: Dictionary = destino.get("cosa", {})
+		destino_cid = int(cosa.get("cid", 0))
+		destino_pila = int(destino.get("stackpos", 0))
+	var origen: Vector3i = _uso_con_pendiente.get("origen", Vector3i.ZERO)
+	var cid := int(_uso_con_pendiente.get("cid", 0))
+	var nombre := str(_uso_con_pendiente.get("nombre", "spell rune"))
+	_con.enviar_usar_item_ex(origen, cid, 0, posicion, destino_cid, destino_pila)
+	_uso_con_pendiente.clear()
+	_actualizar_cursor_uso()
+	_avisar("Using %s on (%d, %d, %d)..." % [
+		nombre, posicion.x, posicion.y, posicion.z])
 
 
 # --------------------------------------------------------------------
@@ -478,11 +1088,23 @@ func _al_paso_cancelado() -> void:
 func _al_cambiar() -> void:
 	if not _estado.adentro:
 		return
+	_confirmar_objeto_pendiente()
 	var aqui: Vector3i = _estado.mi_pos
 	if not _inspector_fijado:
 		_inspector_pos = aqui
 	var rearmado := false
-	if (aqui.z != _centro_escenario.z
+	var mapa_completo := _mapa_completo_pendiente
+	_mapa_completo_pendiente = false
+	if mapa_completo and _centro_escenario.x > -9000 \
+			and (aqui.z != _centro_escenario.z
+			or absi(aqui.x - _centro_escenario.x) >= PASOS_PARA_REARMAR
+			or absi(aqui.y - _centro_escenario.y) >= PASOS_PARA_REARMAR):
+		# Un teleport no es un paso normal: el origen del escenario cambia de
+		# ciudad. Montamos el radio jugable ahora mismo para que teclado, mapa y
+		# minimapa no queden apuntando a la zona anterior mientras se completa el
+		# fondo.
+		rearmado = _rearmar_escenario_teletransportado(aqui)
+	elif (aqui.z != _centro_escenario.z
 			or absi(aqui.x - _centro_escenario.x) >= PASOS_PARA_REARMAR
 			or absi(aqui.y - _centro_escenario.y) >= PASOS_PARA_REARMAR):
 		# La reconstruccion puede quedar trabajando varios frames. Solo
@@ -499,50 +1121,217 @@ func _al_cambiar() -> void:
 	_actualizar_inspector()
 
 
+func _al_mapa_recibido(_posicion: Vector3i) -> void:
+	# El estado ya limpia y reemplaza la ventana antes de emitir esta señal.
+	# Dejamos que `_al_cambiar` decida si es la entrada inicial o un teleport.
+	_mapa_completo_pendiente = true
+
+
+func _al_casilla_actualizada(posicion: Vector3i, _opcode: int) -> void:
+	"""Refleja un cambio confirmado en un solo SQM.
+
+	El servidor ya envio la casilla nueva cuando emite esta señal. El parche
+	solo cambia la presentacion; no decide si el objeto pudo aparecer, moverse
+	o transformarse.
+	"""
+	if not _estado.adentro or _centro_escenario.x < -9000:
+		return
+	if posicion.z < _centro_escenario.z or posicion.z > _centro_escenario.z + _pisos_abajo_visibles:
+		return
+	if absi(posicion.x - _centro_escenario.x) > RADIO \
+			or absi(posicion.y - _centro_escenario.y) > RADIO:
+		return
+	_confirmar_objeto_pendiente(posicion)
+	var monedas_anteriores: Array = _monedas_por_casilla.get(posicion, [])
+	var monedas := _monedas_en_casilla(posicion)
+	var moneda_animada := int(monedas[monedas.size() - 1]) if not monedas.is_empty() \
+		else (int(monedas_anteriores[monedas_anteriores.size() - 1]) \
+		if not monedas_anteriores.is_empty() else 0)
+	if moneda_animada in IDS_MONEDAS:
+		_mostrar_animacion_acunar(posicion, moneda_animada)
+	_monedas_por_casilla[posicion] = monedas
+	_actualizar_casilla_visual(posicion)
+
+
+func _monedas_en_casilla(posicion: Vector3i) -> Array:
+	var monedas := []
+	for cosa in _estado.casillas.get(posicion, []):
+		if cosa.get("tipo") != "item":
+			continue
+		var cid := int(cosa.get("cid", 0))
+		if cid in IDS_MONEDAS:
+			monedas.append(cid)
+	return monedas
+
+
+func _mostrar_animacion_acunar(posicion: Vector3i, cid: int) -> void:
+	if _capa_efectos == null or cid not in IDS_MONEDAS:
+		return
+	var brillo := Label.new()
+	brillo.text = "✦"
+	brillo.add_theme_font_size_override("font_size", 34)
+	brillo.add_theme_color_override("font_color", _color_moneda(cid))
+	brillo.add_theme_color_override("font_outline_color", Color(0.08, 0.05, 0.01, 0.96))
+	brillo.add_theme_constant_override("outline_size", 5)
+	brillo.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	_capa_efectos.add_child(brillo)
+	_efectos_visuales.append({
+		"tipo": "acuñar",
+		"nodo": brillo,
+		"posicion": posicion,
+		"tiempo": 0.0,
+		"duracion": 0.52,
+	})
+
+
+func _color_moneda(cid: int) -> Color:
+	match cid:
+		3031:
+			return Color(1.0, 0.86, 0.22)       # gold
+		3035:
+			return Color(0.78, 0.86, 0.94)      # platinum
+		3043:
+			return Color(0.48, 0.96, 1.0)       # crystal
+	return Color(1.0, 0.86, 0.22)
+
+
+func _actualizar_casilla_visual(posicion: Vector3i) -> void:
+	_ocultar_instancias_base(posicion)
+	_anular_animacion_palanca(posicion)
+	if _parches_casilla.has(posicion):
+		var parche_anterior: Node3D = _parches_casilla[posicion]
+		if is_instance_valid(parche_anterior):
+			parche_anterior.free()
+		_parches_casilla.erase(posicion)
+
+	var grupos := {}
+	var ids := PackedInt32Array()
+	for cosa in _estado.casillas.get(posicion, []):
+		if cosa.get("tipo") == "item":
+			ids.append(int(cosa.get("cid", 0)))
+	if ids.is_empty():
+		return
+
+	var parche := Node3D.new()
+	parche.name = "ParcheCasilla_%d_%d_%d" % [posicion.x, posicion.y, posicion.z]
+	_piso_mundo.add_child(parche)
+	var conteo_anterior := _dibujadas
+	var desconocidos_anterior := _desconocidos
+	_actualizando_casilla = true
+	_destino_volcado = parche
+	_animados_volcado = []
+	_animaciones_palanca_volcado = []
+	_juntar_casilla(grupos, posicion, ids)
+	var claves: Array = grupos.keys()
+	claves.sort()
+	for clave in claves:
+		_volcar_grupo(clave, grupos[clave])
+	_actualizando_casilla = false
+	_destino_volcado = null
+	_animados.append_array(_animados_volcado)
+	_animaciones_palanca.append_array(_animaciones_palanca_volcado)
+	_animados_volcado = []
+	_animaciones_palanca_volcado = []
+	_dibujadas = conteo_anterior
+	_desconocidos = desconocidos_anterior
+	_parches_casilla[posicion] = parche
+
+
+func _ocultar_instancias_base(posicion: Vector3i) -> void:
+	for referencia in _instancias_por_casilla.get(posicion, []):
+		var nodo: Node3D = referencia.get("nodo")
+		var indice := int(referencia.get("indice", -1))
+		if not is_instance_valid(nodo):
+			continue
+		# Los objetos normales viven dentro de un MultiMesh. La Magic Wall
+		# conserva un nodo propio para que cada instancia anime sus frames como
+		# la version de 3DTIBIA.
+		var multimalla := nodo as MultiMeshInstance3D
+		if multimalla == null:
+			nodo.visible = false
+			continue
+		if indice < 0 or indice >= multimalla.multimesh.instance_count:
+			continue
+		var transformacion := multimalla.multimesh.get_instance_transform(indice)
+		transformacion.origin = Vector3(0.0, -10000.0, 0.0)
+		multimalla.multimesh.set_instance_transform(indice, transformacion)
+
+
+func _anular_animacion_palanca(posicion: Vector3i) -> void:
+	var restantes: Array = []
+	for animacion in _animaciones_palanca:
+		if animacion.get("posicion", Vector3i(-9999, -9999, -9999)) != posicion:
+			restantes.append(animacion)
+	_animaciones_palanca = restantes
+
+
 func _crear_jugador_visual() -> void:
 	if is_instance_valid(_jugador_nodo):
 		return
 	_jugador_nodo = Node3D.new()
 	_jugador_nodo.name = "JugadorVisual"
 	add_child(_jugador_nodo)
+	# Este es el mismo personaje authored que usaba 3DTIBIA: una capsula
+	# para el cuerpo, una esfera para la cabeza y una nariz que marca la
+	# direccion. El jugador no depende de un atlas 2D para verse completo.
+	_jugador_visual = Node3D.new()
+	_jugador_visual.name = "VisualPrincipal3DTibia"
+	_jugador_visual.scale = Vector3.ONE * ESCALA_JUGADOR
+	_jugador_nodo.add_child(_jugador_visual)
+
 	_jugador_malla = MeshInstance3D.new()
-	_jugador_malla.name = "Outfit"
-	_jugador_nodo.add_child(_jugador_malla)
+	_jugador_malla.name = "Cuerpo"
+	var cap := CapsuleMesh.new()
+	cap.radius = 0.26
+	cap.height = 1.0
+	_jugador_malla.mesh = cap
+	_jugador_malla.position = Vector3(0.0, 0.6, 0.0)
+	_jugador_malla.material_override = _material_personaje(
+		Color(0.72, 0.24, 0.22), 0.7)
+	_jugador_visual.add_child(_jugador_malla)
+
+	_jugador_cabeza = MeshInstance3D.new()
+	_jugador_cabeza.name = "Cabeza"
+	var esf := SphereMesh.new()
+	esf.radius = 0.19
+	esf.height = 0.38
+	_jugador_cabeza.mesh = esf
+	_jugador_cabeza.position = Vector3(0.0, 1.25, 0.0)
+	_jugador_cabeza.material_override = _material_personaje(
+		Color(0.88, 0.73, 0.58), 0.8)
+	_jugador_visual.add_child(_jugador_cabeza)
+
+	_jugador_nariz = MeshInstance3D.new()
+	_jugador_nariz.name = "Nariz"
+	var nm := BoxMesh.new()
+	nm.size = Vector3(0.1, 0.1, 0.18)
+	_jugador_nariz.mesh = nm
+	_jugador_nariz.position = Vector3(0.0, 1.25, -0.2)
+	_jugador_nariz.material_override = _material_personaje(
+		Color(0.2, 0.2, 0.22), 0.8)
+	_jugador_visual.add_child(_jugador_nariz)
 
 	var ficha: Dictionary = _estado.criaturas.get(_estado.mi_id, {})
 	_jugador_tipo = int(ficha.get("apariencia", 128))
 	_jugador_direccion = int(ficha.get("direccion", 2))
 	_actualizar_sprite_jugador(0)
 
-	if not _jugador_es_sprite:
-		var cuerpo := CapsuleMesh.new()
-		cuerpo.radius = LADO * 0.18
-		cuerpo.height = LADO * 0.75
-		_jugador_malla.mesh = cuerpo
-		_jugador_malla.position.y = LADO * 0.45
-		var material := StandardMaterial3D.new()
-		material.albedo_color = Color(0.78, 0.24, 0.18)
-		material.shading_mode = BaseMaterial3D.SHADING_MODE_UNSHADED
-		_jugador_malla.material_override = material
+
+func _material_personaje(color: Color, rugosidad: float) -> StandardMaterial3D:
+	var material := StandardMaterial3D.new()
+	material.albedo_color = color
+	material.roughness = rugosidad
+	material.shading_mode = BaseMaterial3D.SHADING_MODE_UNSHADED
+	return material
 
 
 func _actualizar_sprite_jugador(fase: int) -> void:
-	if not is_instance_valid(_jugador_malla):
+	if not is_instance_valid(_jugador_visual):
 		return
-	var cuadro: Dictionary = _sprites.cuadro_outfit(
-		_jugador_tipo, _jugador_direccion, fase)
-	if cuadro.is_empty():
-		_jugador_es_sprite = false
-		return
-	_jugador_es_sprite = true
-	var alto: int = _sprites.alto_de_outfit(_jugador_tipo)
-	var q := QuadMesh.new()
-	q.size = Vector2(LADO, alto * LADO)
-	_jugador_malla.mesh = q
-	_jugador_malla.scale = Vector3.ONE * ESCALA_JUGADOR
-	_jugador_malla.position = Vector3(
-		0.0, alto * LADO * ESCALA_JUGADOR * 0.5 + 0.02, 0.0)
-	_jugador_malla.material_override = _material_de_criatura(cuadro)
+	# Se conserva el nombre de la funcion porque tambien la llama el control
+	# de giro, pero ya no cambia laminas: gira la nariz del modelo authored.
+	_jugador_es_sprite = false
+	_jugador_visual.rotation.y = -float(posmod(_jugador_direccion, 4)) * PI / 2.0
 
 
 func _actualizar_jugador_confirmado(aqui: Vector3i, rearmado: bool) -> void:
@@ -566,6 +1355,7 @@ func _actualizar_jugador_confirmado(aqui: Vector3i, rearmado: bool) -> void:
 			if delta.x != 0 and delta.y != 0:
 				_jugador_duracion *= MULTIPLICADOR_DIAGONAL
 			_jugador_direccion = _direccion_de_movimiento(delta)
+			_actualizar_sprite_jugador(0)
 			_jugador_fase = -1
 			_jugador_moviendose = true
 	_jugador_pos_confirmada = aqui
@@ -586,9 +1376,8 @@ func _animar_jugador(delta: float) -> void:
 	# animacion de caminar solo corre durante una interpolacion de movimiento
 	# confirmada por el servidor.
 	if not _jugador_moviendose:
-		if _jugador_es_sprite and _jugador_fase != 0:
-			_jugador_fase = 0
-			_actualizar_sprite_jugador(0)
+		if is_instance_valid(_jugador_visual):
+			_jugador_visual.position.y = 0.0
 		return
 	if _jugador_moviendose:
 		_jugador_t = minf(1.0, _jugador_t + delta / maxf(0.01, _jugador_duracion))
@@ -597,11 +1386,8 @@ func _animar_jugador(delta: float) -> void:
 		if _jugador_t >= 1.0:
 			_jugador_nodo.position = _jugador_destino
 			_jugador_moviendose = false
-	if _jugador_es_sprite:
-		var fase := int(_reloj_animacion * FOTOGRAMAS_POR_SEGUNDO)
-		if fase != _jugador_fase:
-			_jugador_fase = fase
-			_actualizar_sprite_jugador(fase)
+	if is_instance_valid(_jugador_visual):
+		_jugador_visual.position.y = sin(_reloj_animacion * PI * 2.0 * 2.5) * 0.035
 
 
 func _rearmar_escenario(centro: Vector3i) -> bool:
@@ -622,18 +1408,48 @@ func _rearmar_escenario(centro: Vector3i) -> bool:
 	return false
 
 
-func _rearmar_escenario_inmediato(centro: Vector3i) -> void:
+func _rearmar_escenario_teletransportado(centro: Vector3i) -> bool:
+	"""Cambia de ciudad sin dejar el control sobre el centro anterior.
+
+	El escenario completo puede tardar porque contiene miles de sprites. El
+	radio inmediato cubre la camara y las primeras rutas; la reconstruccion
+	diferida termina el radio largo usando la misma fuente del mapa.
+	"""
+	if _rearmado_en_curso:
+		# No dejamos que una tarea anterior sea la que decida el centro final.
+		# El siguiente ciclo lo retomara cuando termine su tanda actual.
+		_centro_rearmado_pendiente = centro
+		return false
+	_rearmar_escenario_inmediato(centro, RADIO_INMEDIATO)
+	_centro_rearmado_pendiente = Vector3i(-9999, -9999, -9999)
+	_rearmado_en_curso = true
+	_construir_escenario_diferido.call_deferred(centro)
+	# El teleport debe recolocar la camara, no hacerla viajar desde la ciudad
+	# anterior durante varios segundos.
+	_camara_colocada = false
+	return true
+
+
+func _rearmar_escenario_inmediato(centro: Vector3i, radio: int = RADIO) -> void:
 	_centro_escenario = centro
+	_instancias_por_casilla.clear()
+	_instancias_en_construccion.clear()
+	for posicion in _parches_casilla:
+		var parche: Node3D = _parches_casilla[posicion]
+		if is_instance_valid(parche):
+			parche.free()
+	_parches_casilla.clear()
 	for hijo in _piso_mundo.get_children():
 		hijo.queue_free()
 	_animados.clear()
+	_animaciones_palanca.clear()
 	_destino_volcado = null
 	_animados_volcado.clear()
 	_construccion_activa = false
 	_dibujadas = 0
 	_desconocidos = 0
 
-	var delo_disco: Dictionary = _disco.casillas_de(centro, RADIO)
+	var delo_disco: Dictionary = _disco.casillas_de(centro, radio)
 	# La misma ventana sirve para dibujar y para buscar rutas. Consultar el
 	# archivo del mapa por cada vecino del algoritmo era lo que congelaba el
 	# hilo principal al hacer clic.
@@ -659,7 +1475,7 @@ func _rearmar_escenario_inmediato(centro: Vector3i) -> void:
 	for donde in _estado.casillas:
 		if donde.z < centro.z or donde.z > centro.z + _pisos_abajo_visibles:
 			continue
-		if absi(donde.x - centro.x) > RADIO or absi(donde.y - centro.y) > RADIO:
+		if absi(donde.x - centro.x) > radio or absi(donde.y - centro.y) > radio:
 			continue
 		var ids := PackedInt32Array()
 		for cosa in _estado.casillas[donde]:
@@ -693,6 +1509,7 @@ func _construir_escenario_diferido(centro: Vector3i) -> void:
 	"""
 	var disco_nuevo: Dictionary = _disco.casillas_de(centro, RADIO)
 	var grupos_cercanos := {}
+	_instancias_en_construccion.clear()
 	var claves_disco: Array = disco_nuevo.keys()
 	var indice := 0
 	_construccion_activa = true
@@ -862,6 +1679,9 @@ func _aplicar_escenario_rearmado(centro: Vector3i, mundo_nuevo: Node3D,
 		_jugador_destino -= desplazamiento
 
 	_centro_escenario = centro
+	_instancias_por_casilla = _instancias_en_construccion.duplicate(true)
+	_instancias_en_construccion.clear()
+	_parches_casilla.clear()
 	_mapa_visible = mapa_nuevo
 	_bloqueo_disco_cache.clear()
 	var mundo_viejo := _piso_mundo
@@ -870,6 +1690,7 @@ func _aplicar_escenario_rearmado(centro: Vector3i, mundo_nuevo: Node3D,
 	if is_instance_valid(mundo_viejo):
 		mundo_viejo.queue_free()
 	_animados = animados_nuevos
+	_animaciones_palanca.clear()
 	_dibujadas = dibujadas_nuevas
 	_desconocidos = desconocidos_nuevos
 	_dibujar_criaturas()
@@ -932,9 +1753,11 @@ func _juntar_casilla(grupos: Dictionary, donde: Vector3i, ids,
 		var clave := "%d_%d_%d" % [cid, forma, orientacion]
 		var grupo = grupos.get(clave)
 		if grupo == null:
-			grupo = {"cid": cid, "forma": forma, "orientacion": orientacion, "donde": []}
+			grupo = {"cid": cid, "forma": forma, "orientacion": orientacion,
+				"donde": [], "casillas": []}
 			grupos[clave] = grupo
 		grupo["donde"].append(Vector3(posicion_3d.x, y, posicion_3d.z))
+		grupo["casillas"].append(donde)
 		if _construccion_activa:
 			_dibujadas_construccion += 1
 		else:
@@ -1018,7 +1841,8 @@ func _forma_de_mapping(primitiva: String) -> int:
 func _es_acceso_de_piso(info: Dictionary) -> bool:
 	var nombre := String(info.get("nombre", "")).to_lower()
 	return nombre.contains("sewer") or nombre.contains("grate") \
-		or nombre == "ladder" or nombre.contains("stairs") \
+		or nombre.contains("lever") or nombre == "ladder" \
+		or nombre.contains("stairs") \
 		or nombre.contains("stair") or nombre.contains("trapdoor") \
 		or nombre.contains("hole") or nombre.contains("ramp")
 
@@ -1246,6 +2070,9 @@ func _volcar_grupo(clave: String, grupo: Dictionary) -> void:
 	var cid: int = grupo["cid"]
 	var forma: int = grupo["forma"]
 	var orientacion: int = grupo.get("orientacion", OrientacionPared.EJE_X)
+	if cid in IDS_MAGIC_WALL:
+		_volcar_magic_wall_grupo(grupo)
+		return
 
 	var mm := MultiMesh.new()
 	mm.transform_format = MultiMesh.TRANSFORM_3D
@@ -1280,6 +2107,25 @@ func _volcar_grupo(clave: String, grupo: Dictionary) -> void:
 	if is_instance_valid(_destino_volcado):
 		destino = _destino_volcado
 	destino.add_child(nodo)
+	if not _actualizando_casilla:
+		var tabla := _instancias_en_construccion if is_instance_valid(_destino_volcado) \
+				else _instancias_por_casilla
+		var casillas_grupo: Array = grupo.get("casillas", [])
+		for indice in range(casillas_grupo.size()):
+			var posicion: Vector3i = casillas_grupo[indice]
+			if not tabla.has(posicion):
+				tabla[posicion] = []
+			tabla[posicion].append({"nodo": nodo, "indice": indice})
+	if _actualizando_casilla and forma == Forma.ACOSTADA \
+			and ESTADOS_PALANCA.has(cid):
+		var casillas_palanca: Array = grupo.get("casillas", [])
+		if not casillas_palanca.is_empty():
+			_animaciones_palanca_volcado.append({
+				"nodo": nodo,
+				"cid": cid,
+				"posicion": casillas_palanca[0],
+				"tiempo": 0.0,
+			})
 
 	if forma != Forma.PLACEHOLDER and forma != Forma.CAJA \
 			and forma != Forma.MONTANA \
@@ -1288,6 +2134,40 @@ func _volcar_grupo(clave: String, grupo: Dictionary) -> void:
 			_animados_volcado.append({"nodo": nodo, "cid": cid, "forma": forma})
 		else:
 			_animados.append({"nodo": nodo, "cid": cid, "forma": forma})
+
+
+func _volcar_magic_wall_grupo(grupo: Dictionary) -> void:
+	"""Vuelca la Magic Wall original de 3DTIBIA.
+
+	La pared no se mete en el MultiMesh de estructuras porque su material
+	cambia de textura cada 200 ms. Los muros suelen ser pocos y el nodo propio
+	permite mantener exactamente el cubo 1x2x1 y el ciclo de tres frames del
+	cliente anterior.
+	"""
+	var cid: int = grupo["cid"]
+	var sitios: Array = grupo["donde"]
+	var casillas: Array = grupo.get("casillas", [])
+	var destino: Node3D = _piso_mundo
+	if is_instance_valid(_destino_volcado):
+		destino = _destino_volcado
+	for indice in range(sitios.size()):
+		var muro = GUION_MAGIC_WALL.new()
+		muro.name = "MagicWall3D_%d_%d" % [cid, indice]
+		muro.configurar(cid)
+		var posicion_muro: Vector3 = sitios[indice]
+		# `_juntar_casilla` centra las paredes normales segun su altura
+		# configurable. El cubo heredado de 3DTIBIA mide siempre dos pisos y
+		# quedaba apoyado con el centro exactamente en Y=1.0.
+		posicion_muro.y += 1.0 - _alto_pared_visual * 0.5
+		muro.position = posicion_muro
+		destino.add_child(muro)
+		if not _actualizando_casilla:
+			var tabla := _instancias_en_construccion if is_instance_valid(_destino_volcado) \
+					else _instancias_por_casilla
+			var posicion: Vector3i = casillas[indice]
+			if not tabla.has(posicion):
+				tabla[posicion] = []
+			tabla[posicion].append({"nodo": muro, "indice": -1})
 
 
 func _altura_de(z: int) -> float:
@@ -1848,6 +2728,7 @@ func _material_de_criatura(cuadro: Dictionary) -> StandardMaterial3D:
 func _dibujar_criaturas() -> void:
 	for hijo in _piso_bichos.get_children():
 		hijo.queue_free()
+	_animaciones_criaturas.clear()
 	for id in _ids_criaturas_ordenados():
 		# El jugador tiene una entidad visual propia para poder interpolar
 		# entre confirmaciones del servidor sin duplicarlo como criatura.
@@ -1880,6 +2761,9 @@ func _dibujar_criaturas() -> void:
 		m.position = Vector3(posicion_3d.x, posicion_3d.y + alto * 0.5 + 0.02,
 			posicion_3d.z)
 		_piso_bichos.add_child(m)
+		var fases: int = _sprites.fases_de_outfit(tipo, direccion)
+		if fases > 1:
+			_animaciones_criaturas.append({"nodo": m, "id": int(id)})
 
 
 func _ids_criaturas_ordenados() -> Array:
@@ -1949,6 +2833,116 @@ func _animar() -> void:
 				nodo.material_override = _material(cuadro, a["forma"], int(a["cid"]))
 
 
+func _animar_criaturas() -> void:
+	if _animaciones_criaturas.is_empty():
+		return
+	var fase := int(_reloj_animacion * FOTOGRAMAS_POR_SEGUNDO)
+	for animacion in _animaciones_criaturas:
+		var nodo: MeshInstance3D = animacion.get("nodo")
+		if not is_instance_valid(nodo):
+			continue
+		var id := int(animacion.get("id", 0))
+		var criatura: Dictionary = _estado.criaturas.get(id, {})
+		if criatura.is_empty():
+			continue
+		var tipo := int(criatura.get("apariencia", 0))
+		var direccion := int(criatura.get("direccion", 2))
+		var cuadro: Dictionary = _sprites.cuadro_outfit(tipo, direccion, fase)
+		if not cuadro.is_empty():
+			nodo.material_override = _material_cubo_criatura(criatura, cuadro)
+
+
+func _animar_efectos(delta: float) -> void:
+	if _efectos_visuales.is_empty() or _camara == null \
+			or _centro_escenario.x < -9000:
+		return
+	var restantes: Array = []
+	for efecto in _efectos_visuales:
+		var nodo = efecto.get("nodo")
+		if not is_instance_valid(nodo):
+			continue
+		var tiempo := float(efecto.get("tiempo", 0.0)) + delta
+		var duracion := maxf(0.05, float(efecto.get("duracion", 0.5)))
+		efecto["tiempo"] = tiempo
+		var progreso := clampf(tiempo / duracion, 0.0, 1.0)
+		var tipo_visual := str(efecto.get("tipo", ""))
+		if tipo_visual == "mensaje_centro":
+			# El mensaje ya esta anclado al centro superior del viewport; no se
+			# proyecta contra el mapa como los textos de combate.
+			var entrada := clampf(progreso / 0.12, 0.0, 1.0)
+			var salida := clampf((progreso - 0.68) / 0.32, 0.0, 1.0)
+			nodo.modulate.a = lerpf(1.0, 0.0, salida)
+			nodo.scale = Vector2.ONE * lerpf(0.94, 1.0, entrada)
+		elif tipo_visual == "disparo" or tipo_visual == "proyectil":
+			var desde: Vector3i = efecto.get("origen", Vector3i.ZERO)
+			var hasta: Vector3i = efecto.get("destino", Vector3i.ZERO)
+			var mundo_desde := COORD.tibia_a_mundo(desde, _centro_escenario,
+				LADO, ALTO_PISO) + Vector3(0.0, 0.70, 0.0)
+			var mundo_hasta := COORD.tibia_a_mundo(hasta, _centro_escenario,
+				LADO, ALTO_PISO) + Vector3(0.0, 0.70, 0.0)
+			var p_desde := _camara.unproject_position(mundo_desde)
+			var p_hasta := _camara.unproject_position(mundo_hasta)
+			var punto := p_desde.lerp(p_hasta, progreso)
+			if tipo_visual == "proyectil":
+				var fase_proyectil := int(tiempo * 12.0)
+				var cuadro_proyectil: Dictionary = _sprites.cuadro_proyectil(
+					int(efecto.get("proyectil", 0)), fase_proyectil)
+				if not cuadro_proyectil.is_empty():
+					nodo.texture = _textura_de_cuadro(cuadro_proyectil)
+				nodo.position = punto - nodo.size * 0.5
+				nodo.rotation = p_desde.angle_to_point(p_hasta)
+			else:
+				nodo.points = PackedVector2Array([p_desde, punto])
+			nodo.modulate.a = 1.0 - progreso
+		else:
+			var posicion: Vector3i = efecto.get("posicion", Vector3i.ZERO)
+			var mundo := COORD.tibia_a_mundo(posicion, _centro_escenario,
+				LADO, ALTO_PISO) + Vector3(0.0, 0.78 + progreso * 0.42, 0.0)
+			var pantalla := _camara.unproject_position(mundo)
+			nodo.position = pantalla - Vector2(nodo.size.x * 0.5, nodo.size.y * 0.5)
+			nodo.modulate.a = 1.0 - progreso
+			if tipo_visual == "efecto":
+				var fase_efecto := int(tiempo * FOTOGRAMAS_POR_SEGUNDO)
+				var cuadro_efecto: Dictionary = _sprites.cuadro_efecto(
+					int(efecto.get("efecto", 0)), fase_efecto)
+				if not cuadro_efecto.is_empty():
+					nodo.texture = _textura_de_cuadro(cuadro_efecto)
+			elif tipo_visual == "marca":
+				nodo.scale = Vector2.ONE * (0.70 + progreso * 0.70)
+			elif tipo_visual == "acuñar":
+				# Destello corto con rebote: funciona igual para oro, platino
+				# y cristal porque el color viene del client id transformado.
+				nodo.scale = Vector2.ONE * lerpf(0.72, 1.30, progreso)
+				nodo.rotation = lerpf(-0.18, 0.18, progreso)
+		if tiempo < duracion:
+			restantes.append(efecto)
+		else:
+			nodo.queue_free()
+	_efectos_visuales = restantes
+
+
+func _animar_palancas(delta: float) -> void:
+	if _animaciones_palanca.is_empty():
+		return
+	var restantes: Array = []
+	for animacion in _animaciones_palanca:
+		var nodo: MultiMeshInstance3D = animacion.get("nodo")
+		if not is_instance_valid(nodo):
+			continue
+		var cid: int = int(animacion.get("cid", 0))
+		var tiempo: float = float(animacion.get("tiempo", 0.0)) + delta
+		animacion["tiempo"] = tiempo
+		var estado_anterior: int = int(ESTADOS_PALANCA.get(cid, cid))
+		var dibujo: int = estado_anterior \
+				if tiempo < DURACION_ANIMACION_PALANCA * 0.45 else cid
+		var cuadro: Dictionary = _sprites.cuadro_item(dibujo, 0)
+		if not cuadro.is_empty():
+			nodo.material_override = _material(cuadro, Forma.ACOSTADA, cid)
+		if tiempo < DURACION_ANIMACION_PALANCA:
+			restantes.append(animacion)
+	_animaciones_palanca = restantes
+
+
 func _mostrar_ajuste_vivo() -> void:
 		_avisar("LIVE TUNING\nWall: height %.2f | thickness %.2f\nF8/F9 height -/+   F10/F11 thickness -/+   F12 reset   F7 exit" % [
 		_alto_pared_visual, _grosor_pared_visual])
@@ -1998,8 +2992,8 @@ func _procesar_ajuste_vivo(evento: InputEventKey) -> bool:
 		KEY_F11:
 			_grosor_pared_visual = minf(0.80, _grosor_pared_visual + 0.05)
 		KEY_F12:
-			_alto_pared_visual = ALTO_PISO * 1.05
-			_grosor_pared_visual = LADO * 0.20
+			_alto_pared_visual = ALTO_PISO * 2.0
+			_grosor_pared_visual = LADO * 0.28
 		_:
 			return false
 	_reconstruir_ajuste_vivo()
@@ -2013,10 +3007,20 @@ func _process(delta: float) -> void:
 	_desde_ultimo_paso += delta
 	_reloj_animacion += delta
 	_tiempo_dia_noche += delta
+	if not _objeto_pendiente.is_empty():
+		_objeto_pendiente["tiempo"] = float(_objeto_pendiente.get("tiempo", 0.0)) + delta
+		if float(_objeto_pendiente["tiempo"]) >= 1.6:
+			# El servidor no confirmó la operación. Se libera la entrada para
+			# no dejar al jugador bloqueado por un objeto rechazado.
+			_objeto_pendiente.clear()
+			_liberar_movimiento_diferido()
 	if _tiempo_dia_noche >= 0.5:
 		_tiempo_dia_noche = 0.0
 		_actualizar_dia_noche()
 	_animar()
+	_animar_criaturas()
+	_animar_efectos(delta)
+	_animar_palancas(delta)
 	_animar_jugador(delta)
 	_mover_camara(delta)
 	_leer_teclas()
@@ -2109,13 +3113,20 @@ func _mover_camara(delta: float) -> void:
 
 
 func _leer_teclas() -> void:
-	if _solo_mirar or not _estado.adentro or _desde_ultimo_paso < ESPERA_ENTRE_PASOS:
+	if _solo_mirar or not _estado.adentro \
+			or (_interfaz != null and _interfaz.esta_escribiendo()) \
+			or not _uso_con_pendiente.is_empty() \
+			or _desde_ultimo_paso < ESPERA_ENTRE_PASOS:
 		return
 	# protocolgame.cpp:497-500 — norte, este, sur, oeste.
 	if _con == null:
 		return
 	var direccion := _direccion_teclado()
 	if direccion == Vector2i.ZERO:
+		return
+	if not _objeto_pendiente.is_empty():
+		_direccion_diferida = direccion
+		_objetivo_diferido = Vector3i(-9999, -9999, -9999)
 		return
 	var opcode := _opcode_de_direccion(direccion)
 	if opcode == 0:
@@ -2195,16 +3206,71 @@ func _opcode_de_direccion(direccion: Vector2i) -> int:
 	return 0
 
 
+func _cancelar_accion() -> void:
+	_uso_con_pendiente.clear()
+	_actualizar_cursor_uso()
+	if _solo_mirar or _con == null or not _estado.adentro:
+		return
+	_ataque_pendiente_id = 0
+	_direccion_diferida = Vector2i.ZERO
+	_objetivo_diferido = Vector3i(-9999, -9999, -9999)
+	_acceso_reintento_pendiente = false
+	_con.enviar_cancelar_accion()
+	_avisar("Action cancelled.")
+
+
 func _unhandled_input(evento: InputEvent) -> void:
+	if _interfaz != null and _interfaz.esta_escribiendo():
+		if evento is InputEventKey and evento.pressed \
+				and evento.keycode == KEY_ESCAPE:
+			_interfaz.cancelar_chat()
+			get_viewport().set_input_as_handled()
+			return
+		if evento is InputEventMouse:
+			get_viewport().set_input_as_handled()
+			return
+	if not _uso_con_pendiente.is_empty():
+		if evento is InputEventKey:
+			if evento.pressed and not evento.echo and evento.keycode == KEY_ESCAPE:
+				_cancelar_accion()
+			get_viewport().set_input_as_handled()
+			return
+		if evento is InputEventMouseButton \
+				and evento.button_index == MOUSE_BUTTON_LEFT:
+			if not evento.pressed:
+				_usar_con_clic(evento.position)
+			get_viewport().set_input_as_handled()
+			return
+		if evento is InputEventMouse:
+			get_viewport().set_input_as_handled()
+			return
 	if evento is InputEventKey:
 		if _procesar_ajuste_vivo(evento):
 			return
-		if evento.pressed and not evento.echo and evento.ctrl_pressed:
-			if _girar_en_sitio(evento.keycode):
+		if evento.pressed and not evento.echo \
+				and evento.keycode in [KEY_ENTER, KEY_KP_ENTER]:
+			if _interfaz != null:
+				_interfaz.activar_chat()
 				get_viewport().set_input_as_handled()
 			return
-		if evento.pressed and evento.keycode == KEY_ESCAPE:
-			get_tree().quit()
+		if evento.pressed and not evento.echo and evento.ctrl_pressed:
+			match evento.keycode:
+				KEY_G:
+					solicitar_cambio_personaje()
+				KEY_Q, KEY_L:
+					solicitar_logout()
+				KEY_K:
+					if _interfaz != null and _estado.adentro:
+						_interfaz.alternar_hotkeys()
+				_:
+					if _girar_en_sitio(evento.keycode):
+						get_viewport().set_input_as_handled()
+						return
+			get_viewport().set_input_as_handled()
+			return
+		if evento.pressed and not evento.echo and evento.keycode == KEY_ESCAPE:
+			_cancelar_accion()
+			get_viewport().set_input_as_handled()
 		return
 	if evento is InputEventMouseButton:
 		if evento.button_index == MOUSE_BUTTON_LEFT:
@@ -2281,6 +3347,24 @@ func _unhandled_input(evento: InputEvent) -> void:
 				_consumido = true
 
 
+func _input(evento: InputEvent) -> void:
+	# El mapa es Node3D y no participa del drag-and-drop de Control. Capturamos
+	# aqui el release cuando el destino es un slot del HUD.
+	if not (_arrastrando_objeto and evento is InputEventMouseButton):
+		return
+	if evento.button_index != MOUSE_BUTTON_LEFT or evento.pressed:
+		return
+	if _interfaz == null or not _interfaz.recibir_objeto_del_mundo(
+			evento.position, _origen_objeto, _objeto_arrastre):
+		return
+	_boton_izq = false
+	_arrastrando_objeto = false
+	_arrastre_objeto_pendiente = false
+	_objeto_arrastre = {}
+	_consumido = true
+	get_viewport().set_input_as_handled()
+
+
 func _iniciar_arrastre_objeto(posicion_mouse: Vector2) -> void:
 	"""Deja un objeto listo; el drag empieza solo al mover el mouse."""
 	_arrastrando_objeto = false
@@ -2340,6 +3424,13 @@ func _enviar_arrastre(origen: Vector3i, objeto: Dictionary,
 		return {}
 	var cantidad := 1 if es_criatura else int(cosa.get("cantidad", 1))
 	_con.enviar_mover_cosa(origen, cid, pila, destino, cantidad)
+	_objeto_pendiente = {
+		"criatura": es_criatura,
+		"id": int(cosa.get("id", 0)),
+		"origen": origen,
+		"destino": destino,
+		"tiempo": 0.0,
+	}
 	return {
 		"client_id": cid,
 		"stackpos": pila,
@@ -2347,6 +3438,29 @@ func _enviar_arrastre(origen: Vector3i, objeto: Dictionary,
 		"criatura": es_criatura,
 		"nombre": str(cosa.get("nombre", "creature" if es_criatura else "item")),
 	}
+
+
+func recoger_objeto_en_ranura(origen: Vector3i, objeto: Dictionary,
+		stackpos: int, tipo_destino: String, id_destino: int,
+		ranura_destino: int) -> bool:
+	"""Mueve un item del suelo a inventario/contenedor con el 0x78 real."""
+	if _con == null or not _estado.adentro or stackpos < 0:
+		return false
+	var cosa: Dictionary = objeto.get("cosa", {})
+	if cosa.get("tipo") != "item":
+		return false
+	var cid := int(cosa.get("cid", 0))
+	if cid <= 0 or ranura_destino < 0:
+		return false
+	var destino := Vector3i(0xFFFF, ranura_destino, 0)
+	if tipo_destino == "contenedor":
+		if id_destino < 0:
+			return false
+		destino = Vector3i(0xFFFF, 0x40 | id_destino, ranura_destino)
+	var cantidad := int(cosa.get("cantidad", 1))
+	_con.enviar_mover_ubicacion(origen, cid, stackpos, destino, cantidad)
+	_avisar("Picking up %s..." % str(cosa.get("nombre", "item")))
+	return true
 
 
 func soltar_inventario_en_mouse(posicion_mouse: Vector2, datos: Dictionary) -> void:
@@ -2431,10 +3545,19 @@ func _mirar_en_casilla(posicion_mouse: Vector2) -> void:
 	if posicion == null:
 		return
 	_seleccionar_inspector(posicion)
+	if _con != null and _estado.adentro:
+		# 0x8C usa la casilla y el objeto visible que resuelve el servidor.
+		# Esto hace que el texto "You see ..." llegue por el flujo normal B4.
+		_con.enviar_mirar(posicion, 0, 0)
+		_avisar("Looking at (%d, %d, %d)..." % [posicion.x, posicion.y, posicion.z])
 
 
 func _caminar_a_casilla(posicion_mouse: Vector2) -> void:
 	if _solo_mirar or _con == null or not _estado.adentro:
+		return
+	var criatura_clickeada := _criatura_bajo_mouse(posicion_mouse)
+	if criatura_clickeada != 0:
+		atacar_criatura(criatura_clickeada)
 		return
 	var objetivo = _casilla_bajo_mouse(posicion_mouse)
 	if objetivo == null or objetivo.z != _estado.mi_pos.z:
@@ -2504,6 +3627,44 @@ func _criatura_en_casilla(posicion: Vector3i) -> int:
 	return 0
 
 
+func _criatura_bajo_mouse(posicion_mouse: Vector2) -> int:
+	"""Detecta el cuerpo 3D antes de proyectar el clic al suelo.
+
+	El rayo matematico del map click cruza el piso, asi que un clic sobre la
+	 cabeza de un monster podia terminar en la casilla de atras. La posicion
+	 sigue viniendo del estado del servidor; solo usamos su proyeccion para
+	 elegir la criatura que el usuario realmente pulso.
+	"""
+	if _camara == null:
+		return 0
+	var elegido := 0
+	var mejor_distancia := INF
+	for id in _ids_criaturas_ordenados():
+		if int(id) == _estado.mi_id:
+			continue
+		var criatura: Dictionary = _estado.criaturas[id]
+		var posicion: Vector3i = criatura.get("pos", Vector3i(-9999, -9999, -9999))
+		if posicion.z != _estado.mi_pos.z:
+			continue
+		var alto := clampf(_sprites.alto_de_outfit(int(criatura.get("apariencia", 0))) * LADO * 0.72,
+			LADO * 0.55, ALTO_PISO * 2.4)
+		var mundo := COORD.tibia_a_mundo(posicion, _centro_escenario, LADO, ALTO_PISO)
+		var base := _camara.unproject_position(mundo + Vector3(0.0, 0.02, 0.0))
+		var cabeza := _camara.unproject_position(mundo + Vector3(0.0, alto, 0.0))
+		var altura_pantalla := maxf(18.0, absf(base.y - cabeza.y))
+		var ancho_pantalla := maxf(18.0, altura_pantalla * 0.42)
+		if posicion_mouse.x < base.x - ancho_pantalla \
+			or posicion_mouse.x > base.x + ancho_pantalla \
+			or posicion_mouse.y < minf(base.y, cabeza.y) - 8.0 \
+			or posicion_mouse.y > maxf(base.y, cabeza.y) + 8.0:
+			continue
+		var distancia := posicion_mouse.distance_to(Vector2(base.x, (base.y + cabeza.y) * 0.5))
+		if distancia < mejor_distancia:
+			mejor_distancia = distancia
+			elegido = int(id)
+	return elegido
+
+
 func caminar_a_casilla_desde_minimapa(celda: Vector2i) -> void:
 	"""Entrada publica para el map click del minimapa clasico."""
 	if _solo_mirar or _con == null or not _estado.adentro:
@@ -2514,6 +3675,11 @@ func caminar_a_casilla_desde_minimapa(celda: Vector2i) -> void:
 func _caminar_a_objetivo(objetivo: Vector3i) -> void:
 	if objetivo == _estado.mi_pos:
 		return
+	if not _objeto_pendiente.is_empty():
+		_objetivo_diferido = objetivo
+		_direccion_diferida = Vector2i.ZERO
+		_avisar("Finishing object action...")
+		return
 	# Un map click expresa un destino, no una orden diagonal. El camino
 	# ortogonal evita que el cliente envie diagonales que el jugador nunca
 	# solicito; Q/E/Z/C y numpad conservan las diagonales explicitas.
@@ -2523,6 +3689,44 @@ func _caminar_a_objetivo(objetivo: Vector3i) -> void:
 		return
 	_con.enviar_auto_camino(camino)
 	_avisar("Walking to (%d, %d, %d)..." % [objetivo.x, objetivo.y, objetivo.z])
+
+
+func _confirmar_objeto_pendiente(posicion: Vector3i = Vector3i(-9999, -9999, -9999)) -> void:
+	if _objeto_pendiente.is_empty():
+		return
+	var origen: Vector3i = _objeto_pendiente.get("origen", Vector3i(-9999, -9999, -9999))
+	var destino: Vector3i = _objeto_pendiente.get("destino", Vector3i(-9999, -9999, -9999))
+	var confirmado := false
+	if bool(_objeto_pendiente.get("criatura", false)):
+		var id := int(_objeto_pendiente.get("id", 0))
+		var criatura: Dictionary = _estado.criaturas.get(id, {})
+		confirmado = not criatura.is_empty() \
+				and criatura.get("pos", origen) == destino
+	else:
+		confirmado = posicion == destino
+	if confirmado:
+		_objeto_pendiente.clear()
+		_liberar_movimiento_diferido()
+
+
+func _liberar_movimiento_diferido() -> void:
+	if _con == null or not _estado.adentro:
+		_direccion_diferida = Vector2i.ZERO
+		_objetivo_diferido = Vector3i(-9999, -9999, -9999)
+		return
+	var objetivo := _objetivo_diferido
+	var direccion := _direccion_diferida
+	_objetivo_diferido = Vector3i(-9999, -9999, -9999)
+	_direccion_diferida = Vector2i.ZERO
+	if objetivo.x > -9000:
+		_caminar_a_objetivo(objetivo)
+		return
+	if direccion == Vector2i.ZERO:
+		return
+	var opcode := _opcode_de_direccion(direccion)
+	if opcode != 0:
+		_con.enviar_juego(PackedByteArray([opcode]))
+		_desde_ultimo_paso = 0.0
 
 
 func _buscar_ruta_hasta_rango(origen: Vector3i, objetivo: Vector3i) -> Array:

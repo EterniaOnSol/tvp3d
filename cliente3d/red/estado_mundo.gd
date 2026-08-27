@@ -30,6 +30,11 @@ signal casilla_actualizada(posicion: Vector3i, opcode: int)
 signal paso_cancelado()
 signal mensaje_servidor(texto: String)
 signal habla_recibida(quien: String, texto: String, clase: int)
+## Variante rica de los textos del servidor: conserva la posicion del habla
+## para poder dibujar el dialogo sobre la criatura en el mundo 3D.
+signal dialogo_recibido(quien: String, texto: String, posicion: Vector3i, clase: int)
+## 0xB4 trae una clase de mensaje que el cliente clasico pinta en pantalla.
+signal mensaje_pantalla(texto: String, clase: int)
 signal inventario_actualizado(slot: int, cosa: Dictionary)
 signal contenedor_actualizado(id: int, datos: Dictionary)
 signal contenedor_cerrado(id: int)
@@ -38,6 +43,12 @@ signal habilidades_actualizadas(datos: Dictionary)
 signal entramos()
 signal pedido_ping()             ## el servidor pregunta si seguimos vivos
 signal rechazados(motivo: String)  ## el servidor no nos deja entrar
+signal iconos_actualizados(iconos: int)
+signal efecto_mapa(posicion: Vector3i, tipo: int)
+signal texto_animado(posicion: Vector3i, color: int, texto: String)
+signal disparo_distancia(origen: Vector3i, destino: Vector3i, tipo: int)
+## 0x86: cuadrado de color temporal sobre una criatura.
+signal cuadrado_criatura(id: int, color: int)
 
 var casillas := {}     ## Vector3i -> Array de cosas
 var criaturas := {}    ## id -> {pos, nombre, apariencia}
@@ -53,6 +64,8 @@ var luz_mundo_recibida := false
 var mi_id := 0
 var mi_pos := Vector3i.ZERO
 var adentro := false
+var iconos_estado := 0
+var en_combate := false
 
 ## Ultimo movimiento informado por el servidor, para poder verificarlo.
 var ultimo_movimiento := {}
@@ -350,24 +363,49 @@ func _leer_mensajes(msg) -> void:
 				luz_mundo_color = msg.leer_u8()
 				luz_mundo_recibida = true
 			0x83:   # efecto magico (protocolgame.cpp:1663-1667)
-				msg.saltar(1 + 5 + 1)
+				msg.leer_u8()
+				var posicion_efecto: Vector3i = msg.leer_posicion()
+				var tipo_efecto: int = msg.leer_u8()
+				efecto_mapa.emit(posicion_efecto, tipo_efecto)
 			0x84:   # texto que sale flotando (protocolgame.cpp:1370-1375)
 				msg.leer_u8()
-				msg.leer_posicion()
-				msg.leer_u8()      # color
-				msg.leer_texto()
+				var posicion_texto: Vector3i = msg.leer_posicion()
+				var color_texto: int = msg.leer_u8()
+				var texto: String = msg.leer_texto()
+				texto_animado.emit(posicion_texto, color_texto, texto)
 			0x85:   # un tiro a distancia (protocolgame.cpp:1649-1654)
-				msg.saltar(1 + 5 + 5 + 1)
+				msg.leer_u8()
+				var origen_disparo: Vector3i = msg.leer_posicion()
+				var destino_disparo: Vector3i = msg.leer_posicion()
+				var tipo_disparo: int = msg.leer_u8()
+				disparo_distancia.emit(origen_disparo, destino_disparo, tipo_disparo)
 			0x86:   # a alguien se le puso un color encima
-				msg.saltar(1 + 4 + 1)
-			0x8C:   # cambio de vida de una criatura
-				msg.saltar(1 + 4 + 1)
+				if msg.sin_leer() < 6:
+					return
+				msg.leer_u8()
+				var id_cuadrado: int = msg.leer_u32()
+				var color_cuadrado: int = msg.leer_u8()
+				cuadrado_criatura.emit(id_cuadrado, color_cuadrado)
+			0x8C:   # cambio de vida de una criatura (id + porcentaje)
+				if msg.sin_leer() < 6:
+					return
+				msg.leer_u8()
+				var id_vida: int = msg.leer_u32()
+				var vida_porcentaje: int = msg.leer_u8()
+				if criaturas.has(id_vida):
+					criaturas[id_vida]["vida"] = vida_porcentaje
+				hubo_cambio = true
 			0x8D:   # luz de una criatura
 				msg.saltar(1 + 4 + 1 + 1)
 			0x8E:   # una criatura cambio de aspecto (protocolgame.cpp:1225-1227)
 				msg.leer_u8()
-				msg.leer_u32()
-				_leer_aspecto(msg)
+				var id_aspecto: int = msg.leer_u32()
+				var aspecto_nuevo := _leer_aspecto(msg)
+				if criaturas.has(id_aspecto):
+					# La animacion se resuelve en mundo3d a partir del lookType
+					# confirmado. No se cambia la posicion ni se inventan colores.
+					criaturas[id_aspecto]["apariencia"] = aspecto_nuevo
+					hubo_cambio = true
 			0x8F:   # cambio de velocidad
 				msg.saltar(1 + 4 + 2)
 			0x90:   # calavera de una criatura
@@ -413,7 +451,12 @@ func _leer_mensajes(msg) -> void:
 				habilidades_actualizadas.emit(habilidades)
 				hubo_cambio = true
 			0xA2:   # iconos de estado — UN byte (protocolgame.cpp:1431-1436)
-				msg.saltar(1 + 1)
+				# El match solo inspecciona el opcode: sendIcons() agrega el
+				# opcode y un unico byte de mascara. Consumimos ambos.
+				msg.leer_u8()
+				iconos_estado = msg.leer_u8()
+				en_combate = (iconos_estado & (1 << 7)) != 0
+				iconos_actualizados.emit(iconos_estado)
 			0xA3:   # se cancelo el objetivo
 				msg.saltar(1)
 			0xA7:   # modos de pelea (protocolgame.cpp:1796-1803)
@@ -443,20 +486,25 @@ func _leer_mensajes(msg) -> void:
 				msg.leer_u32()     # numero de la frase
 				var quien_habla: String = msg.leer_texto()
 				var como: int = msg.leer_u8()
+				var posicion_habla := Vector3i(-9999, -9999, -9999)
 				if como in [0x01, 0x02, 0x03, 0x10, 0x11]:
-					msg.leer_posicion()
+					posicion_habla = msg.leer_posicion()
 				elif como in [0x05, 0x06, 0x0A, 0x0C, 0x0E]:
 					# Ojo: el canal de denuncias manda 4 bytes de fecha en vez
 					# del numero de canal (protocolgame.cpp:1568-1572).
 					msg.leer_u16()
 				var texto_habla: String = msg.leer_texto()
 				habla_recibida.emit(quien_habla, texto_habla, como)
+				dialogo_recibido.emit(quien_habla, texto_habla,
+					posicion_habla, como)
 			0xB3:   # se cerro un canal privado
 				msg.saltar(1 + 2)
 			0xB4:   # un texto en la pantalla (protocolgame.cpp:1355-1361)
 				msg.leer_u8()
-				msg.leer_u8()      # de que tipo
-				mensaje_servidor.emit(msg.leer_texto())
+				var clase_pantalla: int = msg.leer_u8()
+				var texto_pantalla: String = msg.leer_texto()
+				mensaje_servidor.emit(texto_pantalla)
+				mensaje_pantalla.emit(texto_pantalla, clase_pantalla)
 			0xB5:   # el servidor cancelo el paso (protocolgame.cpp:1613-1618)
 				msg.leer_u8()
 				msg.leer_u8()      # para donde quedamos mirando
@@ -518,13 +566,14 @@ func _leer_pisos_de_cambio(msg, subiendo: bool) -> Dictionary:
 		msg, _pos_anterior.x - 8, _pos_anterior.y - 6, 18, 14, pisos)
 
 
-func _leer_aspecto(msg) -> void:
+func _leer_aspecto(msg) -> int:
 	# protocolgame.cpp:2325-2337
 	var tipo: int = msg.leer_u16()
 	if tipo != 0:
 		msg.saltar(4)
 	else:
 		msg.leer_u16()
+	return tipo
 
 
 # --------------------------------------------------------------------
@@ -543,12 +592,35 @@ func _absorber(mundo: Dictionary) -> void:
 			# El caso corto (0x63) no manda el aspecto; se conserva el que ya
 			# sabiamos, si no la criatura desaparece al girar.
 			apariencia = criaturas[id]["apariencia"]
+		var vida := int(bicho.get("vida", 100))
+		if apariencia == 0 and criaturas.has(id):
+			# Los mensajes cortos de criatura traen 100 como valor de relleno;
+			# no deben curar visualmente al monster mientras se mueve.
+			vida = int(criaturas[id].get("vida", vida))
 		criaturas[id] = {
 			"pos": bicho["donde"],
 			"nombre": nombre,
 			"apariencia": apariencia,
 			"direccion": bicho.get("direccion", 2),
+			"vida": vida,
 		}
+
+
+func reiniciar_sesion() -> void:
+	"""Limpia el estado del personaje antes de volver al login."""
+	casillas.clear()
+	criaturas.clear()
+	inventario.clear()
+	contenedores.clear()
+	estadisticas.clear()
+	habilidades.clear()
+	ultimo_movimiento.clear()
+	mi_id = 0
+	mi_pos = Vector3i.ZERO
+	adentro = false
+	iconos_estado = 0
+	en_combate = false
+	luz_mundo_recibida = false
 
 
 func _sacar_de_casilla(donde: Vector3i, pila: int) -> void:

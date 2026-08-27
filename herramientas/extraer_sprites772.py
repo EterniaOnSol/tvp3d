@@ -74,6 +74,27 @@ class Laminas:
         return len(self.hojas)
 
 
+def empaquetar_animaciones(coleccion, spr, laminas):
+    """Empaqueta efectos o proyectiles con sus fases reales del .dat."""
+    salida = {}
+    for thing_id, t in sorted(coleccion.items()):
+        fases = max(1, min(t["fases"], MAX_FASES))
+        cuadros = []
+        for fase in range(fases):
+            img = componer(t, spr, 0, fase)
+            if img.getbbox() is None:
+                break
+            cuadros.append(laminas.poner(img))
+        if cuadros:
+            salida[str(thing_id)] = {
+                "c": cuadros,
+                "alto": t["alto"],
+                "ancho": t["ancho"],
+                "fases": len(cuadros),
+            }
+    return salida
+
+
 def main():
     if not DAT.exists() or not SPR.exists():
         print("Faltan Tibia.dat / Tibia.spr en %s" % CLIENTE)
@@ -135,6 +156,12 @@ def main():
             "alto": t["alto"], "ancho": t["ancho"],
         }
 
+    print("Empaquetando efectos ...")
+    efectos = empaquetar_animaciones(dat["efectos"], spr, laminas)
+
+    print("Empaquetando proyectiles ...")
+    proyectiles = empaquetar_animaciones(dat["proyectiles"], spr, laminas)
+
     cuantas = laminas.guardar(SALIDA)
 
     (SALIDA / "indice.json").write_text(json.dumps({
@@ -145,12 +172,16 @@ def main():
         "orden_direcciones": ["norte", "este", "sur", "oeste"],
         "items": items,
         "outfits": outfits,
+        "efectos": efectos,
+        "proyectiles": proyectiles,
     }, separators=(",", ":")), encoding="utf-8")
 
     print("")
     print("items con dibujo : %d" % len(items))
     print("items vacios     : %d (no tienen dibujo en este cliente)" % vacios)
     print("outfits          : %d" % len(outfits))
+    print("efectos          : %d" % len(efectos))
+    print("proyectiles      : %d" % len(proyectiles))
     print("laminas          : %d de %dx%d" % (cuantas, LADO_LAMINA, LADO_LAMINA))
     print("-> %s" % SALIDA)
 

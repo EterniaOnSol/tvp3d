@@ -12,7 +12,7 @@ echo.
 echo  Servidor de login : 7171
 echo  Servidor de juego : 7172
 echo  Base de datos     : 3371
-echo  phpMyAdmin        : http://localhost:8071
+echo  phpMyAdmin        : apagado por defecto (solo perfil admin)
 echo.
 echo  Cuenta 123456 / clave 123456 / personaje GOD
 echo.

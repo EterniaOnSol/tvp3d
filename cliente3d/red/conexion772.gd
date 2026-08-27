@@ -264,6 +264,23 @@ func enviar_juego(carga: PackedByteArray) -> void:
 	_enviar(carga, true)
 
 
+func enviar_logout() -> void:
+	"""Solicita logout limpio al servidor (0x14)."""
+	enviar_juego(PackedByteArray([0x14]))
+
+
+func enviar_cancelar_accion() -> void:
+	"""Cancela ataque/seguimiento y el auto-camino en el servidor."""
+	# 0xBE cancela ataque y follow; 0x69 detiene el auto-walk.
+	enviar_juego(PackedByteArray([0xBE]))
+	enviar_juego(PackedByteArray([0x69]))
+
+
+func enviar_detener_auto_camino() -> void:
+	"""Detiene solo el auto-walk, sin cancelar el objetivo de combate."""
+	enviar_juego(PackedByteArray([0x69]))
+
+
 func enviar_hablar(texto: String) -> void:
 	"""Envia TALKTYPE_SAY (0x96), igual que el chat de 3DTIBIA."""
 	var mensaje := MENSAJE.new()
@@ -288,6 +305,52 @@ func enviar_usar_item(posicion: Vector3i, client_id: int, stackpos: int = 1,
 func enviar_usar_inventario(ranura: int, client_id: int) -> void:
 	"""Usa un item del equipo (0xFFFF, ranura, 0), como Tibia."""
 	enviar_usar_item(Vector3i(0xFFFF, ranura, 0), client_id, 0, 0)
+
+
+func enviar_mirar(posicion: Vector3i, client_id: int = 0,
+		stackpos: int = 0) -> void:
+	"""Pide al servidor el look real de una casilla (0x8C).
+
+	El servidor 7.72 resuelve el objeto visible desde la posicion y el
+	stackpos; el client id se conserva por compatibilidad con Tibia aunque el
+	servidor de TVP3D no lo usa para esta orden.
+	"""
+	var carga := PackedByteArray([0x8C])
+	_agregar_posicion(carga, posicion)
+	carga.append(client_id & 0xFF)
+	carga.append((client_id >> 8) & 0xFF)
+	carga.append(stackpos & 0xFF)
+	enviar_juego(carga)
+
+
+func enviar_usar_item_ex(origen: Vector3i, client_id: int, stackpos: int,
+		destino: Vector3i, destino_client_id: int, destino_stackpos: int) -> void:
+	"""Usa un objeto con otro objeto (0x83, parseUseItemEx)."""
+	var carga := PackedByteArray([0x83])
+	_agregar_posicion(carga, origen)
+	carga.append(client_id & 0xFF)
+	carga.append((client_id >> 8) & 0xFF)
+	carga.append(stackpos & 0xFF)
+	_agregar_posicion(carga, destino)
+	carga.append(destino_client_id & 0xFF)
+	carga.append((destino_client_id >> 8) & 0xFF)
+	carga.append(destino_stackpos & 0xFF)
+	enviar_juego(carga)
+
+
+func enviar_usar_con_criatura(origen: Vector3i, client_id: int,
+		stackpos: int, id_criatura: int) -> void:
+	"""Usa un objeto con una criatura (0x84, parseUseWithCreature)."""
+	var carga := PackedByteArray([0x84])
+	_agregar_posicion(carga, origen)
+	carga.append(client_id & 0xFF)
+	carga.append((client_id >> 8) & 0xFF)
+	carga.append(stackpos & 0xFF)
+	carga.append(id_criatura & 0xFF)
+	carga.append((id_criatura >> 8) & 0xFF)
+	carga.append((id_criatura >> 16) & 0xFF)
+	carga.append((id_criatura >> 24) & 0xFF)
+	enviar_juego(carga)
 
 
 func enviar_cerrar_contenedor(id_contenedor: int) -> void:

@@ -14,7 +14,7 @@ El proyecto activo es `C:/Users/dell/TVP3D`. El servidor TVP 7.72 vive en
 `servidor/` y el cliente propio de Godot en `cliente3d/`. La cuenta local es
 `123456`, la clave es `123456` y el personaje de prueba es `GOD`.
 
-Estado real al **26 de agosto de 2026**:
+Estado real al **27 de agosto de 2026**:
 
 - cliente 3D funcional con mapa completo precargado, UI en ingles y controles
   clasicos de 3DTIBIA;
@@ -22,12 +22,19 @@ Estado real al **26 de agosto de 2026**:
 - criaturas del spawn, arboles, arbustos, small fir trees, blueberry bushes,
   mailboxes y signs convertidos temporalmente en cubos 3D con paleta por
   categoria;
-- prueba de formas en `0 fallas`; el siguiente frente grande es terminar la
-  matriz de opcodes 7.72 y conectar sus estados a UI, efectos y ventanas;
+- spells y animaciones 7.72 importados; Magic Wall usa los frames originales
+  de 3DTIBIA en un cubo 1x2x1 solido y animado;
+- inventario conectado para pilas de monedas, mana fluid, life ring, runas y
+  contenedores; Shift + clic derecho abre una ventana nueva y las ventanas se
+  pueden redimensionar;
+- `Actions` conserva solo `Store`, `Skills`, `Battle`, `Vip` y `Stash`; la web
+  MyAAC se mantiene para crear personajes y cargarlos al servidor;
+- prueba local completa en `9/9`; queda pendiente validar esas interacciones
+  contra el servidor después de reiniciar Docker;
 - el inventario detallado de opcodes y su estado de implementacion esta en
   `worklog/OPCODES_772.md`;
 - repositorio privado: `https://github.com/EterniaOnSol/tvp3d.git`;
-  `main` esta sincronizada con el commit `fa2631b`;
+  la rama activa es `main`;
 - `servidor/config.lua` y `servidor/key.pem` estan versionados para este
   perfil privado de desarrollo, asi que un clon puede arrancar con la misma
   configuracion local.
@@ -124,7 +131,7 @@ vienen.
 | Login | 7171 |
 | Juego | 7172 |
 | MariaDB | 3371 |
-| phpMyAdmin | http://localhost:8071 (root / root) |
+| phpMyAdmin | http://localhost:8071 (opcional; perfil Docker `admin`) |
 | Página web | http://localhost:8072 (admin: cuenta `100777` / clave `tvp3d2026`) |
 
 No chocan con los otros proyectos: INTEN3D usa 7371-7372 y 3DTIBIA 7271-7275.
@@ -192,19 +199,24 @@ Verificadas en `servidor/src/protocolgame.cpp:616-660`:
 
 ## Estado
 
-### Estado verificado actual — 26 de agosto de 2026
+### Estado verificado actual — 27 de agosto de 2026
 
 La referencia vigente es la sección de continuidad al inicio y los avances
 posteriores de este documento. El cliente ya tiene mapa completo precargado,
 UI en ingles, controles clasicos, casas con mapper semantico, muros y
 montanas con volumen, relieve de alcantarilla y cubos prototipo para
-criaturas, arboles, arbustos, mailboxes y signs. `test_controles.tscn` y
-`test_formas_render.tscn` terminan con `0 fallas`.
+criaturas, arboles, arbustos, mailboxes y signs. Spells, efectos, proyectiles,
+textos, Magic Wall, inventario y contenedores tienen regresion local. La
+matriz `pruebas/matriz_qa_local.gd` termina con `9/9` casos correctos.
 
 Pendiente real:
 
-- terminar la matriz de opcodes 7.72 y conectar todos los mensajes a estado,
-  efectos, ventanas y UI;
+- reiniciar Docker Desktop y terminar el arranque vivo de `server`; la imagen
+  C++ ya compilo, MariaDB abre `3371`, pero `7171/7172` aun deben verificarse;
+- validar en vivo conjurar Magic Wall con blank rune, usar mana fluid y ring,
+  conservar las pilas de monedas y abrir contenedores con Shift + clic derecho;
+- terminar la matriz de opcodes 7.72 y conectar los mensajes restantes a
+  estado, ventanas y UI;
 - sustituir los cubos por modelos 3D authored;
 - completar quest log y combate avanzado.
 

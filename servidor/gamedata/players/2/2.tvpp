@@ -10,9 +10,9 @@ Sex = 0
 PlayerKillerEnd = 0
 BankBalance = 0
 Blessings = 0
-LastLoginSaved = 0
-LastLogout = 0
-Position = [32097,32219,7]
+LastLoginSaved = 1787817271
+LastLogout = 1787817307
+Position = [32094,32199,8]
 DefaultOutfit = (128, 78-106-58-95)
 
 Level = 3
@@ -29,20 +29,26 @@ Vocation = 0
 Stamina = 2520
 
 Skill = (0, 10, 0)
-Skill = (1, 10, 0)
 Skill = (2, 10, 0)
+Skill = (1, 10, 0)
 Skill = (3, 10, 0)
 Skill = (4, 10, 0)
 Skill = (5, 10, 0)
 Skill = (6, 10, 0)
 
 Spells = {}
+
 QuestValues = {}
+
 StringQuestValues = {}
+
 Murders = {}
+
 VIP = ()
 
 Backpack = (1987 Content={2674 Amount=1})
 Armor = (2650)
 Right = (2050)
 Left = (2382)
+
+

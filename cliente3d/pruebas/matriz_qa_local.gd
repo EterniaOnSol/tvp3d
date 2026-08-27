@@ -21,6 +21,21 @@ func _init() -> void:
 				"pruebas/test_formas_render.tscn"]),
 		},
 		{
+			"nombre": "spells_animaciones",
+			"argumentos": PackedStringArray(["--headless", "--path", _raiz(),
+				"pruebas/prueba_spells_animaciones.tscn"]),
+		},
+		{
+			"nombre": "magic_wall",
+			"argumentos": PackedStringArray(["--headless", "--path", _raiz(),
+				"pruebas/prueba_magic_wall.tscn"]),
+		},
+		{
+			"nombre": "eventos_visuales",
+			"argumentos": PackedStringArray(["--headless", "--path", _raiz(),
+				"pruebas/prueba_eventos_visuales.tscn"]),
+		},
+		{
 			"nombre": "ir_trozos",
 			"argumentos": PackedStringArray(["--headless", "--path", _raiz(),
 				"pruebas/test_ir_trozos.tscn"]),

@@ -2546,7 +2546,10 @@ void Game::playerUseItem(uint32_t playerId, const Position pos, uint8_t stackPos
 	}
 
 	Item* item = thing->getItem();
-	if (!item || item->isUseable() || item->getClientID() != spriteId) {
+	// Containers are opened through the same 0x82 packet even though their
+	// OTB flag is not `useable`. Fluids and runes carry that flag normally.
+	if (!item || (!item->isUseable() && !item->getContainer())
+			|| item->getClientID() != spriteId) {
 		player->sendCancelMessage(RETURNVALUE_CANNOTUSETHISOBJECT);
 		return;
 	}

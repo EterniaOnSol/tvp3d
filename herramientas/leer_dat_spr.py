@@ -126,10 +126,20 @@ def cargar_dat(ruta: Path) -> dict:
     for oid in range(1, ult_outfit + 1):
         outfits[oid] = leer_thing(r)
 
+    efectos = {}
+    for eid in range(1, ult_efecto + 1):
+        efectos[eid] = leer_thing(r)
+
+    proyectiles = {}
+    for pid in range(1, ult_proy + 1):
+        proyectiles[pid] = leer_thing(r)
+
     return {
         "firma": firma,
         "items": items,
         "outfits": outfits,
+        "efectos": efectos,
+        "proyectiles": proyectiles,
         "conteos": {
             "items": ult_item, "outfits": ult_outfit,
             "efectos": ult_efecto, "proyectiles": ult_proy,

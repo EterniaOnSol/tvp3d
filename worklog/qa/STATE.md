@@ -2,7 +2,7 @@
 
 Estado: EN_CURSO
 Ultimo agente: codex
-Ultima actualizacion: 2026-08-26T07:41:02-06:00
+Ultima actualizacion: 2026-08-27T04:50:00-06:00
 Contrato publicado: SI
 
 ## Depende de
@@ -32,6 +32,14 @@ Probar contratos, recorridos completos, concurrencia, fixtures y regresiones.
 - Matriz local ejecutada 6/6: coordenadas, controles, formas, chunks, modelo
   de proyecto y escena del editor pasan.
 - Reporte versionado en `generated/reports/qa_matrix_local.json`.
+- Regresion de spells y animaciones ejecutada 0 fallas: catalogo JSON, outfit
+  multiframe, efectos/proyectiles importados, eventos `0x83`-`0x85`, cambio de
+  outfit `0x8E`, alineacion del siguiente mensaje y lanzamiento por `0x96`.
+- Matriz local ampliada y ejecutada 7/7 con `prueba_spells_animaciones.tscn`.
+- Magic Wall de 3DTIBIA integrada con sus seis PNG originales, cubo 1x2x1 y
+  animacion de tres fases a 5 FPS para los client ids 2128/2129.
+- `prueba_magic_wall.tscn` verifica texturas, animacion y reemplazo seguro de
+  una instancia dinamica; matriz local ejecutada 8/8.
 
 ## Falta
 

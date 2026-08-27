@@ -5,6 +5,8 @@ const MINIMAPA := preload("res://ui/minimapa.gd")
 const CONEXION := preload("res://red/conexion772.gd")
 const INTERFAZ := preload("res://ui/interfaz.gd")
 const ESTADO_MUNDO := preload("res://red/estado_mundo.gd")
+const MENSAJE := preload("res://red/mensaje.gd")
+const MAPA772 := preload("res://red/mapa772.gd")
 
 class EstadoRuta:
 	var casillas: Dictionary = {}
@@ -12,6 +14,11 @@ class EstadoRuta:
 	var mi_pos := Vector3i.ZERO
 	var mi_id := 1
 	var adentro := true
+
+
+class InterfazEscribiendo:
+	func esta_escribiendo() -> bool:
+		return true
 
 
 class CatalogoRuta:
@@ -43,12 +50,39 @@ class ConexionAtaque:
 	var ataques: Array = []
 	var caminos: Array = []
 	var movimientos: Array = []
+	var detenciones := 0
+	var usos_criatura: Array = []
+	var usos_item: Array = []
 
 	func enviar_atacar(id: int) -> void:
 		ataques.append(id)
 
 	func enviar_auto_camino(camino: Array) -> void:
 		caminos.append(camino)
+
+	func enviar_detener_auto_camino() -> void:
+		detenciones += 1
+
+	func enviar_usar_con_criatura(origen: Vector3i, client_id: int,
+			stackpos: int, id_criatura: int) -> void:
+		usos_criatura.append({
+			"origen": origen,
+			"client_id": client_id,
+			"stackpos": stackpos,
+			"id": id_criatura,
+		})
+
+	func enviar_usar_item_ex(origen: Vector3i, client_id: int, stackpos: int,
+			destino: Vector3i, destino_client_id: int,
+			destino_stackpos: int) -> void:
+		usos_item.append({
+			"origen": origen,
+			"client_id": client_id,
+			"stackpos": stackpos,
+			"destino": destino,
+			"destino_client_id": destino_client_id,
+			"destino_stackpos": destino_stackpos,
+		})
 
 	func enviar_mover_cosa(origen: Vector3i, client_id: int, stackpos: int,
 			destino: Vector3i, cantidad: int) -> void:
@@ -59,6 +93,10 @@ class ConexionAtaque:
 			"destino": destino,
 			"cantidad": cantidad,
 		})
+
+	func enviar_mover_ubicacion(origen: Vector3i, client_id: int, stackpos: int,
+			destino: Vector3i, cantidad: int) -> void:
+		enviar_mover_cosa(origen, client_id, stackpos, destino, cantidad)
 
 
 var _fallas := 0
@@ -97,7 +135,12 @@ func _ready() -> void:
 	_comprobar("ataque directo envia el ID de la criatura", _probar_ataque_directo(mundo))
 	_comprobar("ataque lejano se acerca por ruta caminable", _probar_ataque_a_distancia(mundo))
 	_comprobar("arrastre reconoce criatura y usa client id 99", _probar_arrastre_criatura(mundo))
+	_comprobar("recoger item del suelo usa slot de inventario", _probar_recoger_item(mundo))
+	_comprobar("moneda conserva cantidad de pila", _probar_items_protocolo())
+	_comprobar("iconos de combate no desalinean el siguiente mensaje", _probar_iconos())
 	_comprobar("movimiento de criatura conserva su stackpos", _probar_pila_criatura())
+	_comprobar("runa detiene auto-walk y bloquea teclas", _probar_chat_detiene_movimiento(mundo))
+	_comprobar("runa usa posicion de contenedor con criatura", _probar_uso_con_runa(mundo))
 	print("Controles TVP3D: %d falla(s)" % _fallas)
 	mundo.free()
 	get_tree().quit(1 if _fallas > 0 else 0)
@@ -327,6 +370,93 @@ func _probar_arrastre_criatura(mundo) -> bool:
 		and enviado["cantidad"] == 1 \
 		and conexion.movimientos.size() == 1 \
 		and conexion.movimientos[0]["destino"] == destino
+
+
+func _probar_recoger_item(mundo) -> bool:
+	var estado := EstadoRuta.new()
+	estado.adentro = true
+	estado.mi_pos = Vector3i(10, 10, 7)
+	var conexion := ConexionAtaque.new()
+	mundo._estado = estado
+	mundo._con = conexion
+	var datos := {
+		"cosa": {"tipo": "item", "cid": 3031, "cantidad": 2,
+			"nombre": "gold coin"},
+		"stackpos": 2,
+	}
+	var correcto: bool = mundo.recoger_objeto_en_ranura(estado.mi_pos, datos, 2,
+		"inventario", -1, 3)
+	if not correcto or conexion.movimientos.size() != 1:
+		return false
+	var movimiento: Dictionary = conexion.movimientos[0]
+	return movimiento["origen"] == estado.mi_pos \
+		and movimiento["client_id"] == 3031 \
+		and movimiento["stackpos"] == 2 \
+		and movimiento["destino"] == Vector3i(0xFFFF, 3, 0) \
+		and movimiento["cantidad"] == 2
+
+
+func _probar_items_protocolo() -> bool:
+	var mapa := MAPA772.new()
+	var msg_moneda := MENSAJE.new(PackedByteArray([0xD7, 0x0B, 37]))
+	var moneda: Dictionary = mapa.leer_cosa(msg_moneda, Vector3i.ZERO, [])
+	var moneda_ok: bool = int(moneda.get("cid", 0)) == 3031 \
+		and int(moneda.get("cantidad", 0)) == 37 \
+		and msg_moneda.sin_leer() == 0
+	var msg_mana := MENSAJE.new(PackedByteArray([0x3A, 0x0B, 7]))
+	var mana: Dictionary = mapa.leer_cosa(msg_mana, Vector3i.ZERO, [])
+	var mana_ok: bool = int(mana.get("cid", 0)) == 2874 \
+		and bool(mana.get("liquido", false)) \
+		and int(mana.get("color_liquido", 0)) == 7 \
+		and mana.get("nombre", "") == "mana fluid" \
+		and msg_mana.sin_leer() == 0
+	mapa = null
+	return moneda_ok and mana_ok
+
+
+func _probar_chat_detiene_movimiento(mundo) -> bool:
+	var estado := EstadoRuta.new()
+	var conexion := ConexionAtaque.new()
+	mundo._estado = estado
+	mundo._con = conexion
+	mundo._interfaz = InterfazEscribiendo.new()
+	mundo._ataque_pendiente_id = 42
+	mundo._direccion_diferida = Vector2i(1, 0)
+	mundo._objetivo_diferido = Vector3i(4, 4, 7)
+	mundo.detener_movimiento_para_uso()
+	mundo._desde_ultimo_paso = 1.0
+	mundo._leer_teclas()
+	return conexion.detenciones == 1 \
+		and mundo._ataque_pendiente_id == 0 \
+		and mundo._direccion_diferida == Vector2i.ZERO \
+		and mundo._objetivo_diferido == Vector3i(-9999, -9999, -9999)
+
+
+func _probar_uso_con_runa(mundo) -> bool:
+	var estado := EstadoRuta.new()
+	estado.criaturas = {42: {"nombre": "Rat", "pos": Vector3i(11, 20, 7)}}
+	var conexion := ConexionAtaque.new()
+	mundo._estado = estado
+	mundo._con = conexion
+	var runa := {"cid": 3148, "nombre": "spell rune"}
+	if not mundo.preparar_uso_con("contenedor", 3, 2, runa):
+		return false
+	if not mundo.usar_con_criatura_pendiente(42) or conexion.usos_criatura.size() != 1:
+		return false
+	var uso: Dictionary = conexion.usos_criatura[0]
+	return uso["origen"] == Vector3i(0xFFFF, 0x43, 2) \
+		and uso["client_id"] == 3148 \
+		and uso["stackpos"] == 0 \
+		and uso["id"] == 42
+
+
+func _probar_iconos() -> bool:
+	var estado := ESTADO_MUNDO.new()
+	var msg := MENSAJE.new(PackedByteArray([
+		0xA2, 0x80,
+		0x84, 1, 0, 2, 0, 7, 1, 3, 0, 65, 66, 67]))
+	estado.procesar(msg)
+	return estado.en_combate and msg.sin_leer() == 0
 
 
 func _probar_pila_criatura() -> bool:

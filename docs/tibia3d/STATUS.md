@@ -1,6 +1,6 @@
 # TVP3D - Status
 
-Fecha: 2026-08-25
+Fecha: 2026-08-27
 
 ## Current Phase
 
@@ -76,11 +76,25 @@ Godot` para login, movimiento y estado vivo.
 - Inspector conectado integrado en la escena principal: `F4` muestra/oculta
   el panel y `Shift+click` fija un SQM; combina stack vivo de TVP con flags y
   metadatos del IR por chunks.
+- Catálogo de spells 7.72 extraído de Lua en `assets/spells772.json`; el
+  spellbook muestra requisitos y envía las palabras exactas por `0x96`, dejando
+  la validación de reglas en TVP.
+- Sprites de animación importados desde DAT/SPR: 25 efectos, 15 proyectiles y
+  outfits multiframe. El cliente consume `0x83`-`0x85` para efectos, textos y
+  proyectiles, y `0x8E` actualiza el outfit confirmado de una criatura.
+- Magic Wall integrada desde la implementacion de 3DTIBIA: cubo 1x2x1,
+  tres frames originales a 5 FPS para client ids 2128/2129 y reemplazo seguro
+  de la instancia cuando TVP actualiza una casilla.
 
 ## In Progress
 
-- Preparar la siguiente vertical slice de items dinamicos, puertas, fields y
-  efectos sobre el estado confirmado por TVP.
+- Validar en vivo la vertical slice de items: runas, mana fluid, life ring,
+  pilas de monedas y contenedores redimensionables.
+- Recuperar el arranque de `server` después del reinicio de Docker; la imagen
+  C++ ya recompiló y MariaDB responde en `3371`, pero `7171/7172` aún están
+  pendientes de verificación.
+- Continuar con puertas, fields, quest log y combate avanzado sobre el estado
+  confirmado por TVP.
 
 ## Next P0
 
@@ -142,6 +156,11 @@ Godot` para login, movimiento y estado vivo.
 - Reporte de piso: `cliente3d/generated/reports/floor_transition.json`.
 - `main.tscn --headless --quit-after 1200`: escena conectada carga el panel
   del inspector sin errores de GDScript.
+- `prueba_spells_animaciones.tscn`: catálogo, assets multiframe, eventos
+  `0x83`-`0x85`, cambio de outfit `0x8E`, alineación y lanzamiento `0x96`; todo
+  OK.
+- `prueba_magic_wall.tscn`: cubo, texturas originales, animación, variante
+  persistente y registro/ocultado del objeto dinámico; todo OK.
 - Inspector puntual: `(32097,32219,7)` -> ground server 407/client 410,
   flag `REFRESH`, walkable `True`, blocking `False`.
 - `prueba_login.tscn`: login, personaje, entrada al mundo, cuatro movimientos;
@@ -167,7 +186,10 @@ Godot` para login, movimiento y estado vivo.
 ## Build Status
 
 - Godot 4.7.2: escenas y scripts de la vertical slice cargan sin errores.
-- TVP Docker: `server` y `mariadb` en estado operativo.
+- TVP Docker: imagen de `server` recompilada; `mariadb` responde en `3371` y
+  `server` aún debe quedar operativo en `7171/7172` tras el reinicio de Docker.
+- Docker: `phpmyadmin` queda en el perfil opcional `admin` y no arranca por
+  defecto; la web MyAAC permanece separada para crear y cargar personajes.
 - C++: sin compilacion nativa separada; la imagen Docker existente es la que
   se esta usando.
 

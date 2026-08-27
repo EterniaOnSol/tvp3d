@@ -49,6 +49,30 @@ func _ready() -> void:
 		mundo._forma_de_item(2002, mundo._catalogo.info_item(2002)) == MUNDO.Forma.LAMINA)
 	_comprobar("sewer grate queda horizontal",
 		mundo._forma_de_item(435, mundo._catalogo.info_item(435)) == MUNDO.Forma.ACOSTADA)
+	_comprobar("lever levantado queda pintado en el suelo",
+		mundo._forma_de_item(2772, mundo._catalogo.info_item(2772)) == MUNDO.Forma.ACOSTADA)
+	_comprobar("lever bajado conserva la misma forma de suelo",
+		mundo._forma_de_item(2773, mundo._catalogo.info_item(2773)) == MUNDO.Forma.ACOSTADA)
+	var nodo_palanca := MultiMeshInstance3D.new()
+	var malla_palanca := MultiMesh.new()
+	malla_palanca.mesh = PlaneMesh.new()
+	malla_palanca.instance_count = 1
+	nodo_palanca.multimesh = malla_palanca
+	mundo._animaciones_palanca = [{
+		"nodo": nodo_palanca,
+		"cid": 2773,
+		"posicion": Vector3i(1, 1, 7),
+		"tiempo": 0.0,
+	}]
+	mundo._animar_palancas(0.05)
+	_comprobar("lever usa una transicion con los sprites de estado",
+		mundo._animaciones_palanca.size() == 1
+		and nodo_palanca.material_override != null)
+	mundo._animar_palancas(0.20)
+	_comprobar("lever termina en el sprite confirmado",
+		mundo._animaciones_palanca.is_empty()
+		and nodo_palanca.material_override != null)
+	nodo_palanca.free()
 	_comprobar("stairs queda horizontal",
 		mundo._forma_de_item(437, mundo._catalogo.info_item(437)) == MUNDO.Forma.ACOSTADA)
 	_comprobar("ladder queda horizontal",

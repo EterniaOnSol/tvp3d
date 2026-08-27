@@ -8,6 +8,9 @@ const VENTANA := preload("res://ui/ventana.gd")
 const BARRA := preload("res://ui/barra.gd")
 const RANURA := preload("res://ui/ranura.gd")
 const MINIMAPA := preload("res://ui/minimapa.gd")
+# El protocolo transporta client IDs, no los IDs internos del servidor.
+const IDS_MONEDAS := [3031, 3035, 3043]
+const SLOT_ANILLO := 9
 
 const DISPOSICION_EQUIPO := [
 	[2, 1, 3], [6, 4, 5], [9, 7, 10], [0, 8, 0],
@@ -52,6 +55,10 @@ var _mp
 var _battle_box: VBoxContainer
 var _battle_window
 var _stash_window
+var _hotkeys_window
+var _spellbook_window
+var _spellbook_box: VBoxContainer
+var _spells: Array = []
 var _chat: RichTextLabel
 var _chat_input: LineEdit
 var _minimapa
@@ -67,7 +74,9 @@ var _target_name: Label
 var _target_bar
 var _objetivo_id := 0
 var _slots: Dictionary = {}
+var _slots_contenedor: Dictionary = {}
 var _ventanas_contenedor: Dictionary = {}
+var _contenedores_visuales: Dictionary = {}
 var _dock_izq: VBoxContainer
 var _dock_der_interno: VBoxContainer
 var _dock_der_externo: VBoxContainer
@@ -117,6 +126,8 @@ func _armar() -> void:
 	_armar_minimapa()
 	_armar_vitales()
 	_armar_acciones()
+	_armar_hotkeys()
+	_armar_spellbook()
 	_armar_stash()
 	_armar_equipo()
 	_armar_battle()
@@ -191,6 +202,11 @@ func _ventana(texto: String, preset: int, left: float, top: float,
 func _columna_para_titulo(titulo: String) -> VBoxContainer:
 	if titulo in ["Skills", "VIP", "Bestiary Tracker", "Loot Analyzer"]:
 		return _dock_izq
+	if titulo == "Battle":
+		# El Battle List tiene su propio dock interno, como en el cliente
+		# clasico. Si comparte la columna externa queda debajo de Equipment y
+		# desaparece fuera de la ventana aunque haya criaturas recibidas.
+		return _dock_der_interno
 	if titulo in ["Backpack", "Container"]:
 		return _dock_der_interno
 	return _dock_der_externo
@@ -302,8 +318,7 @@ func _armar_acciones() -> void:
 	grilla.add_theme_constant_override("h_separation", 0)
 	grilla.add_theme_constant_override("v_separation", 0)
 	panel.cuerpo.add_child(grilla)
-	for nombre in ["Store", "Skills", "Battle", "Vip", "Analyz.",
-			"Bestiary", "Stash", "Hotkeys"]:
+	for nombre in ["Store", "Skills", "Battle", "Vip", "Stash"]:
 		var boton := _hacer_boton(nombre, "Open " + nombre)
 		boton.custom_minimum_size.x = 44
 		if nombre == "Battle":
@@ -313,6 +328,165 @@ func _armar_acciones() -> void:
 		else:
 			boton.pressed.connect(func(): _anotar("%s is not connected yet." % nombre))
 		grilla.add_child(boton)
+
+
+func _armar_hotkeys() -> void:
+	_hotkeys_window = _ventana("Hotkeys", Control.PRESET_TOP_RIGHT,
+		-200, 370, -10, 490)
+	_hotkeys_window.visible = false
+	var texto := VENTANA.etiqueta(
+		"Ctrl+G  Change character\nCtrl+Q / Ctrl+L  Logout\nCtrl+K  Toggle hotkeys\nEsc  Stop attack / cancel action\nEnter  Chat",
+		9, VENTANA.TEXTO)
+	texto.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
+	_hotkeys_window.cuerpo.add_child(texto)
+
+
+func alternar_hotkeys() -> void:
+	_alternar_ventana(_hotkeys_window)
+
+
+func _armar_spellbook() -> void:
+	_spellbook_window = _ventana("Spells", Control.PRESET_TOP_RIGHT,
+		-410, 12, -205, 470)
+	_spellbook_window.visible = false
+	_spellbook_window.custom_minimum_size = Vector2(300, 458)
+	var ayuda := VENTANA.etiqueta(
+		"Server spell catalog  |  click to cast\nRequirements and parameters come from the Lua scripts.",
+		8, VENTANA.TENUE)
+	ayuda.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
+	_spellbook_window.cuerpo.add_child(ayuda)
+	var scroll := ScrollContainer.new()
+	scroll.horizontal_scroll_mode = ScrollContainer.SCROLL_MODE_DISABLED
+	scroll.custom_minimum_size = Vector2(286, 390)
+	scroll.size_flags_vertical = Control.SIZE_EXPAND_FILL
+	_spellbook_window.cuerpo.add_child(scroll)
+	_spellbook_box = VBoxContainer.new()
+	_spellbook_box.add_theme_constant_override("separation", 3)
+	_spellbook_box.custom_minimum_size.x = 282
+	scroll.add_child(_spellbook_box)
+	_spells = _leer_hechizos()
+	if _spells.is_empty():
+		_spellbook_box.add_child(VENTANA.etiqueta(
+			"Spell catalog not found.", 9, VENTANA.TENUE))
+		return
+	for hechizo in _spells:
+		_agregar_hechizo(hechizo)
+
+
+func alternar_spellbook() -> void:
+	_alternar_ventana(_spellbook_window)
+
+
+func _leer_hechizos() -> Array:
+	var archivo := FileAccess.open("res://assets/spells772.json", FileAccess.READ)
+	if archivo == null:
+		return []
+	var datos = JSON.parse_string(archivo.get_as_text())
+	if typeof(datos) != TYPE_DICTIONARY:
+		return []
+	var lista = datos.get("spells", [])
+	if typeof(lista) != TYPE_ARRAY:
+		return []
+	return lista
+
+
+func _agregar_hechizo(hechizo: Dictionary) -> void:
+	var fila := VBoxContainer.new()
+	fila.add_theme_constant_override("separation", 0)
+	var boton := _hacer_boton(str(hechizo.get("name", "Spell")))
+	boton.alignment = HORIZONTAL_ALIGNMENT_LEFT
+	boton.custom_minimum_size = Vector2(0, 20)
+	boton.tooltip_text = _detalle_hechizo(hechizo)
+	boton.pressed.connect(_usar_hechizo.bind(hechizo))
+	fila.add_child(boton)
+	var resumen := VENTANA.etiqueta(_resumen_hechizo(hechizo), 8,
+		VENTANA.TENUE)
+	resumen.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
+	fila.add_child(resumen)
+	_spellbook_box.add_child(fila)
+
+
+func _resumen_hechizo(hechizo: Dictionary) -> String:
+	var palabras := str(hechizo.get("words", "")).strip_edges()
+	var requisitos := []
+	var mana := int(hechizo.get("mana", 0))
+	var mana_pct := int(hechizo.get("mana_percent", 0))
+	if mana > 0:
+		requisitos.append("Mana %d" % mana)
+	if mana_pct > 0:
+		requisitos.append("Mana %d%%" % mana_pct)
+	requisitos.append("ML %d" % int(hechizo.get("magic_level", 0)))
+	var nivel := int(hechizo.get("level", 0))
+	if nivel > 0:
+		requisitos.append("Lv %d" % nivel)
+	if bool(hechizo.get("need_direction", false)):
+		requisitos.append("direction")
+	if bool(hechizo.get("need_target", false)):
+		requisitos.append("target")
+	if bool(hechizo.get("has_parameter", false)):
+		requisitos.append("parameter")
+	return "%s  |  %s" % [palabras, "  ".join(requisitos)]
+
+
+func _detalle_hechizo(hechizo: Dictionary) -> String:
+	var lineas := [
+		"Words: %s" % str(hechizo.get("words", "")),
+		"Type: %s" % str(hechizo.get("type", "instant")),
+		"Mana: %d  (%d%%)" % [
+			int(hechizo.get("mana", 0)),
+			int(hechizo.get("mana_percent", 0))],
+		"Level: %d  Magic Level: %d  Soul: %d" % [
+			int(hechizo.get("level", 0)),
+			int(hechizo.get("magic_level", 0)),
+			int(hechizo.get("soul", 0))],
+		"Cooldown: %d ms  Range: %d" % [
+			int(hechizo.get("cooldown_ms", 2000)),
+			int(hechizo.get("range", -1))],
+		"Premium: %s  Aggressive: %s" % [
+			"yes" if bool(hechizo.get("premium", false)) else "no",
+			"yes" if bool(hechizo.get("aggressive", true)) else "no"],
+	]
+	var vocaciones: Array = hechizo.get("vocations", [])
+	if not vocaciones.is_empty():
+		var nombres := []
+		for vocacion in vocaciones:
+			nombres.append(str(vocacion))
+		lineas.append("Vocations: " + ", ".join(nombres))
+	var parametros := []
+	if bool(hechizo.get("has_parameter", false)):
+		parametros.append("parameter required")
+	if bool(hechizo.get("has_player_name_parameter", false)):
+		parametros.append("player name")
+	if bool(hechizo.get("need_target", false)):
+		parametros.append("target")
+	if bool(hechizo.get("need_direction", false)):
+		parametros.append("direction")
+	if bool(hechizo.get("self_target", false)):
+		parametros.append("self")
+	if not parametros.is_empty():
+		lineas.append("Parameters: " + ", ".join(parametros))
+	var combate: Dictionary = hechizo.get("combat", {})
+	if not combate.is_empty():
+		var detalles := []
+		for clave in combate:
+			detalles.append("%s=%s" % [str(clave), str(combate[clave])])
+		lineas.append("Combat: " + ", ".join(detalles))
+	if hechizo.has("rune_id"):
+		lineas.append("Rune item: %d" % int(hechizo.get("rune_id", 0)))
+	lineas.append("Source: %s" % str(hechizo.get("source", "")))
+	return "\n".join(lineas)
+
+
+func _usar_hechizo(hechizo: Dictionary) -> void:
+	var palabras := str(hechizo.get("words", "")).strip_edges()
+	if palabras.is_empty():
+		return
+	if bool(hechizo.get("has_parameter", false)):
+		preparar_chat(palabras + " ")
+		_anotar("Spell requires a parameter. Complete the value and press Enter.")
+		return
+	if _mundo.lanzar_hechizo(palabras):
+		_anotar("Casting %s." % str(hechizo.get("name", "spell")))
 
 
 func _armar_stash() -> void:
@@ -465,7 +639,10 @@ func _armar_equipo() -> void:
 		boton.flat = true
 		boton.custom_minimum_size = Vector2(0, 17)
 		boton.add_theme_font_size_override("font_size", 9)
-		boton.pressed.connect(func(): _anotar(nombre + " is not connected yet."))
+		if nombre == "Logout":
+			boton.pressed.connect(_mundo.solicitar_logout)
+		else:
+			boton.pressed.connect(func(): _anotar(nombre + " is not connected yet."))
 		pie.add_child(boton)
 
 
@@ -634,6 +811,7 @@ func _actualizar_battle() -> void:
 	if puestos == 0:
 		_battle_box.add_child(VENTANA.etiqueta("No creatures in view", 10,
 			VENTANA.TENUE))
+	_battle_window.visible = puestos > 0
 	_battle_window.fijar_titulo("Battle (%d)" % puestos)
 
 
@@ -680,6 +858,9 @@ func _seleccionar_objetivo(id: int, seguir: bool) -> void:
 	var criatura: Dictionary = _estado.criaturas.get(id, {})
 	if criatura.is_empty():
 		return
+	if not seguir and _mundo.esta_esperando_uso_con():
+		if _mundo.usar_con_criatura_pendiente(id):
+			return
 	_target_window.visible = true
 	_target_name.text = str(criatura.get("nombre", "Creature"))
 	var porcentaje := clampf(float(criatura.get("vida", 100)) / 100.0, 0.0, 1.0)
@@ -722,12 +903,43 @@ func _anotar(texto: String) -> void:
 func _decir(texto: String) -> void:
 	var limpio := texto.strip_edges()
 	if limpio.is_empty():
+		_chat_input.clear()
+		_chat_input.release_focus()
 		return
 	var con = _mundo._con
 	if con != null:
 		con.enviar_hablar(limpio)
 	_anotar("You: " + limpio)
 	_chat_input.clear()
+	_chat_input.release_focus()
+
+
+func activar_chat() -> void:
+	if _chat_input == null or not _mundo._estado.adentro:
+		return
+	# Escribir no debe cancelar el auto-camino ya enviado al servidor. El
+	# cliente solo bloquea nuevos pasos mientras el campo tiene el foco; el
+	# movimiento confirmado sigue su curso de forma natural.
+	_chat_input.grab_focus()
+	_chat_input.caret_column = _chat_input.text.length()
+
+
+func preparar_chat(texto: String) -> void:
+	if _chat_input == null or not _mundo._estado.adentro:
+		return
+	_chat_input.text = texto
+	activar_chat()
+
+
+func cancelar_chat() -> void:
+	if _chat_input == null:
+		return
+	_chat_input.clear()
+	_chat_input.release_focus()
+
+
+func esta_escribiendo() -> bool:
+	return _chat_input != null and _chat_input.has_focus()
 
 
 func icono_para_item(cid: int) -> Texture2D:
@@ -746,13 +958,93 @@ func icono_para_item(cid: int) -> Texture2D:
 
 
 func usar_inventario(slot: int, cosa: Dictionary) -> void:
+	usar_ranura("inventario", -1, slot, cosa)
+
+
+func usar_ranura(tipo: String, id_contenedor: int, slot: int,
+		cosa: Dictionary) -> void:
+	if _es_runa(cosa):
+		if _mundo.preparar_uso_con(tipo, id_contenedor, slot, cosa):
+			_anotar("Use with %s: click a creature or map tile." %
+				str(cosa.get("nombre", "spell rune")))
+		return
+	if _es_anillo(cosa):
+		_equipar_anillo(tipo, id_contenedor, slot, cosa)
+		return
 	var con = _mundo._con
 	if con != null:
-		con.enviar_usar_inventario(slot, int(cosa.get("cid", 0)))
+		var posicion := _posicion_de_item(tipo, id_contenedor, slot)
+		con.enviar_usar_item(posicion, int(cosa.get("cid", 0)), 0, 0)
 	_anotar("Using %s..." % str(cosa.get("nombre", "item")))
 
 
+func abrir_contenedor_desde_ranura(tipo: String, id_contenedor: int,
+		slot: int, cosa: Dictionary) -> void:
+	"""Abre una mochila/body/container con Shift+clic derecho.
+
+	El ultimo byte de 0x82 es el indice de la ventana. Se escoge uno libre
+	para que cada apertura nueva llegue como un panel independiente.
+	"""
+	if not bool(cosa.get("contenedor", false)) or _mundo._con == null:
+		return
+	var indice := _indice_contenedor_libre()
+	if indice < 0:
+		_anotar("No more container windows available.")
+		return
+	_mundo._con.enviar_usar_item(_posicion_de_item(tipo, id_contenedor, slot),
+		int(cosa.get("cid", 0)), 0, indice)
+	_anotar("Opening %s in a new window..." %
+		str(cosa.get("nombre", "container")))
+
+
+func _indice_contenedor_libre() -> int:
+	for indice in range(16):
+		if not _estado.contenedores.has(indice):
+			return indice
+	return -1
+
+
+static func _es_anillo(cosa: Dictionary) -> bool:
+	return str(cosa.get("nombre", "")).strip_edges().to_lower().ends_with("ring")
+
+
+func _equipar_anillo(tipo: String, id_contenedor: int, slot: int,
+		cosa: Dictionary) -> void:
+	if tipo == "inventario" and slot == SLOT_ANILLO:
+		_anotar("%s is already equipped." % str(cosa.get("nombre", "ring")))
+		return
+	var con = _mundo._con
+	if con == null:
+		return
+	con.enviar_mover_ubicacion(_posicion_de_item(tipo, id_contenedor, slot),
+		int(cosa.get("cid", 0)), 0,
+		Vector3i(0xFFFF, SLOT_ANILLO, 0), 1)
+	_anotar("Equipping %s..." % str(cosa.get("nombre", "ring")))
+
+
+static func _es_runa(cosa: Dictionary) -> bool:
+	# En 7.72 todos los objetos de las runas del servidor se anuncian como
+	# "spell rune"; el client id es distinto para cada dibujo.
+	return str(cosa.get("nombre", "")).strip_edges().to_lower() == "spell rune"
+
+
+static func _es_cambio_de_moneda(anterior: Dictionary,
+		nuevo: Dictionary) -> bool:
+	if anterior.is_empty() or int(anterior.get("cid", 0)) not in IDS_MONEDAS:
+		return false
+	if nuevo.is_empty():
+		return true
+	return int(nuevo.get("cid", 0)) not in IDS_MONEDAS \
+		or int(anterior.get("cid", 0)) != int(nuevo.get("cid", 0)) \
+		or int(anterior.get("cantidad", 1)) != int(nuevo.get("cantidad", 1))
+
+
 func mirar_inventario(slot: int, cosa: Dictionary) -> void:
+	mirar_ranura("inventario", -1, slot, cosa)
+
+
+func mirar_ranura(tipo: String, id_contenedor: int, slot: int,
+		cosa: Dictionary) -> void:
 	_anotar("You see %s in inventory slot %d." % [
 		str(cosa.get("nombre", "item")), slot])
 
@@ -786,6 +1078,38 @@ func _soltar_item_en_mundo(posicion_mouse: Vector2, datos: Dictionary) -> void:
 	_mundo.soltar_inventario_en_mouse(posicion_mouse, datos)
 
 
+func recibir_objeto_del_mundo(posicion_mouse: Vector2, origen: Vector3i,
+		datos: Dictionary) -> bool:
+	"""Acepta un item arrastrado desde el mapa sobre un slot del HUD."""
+	var destino := _ranura_bajo_mouse(posicion_mouse)
+	if destino.is_empty():
+		return false
+	var objeto: Dictionary = datos.get("cosa", {})
+	var pila := int(datos.get("stackpos", -1))
+	if objeto.get("tipo") != "item" or pila < 0:
+		return false
+	return _mundo.recoger_objeto_en_ranura(origen, datos, pila,
+		str(destino.get("tipo", "inventario")),
+		int(destino.get("contenedor", -1)), int(destino.get("slot", -1)))
+
+
+func _ranura_bajo_mouse(posicion_mouse: Vector2) -> Dictionary:
+	for slot in _slots:
+		var ranura = _slots[slot]
+		if is_instance_valid(ranura) and ranura.visible \
+				and ranura.get_global_rect().has_point(posicion_mouse):
+			return {"tipo": "inventario", "contenedor": -1, "slot": int(slot)}
+	for id_contenedor in _slots_contenedor:
+		var por_ranura: Dictionary = _slots_contenedor[id_contenedor]
+		for slot in por_ranura:
+			var ranura = por_ranura[slot]
+			if is_instance_valid(ranura) and ranura.visible \
+					and ranura.get_global_rect().has_point(posicion_mouse):
+				return {"tipo": "contenedor", "contenedor": int(id_contenedor),
+					"slot": int(slot)}
+	return {}
+
+
 func _al_contenedor_actualizado(id: int, datos: Dictionary) -> void:
 	if not _ventanas_contenedor.has(id):
 		var ventana = VENTANA.new("Container", true)
@@ -797,16 +1121,20 @@ func _al_contenedor_actualizado(id: int, datos: Dictionary) -> void:
 		_dock_der_interno.move_child(ventana, 0)
 		_ventanas_contenedor[id] = ventana
 		_ajustar_columnas()
-	_refrescar_contenedor(id, datos)
+	var anterior: Dictionary = _contenedores_visuales.get(id, {})
+	_refrescar_contenedor(id, datos, anterior)
+	_contenedores_visuales[id] = datos.duplicate(true)
 
 
-func _refrescar_contenedor(id: int, datos: Dictionary) -> void:
+func _refrescar_contenedor(id: int, datos: Dictionary,
+		anterior: Dictionary = {}) -> void:
 	if not _ventanas_contenedor.has(id):
 		return
 	var ventana = _ventanas_contenedor[id]
 	ventana.fijar_titulo("%s [%d]" % [str(datos.get("nombre", "Container")), id])
 	for hijo in ventana.cuerpo.get_children():
 		hijo.queue_free()
+	_slots_contenedor[id] = {}
 	var grilla := GridContainer.new()
 	grilla.columns = 4
 	grilla.add_theme_constant_override("h_separation", 3)
@@ -814,10 +1142,16 @@ func _refrescar_contenedor(id: int, datos: Dictionary) -> void:
 	ventana.cuerpo.add_child(grilla)
 	var capacidad := mini(32, maxi(1, int(datos.get("capacidad", 1))))
 	var items: Array = datos.get("items", [])
+	var items_anteriores: Array = anterior.get("items", [])
 	for ranura in range(capacidad):
 		var slot = RANURA.new(self, ranura, "contenedor", id)
+		_slots_contenedor[id][ranura] = slot
 		if ranura < items.size():
 			slot.mostrar(items[ranura])
+			var previo: Dictionary = items_anteriores[ranura] \
+				if ranura < items_anteriores.size() else {}
+			if _es_cambio_de_moneda(previo, items[ranura]):
+				slot.animar_acunado()
 		grilla.add_child(slot)
 	var pie := VENTANA.etiqueta("%d / %d slots" % [items.size(), capacidad],
 		9, VENTANA.TENUE)
@@ -830,6 +1164,8 @@ func _al_contenedor_cerrado(id: int) -> void:
 		return
 	var ventana = _ventanas_contenedor[id]
 	_ventanas_contenedor.erase(id)
+	_slots_contenedor.erase(id)
+	_contenedores_visuales.erase(id)
 	if ventana.get_parent() != null:
 		ventana.get_parent().remove_child(ventana)
 	ventana.queue_free()

@@ -19,6 +19,9 @@ var _icono: TextureRect
 var _cantidad: Label
 var _vacia: Texture2D
 
+# El protocolo transporta client IDs, no los IDs internos del servidor.
+const IDS_MONEDAS := [3031, 3035, 3043]
+
 
 func _init(interfaz, slot: int, tipo: String = "inventario",
 		id_contenedor: int = -1) -> void:
@@ -57,16 +60,53 @@ func _init(interfaz, slot: int, tipo: String = "inventario",
 
 
 func mostrar(cosa: Dictionary) -> void:
+	var anterior := _objeto.duplicate(true)
 	_objeto = cosa.duplicate(true)
 	if _objeto.is_empty():
 		_icono.texture = _vacia
 		_cantidad.text = ""
 		tooltip_text = "Empty slot %d" % _slot
+		if _es_cambio_de_moneda(anterior, _objeto):
+			animar_acunado()
 		return
 	_icono.texture = _interfaz.icono_para_item(int(_objeto.get("cid", 0)))
 	var cantidad := int(_objeto.get("cantidad", 1))
 	_cantidad.text = str(cantidad) if cantidad > 1 else ""
 	tooltip_text = str(_objeto.get("nombre", "item"))
+	if _es_cambio_de_moneda(anterior, _objeto):
+		animar_acunado()
+
+
+static func _es_moneda(cosa: Dictionary) -> bool:
+	return int(cosa.get("cid", 0)) in IDS_MONEDAS
+
+
+static func _es_cambio_de_moneda(anterior: Dictionary,
+		nuevo: Dictionary) -> bool:
+	if anterior.is_empty() or not _es_moneda(anterior):
+		return false
+	if nuevo.is_empty():
+		return true
+	return not _es_moneda(nuevo) or int(anterior.get("cid", 0)) != int(nuevo.get("cid", 0)) \
+		or int(anterior.get("cantidad", 1)) != int(nuevo.get("cantidad", 1))
+
+
+func animar_acunado() -> void:
+	var brillo := ColorRect.new()
+	brillo.color = Color(1.0, 0.82, 0.22, 0.62)
+	brillo.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	brillo.set_anchors_preset(Control.PRESET_FULL_RECT)
+	add_child(brillo)
+	var tamano := size
+	if tamano.x <= 0.0 or tamano.y <= 0.0:
+		tamano = Vector2(LADO, LADO)
+	pivot_offset = tamano * 0.5
+	var escala_anterior := scale
+	var tween := create_tween().set_parallel(true)
+	tween.tween_property(brillo, "modulate:a", 0.0, 0.42)
+	tween.tween_property(self, "scale", escala_anterior * 1.14, 0.10)
+	tween.chain().tween_property(self, "scale", escala_anterior, 0.22)
+	tween.finished.connect(brillo.queue_free)
 
 
 static func _cargar_dibujo_vacio(slot: int) -> Texture2D:
@@ -107,8 +147,12 @@ func _gui_input(evento: InputEvent) -> void:
 			or not evento.pressed:
 		return
 	if evento.button_index == MOUSE_BUTTON_RIGHT:
-		_interfaz.usar_inventario(_slot, _objeto)
+		if evento.shift_pressed and bool(_objeto.get("contenedor", false)):
+			_interfaz.abrir_contenedor_desde_ranura(
+				_tipo, _id_contenedor, _slot, _objeto)
+		else:
+			_interfaz.usar_ranura(_tipo, _id_contenedor, _slot, _objeto)
 		accept_event()
 	elif evento.button_index == MOUSE_BUTTON_LEFT and evento.shift_pressed:
-		_interfaz.mirar_inventario(_slot, _objeto)
+		_interfaz.mirar_ranura(_tipo, _id_contenedor, _slot, _objeto)
 		accept_event()

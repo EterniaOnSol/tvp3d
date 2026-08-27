@@ -18,13 +18,13 @@ cliente3d/red/conexion772.gd.
 
 | Opcode | Funcion 7.72 | Estado actual |
 |---|---|---|
-| 0x14 | logout | FALTA |
+| 0x14 | logout | HECHO |
 | 0x1D | pingback | PARCIAL |
 | 0x1E | respuesta/ping | HECHO, respuesta al ping del servidor |
 | 0x32 | extended opcode | FALTA |
 | 0x64 | auto-walk con lista de direcciones | HECHO |
 | 0x65-0x68 | paso norte/este/sur/oeste | HECHO |
-| 0x69 | detener auto-walk | FALTA |
+| 0x69 | detener auto-walk | HECHO |
 | 0x6A-0x6D | paso diagonal | FALTA como metodo publico |
 | 0x6F-0x72 | girar norte/este/sur/oeste | FALTA como metodo publico |
 | 0x78 | throw/mover objeto | HECHO |
@@ -33,8 +33,8 @@ cliente3d/red/conexion772.gd.
 | 0x7F | aceptar trade | FALTA |
 | 0x80 | cerrar trade | FALTA |
 | 0x82 | usar item | HECHO |
-| 0x83 | usar item sobre item | FALTA |
-| 0x84 | usar item sobre criatura | FALTA |
+| 0x83 | usar item sobre item | HECHO |
+| 0x84 | usar item sobre criatura | HECHO |
 | 0x85 | rotar item | FALTA |
 | 0x87 | cerrar contenedor | HECHO |
 | 0x88 | subir al contenedor padre | FALTA |
@@ -62,7 +62,7 @@ cliente3d/red/conexion772.gd.
 | 0xAA | crear canal privado | FALTA |
 | 0xAB | invitar al canal | FALTA |
 | 0xAC | expulsar del canal | FALTA |
-| 0xBE | cancelar ataque/seguimiento | FALTA |
+| 0xBE | cancelar ataque/seguimiento | HECHO |
 | 0xC9 | actualizar casilla | FALTA |
 | 0xCA | actualizar contenedor | FALTA |
 | 0xD2 | pedir ventana de outfit | FALTA |
@@ -97,20 +97,20 @@ cliente3d/red/conexion772.gd.
 | 0x72 | quitar objeto de contenedor | HECHO |
 | 0x78 | actualizar inventario | HECHO |
 | 0x79 | vaciar slot de inventario | HECHO |
-| 0x82 | luz del mundo | SKIP |
-| 0x83 | efecto magico | SKIP |
-| 0x84 | texto animado | SKIP |
-| 0x85 | proyectil a distancia | SKIP |
+| 0x82 | luz del mundo | HECHO, estado y renderer |
+| 0x83 | efecto magico | HECHO, evento y renderer animado |
+| 0x84 | texto animado | HECHO, evento y renderer |
+| 0x85 | proyectil a distancia | HECHO, evento y renderer animado |
 | 0x86 | cuadrado de criatura | SKIP |
-| 0x8C | vida de criatura | SKIP |
+| 0x8C | vida de criatura | HECHO |
 | 0x8D | luz de criatura | SKIP |
-| 0x8E | outfit de criatura | PARCIAL, payload consumido |
+| 0x8E | outfit de criatura | HECHO, actualiza apariencia |
 | 0x8F | velocidad de criatura | SKIP |
 | 0x90 | skull de criatura | SKIP |
 | 0x91 | shield de party | SKIP |
 | 0xA0 | stats del jugador | HECHO |
 | 0xA1 | skills del jugador | HECHO |
-| 0xA2 | iconos de condiciones | SKIP |
+| 0xA2 | iconos de condiciones | HECHO, estado de combate |
 | 0xA3 | cancelar objetivo | SKIP |
 | 0xA7 | modos de combate | SKIP |
 | 0xAA | habla en mapa/canal/privado | HECHO |
@@ -159,8 +159,8 @@ No cambiar estos tamaños sin volver a revisar protocolgame.cpp:
 
 ## Orden recomendado para continuar
 
-1. Implementar en estado_mundo.gd los eventos visuales 0x82-0x91:
-   luz, efectos, proyectiles, textos animados y metadatos de criaturas.
+1. Completar en estado_mundo.gd los eventos restantes 0x86-0x91:
+   cuadrados, luz individual, velocidad, skull y shield de criaturas.
 2. Implementar 0xAB-0xAD, 0xB2-0xB3 y 0xFA; luego conectarlos a chat,
    canales y ventanas de la UI.
 3. Agregar metodos de conexion772.gd para giro, uso sobre objeto/criatura,

@@ -24,6 +24,9 @@ services:
       start_period: 30s
 
   phpmyadmin:
+    # Herramienta administrativa opcional; no se levanta con el servidor del
+    # juego para no consumir recursos cuando solo usamos la web y el cliente.
+    profiles: ["admin"]
     image: phpmyadmin:latest
     environment:
       PMA_HOST: mariadb

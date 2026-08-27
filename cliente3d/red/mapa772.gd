@@ -219,15 +219,24 @@ func _leer_item(msg) -> Dictionary:
 	var info := info_item(cid)
 	if info.is_empty():
 		_sin_datos += 1
-	# networkmessage.cpp:101-105 — el byte extra existe solo para apilables
-	# y liquidos. En 7.72 no hay byte de animacion.
+	# networkmessage.cpp:101-105 — el byte extra es cantidad para apilables
+	# y color para liquidos. En 7.72 no hay byte de animacion. El color no
+	# es el FluidType interno: el servidor lo traduce antes de enviarlo.
+	var es_apilable := bool(info.get("apilable", false))
+	var es_liquido := bool(info.get("liquido", false))
 	var cantidad := 1
-	if info.get("apilable", false) or info.get("liquido", false):
+	var color_liquido := 0
+	if es_apilable:
 		cantidad = msg.leer_u8()
+	elif es_liquido:
+		color_liquido = msg.leer_u8()
 	return {
 		"tipo": "item",
 		"cid": cid,
 		"cantidad": cantidad,
+		"apilable": es_apilable,
+		"liquido": es_liquido,
+		"color_liquido": color_liquido,
 		"suelo": info.get("suelo", false),
 		"bloquea": info.get("bloquea", false),
 		"frena_vista": info.get("frena_vista", false),
@@ -237,8 +246,19 @@ func _leer_item(msg) -> Dictionary:
 		"siempre_arriba": info.get("siempre_arriba", false),
 		"orden_arriba": info.get("orden_arriba", 0),
 		"color_mapa": info.get("color_mapa", 0),
-		"nombre": info.get("nombre", ""),
+		"nombre": _nombre_item_recibido(cid, info, color_liquido),
 	}
+
+
+static func _nombre_item_recibido(cid: int, info: Dictionary,
+		color_liquido: int) -> String:
+	var nombre := str(info.get("nombre", ""))
+	# 2006/vial con FluidType=10 (mana) llega por el protocolo como color 7.
+	# El servidor no manda el subtipo interno, por eso el client id y el color
+	# son la única información disponible para presentar el nombre correcto.
+	if cid == 2874 and color_liquido == 7:
+		return "mana fluid"
+	return nombre
 
 
 func _leer_criatura(msg) -> Dictionary:

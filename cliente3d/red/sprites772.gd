@@ -24,6 +24,8 @@ const CARPETA := "res://assets/sprites772/"
 var _laminas: Array[Texture2D] = []
 var _items := {}
 var _outfits := {}
+var _efectos := {}
+var _proyectiles := {}
 var _cache := {}
 var _lado_lamina := 2048
 var _listo := false
@@ -41,6 +43,8 @@ func _init() -> void:
 
 	_items = datos.get("items", {})
 	_outfits = datos.get("outfits", {})
+	_efectos = datos.get("efectos", {})
+	_proyectiles = datos.get("proyectiles", {})
 	_lado_lamina = int(datos.get("lado_lamina", 2048))
 	for n in range(int(datos.get("laminas", 0))):
 		var ruta := CARPETA + "lamina_%02d.png" % n
@@ -94,6 +98,16 @@ func alto_de_outfit(tipo: int) -> int:
 	return int(ficha["alto"]) if ficha else 1
 
 
+func fases_de_outfit(tipo: int, direccion: int = 0) -> int:
+	var ficha = _outfits.get(str(tipo))
+	if ficha == null:
+		return 1
+	var por_dir: Array = ficha["c"]
+	if por_dir.is_empty():
+		return 1
+	return por_dir[direccion % por_dir.size()].size()
+
+
 func cuadro_outfit(tipo: int, direccion: int, fase: int = 0) -> Dictionary:
 	"""La direccion es la del servidor: 0 norte, 1 este, 2 sur, 3 oeste
 	(el mismo orden que en el .dat)."""
@@ -103,6 +117,32 @@ func cuadro_outfit(tipo: int, direccion: int, fase: int = 0) -> Dictionary:
 	var por_dir: Array = ficha["c"]
 	var fila: Array = por_dir[direccion % por_dir.size()]
 	return _recorte(fila[fase % fila.size()])
+
+
+func fases_de_efecto(tipo: int) -> int:
+	var ficha = _efectos.get(str(tipo))
+	return int(ficha.get("fases", ficha.get("c", []).size())) if ficha else 1
+
+
+func cuadro_efecto(tipo: int, fase: int = 0) -> Dictionary:
+	var ficha = _efectos.get(str(tipo))
+	if ficha == null or ficha.get("c", []).is_empty():
+		return {}
+	var cuadros: Array = ficha["c"]
+	return _recorte(cuadros[fase % cuadros.size()])
+
+
+func fases_de_proyectil(tipo: int) -> int:
+	var ficha = _proyectiles.get(str(tipo))
+	return int(ficha.get("fases", ficha.get("c", []).size())) if ficha else 1
+
+
+func cuadro_proyectil(tipo: int, fase: int = 0) -> Dictionary:
+	var ficha = _proyectiles.get(str(tipo))
+	if ficha == null or ficha.get("c", []).is_empty():
+		return {}
+	var cuadros: Array = ficha["c"]
+	return _recorte(cuadros[fase % cuadros.size()])
 
 
 func _recorte(sitio: Dictionary) -> Dictionary:
