@@ -1,0 +1,7 @@
+# Los archivos que corren ADENTRO de Docker tienen que quedar con finales
+# de linea de Unix. Esta maquina es Windows y git tiene core.autocrlf=true,
+# asi que sin esto un clon nuevo se los bajaria con CRLF y el contenedor
+# moriria con "not found" — Linux lee el \r como parte del nombre del
+# interprete en la primera linea del script.
+*.sh text eol=lf
+Dockerfile text eol=lf

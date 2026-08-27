@@ -1,0 +1,200 @@
+{% set pageNavigation %}
+
+	{% set pagesLimit = min((totalResults/setting('core.highscores_per_page'))|round(0, 'ceil'), 20) %}
+
+	{% set totalResults = min(pagesLimit * setting('core.highscores_per_page'), totalResults) %}
+
+<tr>
+	<td class="PageNavigation">
+		<small>
+			{% if pagesLimit > 0 %}
+			<div style="float: left;">
+				<b>» Pages:
+					{% for i in 1..pagesLimit %}
+					<span class="PageLink ">
+						{% if page == i %}
+							<span class="CurrentPageLink">{{ i }}</span>
+						{% else %}
+							<a href="{{ baseLink ~ i }}">{{ i }}</a>
+						{% endif %}
+					</span>
+					{% endfor %}
+				</b>
+			</div>
+			{% endif %}
+			<div style="float: right;"><b>» Results: {{ totalResults }}</b></div>
+		</small>
+	</td>
+</tr>
+{% endset %}
+
+<div class="TableContainer">
+	<div class="CaptionContainer">
+		<div class="CaptionInnerContainer">
+			<span class="CaptionEdgeLeftTop"
+				  style="background-image:url(https://static.tibia.com/images/global/content/box-frame-edge.gif);"></span>
+			<span class="CaptionEdgeRightTop"
+				  style="background-image:url(https://static.tibia.com/images/global/content/box-frame-edge.gif);"></span>
+			<span class="CaptionBorderTop"
+				  style="background-image:url(https://static.tibia.com/images/global/content/table-headline-border.gif);"></span>
+			<span class="CaptionVerticalLeft"
+				  style="background-image:url(https://static.tibia.com/images/global/content/box-frame-vertical.gif);"></span>
+			<div class="Text">Highscores Filter</div>
+			<span class="CaptionVerticalRight"
+				  style="background-image:url(https://static.tibia.com/images/global/content/box-frame-vertical.gif);"></span>
+			<span class="CaptionBorderBottom"
+				  style="background-image:url(https://static.tibia.com/images/global/content/table-headline-border.gif);"></span>
+			<span class="CaptionEdgeLeftBottom"
+				  style="background-image:url(https://static.tibia.com/images/global/content/box-frame-edge.gif);"></span>
+			<span class="CaptionEdgeRightBottom"
+				  style="background-image:url(https://static.tibia.com/images/global/content/box-frame-edge.gif);"></span>
+		</div>
+	</div>
+	<table class="Table1" cellpadding="0" cellspacing="0">
+		<tbody>
+		<tr>
+			<td>
+				<div class="InnerTableContainer">
+					<table style="width:100%;">
+						<tbody>
+						<tr>
+							<td style="width:150px">
+								<label for="vocationFilter">Vocation:</label>
+							</td>
+							<td>
+								<select onchange="location = this.value;" id="vocationFilter">
+									<option value="{{ getLink('highscores') }}/{{ list|urlencode }}" class="size_xs">(all)</option>
+									{% for i in baseVocations  %}
+										<option value="{{ getLink('highscores') }}/{{ list|urlencode }}/{{ config.vocations[i]|lower|urlencode }}" class="size_xs" {% if vocationId is not null and vocationId == i %}selected{% endif %}>{{ config.vocations[i]}}</option>
+									{% endfor %}
+								</select>
+							</td>
+							<td>
+							</td>
+						</tr>
+						<tr>
+							<td>
+								<label for="skillFilter">Category:</label>
+							</td>
+							<td>
+								<select onchange="location = this.value;" id="skillFilter">
+									{% for link, name in types|sort((a, b) => a <=> b) %} %}
+										<option value="{{ getLink('highscores') }}/{{ link|urlencode }}{% if vocation is not null %}/{{ vocation|lower|urlencode }}{% endif %}" class="size_xs" {% if list is not null and list == link %}selected{% endif %}>{{ name }}</option>
+									{% endfor %}
+								</select>
+								</td>
+							</tr>
+						</tbody>
+					</table>
+				</div>
+			</td>
+		</tr>
+		</tbody>
+	</table>
+</div>
+
+<p><i>Skills displayed in the Highscores do not include any bonuses (loyalty, equipment etc.).</i></p>
+
+<div class="TableContainer">
+	<div class="CaptionContainer">
+		<div class="CaptionInnerContainer">
+			<span class="CaptionEdgeLeftTop"
+				  style="background-image:url(https://static.tibia.com/images/global/content/box-frame-edge.gif);"></span>
+			<span class="CaptionEdgeRightTop"
+				  style="background-image:url(https://static.tibia.com/images/global/content/box-frame-edge.gif);"></span>
+			<span class="CaptionBorderTop"
+				  style="background-image:url(https://static.tibia.com/images/global/content/table-headline-border.gif);"></span>
+			<span class="CaptionVerticalLeft"
+				  style="background-image:url(https://static.tibia.com/images/global/content/box-frame-vertical.gif);"></span>
+			<div class="Text">Highscores <span class="RightArea">Last Update:  {{ (date().timestamp - updatedAt == 0) ? 'now' : updatedAt|timeago }} </span></div>
+			<span class="CaptionVerticalRight"
+				  style="background-image:url(https://static.tibia.com/images/global/content/box-frame-vertical.gif);"></span>
+			<span class="CaptionBorderBottom"
+				  style="background-image:url(https://static.tibia.com/images/global/content/table-headline-border.gif);"></span>
+			<span class="CaptionEdgeLeftBottom"
+				  style="background-image:url(https://static.tibia.com/images/global/content/box-frame-edge.gif);"></span>
+			<span class="CaptionEdgeRightBottom"
+				  style="background-image:url(https://static.tibia.com/images/global/content/box-frame-edge.gif);"></span>
+		</div>
+	</div>
+	<table class="Table3" cellpadding="0" cellspacing="0">
+		<tbody>
+		<tr>
+			<td>
+				<div class="InnerTableContainer">
+					<table style="width:100%;">
+						<tbody>
+						{{ pageNavigation }}
+						<tr>
+							<td>
+								<div class="TableContentContainer">
+									<table class="TableContent myaac-table" width="100%" style="border:1px solid #faf0d7;">
+										<tbody>
+										<tr class="LabelH">
+											<td>Rank</td>
+
+											{% if setting('core.highscores_outfit') %}
+												<td>Outfit</td>
+											{% endif %}
+
+											<td style="width: 90%">Name</td>
+											<td style="text-align:right">Vocation</td>
+											<td style="text-align: right">
+												{{ levelName }}
+											</td>
+											{% if skill == constant('POT::SKILL__LEVEL') %}
+											<td style="text-align: right">Points</td>
+											{% endif %}
+										</tr>
+
+										{% if highscores|length < 1 %}
+											<tr bgcolor="{{ config('darkborder') }}"><td colspan="100%">No records yet.</td></tr>
+										{% else %}
+
+											{% set row = 0 %}
+
+											{% for player in highscores %}
+												{% set row = row + 1 %}
+
+												<tr {% if setting('core.highscores_outfit') %}style="height: 50px;"{% endif %}>
+													<td>{{ player.rank }}</td>
+
+												{% if setting('core.highscores_outfit') %}
+													<td>{{ player.outfit|raw }}</td>
+												{% endif %}
+
+												<td class="DoNotBreak">
+													<a href="{{ player.link }}">
+														<span {% if setting('core.highscores_online_status') %}style="color: {% if player.online > 0 %}green{% else %}red{% endif %}"{% endif %}>{{ player.name }}</span>
+													</a>
+												</td>
+
+												{% if setting('core.highscores_vocation') %}
+													<td class="DoNotBreak" style="text-align:right;">{{ player.vocation }}</td>
+												{% endif %}
+
+												<td>
+													<div style="text-align:right;">{{ player.value }}</div>
+												</td>
+
+												{% if skill == constant('POT::SKILL__LEVEL') %}
+													<td><div style="text-align:right">{{ player.experience }}</div></td>
+												{% endif %}
+											</tr>
+										{% endfor %}
+
+										{% endif %}
+										</tbody>
+									</table>
+								</div>
+							</td>
+						</tr>
+						{{ pageNavigation }}
+						</tbody>
+					</table>
+				</div>
+			</td>
+		</tr>
+		</tbody>
+	</table>
+</div>

@@ -33,6 +33,18 @@ servidor/gamedata/players/*
 !servidor/gamedata/players/4/4.tvpp
 servidor/gamedata/players/.gitignore
 
+# Pagina web (MyAAC). El codigo se baja con composer/npm y no va al repo;
+# config.local.php e install.lock son de esta maquina.
+web/myaac/vendor/
+web/myaac/node_modules/
+web/myaac/tools/ext/
+web/myaac/config.local.php
+web/myaac/install/install.lock
+web/myaac/system/cache/
+web/myaac/system/logs/
+web/myaac/.htaccess
+web/plugins-zip/*.zip
+
 # Local recordings and extracted QA frames
 worklog/video_ref*/
 worklog/*.mp4

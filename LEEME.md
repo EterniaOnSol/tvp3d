@@ -89,8 +89,15 @@ credenciales.
 | `PROBAR CONEXION.bat` | Entra al mundo y camina, para ver que todo anda |
 | `VER SERVIDOR.bat` | Muestra en vivo lo que dice el servidor |
 | `PARAR SERVIDOR.bat` | Lo apaga (los personajes quedan guardados) |
+| `ARRANCAR WEB.bat` | Levanta la página web donde la gente se hace la cuenta |
+| `VER WEB.bat` | Muestra en vivo lo que dice la web |
+| `PARAR WEB.bat` | Apaga la web (el juego sigue prendido) |
+| `INSTALAR PLUGIN WEB.bat` | Instala un plugin o tema en la web |
 
 **Cuenta:** `123456` · **Clave:** `123456` · **Personaje:** `GOD`
+
+La web va **después** del servidor: se engancha a la red de Docker que crea
+`ARRANCAR SERVIDOR.bat`. Todo lo suyo está explicado en `web/LEEME.md`.
 
 La primera vez `ARRANCAR SERVIDOR.bat` tarda bastante porque compila el C++
 adentro de Docker. Después arranca en segundos.
@@ -103,6 +110,7 @@ adentro de Docker. Después arranca en segundos.
 servidor/     TVP sin tocar (clon de github.com/TVPV8/TVP)
 cliente3d/    El cliente 3D en Godot 4
 herramientas/ Los scripts que sacan datos del servidor
+web/          La página web (MyAAC + tema Canary) — ver web/LEEME.md
 ```
 
 Nada del servidor se modifica salvo `config.lua`, que es el archivo de
@@ -117,6 +125,7 @@ vienen.
 | Juego | 7172 |
 | MariaDB | 3371 |
 | phpMyAdmin | http://localhost:8071 (root / root) |
+| Página web | http://localhost:8072 (admin: cuenta `100777` / clave `tvp3d2026`) |
 
 No chocan con los otros proyectos: INTEN3D usa 7371-7372 y 3DTIBIA 7271-7275.
 

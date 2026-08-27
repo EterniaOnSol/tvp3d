@@ -1,0 +1,95 @@
+<link type="text/css" rel="stylesheet" href="{{ constant('BASE_URL') }}tools/ext/jquery-ui/themes/base/jquery-ui.min.css">
+<script>
+	let last_id = [];
+	let colors = [];
+
+	{% for cat, menu in menus %}
+		{% if config('menu_categories')[cat] is not empty %}
+			last_id[{{ cat }}] = {{ last_id[cat] }};
+		{% endif %}
+	{% endfor %}
+
+	{% set menuDefaultLinksColor = config('menu_default_links_color') %}
+	{% for cat, options in config('menu_categories') %}
+	colors[{{ cat }}] = '{{ options['default_links_color'] ?? (menuDefaultLinksColor ?? config('menu_default_color')) }}';
+	{% endfor %}
+
+	function confirmRemoveMenuItem(that)
+	{
+		let id = $(that).attr("id");
+		if (confirm('Are you sure, that you want to remove this element?')) {
+			$('#list-' + id.replace('remove-button-', '')).remove();
+		}
+	}
+
+	$(function () {
+		const $sortable = $(".sortable");
+		$sortable.sortable();
+		$sortable.disableSelection();
+
+		$(".remove-button").on('click', function () {
+			confirmRemoveMenuItem(this);
+		});
+
+		$(".add-button").on('click', function () {
+			let cat = $(this).attr("id").replace('add-button-', '');
+			let id = last_id[cat];
+			last_id[cat]++;
+			const color = colors[cat];
+
+			let copy = $('.ui-state-default:first').clone();
+
+			copy.attr('id', 'list-' + cat + '-' + id);
+
+			copy.find('.menu-name').val('').attr('name', 'menu[' + cat + '][]');
+			copy.find('.menu-link').val('').attr('name', 'menu_link[' + cat + '][]');
+			copy.find('.menu-access').val('0').attr('name', 'menu_access[' + cat + '][]');
+			copy.find('.menu-color').val(color).attr('name', 'menu_color[' + cat + '][]');
+			copy.find('.menu-blank').attr('name', 'menu_blank[' + cat + '][]');
+			copy.find('.menu-blank-checkbox').prop('checked', false);
+
+			copy.find('.remove-button').attr('id', 'remove-button-' + cat + '-' + id);
+
+			$('#sortable-' + cat).append(copy);
+
+			$('#remove-button-' + cat + '-' + id).on('click', function () {
+				confirmRemoveMenuItem(this);
+			});
+		});
+
+		$("#menus-form").on('submit', function (e) {
+			$('.menu-blank-checkbox:not(:checked)').each(function (i, obj) {
+				$(obj).parent().prev().val("off");
+			});
+
+			$('.menu-blank-checkbox:checked').each(function (i, obj) {
+				$(obj).parent().prev().val("on");
+			});
+		});
+
+	});
+</script>
+<style>
+	.sortable {
+		list-style-type: none;
+		margin: 0;
+		padding: 0;
+		width: 100%;
+	}
+
+	.remove-button, .add-button {
+		cursor: pointer;
+	}
+
+	.ui-sortable-handle {
+		padding: 10px;
+	}
+
+	.label_menu_name, .label_menu_link {
+		width: 45%;
+	}
+
+	.menu-name, .menu-link {
+		width: 100%;
+	}
+</style>

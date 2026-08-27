@@ -1,0 +1,72 @@
+[2.0.1 - 06.05.2026]
+	* Add support for events.json (latest canary)
+
+[2.0 - 16.01.2025]
+	* Fix online, characters & highscores for latest myaac v2.0-dev (Monk support)
+	* Remove routes hook, is useless in this myaac version
+
+[1.2.2 - 04.01.2026]
+	* Fix display of achievements in the characters page
+	* Fixes for servers that don't have:
+		* player_storage table
+		* cap column
+		* stages.lua file
+
+[1.2.1 - 31.11.2025]
+	* Highscores: fix if there are no records - don't show "Pages"
+	* Characters: Move config.achievements_base, to fix error on characters page
+
+[1.2 - 25.10.2025]
+	* event-schedule overhaul
+		* display all months - previous/next switch
+		* change first day to Monday (instead of Sunday)
+		* display star on start/end event
+		* sorting by "displaypriority"
+		* optimize events.xml loading
+
+[1.1.2 - 09.09.2025]
+	* adjustments for latest myaac - characters.php auto route
+
+[1.1.1 - 17.08.2025]
+	* Fix showing closing element + console error
+
+[1.1 - 02.08.2025]
+	* revamp of highscores according to real tibia style
+	* pagination
+	* last updated
+	* online/offline status configurable
+	* latest myaac required (v1.8)
+
+[1.0.3 - 09.06.2025]
+	* Add missing csrf token in account.login.html.twig and account.management.html.twig
+
+[1.0.2 - 03.06.2025]
+	* Adjust characters route to allow squared brackets []
+
+[1.0.1 - 24.05.2025]
+	* Rename server-info to ots-info
+	* Fix menu links
+	* Remove font-awesome (wasn't used)
+
+[1.0 - 24.05.2025]
+	* First official release
+	* Fixed house link
+	* Fixed signature link
+
+[1.0-beta.2 - 14.05.2025]
+	* fix event-schedule warnings
+	* Use accounts.premium_points, if coins not present
+	* Use template_path where possible
+	* Fix headline format - png
+	* Remove useless quotation marks in highscores
+	* use hook FILTER_ROUTES for characters route
+
+[1.0-beta - 13.05.2025]
+	* fix lost account link in account.login.html.twig
+
+[1.0-alpha.2 - 19.04.2025]
+	* move highscores to twig
+	* fix characters page (health bar, achievements, etc.)
+
+[1.0-alpha - 06.04.2025]
+	* initial release

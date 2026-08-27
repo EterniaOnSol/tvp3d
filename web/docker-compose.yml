@@ -1,0 +1,36 @@
+# Pagina web de TVP3D (MyAAC) - http://localhost:8072
+#
+# Vive aparte del servidor a proposito: se puede prender, apagar y
+# reconstruir la web sin tocar el juego. Lo unico que comparten es la
+# red de Docker, para que MyAAC llegue a MariaDB por el nombre
+# "mariadb" sin pasar por Windows.
+#
+# Por eso hay que arrancar PRIMERO el servidor (ARRANCAR SERVIDOR.bat):
+# la red la crea el, y aca solo se engancha.
+
+services:
+  web:
+    build: .
+    container_name: tvp3d_web
+    ports:
+      - "8072:80"
+    volumes:
+      # El codigo de la web, editable desde Windows.
+      - ./myaac:/var/www/html
+      # El servidor, SOLO LECTURA: MyAAC necesita leer config.lua y
+      # data/XML/vocations.xml para saber como es el mundo. Con :ro
+      # no puede escribir nada del juego ni queriendo.
+      - ../servidor:/srv/tvp:ro
+      # Buzon de plugins: los .zip que se dejen en web/plugins-zip se
+      # instalan con INSTALAR PLUGIN.bat.
+      - ./plugins-zip:/plugins-zip:ro
+    environment:
+      TZ: America/Guatemala
+    networks:
+      - tvp_network
+    restart: unless-stopped
+
+networks:
+  tvp_network:
+    external: true
+    name: servidor_tvp_network
