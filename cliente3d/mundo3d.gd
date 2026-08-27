@@ -50,6 +50,13 @@ const INTERFAZ := preload("res://ui/interfaz.gd")
 
 const ARCHIVO_MAPPING := "res://assets/mappings/items.json"
 const ARCHIVO_INDICE_IR := "res://generated/maps/rookgaard_100sqm_chunks/index.json"
+## Las piezas 4633-4644 son las transiciones de orilla que usa el mapa de
+## Rookgaard. Su franja marron y su agua azul se conservan; las partes
+## transparentes se rellenan con el mismo pasto 4515 del mapa para que no
+## aparezca el fondo celeste.
+const IDS_BORDES_AGUA := [4633, 4634, 4635, 4636, 4637, 4638, 4639,
+	4640, 4641, 4642, 4643, 4644]
+const ID_SPRITE_PASTO_BORDE := 4515
 const HOST := "127.0.0.1"
 const PUERTO_LOGIN := 7171
 ## En 7.72 la cuenta es un NUMERO (protocollogin.cpp:156).
@@ -61,10 +68,16 @@ const ALTO_PISO := COORD.FLOOR_WORLD_HEIGHT
 ## Alturas visuales de las construcciones. No se derivan del alto del sprite:
 ## el DAT describe una imagen 2D, no la altura fisica de una pared.
 const ALTO_MUEBLE := ALTO_PISO * 0.42
-
+## Altura y espesor de los segmentos estructurales del pasamanos.
+const ALTO_PASAMANOS := ALTO_PISO * 0.68
+const GROSOR_PASAMANOS := LADO * 0.12
 ## Cuantas casillas se ven a la redonda. Subirlo se ve mejor y cuesta
 ## caro: el area crece con el cuadrado.
 const RADIO := 36
+## Radio que se muestra primero cuando cambia el piso. El resto de la
+## ventana se completa en segundo plano para que una escalera no deje al
+## jugador esperando a que nazcan miles de instancias lejanas.
+const RADIO_INMEDIATO := 16
 ## Pisos de abajo que se muestran junto al piso jugable.
 ##
 ## La vista normal debe ser estricta: una pared o escalera de Z+1 tiene
@@ -93,6 +106,23 @@ const UMBRAL_ARRASTRE_MOUSE := 3.0
 const DURACION_VISUAL_PASO := 0.26
 const MULTIPLICADOR_DIAGONAL := 3.0
 const ESCALA_JUGADOR := 0.5
+## La camara filtra posicion y objetivo con la misma señal. Mirar al nodo
+## del jugador directamente hacia que el mundo tiemble al confirmar pasos.
+const SUAVIDAD_CAMARA := 10.0
+## El escenario se rearma fuera del hilo visual con un presupuesto pequeno
+## por frame. El numero de casillas cambia mucho segun la zona; medir tiempo
+## evita tanto la espera innecesaria como una tanda que congele la imagen.
+const PRESUPUESTO_REARMADO_US := 4500
+
+## Iluminacion visual. El servidor 7.72 no envia una hora de mundo, asi que
+## mientras tanto la escena sigue el reloj local y aplica una transicion
+## suave, pero muy visible, entre dia y noche.
+const HORA_AMANECER := 6.0
+const HORA_ATARDECER := 18.0
+## La noche debe ser oscura, pero nunca una pantalla negra: el jugador debe
+## distinguir suelo, agua y criaturas incluso en el visor sin servidor.
+const BRILLO_NOCHE := 0.64
+const BRILLO_DIA := 1.0
 
 ## Controles heredados de 3DTIBIA: ocho direcciones y movimiento relativo
 ## a la orientacion de la camara.
@@ -112,7 +142,7 @@ const OCTANTES := [
 	Vector2i(0, 1), Vector2i(-1, 1), Vector2i(-1, 0), Vector2i(-1, -1),
 ]
 
-enum Forma { SUELO, ACOSTADA, CAJA, MUEBLE, LAMINA, PLACEHOLDER, MONTANA, PROTOTIPO }
+enum Forma { SUELO, ACOSTADA, CAJA, MUEBLE, PASAMANOS, LAMINA, PLACEHOLDER, MONTANA, PROTOTIPO }
 enum OrientacionPared { EJE_X, EJE_Z, ESQUINA }
 
 var _con
@@ -125,6 +155,8 @@ var _piso_bichos: Node3D
 var _jugador_nodo: Node3D
 var _jugador_malla: MeshInstance3D
 var _camara: Camera3D
+var _sol: DirectionalLight3D
+var _entorno: Environment
 var _cartel: Label
 var _inspector_panel: PanelContainer
 var _inspector_texto: Label
@@ -146,6 +178,7 @@ var _boton_der := false
 var _giro_movido := false
 var _consumido := false
 var _camara_colocada := false
+var _camara_foco := Vector3.ZERO
 var _desde_ultimo_paso := 0.0
 ## Si el servidor ya dijo POR QUE nos echa, no lo tapamos con un
 ## "se corto la conexion" generico.
@@ -162,6 +195,7 @@ var _alto_pared_visual := ALTO_PISO * 1.05
 var _grosor_pared_visual := LADO * 0.20
 var _ajuste_vivo := false
 var _reloj_animacion := 0.0
+var _tiempo_dia_noche := 0.0
 var _animados: Array = []
 var _desconocidos := 0
 var _mapa_visible := {}
@@ -179,10 +213,24 @@ var _jugador_t := 1.0
 var _jugador_duracion := DURACION_VISUAL_PASO
 var _jugador_moviendose := false
 var _jugador_es_sprite := false
+## Altura logica estable de la camara. No sigue el movimiento visual del
+## sprite, porque eso haria que todo el mapa pareciera saltar.
+var _jugador_y_estable := 0.0
 
 var _centro_escenario := Vector3i(-9999, -9999, -9999)
 var _dibujadas := 0
 var _solo_mirar := false
+var _rearmado_en_curso := false
+var _centro_rearmado_pendiente := Vector3i(-9999, -9999, -9999)
+var _destino_volcado: Node3D
+var _animados_volcado: Array = []
+var _construccion_activa := false
+var _dibujadas_construccion := 0
+var _desconocidos_construccion := 0
+var _ultimo_movimiento_acceso := {}
+var _acceso_reintento_pos := Vector3i(-9999, -9999, -9999)
+var _acceso_reintento_pendiente := false
+var _ataque_pendiente_id := 0
 
 
 func _pedido_de_mirar():
@@ -264,27 +312,26 @@ func _armar_escena() -> void:
 	_piso_bichos = Node3D.new()
 	add_child(_piso_bichos)
 
-	var sol := DirectionalLight3D.new()
-	sol.rotation_degrees = Vector3(-55, -40, 0)
-	sol.light_energy = 1.1
-	add_child(sol)
+	_sol = DirectionalLight3D.new()
+	_sol.rotation_degrees = Vector3(-55, -40, 0)
+	add_child(_sol)
 
 	var ambiente := WorldEnvironment.new()
-	var env := Environment.new()
-	env.background_mode = Environment.BG_COLOR
-	env.background_color = Color(0.08, 0.09, 0.12)
-	env.ambient_light_source = Environment.AMBIENT_SOURCE_COLOR
-	env.ambient_light_color = Color(0.45, 0.47, 0.55)
-	env.ambient_light_energy = 0.7
+	_entorno = Environment.new()
+	_entorno.background_mode = Environment.BG_COLOR
+	_entorno.ambient_light_source = Environment.AMBIENT_SOURCE_COLOR
+	# Los sprites conservan sus materiales sin sombreado para no alterar sus
+	# texturas. El ajuste de exposicion se aplica al frame completo y tambien
+	# hace que dia/noche afecte a esos sprites.
+	_entorno.adjustment_enabled = true
 	# Una niebla del color del fondo para que el mundo se apague a lo
 	# lejos en vez de cortarse de golpe en el borde de lo que cargamos.
-	env.fog_enabled = true
-	env.fog_light_color = env.background_color
-	env.fog_density = 0.0
-	env.fog_depth_begin = RADIO * 0.55
-	env.fog_depth_end = RADIO * 1.0
-	ambiente.environment = env
+	_entorno.fog_enabled = true
+	_entorno.fog_depth_begin = RADIO * 0.55
+	_entorno.fog_depth_end = RADIO * 1.0
+	ambiente.environment = _entorno
 	add_child(ambiente)
+	_actualizar_dia_noche()
 
 	_camara = Camera3D.new()
 	_camara.fov = 60.0
@@ -438,9 +485,13 @@ func _al_cambiar() -> void:
 	if (aqui.z != _centro_escenario.z
 			or absi(aqui.x - _centro_escenario.x) >= PASOS_PARA_REARMAR
 			or absi(aqui.y - _centro_escenario.y) >= PASOS_PARA_REARMAR):
-		_rearmar_escenario(aqui)
-		rearmado = true
+		# La reconstruccion puede quedar trabajando varios frames. Solo
+		# recolocamos al jugador si el escenario entro de verdad; mientras
+		# tanto conserva su interpolacion y no produce un salto de todo el mapa.
+		rearmado = _rearmar_escenario(aqui)
 	_actualizar_jugador_confirmado(aqui, rearmado)
+	_considerar_reintento_acceso(aqui)
+	_intentar_ataque_pendiente()
 	_dibujar_criaturas()
 	_avisar("TVP3D   (%d, %d, %d)   %d things   %d creatures\nChunk %s   unmapped %d\nWASD/arrows/QE-ZC walk | left click auto-walk | right drag camera | wheel zoom" % [
 		aqui.x, aqui.y, aqui.z, _dibujadas, _estado.criaturas.size(),
@@ -497,6 +548,7 @@ func _actualizar_sprite_jugador(fase: int) -> void:
 func _actualizar_jugador_confirmado(aqui: Vector3i, rearmado: bool) -> void:
 	_crear_jugador_visual()
 	var destino := COORD.tibia_a_mundo(aqui, _centro_escenario, LADO, ALTO_PISO)
+	_jugador_y_estable = destino.y
 	var primera_posicion := _jugador_pos_confirmada.x < -9000
 	if primera_posicion or rearmado or aqui.z != _jugador_pos_confirmada.z:
 		_jugador_nodo.position = destino
@@ -541,7 +593,6 @@ func _animar_jugador(delta: float) -> void:
 	if _jugador_moviendose:
 		_jugador_t = minf(1.0, _jugador_t + delta / maxf(0.01, _jugador_duracion))
 		var avance := _jugador_origen.lerp(_jugador_destino, _jugador_t)
-		avance.y += sin(_jugador_t * PI) * 0.06
 		_jugador_nodo.position = avance
 		if _jugador_t >= 1.0:
 			_jugador_nodo.position = _jugador_destino
@@ -553,11 +604,32 @@ func _animar_jugador(delta: float) -> void:
 			_actualizar_sprite_jugador(fase)
 
 
-func _rearmar_escenario(centro: Vector3i) -> void:
+func _rearmar_escenario(centro: Vector3i) -> bool:
+	# La primera carga debe ser inmediata porque todavia no existe una escena
+	# anterior que mostrar. Las solicitudes posteriores se preparan por
+	# frames y devuelven false: el jugador sigue en el origen viejo hasta que
+	# la nueva ventana puede entrar sin dejar un hueco visible.
+	if _centro_escenario.x < -9000:
+		_rearmar_escenario_inmediato(centro)
+		return true
+	if centro == _centro_escenario:
+		_rearmar_escenario_inmediato(centro)
+		return true
+	_centro_rearmado_pendiente = centro
+	if not _rearmado_en_curso:
+		_rearmado_en_curso = true
+		_construir_escenario_diferido.call_deferred(centro)
+	return false
+
+
+func _rearmar_escenario_inmediato(centro: Vector3i) -> void:
 	_centro_escenario = centro
 	for hijo in _piso_mundo.get_children():
 		hijo.queue_free()
 	_animados.clear()
+	_destino_volcado = null
+	_animados_volcado.clear()
+	_construccion_activa = false
 	_dibujadas = 0
 	_desconocidos = 0
 
@@ -611,22 +683,221 @@ func _rearmar_escenario(centro: Vector3i) -> void:
 		_volcar_grupo(clave, grupos[clave])
 
 
-func _juntar_casilla(grupos: Dictionary, donde: Vector3i, ids) -> void:
+func _construir_escenario_diferido(centro: Vector3i) -> void:
+	"""Construye una ventana nueva sin borrar la que esta en pantalla.
+
+	Primero agrupa y vuelca solo el radio inmediato, hace el commit para que el
+	piso nuevo aparezca enseguida, y despues completa el fondo en el mismo nodo.
+	Cada tanda respeta el presupuesto de tiempo para que ninguna fase congele
+	la imagen.
+	"""
+	var disco_nuevo: Dictionary = _disco.casillas_de(centro, RADIO)
+	var grupos_cercanos := {}
+	var claves_disco: Array = disco_nuevo.keys()
+	var indice := 0
+	_construccion_activa = true
+	_dibujadas_construccion = 0
+	_desconocidos_construccion = 0
+
+	# Las heuristicas de vecinos deben consultar la ventana que se esta
+	# construyendo, pero el origen de coordenadas se pasa explicitamente para
+	# no mover el mundo visible mientras el proceso duerme.
+	_mapa_visible = disco_nuevo
+	_bloqueo_disco_cache.clear()
+	var inicio_tanda := Time.get_ticks_usec()
+	while indice < claves_disco.size():
+		var donde: Vector3i = claves_disco[indice]
+		if donde.z >= centro.z and donde.z <= centro.z + _pisos_abajo_visibles \
+				and absi(donde.x - centro.x) <= RADIO_INMEDIATO \
+				and absi(donde.y - centro.y) <= RADIO_INMEDIATO \
+				and not _estado.casillas.has(donde):
+			_juntar_casilla(grupos_cercanos, donde, disco_nuevo[donde], centro)
+		indice += 1
+		if Time.get_ticks_usec() - inicio_tanda >= PRESUPUESTO_REARMADO_US:
+			await get_tree().process_frame
+			inicio_tanda = Time.get_ticks_usec()
+
+	var claves_estado: Array = _estado.casillas.keys()
+	indice = 0
+	inicio_tanda = Time.get_ticks_usec()
+	while indice < claves_estado.size():
+		var donde: Vector3i = claves_estado[indice]
+		if _estado.casillas.has(donde) \
+				and donde.z >= centro.z \
+				and donde.z <= centro.z + _pisos_abajo_visibles \
+				and absi(donde.x - centro.x) <= RADIO_INMEDIATO \
+				and absi(donde.y - centro.y) <= RADIO_INMEDIATO:
+			var ids := PackedInt32Array()
+			for cosa in _estado.casillas[donde]:
+				if cosa["tipo"] == "item":
+					ids.append(cosa["cid"])
+			_juntar_casilla(grupos_cercanos, donde, ids, centro)
+		indice += 1
+		if Time.get_ticks_usec() - inicio_tanda >= PRESUPUESTO_REARMADO_US:
+			await get_tree().process_frame
+			inicio_tanda = Time.get_ticks_usec()
+	_construccion_activa = false
+
+	var claves_cercanas: Array = grupos_cercanos.keys()
+	claves_cercanas.sort_custom(func(a, b):
+		var ga: Dictionary = grupos_cercanos[a]
+		var gb: Dictionary = grupos_cercanos[b]
+		var capa_a := _capa_de_forma(int(ga["forma"]))
+		var capa_b := _capa_de_forma(int(gb["forma"]))
+		if capa_a != capa_b:
+			return capa_a < capa_b
+		return int(ga["cid"]) < int(gb["cid"])
+	)
+
+	var mundo_nuevo := Node3D.new()
+	mundo_nuevo.name = "Mapa3D_Pendiente"
+	_destino_volcado = mundo_nuevo
+	_animados_volcado = []
+	indice = 0
+	inicio_tanda = Time.get_ticks_usec()
+	while indice < claves_cercanas.size():
+		var clave: String = claves_cercanas[indice]
+		_volcar_grupo(clave, grupos_cercanos[clave])
+		indice += 1
+		if Time.get_ticks_usec() - inicio_tanda >= PRESUPUESTO_REARMADO_US:
+			await get_tree().process_frame
+			inicio_tanda = Time.get_ticks_usec()
+
+	var animados_cercanos := _animados_volcado
+	var dibujadas_cercanas := _dibujadas_construccion
+	var desconocidos_cercanos := _desconocidos_construccion
+	_destino_volcado = null
+	_animados_volcado = []
+	_construccion_activa = false
+	_aplicar_escenario_rearmado(centro, mundo_nuevo, animados_cercanos,
+		dibujadas_cercanas, desconocidos_cercanos, disco_nuevo)
+
+	# El piso inmediato ya esta visible. Dejar que Godot lo presente antes de
+	# preparar el fondo evita que la segunda fase parezca otro cambio de piso.
+	await get_tree().process_frame
+
+	var grupos_lejanos := {}
+	var claves_lejanas_disco: Array = disco_nuevo.keys()
+	indice = 0
+	inicio_tanda = Time.get_ticks_usec()
+	while indice < claves_lejanas_disco.size():
+		var donde: Vector3i = claves_lejanas_disco[indice]
+		if donde.z >= centro.z and donde.z <= centro.z + _pisos_abajo_visibles \
+				and (absi(donde.x - centro.x) > RADIO_INMEDIATO \
+				or absi(donde.y - centro.y) > RADIO_INMEDIATO) \
+				and not _estado.casillas.has(donde):
+			_juntar_casilla(grupos_lejanos, donde, disco_nuevo[donde], centro)
+		indice += 1
+		if Time.get_ticks_usec() - inicio_tanda >= PRESUPUESTO_REARMADO_US:
+			await get_tree().process_frame
+			inicio_tanda = Time.get_ticks_usec()
+
+	var claves_estado_lejanas: Array = _estado.casillas.keys()
+	indice = 0
+	inicio_tanda = Time.get_ticks_usec()
+	while indice < claves_estado_lejanas.size():
+		var donde: Vector3i = claves_estado_lejanas[indice]
+		if donde.z >= centro.z and donde.z <= centro.z + _pisos_abajo_visibles \
+				and (absi(donde.x - centro.x) > RADIO_INMEDIATO \
+				or absi(donde.y - centro.y) > RADIO_INMEDIATO) \
+				and absi(donde.x - centro.x) <= RADIO \
+				and absi(donde.y - centro.y) <= RADIO:
+			var ids := PackedInt32Array()
+			for cosa in _estado.casillas[donde]:
+				if cosa["tipo"] == "item":
+					ids.append(cosa["cid"])
+			_juntar_casilla(grupos_lejanos, donde, ids, centro)
+		indice += 1
+		if Time.get_ticks_usec() - inicio_tanda >= PRESUPUESTO_REARMADO_US:
+			await get_tree().process_frame
+			inicio_tanda = Time.get_ticks_usec()
+
+	var claves_lejanas: Array = grupos_lejanos.keys()
+	claves_lejanas.sort_custom(func(a, b):
+		var ga: Dictionary = grupos_lejanos[a]
+		var gb: Dictionary = grupos_lejanos[b]
+		var capa_a := _capa_de_forma(int(ga["forma"]))
+		var capa_b := _capa_de_forma(int(gb["forma"]))
+		if capa_a != capa_b:
+			return capa_a < capa_b
+		return int(ga["cid"]) < int(gb["cid"])
+	)
+	indice = 0
+	inicio_tanda = Time.get_ticks_usec()
+	while indice < claves_lejanas.size():
+		var clave: String = claves_lejanas[indice]
+		_volcar_grupo(clave, grupos_lejanos[clave])
+		indice += 1
+		if Time.get_ticks_usec() - inicio_tanda >= PRESUPUESTO_REARMADO_US:
+			await get_tree().process_frame
+			inicio_tanda = Time.get_ticks_usec()
+
+	_rearmado_en_curso = false
+
+	# Si el jugador avanzo mientras se construia, se conserva la solicitud mas
+	# reciente y se prepara otra ventana solo si ya salio del margen.
+	var siguiente := _centro_rearmado_pendiente
+	_centro_rearmado_pendiente = Vector3i(-9999, -9999, -9999)
+	if siguiente.x > -9000 \
+			and (absi(_estado.mi_pos.x - _centro_escenario.x) >= PASOS_PARA_REARMAR \
+			or absi(_estado.mi_pos.y - _centro_escenario.y) >= PASOS_PARA_REARMAR \
+			or _estado.mi_pos.z != _centro_escenario.z):
+		_rearmar_escenario(siguiente)
+
+
+func _aplicar_escenario_rearmado(centro: Vector3i, mundo_nuevo: Node3D,
+		animados_nuevos: Array, dibujadas_nuevas: int,
+		desconocidos_nuevos: int, mapa_nuevo: Dictionary) -> void:
+	# COORD devuelve donde queda el nuevo ancla expresado en el origen viejo.
+	# Restar ese vector a camara, jugador y animacion hace que el cambio de
+	# origen sea matematicamente invisible.
+	var desplazamiento := COORD.tibia_a_mundo(
+		centro, _centro_escenario, LADO, ALTO_PISO)
+	if is_instance_valid(_camara):
+		_camara.position -= desplazamiento
+	_camara_foco -= desplazamiento
+	if is_instance_valid(_jugador_nodo):
+		_jugador_nodo.position -= desplazamiento
+		_jugador_origen -= desplazamiento
+		_jugador_destino -= desplazamiento
+
+	_centro_escenario = centro
+	_mapa_visible = mapa_nuevo
+	_bloqueo_disco_cache.clear()
+	var mundo_viejo := _piso_mundo
+	_piso_mundo = mundo_nuevo
+	add_child(_piso_mundo)
+	if is_instance_valid(mundo_viejo):
+		mundo_viejo.queue_free()
+	_animados = animados_nuevos
+	_dibujadas = dibujadas_nuevas
+	_desconocidos = desconocidos_nuevos
+	_dibujar_criaturas()
+
+
+func _juntar_casilla(grupos: Dictionary, donde: Vector3i, ids,
+		ancla: Vector3i = Vector3i(-9999, -9999, -9999)) -> void:
 	var apilado := 0
+	var origen := _centro_escenario if ancla.x < -9000 else ancla
 	for cid in ids:
 		var info: Dictionary = _catalogo.info_item(cid)
 		var forma: int = _forma_de_item(cid, info, donde.z)
 		var orientacion := OrientacionPared.EJE_X
 		if forma == Forma.CAJA:
 			orientacion = _orientacion_de_pared(donde)
+		elif forma == Forma.PASAMANOS:
+			orientacion = _orientacion_de_pasamanos(donde, cid)
 		elif forma == Forma.MONTANA:
 			# El perfil depende de las cuatro casillas vecinas. Asi una
 			# cordillera queda unida arriba y solo se inclinan sus bordes.
 			orientacion = _perfil_de_montana(donde)
 		var alto: int = _sprites.alto_en_casillas(cid)
 		if forma == Forma.PLACEHOLDER:
-			_desconocidos += 1
-		var posicion_3d := COORD.tibia_a_mundo(donde, _centro_escenario, LADO, ALTO_PISO)
+			if _construccion_activa:
+				_desconocidos_construccion += 1
+			else:
+				_desconocidos += 1
+		var posicion_3d := COORD.tibia_a_mundo(donde, origen, LADO, ALTO_PISO)
 		var y := posicion_3d.y
 		match forma:
 			Forma.SUELO:
@@ -650,6 +921,9 @@ func _juntar_casilla(grupos: Dictionary, donde: Vector3i, ids) -> void:
 			Forma.MUEBLE:
 				y += ALTO_MUEBLE * 0.5 + apilado * 0.01
 				apilado += 1
+			Forma.PASAMANOS:
+				y += ALTO_PASAMANOS * 0.5 + apilado * 0.01
+				apilado += 1
 			Forma.LAMINA:
 				y += alto * 0.5 + apilado * 0.01
 				apilado += 1
@@ -661,16 +935,29 @@ func _juntar_casilla(grupos: Dictionary, donde: Vector3i, ids) -> void:
 			grupo = {"cid": cid, "forma": forma, "orientacion": orientacion, "donde": []}
 			grupos[clave] = grupo
 		grupo["donde"].append(Vector3(posicion_3d.x, y, posicion_3d.z))
-		_dibujadas += 1
+		if _construccion_activa:
+			_dibujadas_construccion += 1
+		else:
+			_dibujadas += 1
 
 
 func _forma_de_item(cid: int, info: Dictionary, nivel: int = -1) -> int:
 	if not _sprites.tiene_item(cid):
 		return Forma.PLACEHOLDER
+	# Una reja/pasamanos es una construccion del puente, no una decoracion
+	# billboard. La regla semantica gana incluso si el DAT solo dice
+	# bloquea=true, porque asi todos sus tramos reciben la misma geometria.
+	if _es_pasamanos(info):
+		return Forma.PASAMANOS
 	var mapping := _mapping_de(cid)
 	var primitiva := String(mapping.get("primitive", "auto"))
 	if primitiva != "" and primitiva != "auto":
 		return _forma_de_mapping(primitiva)
+	# Las transiciones de shallow water tambien vienen marcadas como suelo en
+	# el DAT. Deben ir acostadas para que el shader pueda poner pasto debajo de
+	# su transparencia; el agua profunda sigue usando la forma de suelo.
+	if _es_borde_agua(cid):
+		return Forma.ACOSTADA
 	if _es_acceso_de_piso(info):
 		return Forma.ACOSTADA
 	if _es_relleno_alcantarilla(cid, info, nivel):
@@ -734,6 +1021,58 @@ func _es_acceso_de_piso(info: Dictionary) -> bool:
 		or nombre == "ladder" or nombre.contains("stairs") \
 		or nombre.contains("stair") or nombre.contains("trapdoor") \
 		or nombre.contains("hole") or nombre.contains("ramp")
+
+
+func _casilla_tiene_paso_automatico(posicion: Vector3i) -> bool:
+	# La categoria no se inventa en el cliente: la exporta
+	# herramientas/tibia3d_map.py desde items.xml y queda en el IR.
+	var ir_tile := _tile_ir(posicion)
+	for item_variant in ir_tile.get("items", []):
+		var item: Dictionary = item_variant
+		if String(item.get("category", "")) == "STAIRS":
+			return true
+	return false
+
+
+func _considerar_reintento_acceso(aqui: Vector3i) -> void:
+	"""Reintenta una vez el paso si el servidor dejo al jugador en la escalera.
+
+	En algunos tiles antiguos el primer paso solo coloca al jugador sobre la
+	escalera y el floorchange se resuelve en el siguiente comando. El servidor
+	sigue siendo la autoridad: aqui solo repetimos la misma direccion una vez,
+	y solo cuando el movimiento confirmado termino en un acceso conocido.
+	"""
+	if _con == null or not _estado.adentro or _acceso_reintento_pendiente:
+		return
+	var movimiento: Dictionary = _estado.ultimo_movimiento
+	if movimiento.is_empty() or movimiento == _ultimo_movimiento_acceso:
+		return
+	_ultimo_movimiento_acceso = movimiento.duplicate()
+	var desde: Vector3i = movimiento.get("de", Vector3i(-9999, -9999, -9999))
+	var hasta: Vector3i = movimiento.get("a", Vector3i(-9999, -9999, -9999))
+	if hasta != aqui or desde.z != hasta.z:
+		if hasta.z != aqui.z:
+			_acceso_reintento_pos = Vector3i(-9999, -9999, -9999)
+		return
+	if _acceso_reintento_pos == hasta or not _casilla_tiene_paso_automatico(hasta):
+		return
+	var delta := Vector2i(hasta.x - desde.x, hasta.y - desde.y)
+	if absi(delta.x) + absi(delta.y) != 1:
+		return
+	var opcode := _opcode_de_direccion(delta)
+	if opcode == 0:
+		return
+	_acceso_reintento_pos = hasta
+	_acceso_reintento_pendiente = true
+	_reintentar_acceso.call_deferred(hasta, opcode)
+
+
+func _reintentar_acceso(posicion: Vector3i, opcode: int) -> void:
+	_acceso_reintento_pendiente = false
+	if not _estado.adentro or _estado.mi_pos != posicion or _con == null:
+		return
+	_con.enviar_juego(PackedByteArray([opcode]))
+	_desde_ultimo_paso = 0.0
 
 
 func _es_montana(info: Dictionary) -> bool:
@@ -812,6 +1151,21 @@ func _orientacion_de_pared(donde: Vector3i) -> int:
 	return OrientacionPared.EJE_X
 
 
+func _orientacion_de_pasamanos(donde: Vector3i, cid: int) -> int:
+	# Unimos los tramos segun otros pasamanos, no segun la camara. Cuando un
+	# sprite queda solo, su footprint 2x1/1x2 mantiene la direccion original.
+	var conecta_x := _hay_pasamanos_en(donde + Vector3i(-1, 0, 0)) \
+		or _hay_pasamanos_en(donde + Vector3i(1, 0, 0))
+	var conecta_z := _hay_pasamanos_en(donde + Vector3i(0, -1, 0)) \
+		or _hay_pasamanos_en(donde + Vector3i(0, 1, 0))
+	if conecta_z and not conecta_x:
+		return OrientacionPared.EJE_Z
+	if conecta_x:
+		return OrientacionPared.EJE_X
+	return OrientacionPared.EJE_X if _sprites.ancho_en_casillas(cid) >= \
+		_sprites.alto_en_casillas(cid) else OrientacionPared.EJE_Z
+
+
 func _perfil_de_montana(donde: Vector3i) -> int:
 	# Bits: north=1, east=2, south=4, west=8. Se reutiliza el entero de
 	# orientacion solo como clave de MultiMesh/malla; no es una direccion de
@@ -841,16 +1195,30 @@ func _hay_pared_en(donde: Vector3i) -> bool:
 		var info: Dictionary = _catalogo.info_item(int(cid))
 		if _es_terreno_elevado(int(cid), info, donde.z):
 			continue
-		if info.get("bloquea", false) and info.get("frena_vista", false):
+		if _es_pasamanos(info) or (info.get("bloquea", false)
+				and info.get("frena_vista", false)):
 			return true
 	return false
+
+
+func _hay_pasamanos_en(donde: Vector3i) -> bool:
+	for cid in _ids_de_casilla(donde):
+		if _es_pasamanos(_catalogo.info_item(int(cid))):
+			return true
+	return false
+
+
+func _es_pasamanos(info: Dictionary) -> bool:
+	var nombre := String(info.get("nombre", "")).to_lower()
+	return nombre.contains("railing") or nombre.ends_with(" rail") \
+		or nombre.contains("handrail") or nombre.contains("guard rail")
 
 
 func _es_pieza_vertical(info: Dictionary) -> bool:
 	var nombre := String(info.get("nombre", "")).to_lower()
 	return nombre.contains("door") or nombre.contains("window") \
 		or nombre.contains("archway") or nombre.contains("gate") \
-		or nombre.contains("railing") or nombre.contains("bars") \
+		or _es_pasamanos(info) or nombre.contains("bars") \
 		or nombre.contains("fence")
 
 
@@ -864,10 +1232,12 @@ func _capa_de_forma(forma: int) -> int:
 			return 2
 		Forma.MUEBLE:
 			return 3
-		Forma.CAJA:
+		Forma.PASAMANOS:
 			return 4
-		Forma.LAMINA:
+		Forma.CAJA:
 			return 5
+		Forma.LAMINA:
+			return 6
 		_:
 			return 6
 
@@ -901,17 +1271,23 @@ func _volcar_grupo(clave: String, grupo: Dictionary) -> void:
 		if forma == Forma.CAJA:
 			_aplicar_materiales_estructura(mm.mesh, cuadro, forma,
 				_catalogo.info_item(cid), cid)
-		elif forma == Forma.MUEBLE:
+		elif forma == Forma.MUEBLE or forma == Forma.PASAMANOS:
 			_aplicar_materiales_estructura(mm.mesh, cuadro, forma,
 				_catalogo.info_item(cid))
 		else:
-			nodo.material_override = _material(cuadro, forma)
-	_piso_mundo.add_child(nodo)
+			nodo.material_override = _material(cuadro, forma, cid)
+	var destino: Node3D = _piso_mundo
+	if is_instance_valid(_destino_volcado):
+		destino = _destino_volcado
+	destino.add_child(nodo)
 
 	if forma != Forma.PLACEHOLDER and forma != Forma.CAJA \
 			and forma != Forma.MONTANA \
 			and _sprites.fases_de_item(cid) > 1:
-		_animados.append({"nodo": nodo, "cid": cid, "forma": forma})
+		if is_instance_valid(_destino_volcado):
+			_animados_volcado.append({"nodo": nodo, "cid": cid, "forma": forma})
+		else:
+			_animados.append({"nodo": nodo, "cid": cid, "forma": forma})
 
 
 func _altura_de(z: int) -> float:
@@ -924,7 +1300,8 @@ func _malla_de(cid: int, forma: int, orientacion: int = OrientacionPared.EJE_X) 
 	# Las cajas tienen materiales por item. No pueden compartir una malla cuyo
 	# material de superficie se cambia al preparar el siguiente grupo.
 	var clave := "%d_%d_%d_%d" % [forma, orientacion, ancho, alto]
-	if forma == Forma.CAJA or forma == Forma.MUEBLE or forma == Forma.MONTANA:
+	if forma == Forma.CAJA or forma == Forma.MUEBLE \
+			or forma == Forma.PASAMANOS or forma == Forma.MONTANA:
 		clave = "%d_%d_%d_%d_%d" % [cid, forma, orientacion, ancho, alto]
 	if _mallas.has(clave):
 		return _mallas[clave]
@@ -958,6 +1335,15 @@ func _malla_de(cid: int, forma: int, orientacion: int = OrientacionPared.EJE_X) 
 		Forma.MUEBLE:
 			# El footprint sigue el sprite; la altura es de mueble, no de muro.
 			m = _malla_estructura(Vector3(ancho * LADO, ALTO_MUEBLE, alto * LADO), false)
+		Forma.PASAMANOS:
+			# Segmento 3D fijo: el sprite original queda en sus caras
+			# principales y el volumen pequeno evita que el tramo parezca una
+			# postal girando hacia la camara.
+			var largo := LADO * float(maxi(ancho, alto))
+			var tamano := Vector3(largo, ALTO_PASAMANOS, GROSOR_PASAMANOS)
+			if orientacion == OrientacionPared.EJE_Z:
+				tamano = Vector3(GROSOR_PASAMANOS, ALTO_PASAMANOS, largo)
+			m = _malla_estructura(tamano, true, orientacion)
 		Forma.PLACEHOLDER:
 			var cubo := BoxMesh.new()
 			cubo.size = Vector3(LADO * 0.8, LADO * 0.8, LADO * 0.8)
@@ -1343,7 +1729,9 @@ func _malla_cruz(ancho: float, alto: float) -> ArrayMesh:
 	return malla
 
 
-func _material(cuadro: Dictionary, forma: int) -> StandardMaterial3D:
+func _material(cuadro: Dictionary, forma: int, cid: int = -1) -> Material:
+	if forma == Forma.ACOSTADA and _es_borde_agua(cid):
+		return _material_borde_agua(cuadro, forma)
 	var clave: String = "%s_%d" % [cuadro["clave"], forma]
 	if _materiales.has(clave):
 		return _materiales[clave]
@@ -1370,12 +1758,68 @@ func _material(cuadro: Dictionary, forma: int) -> StandardMaterial3D:
 		mat.billboard_mode = BaseMaterial3D.BILLBOARD_FIXED_Y
 		mat.billboard_keep_scale = true
 		mat.cull_mode = BaseMaterial3D.CULL_DISABLED
-	elif forma == Forma.CAJA or forma == Forma.MUEBLE:
+	elif forma == Forma.CAJA or forma == Forma.MUEBLE \
+			or forma == Forma.PASAMANOS:
 		# Las caras estructurales se generan por separado y deben verse desde
 		# cualquier giro de camara, igual que en la vista de la casa.
 		mat.cull_mode = BaseMaterial3D.CULL_DISABLED
 	_materiales[clave] = mat
 	return mat
+
+
+func _es_borde_agua(cid: int) -> bool:
+	return cid in IDS_BORDES_AGUA
+
+
+func _material_borde_agua(cuadro: Dictionary, forma: int) -> Material:
+	"""Rellena la transparencia de una orilla con el sprite de grass 4515.
+
+	Las piezas 4633-4644 traen solo la forma de la orilla: el area transparente
+	se estaba mostrando como el color del cielo. El shader pone pasto debajo y
+	encima conserva literalmente cada pixel opaco del sprite original, por lo
+	que no cambia ni la franja marron ni el agua azul.
+	"""
+	var clave := "__borde_agua_pasto_%s_%d" % [cuadro["clave"], forma]
+	if _materiales.has(clave):
+		return _materiales[clave]
+	var pasto: Dictionary = _sprites.cuadro_item(ID_SPRITE_PASTO_BORDE, 0)
+	if pasto.is_empty():
+		return _material(cuadro, forma)
+	var shader := Shader.new()
+	shader.code = """
+shader_type spatial;
+render_mode unshaded, cull_disabled;
+
+uniform sampler2D borde_texture : source_color, filter_nearest;
+uniform sampler2D pasto_texture : source_color, filter_nearest;
+uniform vec4 borde_region;
+uniform vec4 pasto_region;
+
+void fragment() {
+	vec2 borde_uv = borde_region.xy + UV * borde_region.zw;
+	vec2 pasto_uv = pasto_region.xy + UV * pasto_region.zw;
+	vec4 borde = texture(borde_texture, borde_uv);
+	vec4 pasto = texture(pasto_texture, pasto_uv);
+	// La base siempre es pasto. Solo los pixeles opacos del sprite de orilla
+	// lo reemplazan; asi el marron y el azul no se reinterpretan por color.
+	vec4 resultado = mix(pasto, borde, step(0.5, borde.a));
+	ALBEDO = resultado.rgb;
+	ALPHA = resultado.a;
+	ALPHA_SCISSOR_THRESHOLD = 0.5;
+}
+"""
+	var material := ShaderMaterial.new()
+	material.shader = shader
+	material.set_shader_parameter("borde_texture", cuadro["lamina"])
+	material.set_shader_parameter("pasto_texture", pasto["lamina"])
+	material.set_shader_parameter("borde_region", Vector4(
+		cuadro["corrimiento"].x, cuadro["corrimiento"].y,
+		cuadro["escala"].x, cuadro["escala"].y))
+	material.set_shader_parameter("pasto_region", Vector4(
+		pasto["corrimiento"].x, pasto["corrimiento"].y,
+		pasto["escala"].x, pasto["escala"].y))
+	_materiales[clave] = material
+	return material
 
 
 func _material_de_criatura(cuadro: Dictionary) -> StandardMaterial3D:
@@ -1404,7 +1848,7 @@ func _material_de_criatura(cuadro: Dictionary) -> StandardMaterial3D:
 func _dibujar_criaturas() -> void:
 	for hijo in _piso_bichos.get_children():
 		hijo.queue_free()
-	for id in _estado.criaturas:
+	for id in _ids_criaturas_ordenados():
 		# El jugador tiene una entidad visual propia para poder interpolar
 		# entre confirmaciones del servidor sin duplicarlo como criatura.
 		if int(id) == _estado.mi_id:
@@ -1415,18 +1859,20 @@ func _dibujar_criaturas() -> void:
 		if c["pos"].z < _estado.mi_pos.z \
 			or c["pos"].z > _estado.mi_pos.z + _pisos_abajo_visibles:
 			continue
-		# Los monsters que vienen del spawn arrancan como cubos 3D. El estado
-		# de criatura conserva outfit/direccion para que sustituir este bloque
-		# por una escena de monster no requiera cambiar red ni gameplay.
+		# Los monsters y NPCs conservan el cuerpo cubico provisional, pero la
+		# cara del cubo usa el recorte real del outfit que ya exporto
+		# herramientas/extraer_sprites772.py. No se crea ningun modelo nuevo.
 		var tipo: int = c["apariencia"]
 		var alto: float = clampf(_sprites.alto_de_outfit(tipo) * LADO * 0.72,
 			LADO * 0.55, ALTO_PISO * 2.4)
+		var direccion: int = int(c.get("direccion", 2))
+		var cuadro: Dictionary = _sprites.cuadro_outfit(tipo, direccion, 0)
 		var cubo := BoxMesh.new()
 		var lado := LADO * (0.62 if alto < ALTO_PISO * 1.2 else 0.78)
 		cubo.size = Vector3(lado, alto, lado)
 		var m := MeshInstance3D.new()
 		m.mesh = cubo
-		m.material_override = _material_cubo_criatura(c)
+		m.material_override = _material_cubo_criatura(c, cuadro)
 		m.set_meta("creature_id", int(id))
 		m.set_meta("server_name", str(c.get("nombre", "Creature")))
 		var p: Vector3i = c["pos"]
@@ -1436,14 +1882,51 @@ func _dibujar_criaturas() -> void:
 		_piso_bichos.add_child(m)
 
 
-func _material_cubo_criatura(c: Dictionary) -> StandardMaterial3D:
+func _ids_criaturas_ordenados() -> Array:
+	"""Orden estable de composicion: piso, fila, columna e ID.
+
+	El diccionario conserva el orden de llegada de los paquetes, no el orden
+	visual del mapa. Ordenar aqui evita que un refresh cambie la composicion
+	cuando varias criaturas ocupan o cruzan la misma zona.
+	"""
+	var ids: Array = _estado.criaturas.keys()
+	ids.sort_custom(func(a, b):
+		var ca: Dictionary = _estado.criaturas[a]
+		var cb: Dictionary = _estado.criaturas[b]
+		var pa: Vector3i = ca.get("pos", Vector3i.ZERO)
+		var pb: Vector3i = cb.get("pos", Vector3i.ZERO)
+		if pa.z != pb.z:
+			return pa.z < pb.z
+		if pa.y != pb.y:
+			return pa.y < pb.y
+		if pa.x != pb.x:
+			return pa.x < pb.x
+		return int(a) < int(b)
+	)
+	return ids
+
+
+func _material_cubo_criatura(c: Dictionary, cuadro: Dictionary = {}) -> StandardMaterial3D:
 	var tipo := int(c.get("apariencia", 0))
-	var clave := "__criatura_cubo_%d" % tipo
+	var clave := "__criatura_cubo_%s" % (
+		str(cuadro.get("clave", tipo)) if not cuadro.is_empty() else str(tipo))
 	if _materiales.has(clave):
 		return _materiales[clave]
 	var mat := StandardMaterial3D.new()
-	mat.albedo_color = Color.from_hsv(fmod(float(tipo) * 0.137, 1.0), 0.64, 0.82)
+	if cuadro.is_empty():
+		mat.albedo_color = Color.from_hsv(fmod(float(tipo) * 0.137, 1.0), 0.64, 0.82)
+	else:
+		# BoxMesh usa el mismo recorte de atlas que las laminas del mapa:
+		# cada cara del cubo conserva el sprite y no la lamina completa.
+		mat.albedo_texture = cuadro["lamina"]
+		mat.uv1_scale = cuadro["escala"]
+		mat.uv1_offset = cuadro["corrimiento"]
+		mat.texture_filter = BaseMaterial3D.TEXTURE_FILTER_NEAREST
+		mat.texture_repeat = false
+		mat.transparency = BaseMaterial3D.TRANSPARENCY_ALPHA_SCISSOR
+		mat.alpha_scissor_threshold = 0.5
 	mat.roughness = 0.82
+	mat.shading_mode = BaseMaterial3D.SHADING_MODE_UNSHADED
 	mat.cull_mode = BaseMaterial3D.CULL_DISABLED
 	_materiales[clave] = mat
 	return mat
@@ -1463,7 +1946,7 @@ func _animar() -> void:
 				_aplicar_materiales_estructura(nodo.multimesh.mesh, cuadro,
 					a["forma"], _catalogo.info_item(a["cid"]))
 			else:
-				nodo.material_override = _material(cuadro, a["forma"])
+				nodo.material_override = _material(cuadro, a["forma"], int(a["cid"]))
 
 
 func _mostrar_ajuste_vivo() -> void:
@@ -1529,34 +2012,100 @@ func _procesar_ajuste_vivo(evento: InputEventKey) -> bool:
 func _process(delta: float) -> void:
 	_desde_ultimo_paso += delta
 	_reloj_animacion += delta
+	_tiempo_dia_noche += delta
+	if _tiempo_dia_noche >= 0.5:
+		_tiempo_dia_noche = 0.0
+		_actualizar_dia_noche()
 	_animar()
 	_animar_jugador(delta)
 	_mover_camara(delta)
 	_leer_teclas()
 
 
+static func _factor_luz_dia(hora: float) -> float:
+	"""Devuelve 0 de noche y 1 al mediodia, con amanecer/atardecer suaves."""
+	var angulo := (hora - HORA_AMANECER) / (HORA_ATARDECER - HORA_AMANECER) * PI
+	var factor := clampf(sin(angulo), 0.0, 1.0)
+	# Suaviza solo la entrada/salida para que no haya un cambio de golpe.
+	return factor * factor * (3.0 - 2.0 * factor)
+
+
+static func _factor_luz_servidor(nivel: int) -> float:
+	# El servidor 7.72 usa 51 como noche y 255 como dia.
+	return clampf((float(nivel) - 51.0) / 204.0, 0.0, 1.0)
+
+
+func _hora_local() -> float:
+	var reloj: Dictionary = Time.get_time_dict_from_system()
+	return float(reloj.get("hour", 12)) \
+		+ float(reloj.get("minute", 0)) / 60.0 \
+		+ float(reloj.get("second", 0)) / 3600.0
+
+
+func _actualizar_dia_noche() -> void:
+	if _sol == null or _entorno == null:
+		return
+	var dia: float
+	var codigo_luz := 215
+	if _estado != null and _estado.luz_mundo_recibida:
+		# En el juego manda el 0x82 real del servidor. El reloj local solo
+		# permite que el visor --mirar funcione sin levantar el servidor.
+		dia = _factor_luz_servidor(int(_estado.luz_mundo_nivel))
+		codigo_luz = int(_estado.luz_mundo_color)
+	else:
+		dia = _factor_luz_dia(_hora_local())
+	_sol.light_energy = lerpf(0.14, 1.15, dia)
+	var r := float(codigo_luz / 36) / 5.0
+	var g := float((codigo_luz / 6) % 6) / 5.0
+	var b := float(codigo_luz % 6) / 5.0
+	var tinte_servidor := Color(clampf(r, 0.0, 1.0), clampf(g, 0.0, 1.0),
+		clampf(b, 0.0, 1.0))
+	_sol.light_color = Color(0.55, 0.65, 1.0).lerp(tinte_servidor, dia)
+	_entorno.adjustment_brightness = lerpf(BRILLO_NOCHE, BRILLO_DIA, dia)
+	_entorno.adjustment_contrast = lerpf(0.92, 1.0, dia)
+	_entorno.adjustment_saturation = lerpf(0.82, 1.0, dia)
+	_entorno.background_color = Color(0.025, 0.045, 0.09).lerp(
+		Color(0.25, 0.42, 0.62), dia)
+	_entorno.ambient_light_color = Color(0.16, 0.20, 0.34).lerp(
+		Color(0.75, 0.78, 0.90), dia)
+	_entorno.ambient_light_energy = lerpf(0.22, 0.90, dia)
+	_entorno.fog_light_color = _entorno.background_color
+	_entorno.fog_density = lerpf(0.025, 0.0, dia)
+
+
 func _mover_camara(delta: float) -> void:
 	if not _estado.adentro:
 		return   # todavia no sabemos donde estamos parados
-	var centro: Vector3
+	var objetivo: Vector3
 	if is_instance_valid(_jugador_nodo):
-		centro = _jugador_nodo.position
+		objetivo = _jugador_nodo.position
+		# El nodo del jugador puede estar interpolando entre casillas, pero la
+		# camara no debe seguir ningun rebote visual. Solo acompana X/Z y usa
+		# siempre la altura logica del piso.
+		objetivo.y = _jugador_y_estable
 	else:
-		centro = COORD.tibia_a_mundo(_estado.mi_pos, _centro_escenario, LADO, ALTO_PISO)
-	centro.y += 0.5
+		objetivo = COORD.tibia_a_mundo(_estado.mi_pos, _centro_escenario, LADO, ALTO_PISO)
+		objetivo.y += 0.5
 	var lejos := Vector3(
 		sin(_giro) * cos(_inclinacion),
 		sin(_inclinacion),
 		cos(_giro) * cos(_inclinacion)) * _distancia
-	var destino := centro + lejos
+	var factor := 1.0 - exp(-SUAVIDAD_CAMARA * maxf(delta, 0.0))
+	var destino := objetivo + lejos
 	if not _camara_colocada:
 		# La primera vez se pone en su lugar de una: si no, arranca en el
 		# origen del mundo y viaja mil casillas cruzando todo el mapa.
+		_camara_foco = objetivo
+		destino = _camara_foco + lejos
 		_camara.position = destino
 		_camara_colocada = true
 	else:
-		_camara.position = _camara.position.lerp(destino, clampf(delta * 6.0, 0.0, 1.0))
-	_camara.look_at(centro, Vector3.UP)
+		# Filtrar tambien el punto al que mira evita que la rotacion siga el
+		# paso confirmado de forma discreta aunque la posicion ya sea suave.
+		_camara_foco = _camara_foco.lerp(objetivo, factor)
+		destino = _camara_foco + lejos
+		_camara.position = _camara.position.lerp(destino, factor)
+	_camara.look_at(_camara_foco, Vector3.UP)
 
 
 func _leer_teclas() -> void:
@@ -1762,16 +2311,42 @@ func _terminar_arrastre_objeto(posicion_mouse: Vector2) -> void:
 		return
 	if destino == origen:
 		return
-	var cosa: Dictionary = objeto.get("cosa", {})
-	var cid := int(cosa.get("cid", 0))
-	var pila := int(objeto.get("stackpos", -1))
-	if cid <= 0 or pila < 0 or _con == null:
+	var movimiento := _enviar_arrastre(origen, objeto, destino)
+	if movimiento.is_empty():
 		return
 	print("[tvp3d] arrastrando client=%d stack=%d desde %s hacia %s" % [
-		cid, pila, origen, destino])
-	_con.enviar_mover_cosa(origen, cid, pila, destino,
-		int(cosa.get("cantidad", 1)))
-	_avisar("Moving %s..." % str(cosa.get("nombre", "item")))
+		movimiento["client_id"], movimiento["stackpos"], origen, destino])
+	if movimiento["criatura"]:
+		_avisar("Pushing %s..." % str(movimiento["nombre"]))
+	else:
+		_avisar("Moving %s..." % str(movimiento["nombre"]))
+
+
+func _enviar_arrastre(origen: Vector3i, objeto: Dictionary,
+		destino: Vector3i) -> Dictionary:
+	"""Convierte un drag en el 0x78 de 7.72.
+
+	Para criaturas, Tibia usa client id 99 y cantidad 1. No se decide aca si
+	la criatura es pushable: esa es una regla del servidor y puede variar por
+	monster, NPC o permisos del personaje.
+	"""
+	if _con == null:
+		return {}
+	var cosa: Dictionary = objeto.get("cosa", {})
+	var es_criatura: bool = cosa.get("tipo") == "criatura"
+	var cid: int = 99 if es_criatura else int(cosa.get("cid", 0))
+	var pila: int = int(objeto.get("stackpos", -1))
+	if cid <= 0 or pila < 0:
+		return {}
+	var cantidad := 1 if es_criatura else int(cosa.get("cantidad", 1))
+	_con.enviar_mover_cosa(origen, cid, pila, destino, cantidad)
+	return {
+		"client_id": cid,
+		"stackpos": pila,
+		"cantidad": cantidad,
+		"criatura": es_criatura,
+		"nombre": str(cosa.get("nombre", "creature" if es_criatura else "item")),
+	}
 
 
 func soltar_inventario_en_mouse(posicion_mouse: Vector2, datos: Dictionary) -> void:
@@ -1791,16 +2366,31 @@ func soltar_inventario_en_mouse(posicion_mouse: Vector2, datos: Dictionary) -> v
 		var id_contenedor := int(datos.get("contenedor", -1))
 		if id_contenedor < 0:
 			return
-		_con.enviar_mover_ubicacion(Vector3i(0xFFFF, id_contenedor, slot),
+		_con.enviar_mover_ubicacion(Vector3i(0xFFFF, 0x40 | id_contenedor, slot),
 			cid, 0, destino, int(datos.get("cantidad", 1)))
 	else:
 		_con.enviar_mover_inventario(slot, cid, destino,
 			int(datos.get("cantidad", 1)))
-	_avisar("Moving %s..." % str(_estado.inventario.get(slot, {}).get("nombre", "item")))
+	_avisar("Moving %s..." % str(datos.get("nombre", "item")))
 
 
 func _objeto_movible_en_casilla(posicion: Vector3i) -> Dictionary:
 	var cosas: Array = _estado.casillas.get(posicion, [])
+	# La criatura se dibuja por encima de la pila del suelo. Si hay una rata
+	# y ademas un objeto movible en la misma casilla, el cursor sobre el sprite
+	# debe seleccionar la criatura para poder empujarla.
+	for indice in range(cosas.size() - 1, -1, -1):
+		var cosa: Dictionary = cosas[indice]
+		if cosa.get("tipo") == "criatura":
+			var id := int(cosa.get("id", 0))
+			# El jugador tambien aparece en la pila del mapa, pero nunca se
+			# puede iniciar un drag sobre si mismo.
+			if id == _estado.mi_id or id <= 0:
+				continue
+			var criatura: Dictionary = _estado.criaturas.get(id, {})
+			var arrastre := cosa.duplicate()
+			arrastre["nombre"] = criatura.get("nombre", "creature")
+			return {"cosa": arrastre, "stackpos": indice}
 	for indice in range(cosas.size() - 1, -1, -1):
 		var cosa: Dictionary = cosas[indice]
 		if cosa.get("tipo") != "item":
@@ -1849,7 +2439,69 @@ func _caminar_a_casilla(posicion_mouse: Vector2) -> void:
 	var objetivo = _casilla_bajo_mouse(posicion_mouse)
 	if objetivo == null or objetivo.z != _estado.mi_pos.z:
 		return
+	var criatura_id := _criatura_en_casilla(objetivo)
+	if criatura_id != 0:
+		atacar_criatura(criatura_id)
+		return
 	_caminar_a_objetivo(objetivo)
+
+
+func atacar_criatura(id: int) -> bool:
+	"""Selecciona un monster/NPC con el protocolo real 0xA1.
+
+	Si esta fuera del rango que acepta el servidor, primero camina hasta la
+	primera casilla caminable dentro de rango y envia el ataque al confirmarse
+	ese paso. No se pisa la casilla ocupada por la criatura.
+	"""
+	if _solo_mirar or _con == null or not _estado.adentro:
+		return false
+	var criatura: Dictionary = _estado.criaturas.get(id, {})
+	if criatura.is_empty() or int(id) == _estado.mi_id:
+		return false
+	var posicion: Vector3i = criatura.get("pos", Vector3i(-9999, -9999, -9999))
+	if _en_rango_ataque(_estado.mi_pos, posicion):
+		_ataque_pendiente_id = 0
+		_con.enviar_atacar(id)
+		_avisar("Attacking %s..." % str(criatura.get("nombre", "Creature")))
+		return true
+	var camino := _buscar_ruta_hasta_rango(_estado.mi_pos, posicion)
+	if camino.is_empty():
+		_avisar("No reachable attack position.")
+		return false
+	_ataque_pendiente_id = id
+	_con.enviar_auto_camino(camino)
+	_avisar("Approaching %s..." % str(criatura.get("nombre", "Creature")))
+	return true
+
+
+func _intentar_ataque_pendiente() -> void:
+	if _ataque_pendiente_id == 0 or _con == null:
+		return
+	var criatura: Dictionary = _estado.criaturas.get(_ataque_pendiente_id, {})
+	if criatura.is_empty():
+		_ataque_pendiente_id = 0
+		return
+	var posicion: Vector3i = criatura.get("pos", Vector3i(-9999, -9999, -9999))
+	if not _en_rango_ataque(_estado.mi_pos, posicion):
+		return
+	var id := _ataque_pendiente_id
+	_ataque_pendiente_id = 0
+	_con.enviar_atacar(id)
+	_avisar("Attacking %s..." % str(criatura.get("nombre", "Creature")))
+
+
+static func _en_rango_ataque(origen: Vector3i, destino: Vector3i) -> bool:
+	return origen.z == destino.z and absi(origen.x - destino.x) <= 8 \
+		and absi(origen.y - destino.y) <= 8
+
+
+func _criatura_en_casilla(posicion: Vector3i) -> int:
+	for id in _ids_criaturas_ordenados():
+		if int(id) == _estado.mi_id:
+			continue
+		if _estado.criaturas[id].get("pos") == posicion:
+			return int(id)
+	return 0
 
 
 func caminar_a_casilla_desde_minimapa(celda: Vector2i) -> void:
@@ -1860,6 +2512,8 @@ func caminar_a_casilla_desde_minimapa(celda: Vector2i) -> void:
 
 
 func _caminar_a_objetivo(objetivo: Vector3i) -> void:
+	if objetivo == _estado.mi_pos:
+		return
 	# Un map click expresa un destino, no una orden diagonal. El camino
 	# ortogonal evita que el cliente envie diagonales que el jugador nunca
 	# solicito; Q/E/Z/C y numpad conservan las diagonales explicitas.
@@ -1869,6 +2523,48 @@ func _caminar_a_objetivo(objetivo: Vector3i) -> void:
 		return
 	_con.enviar_auto_camino(camino)
 	_avisar("Walking to (%d, %d, %d)..." % [objetivo.x, objetivo.y, objetivo.z])
+
+
+func _buscar_ruta_hasta_rango(origen: Vector3i, objetivo: Vector3i) -> Array:
+	if _en_rango_ataque(origen, objetivo):
+		return []
+	var abiertos: Array = [origen]
+	var cabeza := 0
+	var anterior := {origen: origen}
+	var margen := 12
+	var min_x := mini(origen.x, objetivo.x) - margen
+	var max_x := maxi(origen.x, objetivo.x) + margen
+	var min_y := mini(origen.y, objetivo.y) - margen
+	var max_y := maxi(origen.y, objetivo.y) + margen
+	while cabeza < abiertos.size() and abiertos.size() <= MAX_CASILLAS_RUTA:
+		var actual: Vector3i = abiertos[cabeza]
+		cabeza += 1
+		if actual != origen and _en_rango_ataque(actual, objetivo):
+			return _reconstruir_ruta(anterior, origen, actual)
+		for delta in [Vector3i(0, -1, 0), Vector3i(1, 0, 0),
+				Vector3i(0, 1, 0), Vector3i(-1, 0, 0)]:
+			var vecino: Vector3i = actual + delta
+			if vecino.x < min_x or vecino.x > max_x \
+					or vecino.y < min_y or vecino.y > max_y:
+				continue
+			if anterior.has(vecino) or _casilla_bloqueada(vecino):
+				continue
+			anterior[vecino] = actual
+			abiertos.append(vecino)
+	return []
+
+
+func _reconstruir_ruta(anterior: Dictionary, origen: Vector3i,
+				destino: Vector3i) -> Array:
+	var camino: Array = []
+	var cursor := destino
+	while cursor != origen:
+		if not anterior.has(cursor):
+			return []
+		var padre: Vector3i = anterior[cursor]
+		camino.push_front(Vector2i(cursor.x - padre.x, cursor.y - padre.y))
+		cursor = padre
+	return camino if camino.size() <= 128 else []
 
 
 func _casilla_bajo_mouse(posicion_mouse: Vector2):
@@ -1884,7 +2580,12 @@ func _casilla_bajo_mouse(posicion_mouse: Vector2):
 	if distancia < 0.0:
 		return null
 	var punto := origen + direccion * distancia
-	var tile := COORD.mundo_a_tibia(punto, _centro_escenario, LADO, ALTO_PISO)
+	# La altura ya esta fijada al piso del jugador. Convertir X/Z por
+	# separado evita que un pequeno error vertical del rayo cambie tambien Z.
+	var tile := Vector3i(
+		_centro_escenario.x + floori(punto.x / LADO + 0.5),
+		_centro_escenario.y + floori(punto.z / LADO + 0.5),
+		_estado.mi_pos.z)
 	if absi(tile.x - _centro_escenario.x) > RADIO or absi(tile.y - _centro_escenario.y) > RADIO:
 		return null
 	return tile
@@ -1949,8 +2650,7 @@ func _actualizar_inspector() -> void:
 func _tile_ir(posicion: Vector3i) -> Dictionary:
 	if _ir_trozos == null:
 		return {}
-	var ventana: Dictionary = _ir_trozos.cargar_ventana(posicion, 0, posicion.z, posicion.z)
-	return ventana.get(posicion, {})
+	return _ir_trozos.tile_en(posicion)
 
 
 func _items_vivos(cosas: Array) -> int:
@@ -1985,7 +2685,15 @@ func _ids_de_casilla(posicion: Vector3i) -> PackedInt32Array:
 			if cosa.get("tipo") == "item":
 				ids.append(int(cosa.get("cid", 0)))
 		return ids
-	return _mapa_visible.get(posicion, PackedInt32Array())
+	if _mapa_visible.has(posicion):
+		return _mapa_visible[posicion]
+	# El minimapa puede apuntar a una casilla que aun no entro en la ventana
+	# 3D (por ejemplo, mientras el refresco cercano termina). No convertir la
+	# ausencia temporal de render en una pared: el mapa del disco es la fuente
+	# estatica completa para rutas y conserva tambien los accesos de piso.
+	if _disco != null:
+		return _disco.ids_de(posicion)
+	return PackedInt32Array()
 
 
 func _casilla_bloqueada(posicion: Vector3i) -> bool:
@@ -1995,10 +2703,37 @@ func _casilla_bloqueada(posicion: Vector3i) -> bool:
 		return _bloqueo_disco_cache[posicion]
 	var ids := _ids_de_casilla(posicion)
 	var bloqueada := ids.is_empty()
-	for cid in ids:
-		if _catalogo.info_item(cid).get("bloquea", false):
+	var ir_tile := _tile_ir(posicion)
+	var tiene_ir: bool = not _estado.casillas.has(posicion) \
+			and (ir_tile.has("walkable") or ir_tile.has("queryadd_walkable"))
+	if tiene_ir:
+		# El IR conserva las dos decisiones que ya producen los scripts del
+		# mapa: walkable descarta bloqueos solidos y queryadd_walkable descarta
+		# el camino que Tile::queryAdd no acepta para pathfinding.
+		bloqueada = false
+		if ir_tile.has("walkable") and not bool(ir_tile.get("walkable", false)):
 			bloqueada = true
-			break
+		if ir_tile.has("queryadd_walkable"):
+			if ir_tile.get("queryadd_walkable") == null \
+					or not bool(ir_tile.get("queryadd_walkable", false)):
+				bloqueada = true
+		# Una casilla dinamica sin decision de queryAdd no es una casilla
+		# verificada: no la usamos para inventar una ruta.
+		if bloqueada and bool(ir_tile.get("walkable", false)) \
+				and _casilla_tiene_paso_automatico(posicion):
+			bloqueada = false
+	else:
+		for cid in ids:
+			var info: Dictionary = _catalogo.info_item(cid)
+			# En datos vivos o fuera de la region IR, usar las mismas banderas
+			# de items como respaldo conservador.
+			if info.get("block_pathfind", false) or info.get("bloquea", false):
+				bloqueada = true
+				break
+		# Una escalera viva puede tener block_pathfind por el propio DAT, pero
+		# el IR ya la identifica como el acceso que debe poder pisarse.
+		if bloqueada and _casilla_tiene_paso_automatico(posicion):
+			bloqueada = false
 	for id in _estado.criaturas:
 		if _estado.criaturas[id].get("pos") == posicion:
 			return true

@@ -89,7 +89,8 @@ func _get_drag_data(_pos: Vector2) -> Variant:
 	return {"tipo": _tipo, "slot": _slot,
 		"contenedor": _id_contenedor,
 		"cid": int(_objeto.get("cid", 0)),
-		"cantidad": int(_objeto.get("cantidad", 1))}
+		"cantidad": int(_objeto.get("cantidad", 1)),
+		"nombre": str(_objeto.get("nombre", "item"))}
 
 
 func _can_drop_data(_pos: Vector2, datos: Variant) -> bool:

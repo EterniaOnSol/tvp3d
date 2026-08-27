@@ -1,0 +1,14 @@
+# Ignore every player file in this directory and subfolders
+*.tvpp
+# Except this file
+!.gitignore
+# These four seed characters are intentionally versioned so a fresh clone
+# can load the same stats that are inserted by docker/data/02-data.sql.
+!1/
+!1/1.tvpp
+!2/
+!2/2.tvpp
+!3/
+!3/3.tvpp
+!4/
+!4/4.tvpp

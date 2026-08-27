@@ -45,6 +45,16 @@ func refrescar() -> void:
 	queue_redraw()
 
 
+func _recalcular_rect_mapa() -> float:
+	# El panel puede cambiar de tamano al terminar de cargar el HUD o al
+	# arrastrar una ventana. El click debe usar exactamente el mismo rectangulo
+	# que el dibujo de ese frame, no una medida vieja.
+	var lado := minf(size.x - 6.0, size.y - 6.0)
+	_rect_mapa = Rect2(Vector2((size.x - lado) * 0.5,
+		(size.y - lado) * 0.5), Vector2(lado, lado))
+	return lado
+
+
 func acercar(mas: bool) -> bool:
 	var antes := zoom
 	var indice := ZOOMS.find(zoom)
@@ -60,9 +70,7 @@ func acercar(mas: bool) -> bool:
 func _draw() -> void:
 	var marco := Rect2(Vector2.ZERO, size)
 	draw_rect(marco, Color(0.025, 0.030, 0.040, 1.0), true)
-	var lado := minf(size.x - 6.0, size.y - 6.0)
-	_rect_mapa = Rect2(Vector2((size.x - lado) * 0.5,
-		(size.y - lado) * 0.5), Vector2(lado, lado))
+	var lado := _recalcular_rect_mapa()
 	draw_rect(_rect_mapa, FONDO, true)
 
 	var casillas_por_lado := maxi(8, int(floor(lado / float(zoom))))
@@ -151,14 +159,15 @@ func _gui_input(evento: InputEvent) -> void:
 
 
 func _casilla_en(punto: Vector2) -> Vector2i:
-	if not _rect_mapa.has_point(punto):
+	var lado := _recalcular_rect_mapa()
+	if lado <= 0.0 or not _rect_mapa.has_point(punto):
 		return Vector2i(999999, 999999)
-	var lado := _rect_mapa.size.x
 	var casillas_por_lado := maxi(8, int(floor(lado / float(zoom))))
-	var columna := int(floor((punto.x - _rect_mapa.position.x) / lado
-		* casillas_por_lado))
-	var fila := int(floor((punto.y - _rect_mapa.position.y) / lado
-		* casillas_por_lado))
+	var paso := lado / float(casillas_por_lado)
+	var columna := clampi(int(floor((punto.x - _rect_mapa.position.x) / paso)),
+		0, casillas_por_lado - 1)
+	var fila := clampi(int(floor((punto.y - _rect_mapa.position.y) / paso)),
+		0, casillas_por_lado - 1)
 	var mitad := int(casillas_por_lado / 2)
 	return Vector2i(_centro.x + columna - mitad,
 		_centro.y + fila - mitad)

@@ -1,0 +1,48 @@
+# The Violet Project
+# Guuille: player data file
+
+ID = 3
+Name = "Guuille"
+Town = 1
+Group = 1
+Skull = 0
+Sex = 0
+PlayerKillerEnd = 0
+BankBalance = 0
+Blessings = 0
+LastLoginSaved = 0
+LastLogout = 0
+Position = [32097,32219,7]
+DefaultOutfit = (128, 78-106-58-95)
+
+Level = 100
+Experience = 15694800
+Health = 645
+MaxHealth = 645
+Mana = 2970
+MaxMana = 2970
+ManaSpent = 0
+MagicLevel = 150
+Soul = 200
+Capacity = 40000
+Vocation = 5
+Stamina = 2520
+
+Skill = (0, 10, 0)
+Skill = (1, 10, 0)
+Skill = (2, 10, 0)
+Skill = (3, 10, 0)
+Skill = (4, 10, 0)
+Skill = (5, 10, 0)
+Skill = (6, 10, 0)
+
+Spells = {}
+QuestValues = {}
+StringQuestValues = {}
+Murders = {}
+VIP = ()
+
+Backpack = (1987 Content={2674 Amount=1})
+Armor = (2650)
+Right = (2050)
+Left = (2382)

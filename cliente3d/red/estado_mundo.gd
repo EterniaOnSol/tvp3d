@@ -45,6 +45,11 @@ var inventario := {}   ## slot -> cosa
 var contenedores := {} ## id -> {nombre, capacidad, items, tiene_padre}
 var estadisticas := {}
 var habilidades := {}
+## Luz global enviada por el servidor (0x82). El cliente 3D la usa para
+## que dia/noche siga el mismo reloj del mundo y no otro ciclo inventado.
+var luz_mundo_nivel := 255
+var luz_mundo_color := 215
+var luz_mundo_recibida := false
 var mi_id := 0
 var mi_pos := Vector3i.ZERO
 var adentro := false
@@ -340,7 +345,10 @@ func _leer_mensajes(msg) -> void:
 			#  Efectos y luces
 			# ---------------------------------------------------------
 			0x82:   # luz del mundo (protocolgame.cpp:2339-2343)
-				msg.saltar(1 + 1 + 1)
+				msg.leer_u8()
+				luz_mundo_nivel = msg.leer_u8()
+				luz_mundo_color = msg.leer_u8()
+				luz_mundo_recibida = true
 			0x83:   # efecto magico (protocolgame.cpp:1663-1667)
 				msg.saltar(1 + 5 + 1)
 			0x84:   # texto que sale flotando (protocolgame.cpp:1370-1375)
@@ -566,7 +574,18 @@ func _insertar_cosa_nueva(cosas: Array, cosa: Dictionary) -> void:
 	por eso no alcanza con hacer append().
 	"""
 	if cosa.get("tipo") != "item":
-		cosas.append(cosa)
+		# GetTileDescription manda las criaturas antes del bloque de objetos
+		# inferiores. Mantener ese orden hace que el indice completo coincida
+		# con Tile::getThing(index) cuando luego se empuja la criatura.
+		var insercion_criatura := cosas.size()
+		for indice_criatura in range(cosas.size()):
+			var actual_criatura: Dictionary = cosas[indice_criatura]
+			if actual_criatura.get("tipo") == "item" \
+					and not bool(actual_criatura.get("suelo", false)) \
+					and not bool(actual_criatura.get("siempre_arriba", false)):
+				insercion_criatura = indice_criatura
+				break
+		cosas.insert(insercion_criatura, cosa)
 		return
 
 	if bool(cosa.get("suelo", false)):
@@ -633,6 +652,7 @@ func _mover_criatura(vieja: Vector3i, nueva: Vector3i) -> void:
 		if criaturas[id]["pos"] == vieja:
 			criaturas[id]["pos"] = nueva
 			criaturas[id]["direccion"] = _direccion_de(nueva - vieja)
+			_mover_criatura_en_pila(int(id), vieja, nueva)
 			return
 
 
@@ -647,8 +667,50 @@ func _direccion_de(delta: Vector3i) -> int:
 
 
 func _mover_criatura_por_id(quien: int, adonde: Vector3i) -> void:
+	var vieja := Vector3i(-9999, -9999, -9999)
+	if criaturas.has(quien):
+		vieja = criaturas[quien]["pos"]
 	if quien == mi_id:
 		_pos_anterior = mi_pos
 		mi_pos = adonde
 	if criaturas.has(quien):
 		criaturas[quien]["pos"] = adonde
+		criaturas[quien]["direccion"] = _direccion_de(adonde - vieja)
+		_mover_criatura_en_pila(quien, vieja, adonde)
+
+
+func _mover_criatura_en_pila(id: int, vieja: Vector3i, nueva: Vector3i) -> void:
+	"""Mantiene casillas alineado con criaturas despues de un 0x6D.
+
+	El servidor construye el stack como suelo, top-items, criaturas y
+	down-items. El stackpos que necesita 0x78 es ese indice completo, no el
+	indice dentro del diccionario de criaturas.
+	"""
+	if vieja != Vector3i(-9999, -9999, -9999) and casillas.has(vieja):
+		var antiguas: Array = casillas[vieja]
+		for indice in range(antiguas.size() - 1, -1, -1):
+			var cosa: Dictionary = antiguas[indice]
+			if cosa.get("tipo") == "criatura" and int(cosa.get("id", 0)) == id:
+				antiguas.remove_at(indice)
+				break
+		if antiguas.is_empty():
+			casillas.erase(vieja)
+	if nueva == Vector3i(-9999, -9999, -9999):
+		return
+	if not casillas.has(nueva):
+		casillas[nueva] = []
+	var nuevas: Array = casillas[nueva]
+	for cosa_existente in nuevas:
+		if cosa_existente.get("tipo") == "criatura" \
+				and int(cosa_existente.get("id", 0)) == id:
+			return
+	var nueva_criatura := {"tipo": "criatura", "id": id}
+	var insercion := nuevas.size()
+	for indice in range(nuevas.size()):
+		var cosa: Dictionary = nuevas[indice]
+		if cosa.get("tipo") == "item" \
+				and not bool(cosa.get("suelo", false)) \
+				and not bool(cosa.get("siempre_arriba", false)):
+			insercion = indice
+			break
+	nuevas.insert(insercion, nueva_criatura)

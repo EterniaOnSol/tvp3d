@@ -1,0 +1,48 @@
+# The Violet Project
+# Guillermo Knight: player data file
+
+ID = 4
+Name = "Guillermo Knight"
+Town = 1
+Group = 1
+Skull = 0
+Sex = 0
+PlayerKillerEnd = 0
+BankBalance = 0
+Blessings = 0
+LastLoginSaved = 0
+LastLogout = 0
+Position = [32097,32219,7]
+DefaultOutfit = (128, 78-106-58-95)
+
+Level = 200
+Experience = 129389800
+Health = 3135
+MaxHealth = 3135
+Mana = 995
+MaxMana = 995
+ManaSpent = 0
+MagicLevel = 200
+Soul = 200
+Capacity = 40000
+Vocation = 4
+Stamina = 2520
+
+Skill = (0, 200, 0)
+Skill = (1, 200, 0)
+Skill = (2, 200, 0)
+Skill = (3, 200, 0)
+Skill = (4, 200, 0)
+Skill = (5, 200, 0)
+Skill = (6, 200, 0)
+
+Spells = {}
+QuestValues = {}
+StringQuestValues = {}
+Murders = {}
+VIP = ()
+
+Backpack = (1987 Content={2674 Amount=1})
+Armor = (2650)
+Right = (2050)
+Left = (2382)

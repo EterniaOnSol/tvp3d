@@ -351,17 +351,30 @@ func _agregar_posicion(carga: PackedByteArray, posicion: Vector3i) -> void:
 
 
 func enviar_auto_camino(pasos: Array) -> void:
-	"""Envia un camino en el formato 0x64 de Tibia 7.72."""
+	"""Envia un camino en el formato 0x64 de Tibia 7.72.
+
+	El servidor lee las direcciones desde el final del buffer y despues
+	invierte el vector. Por eso aca se escribe el camino en orden natural,
+	desde el jugador hasta el destino; escribirlo al reves hacia que una ruta
+	de varias casillas se ejecutara en sentido contrario.
+	"""
 	if _modo != Modo.JUEGO or pasos.is_empty():
 		return
+	var carga := _paquete_auto_camino(pasos)
+	if carga.is_empty():
+		return
+	_enviar(carga, true)
+
+
+func _paquete_auto_camino(pasos: Array) -> PackedByteArray:
 	var cantidad := mini(128, pasos.size())
 	var carga := PackedByteArray([0x64, cantidad])
-	for i in range(cantidad - 1, -1, -1):
+	for i in range(cantidad):
 		var direccion := _direccion_auto_walk(pasos[i])
 		if direccion == 0:
-			return
+			return PackedByteArray()
 		carga.append(direccion)
-	_enviar(carga, true)
+	return carga
 
 
 func _direccion_auto_walk(paso: Vector2i) -> int:

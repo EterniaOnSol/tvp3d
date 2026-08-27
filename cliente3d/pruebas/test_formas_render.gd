@@ -17,6 +17,16 @@ func _ready() -> void:
 		mundo._debe_ir_acostado(4531, pasto))
 	_comprobar("bandera borde_suelo se carga",
 		mundo._catalogo.es_borde_suelo(4531))
+	_comprobar("orilla de agua detecta sus sprites reales",
+		mundo._es_borde_agua(4633) and mundo._es_borde_agua(4644)
+		and not mundo._es_borde_agua(4597) and not mundo._es_borde_agua(622))
+	var material_orilla = mundo._material(
+		mundo._sprites.cuadro_item(4633), MUNDO.Forma.ACOSTADA, 4633)
+	_comprobar("orilla de agua usa material del sprite de pasto",
+		material_orilla is ShaderMaterial)
+	_comprobar("orilla de agua queda acostada sobre el pasto",
+		mundo._forma_de_item(4633, mundo._catalogo.info_item(4633))
+		== MUNDO.Forma.ACOSTADA)
 
 	var counter: Dictionary = mundo._catalogo.info_item(2317)
 	_comprobar("counter usa forma acostada",
@@ -31,6 +41,10 @@ func _ready() -> void:
 
 	_comprobar("pared de casa usa volumen de pared",
 		mundo._forma_de_item(1585, mundo._catalogo.info_item(1585)) == MUNDO.Forma.CAJA)
+	_comprobar("wooden railing usa pasamanos fijo",
+		mundo._forma_de_item(2154, mundo._catalogo.info_item(2154)) == MUNDO.Forma.PASAMANOS)
+	_comprobar("stone railing usa pasamanos fijo",
+		mundo._forma_de_item(2162, mundo._catalogo.info_item(2162)) == MUNDO.Forma.PASAMANOS)
 	_comprobar("campfire no se convierte en plataforma",
 		mundo._forma_de_item(2002, mundo._catalogo.info_item(2002)) == MUNDO.Forma.LAMINA)
 	_comprobar("sewer grate queda horizontal",

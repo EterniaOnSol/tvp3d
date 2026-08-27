@@ -9,6 +9,7 @@ var _base_path := ""
 var _index := {}
 var _chunks := {}
 var _cache := {}
+var _tile_cache := {}
 
 
 func abrir(path: String) -> bool:
@@ -27,6 +28,7 @@ func abrir(path: String) -> bool:
 	_index = datos
 	_chunks = datos["chunks"]
 	_cache.clear()
+	_tile_cache.clear()
 	return true
 
 
@@ -63,6 +65,34 @@ func cargar_chunk(clave: String) -> Dictionary:
 		return {}
 	_cache[clave] = datos
 	return datos
+
+
+func tile_en(posicion: Vector3i) -> Dictionary:
+	"""Devuelve el registro IR de una casilla sin leer el JSON por cada visita.
+
+	El pathfinding consulta muchas casillas del mismo chunk. `cargar_ventana`
+	esta pensada para reemplazar ventanas del visor y libera chunks anteriores;
+	para una ruta necesitamos una consulta puntual con cache de tiles.
+	"""
+	if _tile_cache.has(posicion):
+		return _tile_cache[posicion]
+	if _index.is_empty():
+		return {}
+	var tamano := chunk_size()
+	var tx := floori(float(posicion.x) / tamano)
+	var ty := floori(float(posicion.y) / tamano)
+	var clave := "%d_%d_%d" % [tx, ty, posicion.z]
+	var documento := cargar_chunk(clave)
+	for tile_variant in documento.get("tiles", []):
+		var tile: Dictionary = tile_variant
+		var p: Dictionary = tile.get("position", {})
+		if int(p.get("x", -999999)) == posicion.x \
+				and int(p.get("y", -999999)) == posicion.y \
+				and int(p.get("z", -999999)) == posicion.z:
+			_tile_cache[posicion] = tile
+			return tile
+	_tile_cache[posicion] = {}
+	return {}
 
 
 func cargar_ventana(centro: Vector3i, radio: int, min_z := -100, max_z := 100) -> Dictionary:

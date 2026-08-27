@@ -101,7 +101,12 @@ func _armar() -> void:
 	_root.set_anchors_preset(Control.PRESET_FULL_RECT)
 	_root.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	add_child(_root)
-	_root.add_child(ZonaSuelo.new(self))
+	var zona_suelo := ZonaSuelo.new(self)
+	# Sin tamano propio, un Control hijo queda en 0x0 y nunca recibe el
+	# drop de un item del container sobre el mundo.
+	zona_suelo.set_anchors_preset(Control.PRESET_FULL_RECT)
+	zona_suelo.mouse_filter = Control.MOUSE_FILTER_PASS
+	_root.add_child(zona_suelo)
 	_armar_docks()
 	# El orden inicial sigue la referencia Mythera: VIP y Bestiary arriba,
 	# Skills en el centro de la columna y Loot Analyzer abajo.
@@ -685,8 +690,8 @@ func _seleccionar_objetivo(id: int, seguir: bool) -> void:
 			con.enviar_seguir(id)
 			_anotar("Following %s." % _target_name.text)
 		else:
-			con.enviar_atacar(id)
-			_anotar("Attacking %s." % _target_name.text)
+			if _mundo.atacar_criatura(id):
+				_anotar("Attacking %s." % _target_name.text)
 
 
 func _al_inventario_actualizado(_slot: int, _cosa: Dictionary) -> void:
@@ -771,7 +776,9 @@ func mover_a_ranura(datos: Dictionary, tipo_destino: String,
 
 func _posicion_de_item(tipo: String, id_contenedor: int, ranura: int) -> Vector3i:
 	if tipo == "contenedor":
-		return Vector3i(0xFFFF, id_contenedor, ranura)
+		# protocolgame.cpp/internalGetThing distingue un container por el bit
+		# 0x40 de la posicion Y, igual que internalGetPosition al servidor.
+		return Vector3i(0xFFFF, 0x40 | id_contenedor, ranura)
 	return Vector3i(0xFFFF, ranura, 0)
 
 
