@@ -2,7 +2,7 @@
 
 Estado: EN_CURSO
 Ultimo agente: codex
-Ultima actualizacion: 2026-08-27T04:50:00-06:00
+Ultima actualizacion: 2026-08-27T19:29:05-06:00
 Contrato publicado: SI
 
 ## Depende de
@@ -40,6 +40,13 @@ Probar contratos, recorridos completos, concurrencia, fixtures y regresiones.
   animacion de tres fases a 5 FPS para los client ids 2128/2129.
 - `prueba_magic_wall.tscn` verifica texturas, animacion y reemplazo seguro de
   una instancia dinamica; matriz local ejecutada 8/8.
+- El picking de puertas simples usa la proyeccion vertical de la camara para
+  uso/mirar; las variantes con llave, nivel, mision o sellado quedan fuera.
+- Se agregaron regresiones para puertas simples/parametrizadas; la matriz local
+  termina 9/9 y el login real contra TVP responde correctamente.
+- El servidor reconstruido conserva la regeneracion otorgada por equipo dentro
+  de proteccion: Guuille, con life ring en la ranura 9, paso de 157 a 160 de
+  vida y de 1079 a 1082 de mana durante una medicion real de 7 segundos.
 
 ## Falta
 
@@ -49,8 +56,8 @@ Probar contratos, recorridos completos, concurrencia, fixtures y regresiones.
 
 ## Bloqueos activos
 
-- El daemon Docker quedó inestable durante la segunda ejecución QA y no
-  permitió completar la matriz de red en este turno.
+- La prueba manual de puertas y runas sigue pendiente; la prueba automatizada
+  del life ring ya pasa contra el servidor reconstruido.
 
 ## Decisiones
 

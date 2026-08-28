@@ -85,6 +85,16 @@ func saltar(n: int) -> void:
 	cursor += n
 
 
+func leer_bytes(cantidad: int) -> PackedByteArray:
+	"""Lee bytes crudos, incluyendo ceros, sin intentar decodificarlos."""
+	if cantidad < 0 or cantidad > sin_leer():
+		cursor = datos.size()
+		return PackedByteArray()
+	var trozo := datos.slice(cursor, cursor + cantidad)
+	cursor += cantidad
+	return trozo
+
+
 # --------------------------------------------------------------------
 #  Escribir
 # --------------------------------------------------------------------

@@ -13,6 +13,10 @@ echo "=========================================="
 echo "  TVP3D - pagina web (MyAAC)"
 echo "=========================================="
 
+if [ ! -f config.local.php ] && [ -f config.local.php.example ]; then
+	cp config.local.php.example config.local.php
+	fi
+
 if [ ! -f .htaccess ]; then
 	echo ">> Copiando .htaccess.dist a .htaccess"
 	cp .htaccess.dist .htaccess
@@ -39,5 +43,5 @@ chown -R www-data:www-data system/cache system/logs images/guilds images/gallery
 chown www-data:www-data . 2>/dev/null || true
 [ -f config.local.php ] && chown www-data:www-data config.local.php
 
-echo ">> Web lista en http://localhost:8072"
+echo ">> Web lista en ${TVP3D_SITE_URL:-http://localhost:8072/}"
 exec "$@"

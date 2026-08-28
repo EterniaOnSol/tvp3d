@@ -21,6 +21,12 @@ class Monster;
 class Npc;
 class CombatInfo;
 
+// Canal extendido reservado para los cuadros de voz de proximidad de TVP3D.
+static constexpr uint8_t TVP3D_EXTENDED_OPCODE_VOICE = 0xF1;
+// Canal extendido para decir/castear sin que ProtocolGame::parseSay cancele
+// el auto-walk del cliente 3D.
+static constexpr uint8_t TVP3D_EXTENDED_OPCODE_SAY = 0xF2;
+
 enum stackPosType_t {
 	STACKPOS_MOVE,
 	STACKPOS_LOOK,
@@ -431,6 +437,7 @@ class Game
 		void cancelRuleViolationReport(Player* player);
 
 		void parsePlayerExtendedOpcode(uint32_t playerId, uint8_t opcode, const std::string& buffer);
+		void playerProximityVoice(uint32_t playerId, const std::string& frame);
 
 		bool jumpPossible(int32_t x, int32_t y, int32_t z, bool avoidPlayers);
 		bool searchFreeField(Creature* creature, uint16_t& x, uint16_t& y, uint8_t& z, int32_t distance, bool jump, bool allowHouses);

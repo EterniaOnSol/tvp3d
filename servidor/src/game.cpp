@@ -2546,10 +2546,17 @@ void Game::playerUseItem(uint32_t playerId, const Position pos, uint8_t stackPos
 	}
 
 	Item* item = thing->getItem();
-	// Containers are opened through the same 0x82 packet even though their
-	// OTB flag is not `useable`. Fluids and runes carry that flag normally.
-	if (!item || (!item->isUseable() && !item->getContainer())
-			|| item->getClientID() != spriteId) {
+	// Containers and doors are opened through the same 0x82 packet even though
+	// their OTB flag is not `useable`. Doors must reach Actions so the existing
+	// key, level, quest and house-access rules remain authoritative.
+	if (!item || item->getClientID() != spriteId) {
+		player->sendCancelMessage(RETURNVALUE_CANNOTUSETHISOBJECT);
+		return;
+	}
+	// Food is registered by data/scripts/actions/other/food.lua but its legacy
+	// OTB entry is not marked useable. Let a registered action authorize it.
+	if (!item->isUseable() && !item->getContainer() && !item->getDoor()
+			&& !g_actions->hasAction(item)) {
 		player->sendCancelMessage(RETURNVALUE_CANNOTUSETHISOBJECT);
 		return;
 	}
@@ -5285,9 +5292,55 @@ void Game::parsePlayerExtendedOpcode(uint32_t playerId, uint8_t opcode, const st
 	if (!player) {
 		return;
 	}
+	if (opcode == TVP3D_EXTENDED_OPCODE_VOICE) {
+		playerProximityVoice(playerId, buffer);
+		return;
+	}
+	if (opcode == TVP3D_EXTENDED_OPCODE_SAY) {
+		if (buffer.size() <= 255) {
+			// Reutiliza las validaciones normales de chat y de spells, pero no
+			// pasa por parseSay, que cancela el movimiento al recibir 0x96.
+			playerSay(playerId, 0, TALKTYPE_SAY, "", buffer);
+		}
+		return;
+	}
 
 	for (CreatureEvent* creatureEvent : player->getCreatureEvents(CREATURE_EVENT_EXTENDED_OPCODE)) {
 		creatureEvent->executeExtendedOpcode(player, opcode, buffer);
+	}
+}
+
+void Game::playerProximityVoice(uint32_t playerId, const std::string& frame)
+{
+	Player* speaker = getPlayerByID(playerId);
+	if (!speaker || frame.size() < 4 || frame.size() > 512) {
+		return;
+	}
+
+	const uint8_t version = static_cast<uint8_t>(frame[0]);
+	const uint8_t flags = static_cast<uint8_t>(frame[1]);
+	if (version != 1 || (flags & ~uint8_t(1)) != 0) {
+		return;
+	}
+	// Audio is mono PCM8 at 8 kHz: 160 samples per 20 ms frame. A four-byte
+	// frame is the push-to-talk release marker.
+	if ((flags & 1) != 0 && frame.size() != 164) {
+		return;
+	}
+	if ((flags & 1) == 0 && frame.size() != 4) {
+		return;
+	}
+
+	const Position speakerPosition = speaker->getPosition();
+	for (const auto& it : players) {
+		Player* listener = it.second;
+		if (!listener || listener == speaker) {
+			continue;
+		}
+		if (!Position::areInRange<7, 7, 0>(speakerPosition, listener->getPosition())) {
+			continue;
+		}
+		listener->sendProximityVoice(playerId, frame);
 	}
 }
 

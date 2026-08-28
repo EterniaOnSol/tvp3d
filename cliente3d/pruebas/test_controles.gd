@@ -99,6 +99,17 @@ class ConexionAtaque:
 		enviar_mover_cosa(origen, client_id, stackpos, destino, cantidad)
 
 
+class MundoClickDerecho extends MUNDO:
+	var ataques_derecho: Array = []
+
+	func _criatura_bajo_mouse(_posicion: Vector2) -> int:
+		return 42
+
+	func atacar_criatura(id: int) -> bool:
+		ataques_derecho.append(id)
+		return true
+
+
 var _fallas := 0
 
 
@@ -134,6 +145,7 @@ func _ready() -> void:
 	_comprobar("sprites de criaturas tienen orden estable", _probar_orden_criaturas(mundo))
 	_comprobar("ataque directo envia el ID de la criatura", _probar_ataque_directo(mundo))
 	_comprobar("ataque lejano se acerca por ruta caminable", _probar_ataque_a_distancia(mundo))
+	_comprobar("clic derecho quieto ataca criatura", _probar_click_derecho_criatura())
 	_comprobar("arrastre reconoce criatura y usa client id 99", _probar_arrastre_criatura(mundo))
 	_comprobar("recoger item del suelo usa slot de inventario", _probar_recoger_item(mundo))
 	_comprobar("moneda conserva cantidad de pila", _probar_items_protocolo())
@@ -141,6 +153,12 @@ func _ready() -> void:
 	_comprobar("movimiento de criatura conserva su stackpos", _probar_pila_criatura())
 	_comprobar("runa detiene auto-walk y bloquea teclas", _probar_chat_detiene_movimiento(mundo))
 	_comprobar("runa usa posicion de contenedor con criatura", _probar_uso_con_runa(mundo))
+	_comprobar("puerta simple acepta closed/open door",
+		MUNDO.es_puerta_simple(1629, {"nombre": "closed door"})
+		and MUNDO.es_puerta_simple(1630, {"nombre": "open door"}))
+	_comprobar("puerta con parametros queda fuera del picking",
+		not MUNDO.es_puerta_simple(1628, {"nombre": "closed door"})
+		and not MUNDO.es_puerta_simple(1646, {"nombre": "gate of expertise"}))
 	print("Controles TVP3D: %d falla(s)" % _fallas)
 	mundo.free()
 	get_tree().quit(1 if _fallas > 0 else 0)
@@ -341,6 +359,23 @@ func _probar_ataque_a_distancia(mundo) -> bool:
 	estado.mi_pos = Vector3i(2, 0, 7)
 	mundo._intentar_ataque_pendiente()
 	return conexion.ataques == [42]
+
+
+func _probar_click_derecho_criatura() -> bool:
+	var mundo := MundoClickDerecho.new()
+	mundo._estado = EstadoRuta.new()
+	var presionar := InputEventMouseButton.new()
+	presionar.button_index = MOUSE_BUTTON_RIGHT
+	presionar.pressed = true
+	mundo._unhandled_input(presionar)
+	var soltar := InputEventMouseButton.new()
+	soltar.button_index = MOUSE_BUTTON_RIGHT
+	soltar.pressed = false
+	mundo._unhandled_input(soltar)
+	var correcto := mundo.ataques_derecho == [42] \
+			and mundo._criatura_clic_derecho == 0
+	mundo.free()
+	return correcto
 
 
 func _probar_arrastre_criatura(mundo) -> bool:

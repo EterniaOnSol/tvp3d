@@ -113,7 +113,23 @@ void Creature::onAttacking()
 	}
 
 	if (!Position::areInRange<8, 8>(attackedCreature->getPosition(), getPosition())) {
-		onCreatureDisappear(attackedCreature, false); 
+		// Con chase activo, perder momentaneamente la visibilidad no debe
+		// borrar el objetivo. El jugador conserva la referencia, camina hacia
+		// la ultima posicion conocida y retoma los golpes cuando vuelve a verlo.
+		// Sin este caso, cada salida del rango terminaba en 0xA3 (Target lost)
+		// y el ataque quedaba interrumpido hasta hacer otro clic.
+		if (Player* player = getPlayer(); player && player->chaseMode) {
+			if (player->targetClearRound == 0) {
+				player->targetClearRound = std::time(nullptr) + 15;
+			}
+			if (std::time(nullptr) >= player->targetClearRound) {
+				setAttackedCreature(nullptr);
+				player->sendCancelTarget();
+				player->sendCancelMessage("Target lost.");
+			}
+			return;
+		}
+		onCreatureDisappear(attackedCreature, false);
 		return;
 	}
 

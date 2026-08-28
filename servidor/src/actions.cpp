@@ -146,6 +146,11 @@ ReturnValue Actions::canUseFar(const Creature* creature, const Position& toPos, 
 	return RETURNVALUE_NOERROR;
 }
 
+bool Actions::hasAction(const Item* item)
+{
+	return item != nullptr && getAction(item) != nullptr;
+}
+
 Action* Actions::getAction(const Item* item)
 {
 	if (item->hasAttribute(ITEM_ATTRIBUTE_UNIQUEID)) {

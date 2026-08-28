@@ -155,6 +155,7 @@ class ProtocolGame final : public Protocol
 		void sendStats();
 		void sendTextMessage(const TextMessage& message);
 		void sendAnimatedText(const Position& pos, uint8_t color, const std::string& text);
+		void sendProximityVoice(uint32_t speakerId, const std::string& frame);
 
 		void sendCreatureShield(const Creature* creature);
 		void sendCreatureSkull(const Creature* creature);

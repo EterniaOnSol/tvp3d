@@ -104,6 +104,7 @@ class Actions final
 		ReturnValue canUse(const Player* player, const Position& pos);
 		ReturnValue canUse(const Player* player, const Position& pos, const Item* item);
 		ReturnValue canUseFar(const Creature* creature, const Position& toPos, bool checkLineOfSight, bool checkFloor, bool isRune);
+		bool hasAction(const Item* item);
 
 		bool registerLuaEvent(Action* event);
 		void clear();

@@ -1,0 +1,16 @@
+<?php
+// Copia de arranque para un checkout nuevo. El contenedor sustituye la URL
+// mediante TVP3D_SITE_URL; la base de datos se lee de servidor/config.lua.
+$siteUrl = getenv('TVP3D_SITE_URL');
+if ($siteUrl === false || trim($siteUrl) === '') {
+    $siteUrl = 'http://localhost:8072/';
+}
+
+$config['installed'] = true;
+$config['env'] = 'prod';
+$config['site_url'] = rtrim(trim($siteUrl), '/') . '/';
+$config['server_path'] = '/srv/tvp/';
+$config['gzip_output'] = false;
+$config['cache_engine'] = 'auto';
+$config['cache_prefix'] = 'myaac_tvp3d';
+$config['database_auto_migrate'] = true;

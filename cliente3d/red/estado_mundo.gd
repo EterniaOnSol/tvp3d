@@ -22,6 +22,7 @@ extends RefCounted
 # =====================================================================
 
 const MAPA := preload("res://red/mapa772.gd")
+const OPCODE_VOZ_PROXIMIDAD := 0xF1
 
 signal cambio()
 signal cambio_piso(opcode: int, posicion: Vector3i)
@@ -49,6 +50,9 @@ signal texto_animado(posicion: Vector3i, color: int, texto: String)
 signal disparo_distancia(origen: Vector3i, destino: Vector3i, tipo: int)
 ## 0x86: cuadrado de color temporal sobre una criatura.
 signal cuadrado_criatura(id: int, color: int)
+## El servidor cancelo el objetivo de combate (0xA3).
+signal objetivo_cancelado()
+signal voz_recibida(orador_id: int, trama: PackedByteArray)
 
 var casillas := {}     ## Vector3i -> Array de cosas
 var criaturas := {}    ## id -> {pos, nombre, apariencia}
@@ -311,7 +315,11 @@ func _leer_mensajes(msg) -> void:
 				if contenedores.has(id_agregado):
 					var agregado: Dictionary = _mapa.leer_cosa(msg, Vector3i.ZERO, [])
 					var lista_agregada: Array = contenedores[id_agregado]["items"]
-					lista_agregada.append(agregado)
+					# Container::addThing/addItemFront inserta en la posicion 0.
+					lista_agregada.push_front(agregado)
+					var capacidad_agregada := int(contenedores[id_agregado].get("capacidad", 0))
+					if capacidad_agregada > 0 and lista_agregada.size() > capacidad_agregada:
+						lista_agregada.pop_back()
 					contenedor_actualizado.emit(id_agregado, contenedores[id_agregado])
 				else:
 					_mapa.leer_cosa(msg, Vector3i.ZERO, [])
@@ -335,7 +343,8 @@ func _leer_mensajes(msg) -> void:
 				if contenedores.has(id_quitado):
 					var lista_quitada: Array = contenedores[id_quitado]["items"]
 					if ranura_quitada < lista_quitada.size():
-						lista_quitada[ranura_quitada] = {}
+						# El servidor borra la entrada y desplaza las siguientes.
+						lista_quitada.remove_at(ranura_quitada)
 					contenedor_actualizado.emit(id_quitado, contenedores[id_quitado])
 				hubo_cambio = true
 			0x78:   # una casilla del inventario (protocolgame.cpp:2018-2029)
@@ -352,6 +361,19 @@ func _leer_mensajes(msg) -> void:
 				var ranura_vacia: int = msg.leer_u8()
 				inventario.erase(ranura_vacia)
 				inventario_actualizado.emit(ranura_vacia, {})
+				hubo_cambio = true
+			0xF0:   # TVP3D: duracion restante del anillo equipado
+				msg.leer_u8()
+				var ranura_duracion: int = msg.leer_u8()
+				var duracion_ms: int = msg.leer_u32()
+				if inventario.has(ranura_duracion):
+					var cosa_duracion: Dictionary = inventario[ranura_duracion]
+					if duracion_ms > 0:
+						cosa_duracion["duracion_ms"] = duracion_ms
+					else:
+						cosa_duracion.erase("duracion_ms")
+					inventario[ranura_duracion] = cosa_duracion
+					inventario_actualizado.emit(ranura_duracion, cosa_duracion)
 				hubo_cambio = true
 
 			# ---------------------------------------------------------
@@ -459,12 +481,31 @@ func _leer_mensajes(msg) -> void:
 				iconos_actualizados.emit(iconos_estado)
 			0xA3:   # se cancelo el objetivo
 				msg.saltar(1)
+				objetivo_cancelado.emit()
 			0xA7:   # modos de pelea (protocolgame.cpp:1796-1803)
 				msg.saltar(1 + 3)
 
 			# ---------------------------------------------------------
 			#  Texto
 			# ---------------------------------------------------------
+			0x32:   # canal extendido; TVP3D usa 0xF1 para voz binaria
+				if msg.sin_leer() < 3:
+					return
+				msg.leer_u8()
+				var opcode_extendido: int = msg.leer_u8()
+				var largo_extendido: int = msg.leer_u16()
+				if largo_extendido > msg.sin_leer():
+					return
+				var datos_extendidos: PackedByteArray = msg.leer_bytes(largo_extendido)
+				if opcode_extendido == OPCODE_VOZ_PROXIMIDAD:
+					if datos_extendidos.size() < 4:
+						return
+					var id_orador: int = datos_extendidos[0] \
+						| (datos_extendidos[1] << 8) \
+						| (datos_extendidos[2] << 16) \
+						| (datos_extendidos[3] << 24)
+					voz_recibida.emit(id_orador, datos_extendidos.slice(4))
+
 			0x14:   # el servidor nos echa Y DICE POR QUE
 				# protocolgame.cpp:434-441. Sin esto el cliente solo puede
 				# decir "se corto la conexion", que no ayuda a nadie: el

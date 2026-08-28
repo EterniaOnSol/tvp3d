@@ -13,7 +13,7 @@ services:
     build: .
     container_name: tvp3d_web
     ports:
-      - "8072:80"
+      - "${TVP3D_WEB_PORT:-8072}:80"
     volumes:
       # El codigo de la web, editable desde Windows.
       - ./myaac:/var/www/html
@@ -26,6 +26,7 @@ services:
       - ./plugins-zip:/plugins-zip:ro
     environment:
       TZ: America/Guatemala
+      TVP3D_SITE_URL: "${TVP3D_SITE_URL:-http://localhost:8072/}"
     networks:
       - tvp_network
     restart: unless-stopped

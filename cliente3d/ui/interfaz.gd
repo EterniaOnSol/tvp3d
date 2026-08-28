@@ -10,7 +10,19 @@ const RANURA := preload("res://ui/ranura.gd")
 const MINIMAPA := preload("res://ui/minimapa.gd")
 # El protocolo transporta client IDs, no los IDs internos del servidor.
 const IDS_MONEDAS := [3031, 3035, 3043]
+const IDS_MONEDAS_SERVIDOR := {
+	2148: 3031, # gold coin
+	2152: 3035, # platinum coin
+	2160: 3043, # crystal coin
+}
+const ARCHIVO_NOMBRES_CRIATURAS := "res://assets/monster_names772.json"
 const SLOT_ANILLO := 9
+# El mapa 7.72 que entrega el servidor mide 18x14 casillas: desde 8 al
+# oeste/norte hasta 9 al este y 7 al sur respecto del personaje.
+const VISTA_X_ANTES := 8
+const VISTA_X_DESPUES := 9
+const VISTA_Y_ANTES := 6
+const VISTA_Y_DESPUES := 7
 
 const DISPOSICION_EQUIPO := [
 	[2, 1, 3], [6, 4, 5], [9, 7, 10], [0, 8, 0],
@@ -48,12 +60,20 @@ var _estado
 var _sprites
 var _catalogo
 var _root: Control
+var _zona_suelo: Control
 var _stats_label: Label
 var _capacidad_label: Label
 var _hp
 var _mp
 var _battle_box: VBoxContainer
 var _battle_window
+var _battle_scroll: ScrollContainer
+var _battle_sprite_slots: Dictionary = {}
+var _battle_rows: Dictionary = {}
+var _battle_name_labels: Dictionary = {}
+var _battle_health_bars: Dictionary = {}
+var _battle_ids: Array = []
+var _battle_anim_tiempo := 0.0
 var _stash_window
 var _hotkeys_window
 var _spellbook_window
@@ -70,6 +90,7 @@ var _vitales_window
 var _vitales_hp
 var _vitales_mp
 var _target_window
+var _target_sprite: TextureRect
 var _target_name: Label
 var _target_bar
 var _objetivo_id := 0
@@ -82,6 +103,7 @@ var _dock_der_interno: VBoxContainer
 var _dock_der_externo: VBoxContainer
 var _columnas: Array[VBoxContainer] = []
 var _docks_listos := false
+var _nombres_criaturas: Dictionary = {}
 
 
 func _init(mundo, estado, sprites, catalogo) -> void:
@@ -89,6 +111,7 @@ func _init(mundo, estado, sprites, catalogo) -> void:
 	_estado = estado
 	_sprites = sprites
 	_catalogo = catalogo
+	_cargar_nombres_criaturas()
 	layer = 20
 
 
@@ -102,6 +125,7 @@ func _ready() -> void:
 	_estado.habilidades_actualizadas.connect(_al_habilidades_actualizadas)
 	_estado.habla_recibida.connect(_al_habla)
 	_estado.mensaje_servidor.connect(_al_mensaje_servidor)
+	_estado.objetivo_cancelado.connect(_al_objetivo_cancelado)
 	_refrescar()
 
 
@@ -115,6 +139,7 @@ func _armar() -> void:
 	# drop de un item del container sobre el mundo.
 	zona_suelo.set_anchors_preset(Control.PRESET_FULL_RECT)
 	zona_suelo.mouse_filter = Control.MOUSE_FILTER_PASS
+	_zona_suelo = zona_suelo
 	_root.add_child(zona_suelo)
 	_armar_docks()
 	# El orden inicial sigue la referencia Mythera: VIP y Bestiary arriba,
@@ -188,6 +213,8 @@ func _ventana(texto: String, preset: int, left: float, top: float,
 			maxf(40.0, bottom - top) if bottom >= top else 40.0)
 		panel.reordenable = true
 		panel.pidio_reordenar.connect(_reacomodar.bind(panel))
+		panel.tamano_cambio.connect(func(_nuevo: Vector2):
+			_ajustar_columnas())
 		destino.add_child(panel)
 		return panel
 	panel.set_anchors_preset(preset)
@@ -269,12 +296,13 @@ func _lugar_en_columna(columna: VBoxContainer, y: float, panel) -> int:
 
 func _ajustar_columnas() -> void:
 	for columna in _columnas:
-		var ocupada := false
+		var ancho := 14.0
 		for hijo in columna.get_children():
 			if hijo is Control and hijo.visible:
-				ocupada = true
-				break
-		columna.custom_minimum_size.x = 190 if ocupada else 14
+				var panel: Control = hijo
+				ancho = maxf(ancho, panel.custom_minimum_size.x)
+				ancho = maxf(ancho, panel.size.x)
+		columna.custom_minimum_size.x = ancho
 
 
 func _armar_bestiary() -> void:
@@ -335,7 +363,7 @@ func _armar_hotkeys() -> void:
 		-200, 370, -10, 490)
 	_hotkeys_window.visible = false
 	var texto := VENTANA.etiqueta(
-		"Ctrl+G  Change character\nCtrl+Q / Ctrl+L  Logout\nCtrl+K  Toggle hotkeys\nEsc  Stop attack / cancel action\nEnter  Chat",
+		"Ctrl+G  Change character\nCtrl+Q / Ctrl+L  Logout\nCtrl+K  Toggle hotkeys\nEsc  Stop attack / cancel action\nEnter  Chat\nHold V  Proximity voice (7 sqm)",
 		9, VENTANA.TEXTO)
 	texto.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
 	_hotkeys_window.cuerpo.add_child(texto)
@@ -669,17 +697,25 @@ func _armar_vitales() -> void:
 func _armar_battle() -> void:
 	_battle_window = _ventana("Battle", Control.PRESET_TOP_RIGHT,
 		-200, 498, -10, -34)
-	_battle_window.custom_minimum_size = Vector2(190, 188)
-	var scroll := ScrollContainer.new()
-	scroll.horizontal_scroll_mode = ScrollContainer.SCROLL_MODE_DISABLED
-	scroll.size_flags_vertical = Control.SIZE_EXPAND_FILL
-	_battle_window.cuerpo.add_child(scroll)
+	# La lista completa vive dentro del scroll y no se limita a diez criaturas.
+	_battle_window.custom_minimum_size = Vector2(190, 108)
+	_battle_scroll = ScrollContainer.new()
+	_battle_scroll.horizontal_scroll_mode = ScrollContainer.SCROLL_MODE_DISABLED
+	_battle_scroll.vertical_scroll_mode = ScrollContainer.SCROLL_MODE_AUTO
+	# Sin un minimo vertical el VBox interno puede medir el ScrollContainer en
+	# cero cuando Battle vive dentro de un dock. El titulo se actualiza, pero
+	# las filas quedan fuera del area visible.
+	_battle_scroll.custom_minimum_size = Vector2(178, 58)
+	_battle_scroll.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	_battle_scroll.size_flags_vertical = Control.SIZE_EXPAND_FILL
+	_battle_window.cuerpo.add_child(_battle_scroll)
 	_battle_box = VBoxContainer.new()
 	_battle_box.add_theme_constant_override("separation", 3)
-	_battle_box.custom_minimum_size.x = 178
-	scroll.add_child(_battle_box)
-	# In the reference client Battle is opened from the action toolbar;
-	# it does not occupy the right dock while there are no creatures.
+	_battle_box.custom_minimum_size.x = 0
+	_battle_box.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	_battle_scroll.add_child(_battle_box)
+	# Mantener la ventana visible permite ver "No creatures in view" y evita
+	# que el dock cambie de ancho cada vez que una criatura entra o sale.
 	_battle_window.visible = false
 
 
@@ -718,13 +754,37 @@ func _armar_chat() -> void:
 
 func _armar_objetivo() -> void:
 	_target_window = _ventana("Target", Control.PRESET_CENTER_TOP,
-		-120, 12, 120, 86)
+		-155, 12, 155, 96)
 	_target_window.visible = false
+	_target_window.custom_minimum_size = Vector2(300, 96)
+	var contenido := HBoxContainer.new()
+	contenido.add_theme_constant_override("separation", 7)
+	contenido.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	contenido.size_flags_vertical = Control.SIZE_EXPAND_FILL
+	_target_window.cuerpo.add_child(contenido)
+	_target_sprite = TextureRect.new()
+	_target_sprite.custom_minimum_size = Vector2(58, 58)
+	_target_sprite.expand_mode = TextureRect.EXPAND_IGNORE_SIZE
+	_target_sprite.stretch_mode = TextureRect.STRETCH_KEEP_ASPECT_CENTERED
+	_target_sprite.texture_filter = CanvasItem.TEXTURE_FILTER_NEAREST
+	_target_sprite.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	contenido.add_child(_target_sprite)
+	var detalles := VBoxContainer.new()
+	detalles.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	detalles.size_flags_vertical = Control.SIZE_SHRINK_CENTER
+	detalles.add_theme_constant_override("separation", 4)
+	contenido.add_child(detalles)
 	_target_name = VENTANA.etiqueta("", 11)
-	_target_name.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
-	_target_window.cuerpo.add_child(_target_name)
+	_target_name.horizontal_alignment = HORIZONTAL_ALIGNMENT_LEFT
+	_target_name.vertical_alignment = VERTICAL_ALIGNMENT_CENTER
+	_target_name.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
+	_target_name.custom_minimum_size = Vector2(135, 20)
+	_target_name.add_theme_color_override("font_color", Color(1.0, 1.0, 1.0, 1.0))
+	_target_name.add_theme_color_override("font_outline_color", Color(0.0, 0.0, 0.0, 1.0))
+	_target_name.add_theme_constant_override("outline_size", 3)
+	detalles.add_child(_target_name)
 	_target_bar = BARRA.new(Color(0.78, 0.18, 0.18), "", 14)
-	_target_window.cuerpo.add_child(_target_bar)
+	detalles.add_child(_target_bar)
 
 
 func _refrescar() -> void:
@@ -741,6 +801,7 @@ func _refrescar() -> void:
 	_actualizar_skills(stats)
 	_actualizar_vitales(vida, vida_max, mana, mana_max)
 	_actualizar_battle()
+	_actualizar_objetivo()
 	for slot in _slots:
 		var ranura = _slots[slot]
 		ranura.mostrar(_estado.inventario.get(slot, {}))
@@ -795,84 +856,305 @@ func _actualizar_skills(stats: Dictionary) -> void:
 func _actualizar_battle() -> void:
 	if _battle_box == null:
 		return
-	for hijo in _battle_box.get_children():
-		hijo.queue_free()
+	var ids_actuales: Array = []
 	var ids: Array = _estado.criaturas.keys()
 	ids.sort()
-	var puestos := 0
 	for id in ids:
 		if int(id) == _estado.mi_id:
 			continue
 		var criatura: Dictionary = _estado.criaturas[id]
-		_agregar_fila_battle(int(id), criatura)
+		if not _criatura_en_piso_actual(criatura) \
+				or not _criatura_a_la_vista(criatura):
+			continue
+		ids_actuales.append(int(id))
+
+	# Los golpes solo cambian nombre/vida. Mantener las mismas filas evita que
+	# el sprite desaparezca un frame cada vez que llega una actualizacion 0xA0.
+	# Solo se reconstruye cuando entra o sale una criatura, o cambiamos de piso.
+	if ids_actuales == _battle_ids and _battle_rows.size() == ids_actuales.size():
+		for id in ids_actuales:
+			var criatura_actual: Dictionary = _estado.criaturas.get(id, {})
+			_actualizar_datos_fila_battle(id, criatura_actual)
+		_battle_window.visible = _estado.adentro
+		_battle_window.fijar_titulo("Battle (%d)" % ids_actuales.size())
+		_actualizar_seleccion_battle()
+		return
+
+	_battle_sprite_slots.clear()
+	_battle_rows.clear()
+	_battle_name_labels.clear()
+	_battle_health_bars.clear()
+	_battle_ids = ids_actuales.duplicate()
+	for hijo in _battle_box.get_children():
+		hijo.free()
+	var puestos := 0
+	for id in ids_actuales:
+		_agregar_fila_battle(id, _estado.criaturas[id])
 		puestos += 1
-		if puestos >= 10:
-			break
 	if puestos == 0:
 		_battle_box.add_child(VENTANA.etiqueta("No creatures in view", 10,
 			VENTANA.TENUE))
-	_battle_window.visible = puestos > 0
+	_battle_window.visible = _estado.adentro
 	_battle_window.fijar_titulo("Battle (%d)" % puestos)
+	_actualizar_seleccion_battle()
+
+
+func _criatura_en_piso_actual(criatura: Dictionary) -> bool:
+	if _estado == null:
+		return false
+	var posicion = criatura.get("pos", null)
+	return posicion is Vector3i and posicion.z == _estado.mi_pos.z
+
+
+func _criatura_a_la_vista(criatura: Dictionary) -> bool:
+	if _estado == null:
+		return false
+	var posicion = criatura.get("pos", null)
+	if not posicion is Vector3i or not _estado.mi_pos is Vector3i:
+		return false
+	# Mantener esta comprobacion alineada con ProtocolGame::canSee() del
+	# servidor. El Battle List no debe conservar criaturas fuera del viewport
+	# aunque sigan en el diccionario por un mensaje de movimiento anterior.
+	var offset_z: int = _estado.mi_pos.z - posicion.z
+	return posicion.x >= _estado.mi_pos.x - VISTA_X_ANTES + offset_z \
+			and posicion.x <= _estado.mi_pos.x + VISTA_X_DESPUES + offset_z \
+			and posicion.y >= _estado.mi_pos.y - VISTA_Y_ANTES + offset_z \
+			and posicion.y <= _estado.mi_pos.y + VISTA_Y_DESPUES + offset_z
+
+
+func _actualizar_objetivo() -> void:
+	if _objetivo_id <= 0:
+		return
+	if mostrar_objetivo(_objetivo_id):
+		return
+	_al_objetivo_cancelado()
+	if _mundo != null and _mundo.has_method("limpiar_objetivo_visual"):
+		_mundo.limpiar_objetivo_visual()
+
+
+func _al_objetivo_cancelado() -> void:
+	_objetivo_id = 0
+	if _target_window != null:
+		_target_window.visible = false
+	_actualizar_seleccion_battle()
 
 
 func _agregar_fila_battle(id: int, criatura: Dictionary) -> void:
 	var fila := Button.new()
 	fila.flat = true
-	fila.custom_minimum_size.y = 34
+	fila.focus_mode = Control.FOCUS_NONE
+	fila.mouse_default_cursor_shape = Control.CURSOR_POINTING_HAND
+	fila.custom_minimum_size.y = 40
+	fila.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	fila.clip_contents = false
 	fila.tooltip_text = "Left click: attack  |  Right click: follow"
-	fila.pressed.connect(func(): _seleccionar_objetivo(id, false))
 	fila.gui_input.connect(func(evento): _input_battle(evento, id))
-	var estilo := StyleBoxFlat.new()
-	estilo.bg_color = Color(0.08, 0.085, 0.11, 0.85)
-	estilo.set_corner_radius_all(2)
-	fila.add_theme_stylebox_override("normal", estilo)
-	var hover = estilo.duplicate()
-	hover.bg_color = Color(0.18, 0.15, 0.12, 0.95)
-	fila.add_theme_stylebox_override("hover", hover)
-	var caja := VBoxContainer.new()
+	_battle_rows[id] = fila
+	_aplicar_estilo_fila_battle(fila, id)
+	var caja := HBoxContainer.new()
 	caja.set_anchors_preset(Control.PRESET_FULL_RECT)
-	caja.offset_left = 6
+	caja.offset_left = 5
 	caja.offset_top = 3
-	caja.offset_right = -6
+	caja.offset_right = -5
 	caja.offset_bottom = -3
+	caja.add_theme_constant_override("separation", 5)
 	caja.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	fila.add_child(caja)
-	var nombre := VENTANA.etiqueta(str(criatura.get("nombre", "Creature")), 10)
-	caja.add_child(nombre)
+	var sprite := TextureRect.new()
+	sprite.custom_minimum_size = Vector2(36, 34)
+	sprite.size_flags_vertical = Control.SIZE_SHRINK_CENTER
+	sprite.expand_mode = TextureRect.EXPAND_IGNORE_SIZE
+	sprite.stretch_mode = TextureRect.STRETCH_KEEP_ASPECT_CENTERED
+	sprite.texture_filter = CanvasItem.TEXTURE_FILTER_NEAREST
+	sprite.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	caja.add_child(sprite)
+	_battle_sprite_slots[id] = sprite
+	_actualizar_sprite_battle(sprite, criatura, 0)
+	var detalles := VBoxContainer.new()
+	detalles.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	detalles.size_flags_vertical = Control.SIZE_EXPAND_FILL
+	detalles.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	caja.add_child(detalles)
+	var nombre := VENTANA.etiqueta(_nombre_criatura(id, criatura), 10)
+	nombre.custom_minimum_size.y = 14
+	nombre.clip_text = false
+	nombre.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	nombre.add_theme_color_override("font_color", Color(0.96, 0.96, 0.96))
+	nombre.add_theme_color_override("font_outline_color", Color(0.0, 0.0, 0.0, 0.95))
+	nombre.add_theme_constant_override("outline_size", 2)
+	detalles.add_child(nombre)
+	_battle_name_labels[id] = nombre
 	var porcentaje := clampf(float(criatura.get("vida", 100)) / 100.0, 0.0, 1.0)
 	var barra = BARRA.new(Color(0.68, 0.18, 0.18), "", 7)
+	barra.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 	barra.fijar(porcentaje, "%d%%" % int(porcentaje * 100.0))
-	caja.add_child(barra)
+	detalles.add_child(barra)
+	_battle_health_bars[id] = barra
 	_battle_box.add_child(fila)
+	_aplicar_estilo_fila_battle(fila, id)
+
+
+func _actualizar_datos_fila_battle(id: int, criatura: Dictionary) -> void:
+	if criatura.is_empty():
+		return
+	var nombre: Label = _battle_name_labels.get(id)
+	if is_instance_valid(nombre):
+		nombre.text = _nombre_criatura(id, criatura)
+	var barra = _battle_health_bars.get(id)
+	if is_instance_valid(barra):
+		var porcentaje := clampf(float(criatura.get("vida", 100)) / 100.0,
+			0.0, 1.0)
+		barra.fijar(porcentaje, "%d%%" % int(porcentaje * 100.0))
+	var sprite: TextureRect = _battle_sprite_slots.get(id)
+	if is_instance_valid(sprite):
+		_actualizar_sprite_battle(sprite, criatura, 0)
+
+
+func _cargar_nombres_criaturas() -> void:
+	var archivo := FileAccess.open(ARCHIVO_NOMBRES_CRIATURAS, FileAccess.READ)
+	if archivo == null:
+		return
+	var datos = JSON.parse_string(archivo.get_as_text())
+	if typeof(datos) == TYPE_DICTIONARY:
+		_nombres_criaturas = datos
+
+
+func _nombre_criatura(id: int, criatura: Dictionary) -> String:
+	var nombre := str(criatura.get("nombre", "")).strip_edges()
+	if not nombre.is_empty():
+		return nombre
+	var tipo := int(criatura.get("apariencia", 0))
+	var nombre_por_apariencia := str(_nombres_criaturas.get(str(tipo), ""))
+	if not nombre_por_apariencia.is_empty():
+		return nombre_por_apariencia
+	return "Creature %d" % id
+
+
+func _estilo_fila_battle(seleccionada: bool, hover: bool = false) -> StyleBoxFlat:
+	var estilo := StyleBoxFlat.new()
+	estilo.bg_color = Color(0.18, 0.15, 0.12, 0.95) if hover \
+		else Color(0.08, 0.085, 0.11, 0.85)
+	estilo.set_corner_radius_all(2)
+	if seleccionada:
+		# Marco rojo claro: la fila que se esta atacando se reconoce incluso
+		# cuando el panel Target queda fuera de la zona visible.
+		estilo.border_color = Color(1.0, 0.16, 0.12, 0.98)
+		estilo.set_border_width_all(2)
+	return estilo
+
+
+func _aplicar_estilo_fila_battle(fila: Button, id: int) -> void:
+	if not is_instance_valid(fila):
+		return
+	var seleccionada := id == _objetivo_id
+	fila.add_theme_stylebox_override("normal",
+		_estilo_fila_battle(seleccionada))
+	fila.add_theme_stylebox_override("hover",
+		_estilo_fila_battle(seleccionada, true))
+	fila.add_theme_stylebox_override("pressed",
+		_estilo_fila_battle(seleccionada, true))
+	fila.add_theme_stylebox_override("focus",
+		_estilo_fila_battle(seleccionada))
+
+
+func _actualizar_seleccion_battle() -> void:
+	for id in _battle_rows:
+		var fila: Button = _battle_rows[id]
+		_aplicar_estilo_fila_battle(fila, int(id))
+
+
+func _actualizar_sprite_battle(sprite: TextureRect, criatura: Dictionary,
+		fase: int) -> void:
+	if _sprites == null or not is_instance_valid(sprite):
+		return
+	var tipo := int(criatura.get("apariencia", 0))
+	var direccion := int(criatura.get("direccion", 2))
+	var cuadro: Dictionary = _sprites.cuadro_outfit(tipo, direccion, fase)
+	if cuadro.is_empty():
+		# Un cambio de direccion o una trama incompleta no debe dejar la fila
+		# vacia. Conservamos el ultimo frame valido hasta recibir uno nuevo.
+		return
+	var atlas := sprite.texture as AtlasTexture
+	if atlas == null or atlas.atlas != cuadro["lamina"]:
+		atlas = AtlasTexture.new()
+		atlas.atlas = cuadro["lamina"]
+		sprite.texture = atlas
+	# Las laminas generadas por sprites772.gd son de 2048x2048.
+	var lado := 2048.0
+	atlas.region = Rect2(
+		float(cuadro["corrimiento"].x) * lado,
+		float(cuadro["corrimiento"].y) * lado,
+		float(cuadro["escala"].x) * lado,
+		float(cuadro["escala"].y) * lado)
+
+
+func _process(delta: float) -> void:
+	if _sprites == null:
+		return
+	_battle_anim_tiempo += delta
+	if _battle_anim_tiempo < 0.14:
+		return
+	_battle_anim_tiempo = 0.0
+	var fase := int(Time.get_ticks_msec() / 140)
+	for id in _battle_sprite_slots:
+		var sprite: TextureRect = _battle_sprite_slots[id]
+		var criatura: Dictionary = _estado.criaturas.get(id, {})
+		if not criatura.is_empty():
+			_actualizar_sprite_battle(sprite, criatura, fase)
+	if _target_sprite != null and _objetivo_id > 0:
+		var objetivo: Dictionary = _estado.criaturas.get(_objetivo_id, {})
+		if not objetivo.is_empty():
+			_actualizar_sprite_battle(_target_sprite, objetivo, fase)
 
 
 func _input_battle(evento: InputEvent, id: int) -> void:
-	if evento is InputEventMouseButton and evento.pressed \
-			and evento.button_index == MOUSE_BUTTON_RIGHT:
+	if not evento is InputEventMouseButton or not evento.pressed:
+		return
+	if evento.button_index == MOUSE_BUTTON_LEFT:
+		# Handle the click here instead of relying on Button.pressed. The row is
+		# rebuilt whenever the creature state changes, and a native Button can
+		# lose its release signal during that refresh.
+		_seleccionar_objetivo(id, false)
+		get_viewport().set_input_as_handled()
+	elif evento.button_index == MOUSE_BUTTON_RIGHT:
 		_seleccionar_objetivo(id, true)
 		get_viewport().set_input_as_handled()
 
 
-func _seleccionar_objetivo(id: int, seguir: bool) -> void:
+func mostrar_objetivo(id: int) -> bool:
+	var criatura: Dictionary = _estado.criaturas.get(id, {})
+	if criatura.is_empty() or not _criatura_en_piso_actual(criatura) \
+			or not _criatura_a_la_vista(criatura):
+		return false
 	_objetivo_id = id
+	_target_window.visible = true
+	_actualizar_sprite_battle(_target_sprite, criatura, 0)
+	_target_name.text = _nombre_criatura(id, criatura)
+	var porcentaje := clampf(float(criatura.get("vida", 100)) / 100.0, 0.0, 1.0)
+	_target_bar.fijar(porcentaje, "%d%%" % int(porcentaje * 100.0))
+	_actualizar_seleccion_battle()
+	return true
+
+
+func _seleccionar_objetivo(id: int, seguir: bool) -> void:
 	var criatura: Dictionary = _estado.criaturas.get(id, {})
 	if criatura.is_empty():
 		return
 	if not seguir and _mundo.esta_esperando_uso_con():
 		if _mundo.usar_con_criatura_pendiente(id):
 			return
-	_target_window.visible = true
-	_target_name.text = str(criatura.get("nombre", "Creature"))
-	var porcentaje := clampf(float(criatura.get("vida", 100)) / 100.0, 0.0, 1.0)
-	_target_bar.fijar(porcentaje, "%d%%" % int(porcentaje * 100.0))
-	var con = _mundo._con
-	if con != null:
-		if seguir:
+	mostrar_objetivo(id)
+	if seguir:
+		var con = _mundo._con
+		if con != null:
 			con.enviar_seguir(id)
 			_anotar("Following %s." % _target_name.text)
-		else:
-			if _mundo.atacar_criatura(id):
-				_anotar("Attacking %s." % _target_name.text)
+		return
+	# `atacar_criatura` owns the connection/range/path checks. The UI must not
+	# gate the call by peeking at the connection, otherwise a valid Battle row
+	# click can be swallowed while the connection is being replaced on login.
+	if _mundo.atacar_criatura(id):
+		_anotar("Attacking %s." % _target_name.text)
 
 
 func _al_inventario_actualizado(_slot: int, _cosa: Dictionary) -> void:
@@ -898,6 +1180,9 @@ func _al_habla(quien: String, texto: String, _clase: int) -> void:
 func _anotar(texto: String) -> void:
 	if _chat != null:
 		_chat.append_text(texto + "\n")
+		# RichTextLabel actualiza sus líneas en el siguiente frame; desplazarlo
+		# después evita que cada mensaje nuevo deje visible el primero.
+		_chat.call_deferred("scroll_to_line", _chat.get_line_count())
 
 
 func _decir(texto: String) -> void:
@@ -942,8 +1227,22 @@ func esta_escribiendo() -> bool:
 	return _chat_input != null and _chat_input.has_focus()
 
 
+func esta_sobre_interfaz() -> bool:
+	"""Indica si la rueda esta sobre una ventana de la UI y no sobre el mapa."""
+	var control := get_viewport().gui_get_hovered_control()
+	if control == null or control == _zona_suelo or _root == null:
+		return false
+	return _root.is_ancestor_of(control)
+
+
 func icono_para_item(cid: int) -> Texture2D:
 	var cuadro: Dictionary = _sprites.cuadro_item(cid, 0)
+	# El protocolo correcto transporta client IDs, pero algunos objetos
+	# antiguos o datos de prueba pueden llegar con el ID interno del servidor.
+	# La conversion solo se aplica cuando no existe un sprite para el valor
+	# recibido, asi no altera items reales que compartan ese numero.
+	if cuadro.is_empty() and IDS_MONEDAS_SERVIDOR.has(cid):
+		cuadro = _sprites.cuadro_item(int(IDS_MONEDAS_SERVIDOR[cid]), 0)
 	if cuadro.is_empty():
 		return null
 	var atlas := AtlasTexture.new()
@@ -1047,6 +1346,18 @@ func mirar_ranura(tipo: String, id_contenedor: int, slot: int,
 		cosa: Dictionary) -> void:
 	_anotar("You see %s in inventory slot %d." % [
 		str(cosa.get("nombre", "item")), slot])
+	if _mundo._con != null and _estado.adentro:
+		# El mismo 0x8C sirve para inventario y contenedores. En una
+		# mochila el slot va en Z de la posicion especial 0xFFFF/0x40.
+		var posicion := _posicion_de_item(tipo, id_contenedor, slot)
+		_mundo._con.enviar_mirar(posicion, int(cosa.get("cid", 0)), 0)
+
+
+func cancelar_uso_con() -> bool:
+	if _mundo == null or not _mundo.esta_esperando_uso_con():
+		return false
+	_mundo.cancelar_uso_con()
+	return true
 
 
 func mover_a_ranura(datos: Dictionary, tipo_destino: String,
@@ -1113,17 +1424,31 @@ func _ranura_bajo_mouse(posicion_mouse: Vector2) -> Dictionary:
 func _al_contenedor_actualizado(id: int, datos: Dictionary) -> void:
 	if not _ventanas_contenedor.has(id):
 		var ventana = VENTANA.new("Container", true)
-		ventana.custom_minimum_size = Vector2(190, 170)
+		# El contenido vive dentro de un ScrollContainer, por lo que la ventana
+		# puede hacerse pequena sin que la grilla fuerce a mostrar todas las
+		# ranuras a la vez.
+		ventana.custom_minimum_size = Vector2(190, 108)
 		ventana.reordenable = true
 		ventana.pidio_reordenar.connect(_reacomodar.bind(ventana))
+		ventana.tamano_cambio.connect(func(_nuevo: Vector2):
+			_ajustar_columnas())
 		ventana.cerrar_solicitado.connect(func(): _cerrar_contenedor(id))
 		_dock_der_interno.add_child(ventana)
-		_dock_der_interno.move_child(ventana, 0)
+		# Las mochilas nuevas siempre se apilan abajo del panel derecho, dejando
+		# Battle y las ventanas ya abiertas en su sitio.
+		_dock_der_interno.move_child(ventana, _dock_der_interno.get_child_count() - 1)
 		_ventanas_contenedor[id] = ventana
 		_ajustar_columnas()
 	var anterior: Dictionary = _contenedores_visuales.get(id, {})
 	_refrescar_contenedor(id, datos, anterior)
 	_contenedores_visuales[id] = datos.duplicate(true)
+
+
+func _volver_contenedor(id: int) -> void:
+	var con = _mundo._con
+	if con == null:
+		return
+	con.enviar_subir_contenedor(id)
 
 
 func _refrescar_contenedor(id: int, datos: Dictionary,
@@ -1133,13 +1458,42 @@ func _refrescar_contenedor(id: int, datos: Dictionary,
 	var ventana = _ventanas_contenedor[id]
 	ventana.fijar_titulo("%s [%d]" % [str(datos.get("nombre", "Container")), id])
 	for hijo in ventana.cuerpo.get_children():
-		hijo.queue_free()
+		# El contenido se reconstruye al llegar cada actualización del servidor.
+		# Liberarlo de inmediato evita que el scroll anterior quede superpuesto
+		# durante un frame y oculte la primera fila de la mochila.
+		hijo.free()
 	_slots_contenedor[id] = {}
+	if bool(datos.get("tiene_padre", false)):
+		var navegacion := HBoxContainer.new()
+		navegacion.add_theme_constant_override("separation", 4)
+		var volver := Button.new()
+		volver.text = "< Back"
+		volver.flat = true
+		volver.focus_mode = Control.FOCUS_NONE
+		volver.custom_minimum_size = Vector2(0, 19)
+		volver.add_theme_font_size_override("font_size", 9)
+		volver.pressed.connect(_volver_contenedor.bind(id))
+		navegacion.add_child(volver)
+		ventana.cuerpo.add_child(navegacion)
+	var scroll := ScrollContainer.new()
+	scroll.name = "ScrollRanuras"
+	scroll.horizontal_scroll_mode = ScrollContainer.SCROLL_MODE_DISABLED
+	scroll.vertical_scroll_mode = ScrollContainer.SCROLL_MODE_AUTO
+	scroll.custom_minimum_size = Vector2(0, 52)
+	scroll.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	scroll.size_flags_vertical = Control.SIZE_EXPAND_FILL
+	ventana.cuerpo.add_child(scroll)
 	var grilla := GridContainer.new()
+	grilla.name = "GrillaRanuras"
 	grilla.columns = 4
 	grilla.add_theme_constant_override("h_separation", 3)
 	grilla.add_theme_constant_override("v_separation", 3)
-	ventana.cuerpo.add_child(grilla)
+	# Reservar siempre la primera fila evita que el ScrollContainer nazca con
+	# altura cero durante el primer frame de apertura.
+	grilla.custom_minimum_size = Vector2(0, 34)
+	grilla.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	grilla.size_flags_vertical = Control.SIZE_SHRINK_BEGIN
+	scroll.add_child(grilla)
 	var capacidad := mini(32, maxi(1, int(datos.get("capacidad", 1))))
 	var items: Array = datos.get("items", [])
 	var items_anteriores: Array = anterior.get("items", [])
@@ -1151,7 +1505,8 @@ func _refrescar_contenedor(id: int, datos: Dictionary,
 			var previo: Dictionary = items_anteriores[ranura] \
 				if ranura < items_anteriores.size() else {}
 			if _es_cambio_de_moneda(previo, items[ranura]):
-				slot.animar_acunado()
+				slot.animar_acunado(int(items[ranura].get("cantidad", \
+					previo.get("cantidad", 1))))
 		grilla.add_child(slot)
 	var pie := VENTANA.etiqueta("%d / %d slots" % [items.size(), capacidad],
 		9, VENTANA.TENUE)

@@ -50,6 +50,12 @@ worklog/video_ref*/
 worklog/*.mp4
 worklog/*.webm
 
+# Paquetes de cliente generados localmente. Los ZIP/ejecutables superan el
+# limite de archivos de GitHub; se conservan en la maquina y se publicaran
+# mas adelante como release/artifacto de descarga.
+dist/
+web/myaac/clients/*.zip
+
 # Local/editor noise
 Thumbs.db
 Desktop.ini

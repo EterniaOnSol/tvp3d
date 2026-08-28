@@ -5,6 +5,7 @@ extends PanelContainer
 ## ventana sin acoplarla al layout del mundo 3D.
 
 signal cerrar_solicitado
+signal tamano_cambio(nuevo: Vector2)
 
 const FONDO := Color(0.055, 0.060, 0.065, 0.98)
 const BORDE := Color(0.235, 0.250, 0.270, 1.0)
@@ -18,6 +19,8 @@ var _titulo: Label
 var _boton_plegar: Button
 var _cuerpo_contenedor: VBoxContainer
 var _plegada := false
+var _minimo_expandido := Vector2.ZERO
+var _tamano_expandido := Vector2.ZERO
 var _arrastrando := false
 var _agarre := Vector2.ZERO
 var _redimensionando := false
@@ -30,6 +33,7 @@ signal pidio_reordenar(pos_global: Vector2)
 func _init(texto: String = "Window", con_cerrar: bool = false) -> void:
 	custom_minimum_size = Vector2(190, 40)
 	mouse_filter = Control.MOUSE_FILTER_STOP
+	size_flags_horizontal = Control.SIZE_SHRINK_BEGIN
 	size_flags_vertical = Control.SIZE_SHRINK_BEGIN
 	_marco = StyleBoxFlat.new()
 	_marco.bg_color = FONDO
@@ -44,19 +48,24 @@ func _init(texto: String = "Window", con_cerrar: bool = false) -> void:
 
 	var exterior := VBoxContainer.new()
 	exterior.add_theme_constant_override("separation", 3)
+	# El PanelContainer puede crecer al redimensionarse. El VBox exterior y,
+	# sobre todo, el cuerpo deben recibir ese espacio para que sus ScrollContainer
+	# muestren mas filas en vez de conservar solo su altura minima.
+	exterior.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	exterior.size_flags_vertical = Control.SIZE_EXPAND_FILL
 	add_child(exterior)
 
-	var barra := Control.new()
+	var barra := HBoxContainer.new()
 	barra.custom_minimum_size.y = 16
 	barra.mouse_filter = Control.MOUSE_FILTER_STOP
 	barra.gui_input.connect(_al_input_de_barra)
 	exterior.add_child(barra)
 
 	var plegar := Button.new()
-	plegar.text = "▾"
+	plegar.text = "-"
 	plegar.flat = true
-	plegar.position = Vector2(0, 0)
-	plegar.size = Vector2(18, 16)
+	plegar.custom_minimum_size = Vector2(18, 16)
+	plegar.size_flags_vertical = Control.SIZE_SHRINK_CENTER
 	plegar.add_theme_font_size_override("font_size", 10)
 	plegar.pressed.connect(alternar_plegado)
 	barra.add_child(plegar)
@@ -64,8 +73,8 @@ func _init(texto: String = "Window", con_cerrar: bool = false) -> void:
 
 	_titulo = Label.new()
 	_titulo.text = texto
-	_titulo.position = Vector2(20, 0)
-	_titulo.size = Vector2(135, 16)
+	_titulo.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	_titulo.size_flags_vertical = Control.SIZE_SHRINK_CENTER
 	_titulo.add_theme_font_size_override("font_size", 11)
 	_titulo.add_theme_color_override("font_color", TEXTO)
 	_titulo.mouse_filter = Control.MOUSE_FILTER_IGNORE
@@ -75,14 +84,16 @@ func _init(texto: String = "Window", con_cerrar: bool = false) -> void:
 		var cerrar := Button.new()
 		cerrar.text = "X"
 		cerrar.flat = true
-		cerrar.position = Vector2(164, 0)
-		cerrar.size = Vector2(18, 16)
+		cerrar.custom_minimum_size = Vector2(18, 16)
+		cerrar.size_flags_vertical = Control.SIZE_SHRINK_CENTER
 		cerrar.add_theme_font_size_override("font_size", 10)
 		cerrar.pressed.connect(func(): cerrar_solicitado.emit())
 		barra.add_child(cerrar)
 
 	_cuerpo_contenedor = VBoxContainer.new()
 	_cuerpo_contenedor.add_theme_constant_override("separation", 4)
+	_cuerpo_contenedor.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	_cuerpo_contenedor.size_flags_vertical = Control.SIZE_EXPAND_FILL
 	exterior.add_child(_cuerpo_contenedor)
 	cuerpo = _cuerpo_contenedor
 
@@ -99,6 +110,15 @@ func _init(texto: String = "Window", con_cerrar: bool = false) -> void:
 	asa.mouse_filter = Control.MOUSE_FILTER_STOP
 	asa.mouse_default_cursor_shape = Control.CURSOR_FDIAGSIZE
 	asa.gui_input.connect(_al_input_de_asa)
+	# Tres puntos visibles hacen descubrible el resize y no dependen de un
+	# caracter Unicode que puede cambiar segun la fuente o la codificacion.
+	for punto in [Vector2(9, 0), Vector2(6, 3), Vector2(3, 6)]:
+		var marca := ColorRect.new()
+		marca.position = punto
+		marca.size = Vector2(2, 2)
+		marca.color = Color(0.45, 0.50, 0.55, 0.90)
+		marca.mouse_filter = Control.MOUSE_FILTER_IGNORE
+		asa.add_child(marca)
 	pie.add_child(asa)
 	exterior.add_child(pie)
 
@@ -106,7 +126,16 @@ func _init(texto: String = "Window", con_cerrar: bool = false) -> void:
 func alternar_plegado() -> void:
 	_plegada = not _plegada
 	_cuerpo_contenedor.visible = not _plegada
-	_boton_plegar.text = ">" if _plegada else "v"
+	if _plegada:
+		_minimo_expandido = custom_minimum_size
+		_tamano_expandido = size
+		custom_minimum_size = Vector2(custom_minimum_size.x, 40)
+		size.y = 40
+		_boton_plegar.text = "+"
+	else:
+		custom_minimum_size = _minimo_expandido if _minimo_expandido.y > 0 else Vector2(190, 40)
+		size.y = maxf(_tamano_expandido.y, custom_minimum_size.y)
+		_boton_plegar.text = "-"
 
 
 func fijar_titulo(texto: String) -> void:
@@ -131,10 +160,11 @@ func _al_input_de_asa(evento: InputEvent) -> void:
 	elif evento is InputEventMouseMotion and _redimensionando:
 		var delta := get_global_mouse_position() - _mouse_redimension
 		var nuevo := Vector2(
-			maxf(150.0, _tamano_redimension.x + delta.x),
-			maxf(40.0, _tamano_redimension.y + delta.y))
+			clampf(_tamano_redimension.x + delta.x, 190.0, 360.0),
+			clampf(_tamano_redimension.y + delta.y, 40.0, 520.0))
 		custom_minimum_size = nuevo
 		size = nuevo
+		tamano_cambio.emit(nuevo)
 		accept_event()
 
 

@@ -29,11 +29,6 @@ combat:addCondition(condition)
 local rune = Spell(SPELL_RUNE)
 
 function rune.onCastSpell(creature, variant)
-	if creature:getVocation():getId() ~= 2 and creature:getVocation():getId() ~= 6 then
-		creature:sendTextMessage(MESSAGE_STATUS_DEFAULT, Game.getReturnMessage(RETURNVALUE_YOURVOCATIONCANNOTUSETHISSPELL))
-		return false
-	end
-
 	if not combat:execute(creature, variant) then
 		return false
 	end

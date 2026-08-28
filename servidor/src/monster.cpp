@@ -511,6 +511,21 @@ void Monster::onCreatureFound(Creature* creature, bool pushFront/* = false*/)
 
 void Monster::onCreatureEnter(Creature* creature)
 {
+	// Si el jugador vuelve a entrar en el rango, no dependemos solamente de
+	// que el siguiente ciclo de idle despierte al monster. Se reacquire aqui
+	// y se reactiva su lista de pensamiento inmediatamente.
+	if (!attackedCreature && isHostile() && creature && creature->getPlayer()
+			&& isOpponent(creature) && isTarget(creature)) {
+		const Player* player = creature->getPlayer();
+		if (!player->hasFlag(PlayerFlag_IgnoredByMonsters)
+				&& (canSeeInvisibility() || !creature->isInvisible())
+				&& selectTarget(creature)) {
+			Target = creature;
+			State = STATE::ATTACKING;
+			setIdle(false);
+			clearToDo();
+		}
+	}
 	onCreatureFound(creature, true);
 }
 
@@ -567,6 +582,37 @@ void Monster::onCreatureLeave(Creature* creature)
 	if (creature == Target && creature->getPosition().z == Target->getPosition().z) {
 		Target = nullptr;
 	}
+}
+
+void Monster::onAttackedCreatureDisappear(bool isLogout)
+{
+	Creature::onAttackedCreatureDisappear(isLogout);
+
+	if (isRemoved() || getHealth() <= 0) {
+		return;
+	}
+
+	// Una desaparicion temporal ocurre cuando el jugador sale de la ventana
+	// visible o queda detras de un cambio de mapa. No es una perdida real del
+	// objetivo: conservar attackedCreature permite que el monster lo persiga y
+	// retome sus ataques cuando vuelva a estar visible.
+	if (!isLogout && attackedCreature && attackedCreature->getHealth() > 0
+			&& !attackedCreature->isRemoved()
+			&& attackedCreature->getPosition().z == getPosition().z
+			&& attackedCreature->getZone() != ZONE_PROTECTION) {
+		Target = nullptr;
+		clearToDo();
+		State = STATE::IDLE;
+		setIdle(false);
+		addYieldToDo();
+		return;
+	}
+
+	Target = nullptr;
+	setAttackedCreature(nullptr);
+	clearToDo();
+	State = STATE::IDLE;
+	setIdle(true);
 }
 
 BlockType_t Monster::blockHit(Creature* attacker, CombatType_t combatType, int32_t& damage,

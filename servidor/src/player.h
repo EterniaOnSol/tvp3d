@@ -895,6 +895,11 @@ class Player final : public Creature, public Cylinder
 				client->writeToOutputBuffer(message);
 			}
 		}
+		void sendProximityVoice(uint32_t speakerId, const std::string& frame) {
+			if (client) {
+				client->sendProximityVoice(speakerId, frame);
+			}
+		}
 
 		void receivePing() {
 			lastPong = OTSYS_TIME();

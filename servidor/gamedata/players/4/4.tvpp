@@ -10,36 +10,36 @@ Sex = 0
 PlayerKillerEnd = 0
 BankBalance = 0
 Blessings = 0
-LastLoginSaved = 1787820763
-LastLogout = 1787820785
-Position = [32083,32200,7]
+LastLoginSaved = 1787919270
+LastLogout = 1787919634
+Position = [32339,32214,7]
 DefaultOutfit = (128, 78-106-58-95)
 
-Level = 200
-Experience = 129389800
-Health = 3135
-MaxHealth = 3135
-Mana = 995
-MaxMana = 995
-ManaSpent = 0
-MagicLevel = 200
+Level = 193
+Experience = 116466232
+Health = 2966
+MaxHealth = 3030
+Mana = 950
+MaxMana = 960
+ManaSpent = 5670241777886634044
+MagicLevel = 34
 Soul = 200
-Capacity = 40000
+Capacity = 520000
 Vocation = 4
 Stamina = 2520
 
-Skill = (0, 200, 0)
-Skill = (2, 200, 0)
-Skill = (1, 200, 0)
-Skill = (3, 200, 0)
-Skill = (4, 200, 0)
-Skill = (5, 200, 0)
-Skill = (6, 200, 0)
+Skill = (0, 198, 0)
+Skill = (2, 198, 0)
+Skill = (1, 198, 0)
+Skill = (3, 198, 52)
+Skill = (4, 131, 0)
+Skill = (5, 198, 1090393840)
+Skill = (6, 198, 1077072216)
 
-Condition = (4096,-1,214000,0,0,0,0,0,0,-1,6000,1,12000,1)
+Condition = (4096,-1,363000,0,0,0,0,0,0,-1,6000,1,12000,1)
 Spells = {}
 
-QuestValues = {(32,1),(33,1),(34,1),(59,1)}
+QuestValues = {(32,1),(33,1),(34,1),(59,1),(116,1),(117,1),(118,1)}
 
 StringQuestValues = {}
 
@@ -47,8 +47,11 @@ Murders = {}
 
 VIP = ()
 
-Backpack = (1987 Content={})
-Armor = (2650)
+Backpack = (1987 Content={2148 Amount=96})
+Left = (2378)
+Legs = (2495)
+Feet = (2195)
 Ammo = (2580)
 
 
+Depot = (1, {2594 Content={}})

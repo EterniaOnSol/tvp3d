@@ -2792,6 +2792,13 @@ void Player::postAddNotification(Thing* thing, const Cylinder* oldParent, int32_
 	if (link == LINK_OWNER) {
 		//calling movement scripts
 		g_moveEvents->onPlayerEquip(this, thing->getItem(), static_cast<slots_t>(index), false);
+
+		// La confirmacion debe salir despues de que el objeto entro realmente
+		// en la ranura. internalMoveItem no siempre conserva un cilindro con
+		// creature asociado, por eso ese punto no era fiable para equipamiento.
+		if (index == CONST_SLOT_RING && thing->getItem()) {
+			sendMagicEffect(getPosition(), CONST_ME_YELLOW_RINGS);
+		}
 	}
 
 	bool requireListUpdate = false;
@@ -3125,6 +3132,20 @@ void Player::onEndCondition(ConditionType_t type)
 
 void Player::onAttackedCreatureDisappear(bool)
 {
+	if (attackedCreature && chaseMode && attackedCreature->getHealth() > 0
+			&& !attackedCreature->isRemoved()
+			&& attackedCreature->getZone() != ZONE_PROTECTION) {
+		// El objetivo puede salir de la ventana visible durante el chase. No
+		// cancelar el target aqui: el ciclo de combate lo seguira y lo retomara
+		// cuando el monster vuelva a estar visible o hasta que expire el timeout.
+		if (targetClearRound == 0) {
+			targetClearRound = std::time(nullptr) + 15;
+		}
+		clearToDo();
+		addYieldToDo();
+		return;
+	}
+
 	setAttackedCreature(nullptr);
 	sendCancelTarget();
 	sendCancelMessage("Target lost.");

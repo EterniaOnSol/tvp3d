@@ -62,6 +62,8 @@ FLAG_PICKUPABLE = 1 << 5
 FLAG_MOVEABLE = 1 << 6
 FLAG_STACKABLE = 1 << 7
 FLAG_ALWAYSONTOP = 1 << 13
+FLAG_VERTICAL = 1 << 17
+FLAG_HORIZONTAL = 1 << 18
 FLAG_LOOKTHROUGH = 1 << 23
 
 
@@ -152,6 +154,8 @@ def leer_otb():
             "levantable": bool(flags & FLAG_PICKUPABLE),
             "movible": bool(flags & FLAG_MOVEABLE),
             "siempre_arriba": bool(flags & FLAG_ALWAYSONTOP),
+            "vertical": bool(flags & FLAG_VERTICAL),
+            "horizontal": bool(flags & FLAG_HORIZONTAL),
             "orden_arriba": orden,
             "velocidad_suelo": velocidad,
             "color_mapa": color,

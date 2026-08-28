@@ -2027,6 +2027,37 @@ void ProtocolGame::sendInventoryItem(slots_t slot, const Item* item)
 		msg.addByte(slot);
 	}
 	writeToOutputBuffer(msg);
+
+	// TVP3D: el protocolo 7.72 no transporta la duracion del objeto
+	// equipado. Se envia en un paquete propio para que el cliente pueda
+	// mostrar la cuenta regresiva del anillo sin contaminar el chat.
+	if (slot == CONST_SLOT_RING) {
+		NetworkMessage durationMsg;
+		durationMsg.addByte(0xF0);
+		durationMsg.addByte(slot);
+		durationMsg.add<uint32_t>(item ? item->getDuration() : 0);
+		writeToOutputBuffer(durationMsg);
+	}
+}
+
+void ProtocolGame::sendProximityVoice(uint32_t speakerId, const std::string& frame)
+{
+	if (frame.size() > 512) {
+		return;
+	}
+	std::string payload;
+	payload.reserve(4 + frame.size());
+	payload.push_back(static_cast<char>(speakerId & 0xFF));
+	payload.push_back(static_cast<char>((speakerId >> 8) & 0xFF));
+	payload.push_back(static_cast<char>((speakerId >> 16) & 0xFF));
+	payload.push_back(static_cast<char>((speakerId >> 24) & 0xFF));
+	payload.append(frame);
+
+	NetworkMessage msg;
+	msg.addByte(0x32);
+	msg.addByte(TVP3D_EXTENDED_OPCODE_VOICE);
+	msg.addString(payload);
+	writeToOutputBuffer(msg);
 }
 
 void ProtocolGame::sendAddContainerItem(uint8_t cid, const Item* item)

@@ -1,0 +1,11 @@
+TVP3D - CLIENTE REMOTO
+
+1. Instala y abre Radmin VPN.
+2. Entra a la red que te compartio el host.
+3. Abre JUGAR REMOTO.bat.
+4. Edita TVP3D_HOST con la IP 26.x.x.x que muestra Radmin VPN en la PC del host.
+5. Crea tu cuenta y personaje en http://IP_RADMIN:8072.
+6. Entra al juego con esas mismas credenciales.
+
+El chat de proximidad usa la tecla V: mantenla presionada para hablar.
+Permite el acceso al microfono cuando Windows lo solicite.

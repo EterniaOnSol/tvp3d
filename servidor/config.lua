@@ -274,7 +274,7 @@ statsTrackLuaAddEventsHashes = false
 -- This makes it so all spells are learned by default
 needLearnSpells = true
 -- Disables all spell requirements for all players
-noSpellRequirements = false
+noSpellRequirements = true
 -- Disable players losing HP or MP
 unlimitedPlayerHP = false
 unlimitedPlayerMP = false

@@ -264,6 +264,18 @@ func enviar_juego(carga: PackedByteArray) -> void:
 	_enviar(carga, true)
 
 
+func enviar_voz(trama: PackedByteArray) -> void:
+	"""Envia un cuadro binario por el canal extendido reservado para voz."""
+	if _modo != Modo.JUEGO or trama.is_empty():
+		return
+	var mensaje := MENSAJE.new()
+	mensaje.escribir_u8(0x32)
+	mensaje.escribir_u8(0xF1) # TVP3D proximity voice
+	mensaje.escribir_u16(trama.size())
+	mensaje.escribir_bytes(trama)
+	enviar_juego(mensaje.datos)
+
+
 func enviar_logout() -> void:
 	"""Solicita logout limpio al servidor (0x14)."""
 	enviar_juego(PackedByteArray([0x14]))
@@ -282,10 +294,10 @@ func enviar_detener_auto_camino() -> void:
 
 
 func enviar_hablar(texto: String) -> void:
-	"""Envia TALKTYPE_SAY (0x96), igual que el chat de 3DTIBIA."""
+	"""Envia chat/spells sin cancelar el auto-walk del personaje."""
 	var mensaje := MENSAJE.new()
-	mensaje.escribir_u8(0x96)
-	mensaje.escribir_u8(1)
+	mensaje.escribir_u8(0x32)
+	mensaje.escribir_u8(0xF2) # TVP3D say/cast, movimiento continua
 	mensaje.escribir_texto(texto.strip_edges())
 	enviar_juego(mensaje.datos)
 
@@ -356,6 +368,11 @@ func enviar_usar_con_criatura(origen: Vector3i, client_id: int,
 func enviar_cerrar_contenedor(id_contenedor: int) -> void:
 	"""Cierra una ventana de contenedor (0x87, parseCloseContainer)."""
 	enviar_juego(PackedByteArray([0x87, id_contenedor & 0xFF]))
+
+
+func enviar_subir_contenedor(id_contenedor: int) -> void:
+	"""Muestra el contenedor padre en la misma ventana (0x88)."""
+	enviar_juego(PackedByteArray([0x88, id_contenedor & 0xFF]))
 
 
 func enviar_atacar(id_criatura: int) -> void:

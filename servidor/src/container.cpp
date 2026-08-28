@@ -231,6 +231,7 @@ void Container::onRemoveContainerItem(uint32_t index, Item* item)
 {
 	SpectatorVec spectators;
 	g_game.map.getSpectators(spectators, getPosition(), false, true, 2, 2, 2, 2);
+	const bool removedRune = item && item->isRune();
 
 	//send change to client
 	for (Creature* spectator : spectators) {
@@ -245,6 +246,32 @@ void Container::onRemoveContainerItem(uint32_t index, Item* item)
 	//event methods
 	for (Creature* spectator : spectators) {
 		spectator->getPlayer()->onRemoveContainerItem(this, item);
+	}
+
+	// A depleted rune leaves a hole in the open backpack. Keep the remaining
+	// runes together and in a deterministic order, just like the classic
+	// client does after the last charge is consumed. Refresh the open window
+	// after the remove notification so every client sees the same slots.
+	if (removedRune && !itemlist.empty()) {
+		ItemDeque runes;
+		ItemDeque others;
+		for (Item* entry : itemlist) {
+			(entry->isRune() ? runes : others).push_back(entry);
+		}
+		std::stable_sort(runes.begin(), runes.end(), [](const Item* left, const Item* right) {
+			return left->getID() < right->getID();
+		});
+		itemlist.clear();
+		for (Item* entry : runes) {
+			itemlist.push_back(entry);
+		}
+		for (Item* entry : others) {
+			itemlist.push_back(entry);
+		}
+
+		for (Creature* spectator : spectators) {
+			spectator->getPlayer()->onSendContainer(this);
+		}
 	}
 }
 

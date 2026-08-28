@@ -849,7 +849,10 @@ bool ConditionRegeneration::executeCondition(Creature* creature, int32_t interva
 	internalHealthTicks += interval;
 	internalManaTicks += interval;
 
-	if (creature->getZone() == ZONE_PROTECTION) {
+	// Natural vocation regeneration remains disabled in protection zones, but
+	// regeneration granted by equipment (for example a life ring) must keep
+	// ticking there as it does everywhere else.
+	if (creature->getZone() == ZONE_PROTECTION && getId() == CONDITIONID_DEFAULT) {
 		return ConditionGeneric::executeCondition(creature, interval);
 	}
 

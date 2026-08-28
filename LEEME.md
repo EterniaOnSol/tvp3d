@@ -804,3 +804,46 @@ montanas, muros, escaleras y el resto de la lectura semantica.
 
 La prueba `cliente3d/pruebas/test_formas_render.gd` valida las categorias
 `tree`, `small fir tree`, `blueberry bush`, `mailbox` y `sign`.
+
+### Cierre de sesion 2026-08-28
+
+Se deja este punto como checkpoint para continuar mañana. El cliente 3D
+queda con Battle List filtrada por piso y campo de vision, nombres y sprites
+de criaturas, target visual con nombre/sprite y seleccion por click. Las
+criaturas que salen de sight se quitan de la lista y el resize permite ver
+mas filas mediante scroll.
+
+Se agrego soporte para contenedores redimensionables con scroll, apertura de
+contenedores nuevos sin cerrar la mochila y navegacion entre contenedores.
+Las runas conservan sus cargas normales y el uso de runas se puede cancelar
+con click derecho. Tambien quedan integrados los ajustes de life ring,
+comida, orden automatico de runas y monedas acuñadas.
+
+La conexion puede apuntar al servidor local o a un host definido por
+`TVP3D_HOST`, y quedan los scripts de prueba para Radmin VPN, el servidor
+propio y el cliente remoto. Se incorporo la base de proximity chat por
+microfono y su prueba headless.
+
+En el render del mapa, las construcciones de pisos superiores se muestran
+desde el nivel 0 como arquitectura, con separacion visual de 2.0 SQM. Los
+muros tienen volumen real y las montañas usan relieve 3D con altura visual
+ajustada a aproximadamente 1.2 SQM. Al entrar a una edificacion, se ocultan
+solo los muros cercanos del nivel actual para ver claramente el interior; al
+salir se restauran. El bloqueo, las colisiones y el pathfinding siguen siendo
+los del mapa/servidor.
+
+Tambien quedan incluidos los modelos OBJ de cama, la variante `bed-person`,
+holes y cuerpos acostados, pools de sangre diferenciados, palancas,
+alcantarillas, ladders, puertas simples y el soporte de sprites de monsters.
+
+Validacion de este checkpoint:
+
+- `cliente3d/pruebas/test_formas_render.tscn`: 0 fallas.
+- `cliente3d/pruebas/prueba_battle_list.tscn`: pasa el filtrado, resize y
+  ataque por click.
+- Cliente grafico `TVP3D (DEBUG)`: relanzado correctamente.
+
+Pendientes visuales para la proxima sesion: seguir calibrando la altura y
+proporcion exterior de edificios/montañas, revisar casos especiales de
+muros interiores y continuar las pruebas reales de combate y proximity chat
+con dos clientes conectados.

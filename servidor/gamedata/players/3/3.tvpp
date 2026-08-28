@@ -3,32 +3,32 @@
 
 ID = 3
 Name = "Guuille"
-Town = 1
+Town = 2
 Group = 1
 Skull = 0
 Sex = 0
 PlayerKillerEnd = 0
 BankBalance = 0
 Blessings = 0
-LastLoginSaved = 1787831800
-LastLogout = 1787833009
-Position = [32298,32263,7]
+LastLoginSaved = 1787908583
+LastLogout = 1787909696
+Position = [32330,31793,8]
 DefaultOutfit = (128, 78-106-58-95)
 
-Level = 95
-Experience = 13574433
-Health = 226
-MaxHealth = 620
-Mana = 1018
-MaxMana = 2820
-ManaSpent = 248832730
-MagicLevel = 148
+Level = 93
+Experience = 12625590
+Health = 571
+MaxHealth = 610
+Mana = 2660
+MaxMana = 2760
+ManaSpent = 343233753
+MagicLevel = 147
 Soul = 200
-Capacity = 35000
+Capacity = 132000
 Vocation = 5
 Stamina = 2520
 
-Skill = (0, 10, 0)
+Skill = (0, 11, 1)
 Skill = (2, 10, 0)
 Skill = (1, 10, 0)
 Skill = (3, 10, 0)
@@ -36,7 +36,6 @@ Skill = (4, 10, 0)
 Skill = (5, 10, 0)
 Skill = (6, 10, 0)
 
-Condition = (1024,-1,33000,0,0,0,0,0,0,-1)
 Spells = {"antidote","light healing","energybomb","magic wall","ultimate light","fire field","strong haste","levitate","magic rope","energy strike","flame strike","haste","ultimate explosion"}
 
 QuestValues = {}
@@ -47,10 +46,7 @@ Murders = {}
 
 VIP = ()
 
-Backpack = (1988 Content={1988 Content={2261 Charges=4, 2262 Charges=3, 2265 Charges=4, 2266 Charges=4, 2268 Charges=4, 2273 Charges=4, 2277 Charges=4, 2278 Charges=4, 2279 Charges=4, 2285 Charges=3, 2286 Charges=4, 2287 Charges=4, 2289 Charges=4, 2290 Charges=4}, 1988 Content={2291 Charges=4, 2292 Charges=4, 2301 Charges=4, 2302 Charges=4, 2303 Charges=4, 2304 Charges=3, 2308 Charges=4, 2310 Charges=4, 2311 Charges=4, 2313 Charges=4, 2316 Charges=4}, 2160 Amount=1, 2168, 2148 Amount=10, 2260, 2006 FluidType=10})
-Right = (2152 Amount=9)
-Left = (2152 Amount=77)
-Ammo = (2789 Amount=95)
 
 
 Depot = (1, {2594 Content={2650}})
+Depot = (2, {2594 Content={}})
