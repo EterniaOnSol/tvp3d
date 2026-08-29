@@ -1,8 +1,8 @@
 # Estado: qa
 
-Estado: LISTO_PARA_REVISION
-Ultimo agente: claude
-Ultima actualizacion: 2026-08-29T09:10:00-06:00
+Estado: BLOQUEADO
+Ultimo agente: codex
+Ultima actualizacion: 2026-08-29T09:53:58-06:00
 Contrato publicado: SI
 
 ## Depende de
@@ -79,6 +79,16 @@ Probar contratos, recorridos completos, concurrencia, fixtures y regresiones.
   ratas salvajes y restos de corridas viejas.
 - `prueba_estado_criatura_ui` adoptada en `matriz_qa_local.gd`, que termina
   11/11 OK.
+- La matriz local incorpora los self-tests de estado de criatura y mapa 7.72;
+  termina 13/13 OK con codigo cero.
+- Dos corridas vivas posteriores a `protocolo-red` 1.2.0 confirmaron muerte,
+  logout `0x14`, cierre de sesion, reingreso vivo y corpse `dead rat` abierto
+  con loot real (`cheese x1` y `gold coin x3`). La carrera de muerte queda
+  cerrada.
+- `pila: ?` queda corregido como diagnostico: no falta un nombre de assets. El
+  `0x64` vivo deja al jugador fuera de `mi_pos` y reinterpreta bytes siguientes
+  como ids imposibles. La prueba conserva el detalle y no acusa al servidor de
+  omitir un corpse cuando `mapa_alineado` es falso.
 
 ## Falta
 
@@ -86,22 +96,18 @@ Probar contratos, recorridos completos, concurrencia, fixtures y regresiones.
   legacy disponible.
 - Repetir la checklist desde un clon limpio para la prueba de entrega.
 - Probar trade y VIP con dos clientes reales.
-- Volver a correr la prueba completa en verde cuando `protocolo-red` cierre la
-  carrera de la senal de muerte.
+- Volver a correr la prueba completa en verde cuando `protocolo-red` corrija
+  la alineacion del mapa inicial vivo.
 
 ## Bloqueos activos
 
-- SOLICITUD A `protocolo-red` (ruta suya, `cliente3d/red/`): la muerte no se
-  emite cuando el golpe mortal y la restauracion de `Player::death` caen en el
-  mismo tick. La regla actual exige un `0xA0` con vida cero y ese paquete
-  puede no existir nunca: el cliente ve la vida ya restaurada y descarta la
-  muerte. Tres corridas completas seguidas del 2026-08-29 fallaron ahi, con el
-  corpse `dead human` y el `You are dead.` del servidor en el mismo log. La
-  corrida completa NO termina en verde por esto.
-- En una corrida el corpse del rat llego como item sin nombre resoluble
-  (`pila: ?`) y la prueba no lo reconocio. Con `--solo-loot` el mismo recorrido
-  pasa, asi que el hueco parece estar en el nombre de alguna etapa de
-  descomposicion; es dato de `assets`.
+- SOLICITUD A `protocolo-red` (ruta suya, `cliente3d/red/`): el self-test
+  sintetico de mapa pasa, pero el `0x64` real queda desalineado. Tres sesiones
+  independientes dejaron al jugador fuera de `mi_pos`; el primer falso item
+  aparecio casi al final de `z=0` en `(32097,32155,0)` con cid 0, seguido por
+  ids como `10`, `38560`, `38400` y `41316`. Son bytes posteriores al mapa
+  reinterpretados. Corregir el cierre/salto real y agregar esta captura como
+  regresion antes de declarar la prueba viva verde.
 - La prueba manual de puertas y runas sigue pendiente; la prueba automatizada
   del life ring ya pasa contra el servidor reconstruido.
 - El cambio de reacquisicion de monstruos en C++ requiere reconstruccion y
@@ -119,6 +125,7 @@ Probar contratos, recorridos completos, concurrencia, fixtures y regresiones.
 | El duelo ocurre siempre en la misma casilla de campo | Es la unica comprobada fuera de zona de proteccion, y asi la corrida no depende de donde quedo nadie | si |
 | La mitad de corpse y loot se hace siempre en `32082,32145,6` | Es una casilla comprobada fuera de zona de proteccion, asi la media prueba se repite sin depender de donde quedo nadie | si |
 | El monstruo del corpse se remata con `/killall` si el cuerpo a cuerpo tarda | El personaje god es nivel 1 y la prueba mide corpse y loot, no el ritmo de combate | si |
+| Una pila solo certifica un corpse si `mapa_alineado` es verdadero | Sin el jugador en `mi_pos`, los indices y objetos locales no representan el paquete del servidor | no |
 
 ## Notas para quien retome
 
@@ -133,6 +140,9 @@ Probar contratos, recorridos completos, concurrencia, fixtures y regresiones.
   completas, asi que Valentino quedo varios niveles abajo.
 - Para probar la precondicion sin costo se usa `--solo-campo`. Solo la corrida
   completa mata al personaje.
+- En este turno se ejecutaron dos corridas completas adicionales con permiso
+  explicito del usuario; ambas terminaron con dos fallas de alineacion, no de
+  muerte ni de loot.
 - Si una corrida se cuelga y se la mata a mano, conviene esperar antes de la
   siguiente: el servidor todavia considera conectado al personaje y
   `Ban::acceptConnection` cuenta las conexiones de la IP.

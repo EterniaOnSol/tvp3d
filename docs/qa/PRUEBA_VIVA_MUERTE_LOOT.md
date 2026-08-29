@@ -232,3 +232,47 @@ La mitad de corpse y loot nunca tuvo esta precondicion y se repite sola con
 Para restaurar el personaje sin tocar el juego a mano estan la semilla
 `servidor/docker/data/02-data.sql` y los archivos `servidor/gamedata/players/`
 versionados en el repositorio.
+
+## Correccion compensatoria: corrida viva posterior
+
+La evidencia posterior invalida dos inferencias de la seccion historica
+"Lo que destapo el duelo repetible"; se conserva arriba para no borrar la
+historia del diagnostico.
+
+Primero, `protocolo-red` 1.2.0 cerro la carrera de muerte. La retirada `0x6C`
+se reconoce por `mi_id` **o** por la casilla autoritativa `mi_pos`, siempre con
+vida cero. Dos corridas independientes confirmaron muerte, logout `0x14`,
+cierre de sesion y reingreso vivo:
+
+```text
+[srv] You lose 140 hitpoints due to an attack by a demon.
+MUERTE confirmada por el servidor en (32081, 32145, 6).
+  OK  la muerte llega con vida autoritativa cero
+  OK  la muerte deja al jugador fuera del mundo
+El servidor corto la conexion despues del logout 0x14.
+Reingreso confirmado en (32369, 32241, 7) con vida 140.
+```
+
+Segundo, `pila: ?` no era una etapa de corpse sin nombre. La auditoria de
+assets cruzo 114 corpse roots y 307 etapas `decayto`; para el rat la cadena es
+server `2813 -> 2814 -> 2815 -> 0`, client `3994 -> 3995 -> 3996`, siempre
+`dead rat`.
+
+La instrumentacion viva encontro el fallo antes del corpse: al terminar el
+`0x64`, el jugador no aparece en `mi_pos` y los bytes siguientes se leen como
+client ids imposibles. Dos corridas y el diagnostico aislado reprodujeron:
+
+```text
+MAPA DESALINEADO GOD VALENTINO:
+  mi_pos=(32082,32146,6)
+  items_sin_catalogo=19
+  cids_sin_catalogo=[0,10,38560,38400,41316]
+  primer_item={donde=(32097,32155,0), cid=0}
+```
+
+Los ids cambian segun los mensajes posteriores al mapa, por lo que son
+payload/opcodes reinterpretados y no items reales. Aun con esa deuda, ambas
+corridas mataron un rat, recibieron `dead rat`, abrieron el corpse y leyeron
+loot real (`cheese x1` y `gold coin x3`). La prueba ahora falla como mapa
+desalineado y conserva los ids diagnosticos; ya no acusa al servidor de omitir
+un corpse cuando la pila local no es certificable.

@@ -1,6 +1,6 @@
 # Contrato: qa
 
-Version: 1.0.0
+Version: 1.1.0
 Estado: PUBLICADO
 Propietario: qa
 Depende de: assets, protocolo-red
@@ -47,3 +47,17 @@ diferencias y 1 criatura ignorada.
 ## Compatibilidad
 
 El reporte es adicional y no altera `EstadoMundo`, el IR ni el protocolo.
+
+## Certificacion viva de muerte y corpse
+
+La prueba `pruebas/prueba_muerte_loot_vivo.tscn` solo puede afirmar que falta
+un corpse en una casilla si `EstadoMundo.mapa_alineado` sigue verdadero. Si el
+jugador no aparece en su propia casilla despues del `0x64`, la pila local no es
+evidencia del contenido que mando el servidor: la prueba debe fallar como mapa
+desalineado y conservar `items_sin_catalogo`, `cids_sin_catalogo` y el primer
+item imposible, sin atribuir el fallo al nombre o a `Creature::dropCorpse`.
+
+La matriz local ejecuta tambien los self-tests de estado de criatura y mapa
+7.72. Estos prueban paquetes sinteticos; una corrida viva sigue siendo
+obligatoria para certificar que los saltos del servidor real terminan en la
+misma casilla y consumen exactamente el `0x64`.

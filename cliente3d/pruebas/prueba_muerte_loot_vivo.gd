@@ -121,6 +121,9 @@ var _solo_loot := false
 ## de que mate a nadie. Repetible sin costarle un nivel al personaje.
 var _solo_campo := false
 var _intentos_invocar := 0
+## Evidencia de mapas que no conservan al jugador en su propia casilla. Una
+## pila desalineada no sirve para afirmar que el servidor omitio un corpse.
+var _mapas_desalineados: Array = []
 
 
 func _ready() -> void:
@@ -245,6 +248,8 @@ func _entrar_al_mundo(personaje: String) -> void:
 	_estado.entramos.connect(_al_entramos)
 	_estado.rechazados.connect(func(motivo): _error("Rechazado: " + motivo))
 	_estado.jugador_muerto.connect(_al_morir)
+	_estado.mapa_desalineado.connect(func(detalle):
+		_registrar_mapa_desalineado(personaje, detalle))
 	_estado.casilla_actualizada.connect(_al_casilla)
 	_estado.contenedor_actualizado.connect(_al_contenedor)
 	_estado.mensaje_servidor.connect(func(texto): print("  [srv] ", texto))
@@ -319,6 +324,8 @@ func _abrir_sesion_god() -> void:
 	_estado_god.rechazados.connect(func(motivo):
 		_error("El god fue rechazado: " + motivo))
 	_estado_god.mensaje_servidor.connect(func(texto): print("  [god] ", texto))
+	_estado_god.mapa_desalineado.connect(func(detalle):
+		_registrar_mapa_desalineado(PERSONAJE_GOD, detalle))
 	_con_god = CONEXION.new()
 	add_child(_con_god)
 	_estado_god.pedido_ping.connect(func():
@@ -551,8 +558,12 @@ func _al_morir(posicion: Vector3i) -> void:
 		int(_estado.estadisticas.get("vida", -1)) == 0)
 	_comprobar("la muerte deja al jugador fuera del mundo",
 		not _estado.adentro)
-	_comprobar("el servidor dejo el corpse del jugador en su casilla",
-		not _corpse_jugador.is_empty())
+	if not _estado.mapa_alineado:
+		_comprobar("el mapa del personaje queda alineado para certificar su corpse",
+			false)
+	else:
+		_comprobar("el servidor dejo el corpse del jugador en su casilla",
+			not _corpse_jugador.is_empty())
 	_logout_enviado = true
 	_con.enviar_logout()
 
@@ -619,8 +630,12 @@ func _limpiar_y_invocar() -> void:
 					_con.enviar_hablar("/killall")
 					_paso = 2
 					return
-				_comprobar("la limpieza retira al %s invocado" % VERDUGO,
-					not _hay_criatura(VERDUGO))
+				if not _estado.mapa_alineado:
+					_comprobar("el mapa del god queda alineado para certificar la limpieza",
+						false)
+				else:
+					_comprobar("la limpieza retira al %s invocado" % VERDUGO,
+						not _hay_criatura(VERDUGO))
 			_ids_previos.clear()
 			for id in _estado.criaturas:
 				_ids_previos[int(id)] = true
@@ -793,6 +808,15 @@ func _comprobar(nombre: String, correcto: bool) -> void:
 	else:
 		print("  FAIL " + nombre)
 		_fallas += 1
+
+
+func _registrar_mapa_desalineado(personaje: String, detalle: Dictionary) -> void:
+	var evidencia := {
+		"personaje": personaje,
+		"detalle": detalle.duplicate(true),
+	}
+	_mapas_desalineados.append(evidencia)
+	print("  MAPA DESALINEADO %s: %s" % [personaje, str(detalle)])
 
 
 func _error(texto: String) -> void:
