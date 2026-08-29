@@ -2,7 +2,7 @@
 
 Estado: LISTO_PARA_REVISION
 Ultimo agente: claude
-Ultima actualizacion: 2026-08-29T07:45:00-06:00
+Ultima actualizacion: 2026-08-29T12:30:00-06:00
 Contrato publicado: SI
 
 ## Depende de
@@ -49,6 +49,16 @@ Construir la experiencia jugable 3D y mostrar solo estado confirmado.
   con el texto de la tabla como tooltip.
 - La fila `Speed` de Skills muestra la velocidad confirmada de `mi_id`; antes
   leia un campo que el `0xA0` de 7.72 no manda y siempre valia cero.
+- Contrato 1.3.0: menu de criatura con las acciones de party. El boton derecho
+  del Battle List abre el menu, como en el cliente clasico; atacar y seguir
+  siguen ahi dentro.
+- Que se ofrece sale solo de los escudos confirmados: invitar, unirse,
+  revocar, pasar liderazgo y salir, y nada sobre un monstruo, un NPC o uno
+  mismo. Elegir una accion manda su opcode y no cambia ningun escudo: eso lo
+  confirma el servidor con el `0x91`.
+- La experiencia compartida no se ofrece; el cliente 7.72 no tenia ese boton.
+- `pruebas/prueba_party_ui.tscn`: 14 comprobaciones en verde, una por cada
+  combinacion de escudos y una que verifica que mandar no adelanta estado.
 - `pruebas/prueba_estado_criatura_ui.tscn`: 20 comprobaciones en verde,
   incluidos los cambios `0x90`, `0x91` y `0x8F` en vivo y el valor desconocido
   que se oculta.
@@ -62,9 +72,11 @@ Construir la experiencia jugable 3D y mostrar solo estado confirmado.
 - Representar la calavera y el escudo tambien sobre la criatura en el mundo 3D.
   Hoy no hay placa de nombre flotante en `mundo3d.gd`, asi que ese trabajo es
   otro turno.
-- Solicitud a `qa` (ruta suya): adoptar `prueba_estado_criatura_ui` en
-  `matriz_qa_local.gd` y marcar en `docs/qa/PARIDAD_772_2026-08-29.md` que el
-  punto 1 del orden verificable quedo cubierto en Battle, Target y Skills.
+- Solicitud a `qa` (ruta suya): adoptar `prueba_party_ui` en
+  `matriz_qa_local.gd` y hacer la prueba viva de party con dos clientes,
+  mirando los escudos de los dos lados; es lo unico observable.
+- Ver el menu de party en una ventana real: hasta ahora solo se comprobo
+  headless, que no dibuja el popup.
 
 ## Bloqueos activos
 
@@ -80,6 +92,9 @@ Construir la experiencia jugable 3D y mostrar solo estado confirmado.
 | La muerte manda el `0x14` de inmediato y no al pulsar el boton | `ProtocolGame::logout` ve al jugador ya removido y desconecta; dejar la sesion abierta mientras el jugador lee la pantalla no aporta nada | si |
 | El regreso al selector lo pide el jugador, no el cierre del socket | Si el cierre saltara solo al login, la muerte pasaria sin que el jugador la vea | si |
 | `_nueva_conexion()` como unico punto de creacion de la conexion | Permite probar muerte y reentrada headless sin abrir un socket real | si |
+| El boton derecho del Battle List abre un menu en vez de seguir de una | Es lo que hace el cliente clasico, y seguir sigue estando dentro del menu | si |
+| El menu de party se arma con los escudos y no con una lista propia | Esta rama no manda ningun paquete de party; inventar una lista seria estado que el servidor no confirmo | no |
+| La experiencia compartida no se ofrece en la interfaz | El cliente 7.72 no tenia ese boton; el transporte queda por si se decide agregarla | si |
 | La calavera y el escudo se dibujan por codigo, no con un sprite importado | Esta rama no tiene `Tibia.pic`, que es donde vive ese icono en el cliente 2D; inventar un PNG parecido seria peor que una forma propia con el color exacto de la tabla | si |
 | La velocidad solo se muestra del personaje propio | El cliente 7.72 no ensena la velocidad ajena en ningun panel; mostrarla del objetivo seria informacion que el juego original no da | si |
 | El texto de cada valor va en tooltip y en ingles | La pantalla es en ingles como Tibia, y el color solo no distingue una invitacion enviada de una recibida | si |

@@ -1,6 +1,6 @@
 # Contrato: cliente
 
-Version: 1.2.0
+Version: 1.3.0
 Estado: PUBLICADO
 Propietario: cliente
 Depende de: modelo-comun 1.0.0, protocolo-red 1.1.0, assets 1.3.0
@@ -158,6 +158,37 @@ Un valor fuera de la tabla se oculta y no se dibuja con un color aproximado.
 Un valor ausente vale cero, que tambien es sin marca. Un cambio de calavera o
 de escudo no reconstruye la fila del Battle List.
 
+## Menu de criatura y party
+
+El boton derecho sobre una fila del Battle List abre el menu de esa criatura,
+como en el cliente clasico. Atacar y seguir siguen estando ahi; lo que se
+agrega son las acciones de party.
+
+Que se ofrece sale **solo de los escudos confirmados** por el servidor, porque
+esta rama no manda ningun paquete de party (`protocolo-red` 1.4.0). El escudo
+propio dice si estamos en una y si somos lider; el del otro dice que relacion
+tiene con nosotros:
+
+| Escudo del otro | Escudo propio | Accion ofrecida |
+|---:|---|---|
+| 0 | sin party, o lider | `Invite to Party` (`0xA3`) |
+| 1 | cualquiera | `Join Party` (`0xA4`) |
+| 2 | cualquiera | `Revoke Invitation` (`0xA5`) |
+| 3 | lider | `Pass Leadership` (`0xA6`) |
+| 4 | cualquiera | ninguna sobre el lider |
+| — | en una party | `Leave Party` (`0xA7`) |
+
+Solo se ofrece party sobre un jugador: los ids de monstruo y de NPC quedan
+fuera (`player.cpp:34`, `monster.cpp:18`, `npc.cpp:16`), y uno no se invita a
+si mismo.
+
+Elegir una accion envia su opcode y nada mas. La interfaz **no** se adelanta al
+resultado: ningun escudo cambia hasta que el servidor lo confirme por `0x91`.
+Si el servidor rechaza la accion, lo dice por `0xB4` como cualquier otra.
+
+La experiencia compartida (`0xA8`) no se ofrece: el cliente 7.72 no tenia ese
+boton. El transporte existe si alguna vez se decide agregarla.
+
 ## Pruebas de cierre
 
 - La escena arranca sin renderer con `--headless` y no produce errores de
@@ -177,3 +208,7 @@ de escudo no reconstruye la fila del Battle List.
   marca, y un valor desconocido se oculta.
 - `Speed` de la ventana Skills muestra la velocidad confirmada de `mi_id` y la
   cambia al recibir un `0x8F`.
+- El menu de una criatura ofrece exactamente las acciones de party que
+  permiten los escudos confirmados, y ninguna sobre un monstruo, un NPC o uno
+  mismo.
+- Elegir una accion de party envia su opcode y no cambia ningun escudo.

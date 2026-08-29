@@ -18,6 +18,11 @@ const IDS_MONEDAS_SERVIDOR := {
 }
 const ARCHIVO_NOMBRES_CRIATURAS := "res://assets/monster_names772.json"
 const SLOT_ANILLO := 9
+# El servidor reparte los ids por rango: jugadores desde 0x10000000, monstruos
+# desde 0x40000000 y NPC desde 0x80000000 (player.cpp:34, monster.cpp:18,
+# npc.cpp:16). Solo a un jugador se lo puede invitar a una party.
+const ID_MINIMO_JUGADOR := 0x10000000
+const ID_MINIMO_MONSTRUO := 0x40000000
 # El mapa 7.72 que entrega el servidor mide 18x14 casillas: desde 8 al
 # oeste/norte hasta 9 al este y 7 al sur respecto del personaje.
 const VISTA_X_ANTES := 8
@@ -74,6 +79,7 @@ var _battle_rows: Dictionary = {}
 var _battle_name_labels: Dictionary = {}
 var _battle_health_bars: Dictionary = {}
 var _battle_marcas: Dictionary = {}
+var _menu_criatura: PopupMenu
 var _battle_ids: Array = []
 var _battle_anim_tiempo := 0.0
 var _stash_window
@@ -1261,9 +1267,9 @@ func _agregar_fila_battle(id: int, criatura: Dictionary) -> void:
 	fila.custom_minimum_size.y = 40
 	fila.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 	fila.clip_contents = false
-	fila.tooltip_text = "Left click: talk  |  Right click: follow" \
+	fila.tooltip_text = "Left click: talk  |  Right click: menu" \
 		if _mundo != null and _mundo.has_method("es_npc") and _mundo.es_npc(id) \
-		else "Left click: attack  |  Right click: follow"
+		else "Left click: attack  |  Right click: menu"
 	fila.gui_input.connect(func(evento): _input_battle(evento, id))
 	_battle_rows[id] = fila
 	_aplicar_estilo_fila_battle(fila, id)
@@ -1409,6 +1415,117 @@ func _aplicar_estilo_fila_battle(fila: Button, id: int) -> void:
 		_estilo_fila_battle(seleccionada))
 
 
+# --------------------------------------------------------------------
+#  Menu de criatura y party
+#
+#  Este servidor no manda ningun paquete de party: lo unico que llega es el
+#  escudo de cada criatura por el `0x91`. La party, entonces, se lee de los
+#  escudos confirmados (`protocolo-red` 1.4.0) y nunca de una lista propia.
+# --------------------------------------------------------------------
+func es_jugador(id: int) -> bool:
+	return id >= ID_MINIMO_JUGADOR and id < ID_MINIMO_MONSTRUO
+
+
+func _escudo_de(id: int) -> int:
+	return int(_estado.criaturas.get(id, {}).get("escudo_party", 0))
+
+
+func acciones_de_criatura(id: int) -> Array:
+	"""Que se le puede hacer a esta criatura, segun el estado confirmado.
+
+	Devuelve pares `[accion, texto]`. Se expone para que la regresion pueda
+	comprobar el menu sin abrir una ventana."""
+	var acciones: Array = [["atacar", "Attack"], ["seguir", "Follow"]]
+	if not es_jugador(id) or id == _estado.mi_id:
+		return acciones
+	var suyo := _escudo_de(id)
+	var mio := _escudo_de(_estado.mi_id)
+	var en_party := mio == 3 or mio == 4
+	var soy_lider := mio == 4
+	match suyo:
+		1:
+			# Nos invito: unirse es entrar a SU party.
+			acciones.append(["unirse", "Join Party"])
+		2:
+			# Lo invitamos nosotros y todavia no acepto.
+			acciones.append(["revocar", "Revoke Invitation"])
+		3:
+			if soy_lider:
+				acciones.append(["liderazgo", "Pass Leadership"])
+		4:
+			pass   # es el lider de nuestra party; no hay accion sobre el
+		_:
+			if not en_party or soy_lider:
+				acciones.append(["invitar", "Invite to Party"])
+	if en_party:
+		acciones.append(["salir", "Leave Party"])
+	return acciones
+
+
+func _abrir_menu_criatura(id: int, donde: Vector2) -> void:
+	var acciones := acciones_de_criatura(id)
+	if _menu_criatura == null:
+		_menu_criatura = PopupMenu.new()
+		_root.add_child(_menu_criatura)
+	_menu_criatura.clear()
+	if _menu_criatura.id_pressed.is_connected(_al_menu_criatura):
+		_menu_criatura.id_pressed.disconnect(_al_menu_criatura)
+	_menu_criatura.id_pressed.connect(_al_menu_criatura.bind(id))
+	var indice := 0
+	for accion in acciones:
+		if accion[0] == "invitar" or accion[0] == "unirse" \
+				or accion[0] == "salir":
+			_menu_criatura.add_separator()
+		_menu_criatura.add_item(str(accion[1]), indice)
+		indice += 1
+	_menu_criatura.set_meta("acciones", acciones)
+	_menu_criatura.position = Vector2i(donde)
+	_menu_criatura.reset_size()
+	_menu_criatura.popup()
+
+
+func _al_menu_criatura(indice: int, id: int) -> void:
+	var acciones: Array = _menu_criatura.get_meta("acciones", [])
+	if indice < 0 or indice >= acciones.size():
+		return
+	ejecutar_accion_criatura(str(acciones[indice][0]), id)
+
+
+func ejecutar_accion_criatura(accion: String, id: int) -> void:
+	"""Manda la intencion y nada mas: el resultado lo confirma el servidor con
+	los escudos, y hasta entonces la interfaz no cambia de estado."""
+	var con = _mundo._con if _mundo != null else null
+	match accion:
+		"atacar":
+			_seleccionar_objetivo(id, false)
+			return
+		"seguir":
+			_seleccionar_objetivo(id, true)
+			return
+	if con == null:
+		return
+	match accion:
+		"invitar":
+			con.enviar_invitar_a_party(id)
+			_anotar("Inviting %s to your party." % _nombre_de(id))
+		"unirse":
+			con.enviar_unirse_a_party(id)
+			_anotar("Joining the party of %s." % _nombre_de(id))
+		"revocar":
+			con.enviar_revocar_invitacion_party(id)
+			_anotar("Revoking the invitation of %s." % _nombre_de(id))
+		"liderazgo":
+			con.enviar_pasar_liderazgo_party(id)
+			_anotar("Passing the party leadership to %s." % _nombre_de(id))
+		"salir":
+			con.enviar_salir_de_party()
+			_anotar("Leaving the party.")
+
+
+func _nombre_de(id: int) -> String:
+	return _nombre_criatura(id, _estado.criaturas.get(id, {}))
+
+
 func _actualizar_seleccion_battle() -> void:
 	for id in _battle_rows:
 		var fila: Button = _battle_rows[id]
@@ -1469,7 +1586,9 @@ func _input_battle(evento: InputEvent, id: int) -> void:
 		_seleccionar_objetivo(id, false)
 		get_viewport().set_input_as_handled()
 	elif evento.button_index == MOUSE_BUTTON_RIGHT:
-		_seleccionar_objetivo(id, true)
+		# Como en el cliente clasico, el boton derecho sobre una fila del
+		# Battle abre el menu de la criatura. Seguirla sigue estando ahi.
+		_abrir_menu_criatura(id, evento.global_position)
 		get_viewport().set_input_as_handled()
 
 
