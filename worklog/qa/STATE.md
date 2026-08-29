@@ -2,7 +2,7 @@
 
 Estado: LISTO_PARA_REVISION
 Ultimo agente: claude
-Ultima actualizacion: 2026-08-29T10:36:00-06:00
+Ultima actualizacion: 2026-08-29T13:30:00-06:00
 Contrato publicado: SI
 
 ## Depende de
@@ -119,25 +119,22 @@ Probar contratos, recorridos completos, concurrencia, fixtures y regresiones.
 - Completar matriz de red de todos los recorridos y errores contra un servidor
   legacy disponible.
 - Repetir la checklist desde un clon limpio para la prueba de entrega.
-- Volver a correr la prueba completa en verde cuando `protocolo-red` corrija
-  la alineacion del mapa inicial vivo.
-- Publicar desde `protocolo-red` el iniciador saliente de trade `0x7D` y
-  conectarlo a una interaccion de produccion. QA certifico el payload y la
-  transferencia, pero `Conexion772` solo expone aceptar/cancelar/mirar.
+- Conectar el `0x7D` saliente a una interaccion de produccion: el metodo ya
+  esta publicado y la prueba lo usa, pero la interfaz todavia no ofrece
+  iniciar un trade.
+- En la prueba viva de muerte, el unico fallo que queda es la limpieza del
+  demon con `/killall`, que solo alcanza el cuadro alrededor de quien lo dice.
 
 ## Bloqueos activos
 
-- SOLICITUD A `protocolo-red` (ruta suya, `cliente3d/red/`): el self-test
-  sintetico de mapa pasa, pero el `0x64` real queda desalineado. Tres sesiones
-  independientes dejaron al jugador fuera de `mi_pos`; el primer falso item
-  aparecio casi al final de `z=0` en `(32097,32155,0)` con cid 0, seguido por
-  ids como `10`, `38560`, `38400` y `41316`. Son bytes posteriores al mapa
-  reinterpretados. Corregir el cierre/salto real y agregar esta captura como
-  regresion antes de declarar la prueba viva verde.
-- SOLICITUD A `protocolo-red`: agregar a `Conexion772` un metodo de solicitud
-  de trade con `position + client id + stackpos + player id` (opcode `0x7D`)
-  y entregarlo al carril cliente para la accion contextual. La prueba viva
-  tuvo que construir esos bytes dentro de QA porque hoy no existe el metodo.
+- ATENDIDA el 2026-08-29: el `0x64` desalineado. `protocolo-red` 1.3.0
+  encontro la causa con el OTBM como oraculo —una casilla que existe y se
+  describe con cero bytes deja dos marcas pegadas— y dejo la captura real como
+  regresion. El mapa vivo del campo entrega ahora las 356 casillas que dice el
+  OTBM, con el jugador en la suya.
+- ATENDIDA el 2026-08-29: el `0x7D` saliente. `protocolo-red` 1.5.0 lo publico
+  con el atajo de inventario y la prueba viva ya lo usa en vez de armar los
+  bytes. Queda para `cliente` ofrecerlo como accion en el menu de criatura.
 - La prueba manual de puertas y runas sigue pendiente; la prueba automatizada
   del life ring ya pasa contra el servidor reconstruido.
 - El cambio de reacquisicion de monstruos en C++ requiere reconstruccion y
