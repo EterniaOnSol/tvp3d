@@ -2,7 +2,7 @@
 
 Estado: LISTO_PARA_REVISION
 Ultimo agente: claude
-Ultima actualizacion: 2026-08-29T12:00:00-06:00
+Ultima actualizacion: 2026-08-29T13:15:00-06:00
 Contrato publicado: SI
 
 ## Depende de
@@ -81,6 +81,11 @@ Definir y probar framing, version, mensajes, errores y compatibilidad de red.
   sin inventarla ni desalinear el mensaje siguiente.
 - Comprobado en vivo que el servidor acepta `0xA7` y `0xA8` sin cortar la
   sesion: despues de mandarlos, el mapa del teleport llega alineado.
+- Contrato 1.5.0: el `0x7D` saliente de comercio, que `qa` armaba a mano en su
+  prueba viva. Se publica junto con el atajo de inventario `(0xFFFF, ranura,
+  0)`, y sin `player_id` valido no se manda nada.
+- `red/comercio_self_test.gd`: 7 comprobaciones con bytes exactos de `0x7D` a
+  `0x80`, incluidas las dos formas de direccionar un objeto.
 - La prueba viva completa quedo en un solo fallo, y es de otro carril: la
   limpieza del demon con `/killall`. El corpse del jugador, que fallaba antes,
   ahora pasa.

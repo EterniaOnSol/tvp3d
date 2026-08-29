@@ -1,6 +1,6 @@
 # Contrato: protocolo-red
 
-Version: 1.4.0
+Version: 1.5.0
 Estado: PUBLICADO
 Propietario: protocolo-red
 Depende de: modelo-comun 1.0.0
@@ -169,6 +169,29 @@ La muerte se emite una sola vez por sesion: si el jugador ya esta fuera del
 mundo, un `0x6C` posterior en la misma casilla no vuelve a emitirla. Este
 adaptador solo emite el evento y marca al jugador fuera del mundo; cerrar la
 conexion y presentar la UI corresponden al consumidor.
+
+### Comercio entre jugadores
+
+Las cuatro ordenes del cliente, con los payloads de
+`ProtocolGame::parseRequestTrade` y `parseLookInTrade`
+(`protocolgame.cpp:511-514` y `1000-1015`):
+
+| Opcode | Orden | Payload |
+|---:|---|---|
+| `0x7D` | Ofrecer un objeto a otro jugador | `posicion`, `client_id uint16`, `stackpos uint8`, `player_id uint32` |
+| `0x7E` | Mirar un objeto de la ventana | `contraparte uint8` (1 la del otro), `indice uint8` |
+| `0x7F` | Aceptar la oferta | sin payload |
+| `0x80` | Cerrar el comercio | sin payload |
+
+El equipo se direcciona con la posicion `(0xFFFF, ranura, 0)` y `stackpos` 0,
+que es como Tibia nombra el inventario en todos los mensajes de objeto. Sin un
+`player_id` valido no se envia nada.
+
+Quien decide si el objeto se puede ofrecer, si hay distancia y si la otra parte
+acepta es el servidor. El cliente transporta la intencion y dibuja lo que
+vuelve por `0x7D`-`0x80`.
+
+Self-test con los bytes exactos en `red/comercio_self_test.gd`.
 
 ### Party
 

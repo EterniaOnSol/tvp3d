@@ -444,6 +444,34 @@ func enviar_subir_contenedor(id_contenedor: int) -> void:
 	enviar_juego(PackedByteArray([0x88, id_contenedor & 0xFF]))
 
 
+func enviar_solicitar_comercio(origen: Vector3i, client_id: int,
+		stackpos: int, id_jugador: int) -> void:
+	"""Ofrece un objeto a otro jugador (0x7D).
+
+	`ProtocolGame::parseRequestTrade` (protocolgame.cpp:1000-1009) lee posicion,
+	client id, stackpos y el id del jugador, en ese orden. Quien decide si el
+	objeto se puede ofrecer, si hay distancia y si el otro acepta es el
+	servidor: esto solo transporta la intencion."""
+	if id_jugador <= 0:
+		return
+	enviar_juego(PackedByteArray([0x7D,
+		origen.x & 0xFF, (origen.x >> 8) & 0xFF,
+		origen.y & 0xFF, (origen.y >> 8) & 0xFF,
+		origen.z & 0xFF,
+		client_id & 0xFF, (client_id >> 8) & 0xFF,
+		stackpos & 0xFF,
+		id_jugador & 0xFF, (id_jugador >> 8) & 0xFF,
+		(id_jugador >> 16) & 0xFF, (id_jugador >> 24) & 0xFF]))
+
+
+func enviar_solicitar_comercio_inventario(ranura: int, client_id: int,
+		id_jugador: int) -> void:
+	"""Ofrece un objeto del equipo, con la posicion (0xFFFF, ranura, 0) que usa
+	Tibia para el inventario."""
+	enviar_solicitar_comercio(Vector3i(0xFFFF, ranura, 0), client_id, 0,
+		id_jugador)
+
+
 func enviar_aceptar_comercio() -> void:
 	"""Acepta la oferta actual del comercio jugador-a-jugador (0x7F)."""
 	enviar_juego(PackedByteArray([0x7F]))
