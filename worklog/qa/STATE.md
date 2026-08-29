@@ -1,7 +1,7 @@
 # Estado: qa
 
 Estado: LISTO_PARA_REVISION
-Ultimo agente: codex
+Ultimo agente: claude
 Ultima actualizacion: 2026-08-29T10:36:00-06:00
 Contrato publicado: SI
 
@@ -102,6 +102,15 @@ Probar contratos, recorridos completos, concurrencia, fixtures y regresiones.
   codigo 0, VIP y transferencia completos. La asociacion temporal a la cuenta
   de pruebas se restauro en `finally` y la prueba queda parametrizada sin
   imprimir claves.
+
+- Party viva con dos clientes: `pruebas/prueba_party_viva.tscn` recorrio
+  invitar, unirse, pasar liderazgo y salir contra el servidor, y los escudos
+  de las dos sesiones contaron la misma party en cada paso. Ocho
+  comprobaciones en verde y codigo cero, sin costo para ningun personaje.
+- Evidencia y limites en `docs/qa/PRUEBA_VIVA_PARTY.md`; la fila de party de la
+  matriz global pasa a COMPROBADO.
+- La matriz local adopta `party_ui`, `party_protocolo` y `mapa_captura`, y
+  termina 16/16 OK.
 
 ## Falta
 

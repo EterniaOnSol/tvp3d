@@ -41,6 +41,21 @@ func _init() -> void:
 				"pruebas/prueba_estado_criatura_ui.tscn"]),
 		},
 		{
+			"nombre": "party_ui",
+			"argumentos": PackedStringArray(["--headless", "--path", _raiz(),
+				"pruebas/prueba_party_ui.tscn"]),
+		},
+		{
+			"nombre": "party_protocolo",
+			"argumentos": PackedStringArray(["--headless", "--path", _raiz(),
+				"--script", "red/party_self_test.gd"]),
+		},
+		{
+			"nombre": "mapa_captura",
+			"argumentos": PackedStringArray(["--headless", "--path", _raiz(),
+				"--script", "red/mapa_captura_self_test.gd"]),
+		},
+		{
 			"nombre": "estado_criatura_protocolo",
 			"argumentos": PackedStringArray(["--headless", "--path", _raiz(),
 				"--script", "red/estado_criatura_self_test.gd"]),
