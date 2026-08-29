@@ -1,8 +1,8 @@
 # Estado: qa
 
-Estado: BLOQUEADO
+Estado: LISTO_PARA_REVISION
 Ultimo agente: codex
-Ultima actualizacion: 2026-08-29T09:53:58-06:00
+Ultima actualizacion: 2026-08-29T10:36:00-06:00
 Contrato publicado: SI
 
 ## Depende de
@@ -89,15 +89,30 @@ Probar contratos, recorridos completos, concurrencia, fixtures y regresiones.
   `0x64` vivo deja al jugador fuera de `mi_pos` y reinterpreta bytes siguientes
   como ids imposibles. La prueba conserva el detalle y no acusa al servidor de
   omitir un corpse cuando `mapa_alineado` es falso.
+- Prueba viva de VIP y trade ejecutada con dos sesiones reales. El god hizo
+  remove/add de Valentino por nombre, recibio GUID 2 offline, online al entrar
+  y offline al salir.
+- El trade vivo preparo dos server id 2006/client id 2874, recibio oferta
+  propia y contraparte en ambos clientes, acepto desde los dos sockets y
+  comprobo las actualizaciones de inventario de la transferencia. Corrida
+  final: codigo 0, 10 comprobaciones en verde.
+- Publicado `docs/qa/PRUEBA_VIVA_TRADE_VIP.md` y contrato QA 1.2.0 con el
+  comando, mutaciones, evidencia y limite de produccion encontrado.
+- Repetida la certificacion con `Son Goku` (GUID 16) desde su otra cuenta:
+  codigo 0, VIP y transferencia completos. La asociacion temporal a la cuenta
+  de pruebas se restauro en `finally` y la prueba queda parametrizada sin
+  imprimir claves.
 
 ## Falta
 
 - Completar matriz de red de todos los recorridos y errores contra un servidor
   legacy disponible.
 - Repetir la checklist desde un clon limpio para la prueba de entrega.
-- Probar trade y VIP con dos clientes reales.
 - Volver a correr la prueba completa en verde cuando `protocolo-red` corrija
   la alineacion del mapa inicial vivo.
+- Publicar desde `protocolo-red` el iniciador saliente de trade `0x7D` y
+  conectarlo a una interaccion de produccion. QA certifico el payload y la
+  transferencia, pero `Conexion772` solo expone aceptar/cancelar/mirar.
 
 ## Bloqueos activos
 
@@ -108,6 +123,10 @@ Probar contratos, recorridos completos, concurrencia, fixtures y regresiones.
   ids como `10`, `38560`, `38400` y `41316`. Son bytes posteriores al mapa
   reinterpretados. Corregir el cierre/salto real y agregar esta captura como
   regresion antes de declarar la prueba viva verde.
+- SOLICITUD A `protocolo-red`: agregar a `Conexion772` un metodo de solicitud
+  de trade con `position + client id + stackpos + player id` (opcode `0x7D`)
+  y entregarlo al carril cliente para la accion contextual. La prueba viva
+  tuvo que construir esos bytes dentro de QA porque hoy no existe el metodo.
 - La prueba manual de puertas y runas sigue pendiente; la prueba automatizada
   del life ring ya pasa contra el servidor reconstruido.
 - El cambio de reacquisicion de monstruos en C++ requiere reconstruccion y
@@ -126,6 +145,8 @@ Probar contratos, recorridos completos, concurrencia, fixtures y regresiones.
 | La mitad de corpse y loot se hace siempre en `32082,32145,6` | Es una casilla comprobada fuera de zona de proteccion, asi la media prueba se repite sin depender de donde quedo nadie | si |
 | El monstruo del corpse se remata con `/killall` si el cuerpo a cuerpo tarda | El personaje god es nivel 1 y la prueba mide corpse y loot, no el ritmo de combate | si |
 | Una pila solo certifica un corpse si `mapa_alineado` es verdadero | Sin el jugador en `mi_pos`, los indices y objetos locales no representan el paquete del servidor | no |
+| La prueba viva de trade normaliza las manos y usa dos server id 2006 | El servidor necesita dos ofertas reales para ejecutar `playerAcceptTrade`; el usuario autorizo alterar los personajes de prueba | si |
+| QA arma temporalmente el `0x7D` inicial | Permite certificar la autoridad sin invadir `cliente3d/red/`, reservado al otro agente; debe desaparecer cuando el carril publique el metodo | si |
 
 ## Notas para quien retome
 
@@ -150,3 +171,10 @@ Probar contratos, recorridos completos, concurrencia, fixtures y regresiones.
   mira por el socket de adentro de WSL y se arregla reiniciando Docker
   Desktop. El 2026-08-29 el contenedor `servidor-server-1` estaba caido y los
   puertos 7171/7172 seguian escuchando sin nadie detras.
+- `prueba_trade_vip_vivo.tscn` es mutante y no entra a la matriz local. Vaciar
+  slots ya vacios puede producir `Sorry, not possible.` antes del trade; esos
+  mensajes son precondicion esperada. Cualquier error durante oferta o
+  aceptacion si hace fallar la corrida.
+- El 2026-08-29 Son Goku estaba offline antes de la prueba. No se cambio su
+  clave: solo se cambio su asociacion de cuenta durante la corrida y se
+  restauro inmediatamente despues, aun ante fallo.

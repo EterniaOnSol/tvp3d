@@ -1,6 +1,6 @@
 # Contrato: qa
 
-Version: 1.1.0
+Version: 1.2.0
 Estado: PUBLICADO
 Propietario: qa
 Depende de: assets, protocolo-red
@@ -61,3 +61,30 @@ La matriz local ejecuta tambien los self-tests de estado de criatura y mapa
 7.72. Estos prueban paquetes sinteticos; una corrida viva sigue siendo
 obligatoria para certificar que los saltos del servidor real terminan en la
 misma casilla y consumen exactamente el `0x64`.
+
+## Certificacion viva de VIP y trade
+
+La prueba explicita es:
+
+```text
+Godot_v4.7.2-stable_win64_console.exe --headless --path cliente3d pruebas/prueba_trade_vip_vivo.tscn
+```
+
+Reglas:
+
+- Abre `GOD VALENTINO` y `Valentino` en dos sesiones simultaneas y mantiene
+  ambos sockets con el ping real del servidor.
+- Fuerza remove/add de VIP y exige la secuencia offline, online al entrar y
+  offline al salir, conservando el GUID que devuelve TVP.
+- Reune a los personajes por autoridad del servidor, prepara dos fluid
+  containers reales, envia oferta y contraoferta, acepta desde ambas sesiones
+  y exige las actualizaciones de inventario de la transferencia, no solo el
+  cierre `0x7F`.
+- Es una prueba viva mutante: mueve objetos y actualiza la lista VIP de los
+  personajes de prueba. No pertenece a la matriz local sin servidor.
+- El objetivo acepta `--personaje=<nombre>` y `--guid=<numero>`. Otra cuenta
+  puede darse con `--cuenta=<numero> --clave-env=<variable>`; la clave se lee
+  del entorno y no se escribe en argumentos, reportes ni logs.
+- Hasta que `protocolo-red` publique el iniciador saliente, la prueba arma el
+  `0x7D` exacto dentro de QA. Esto certifica servidor, parser y transferencia,
+  pero no declara utilizable la iniciacion desde la interfaz de produccion.
