@@ -60,6 +60,10 @@ signal texto_animado(posicion: Vector3i, color: int, texto: String)
 signal disparo_distancia(origen: Vector3i, destino: Vector3i, tipo: int)
 ## 0x86: cuadrado de color temporal sobre una criatura.
 signal cuadrado_criatura(id: int, color: int)
+## Estado visual/mecanico confirmado por AddCreature y 0x8D/0x8F/0x90/0x91.
+signal estado_criatura_actualizado(id: int, estado: Dictionary)
+## Esta rama no envia death dialog: muerte es 0x6C de mi_id con HP=0.
+signal jugador_muerto(posicion: Vector3i)
 ## El servidor cancelo el objetivo de combate (0xA3).
 signal objetivo_cancelado()
 signal voz_recibida(orador_id: int, trama: PackedByteArray)
@@ -258,10 +262,19 @@ func _leer_mensajes(msg) -> void:
 				hubo_cambio = true
 
 			0x6C:   # desaparecio algo (protocolgame.cpp:2357-2366)
+				if msg.sin_leer() < 7:
+					return
 				msg.leer_u8()
 				var donde_menos: Vector3i = msg.leer_posicion()
 				var pila: int = msg.leer_u8()
-				_sacar_de_casilla(donde_menos, pila)
+				var retirada: Dictionary = _sacar_de_casilla(donde_menos, pila)
+				if int(retirada.get("id", 0)) == mi_id \
+						and int(estadisticas.get("vida", 1)) <= 0:
+					# En Player::death las stats con HP=0 se envian antes de que
+					# Game::removeCreature quite al jugador. Una retirada con HP
+					# positivo puede ser teleport y no es una muerte.
+					adentro = false
+					jugador_muerto.emit(donde_menos)
 				casilla_actualizada.emit(donde_menos, 0x6C)
 				hubo_cambio = true
 
@@ -494,7 +507,16 @@ func _leer_mensajes(msg) -> void:
 					criaturas[id_vida]["vida"] = vida_porcentaje
 				hubo_cambio = true
 			0x8D:   # luz de una criatura
-				msg.saltar(1 + 4 + 1 + 1)
+				if msg.sin_leer() < 7:
+					return
+				msg.leer_u8()
+				var id_luz: int = msg.leer_u32()
+				var nivel_luz: int = msg.leer_u8()
+				var color_luz: int = msg.leer_u8()
+				hubo_cambio = _actualizar_estado_criatura(id_luz, {
+					"luz_nivel": nivel_luz,
+					"luz_color": color_luz,
+				}) or hubo_cambio
 			0x8E:   # una criatura cambio de aspecto (protocolgame.cpp:1225-1227)
 				msg.leer_u8()
 				var id_aspecto: int = msg.leer_u32()
@@ -505,11 +527,32 @@ func _leer_mensajes(msg) -> void:
 					criaturas[id_aspecto]["apariencia"] = aspecto_nuevo
 					hubo_cambio = true
 			0x8F:   # cambio de velocidad
-				msg.saltar(1 + 4 + 2)
+				if msg.sin_leer() < 7:
+					return
+				msg.leer_u8()
+				var id_velocidad: int = msg.leer_u32()
+				var velocidad: int = msg.leer_u16()
+				hubo_cambio = _actualizar_estado_criatura(id_velocidad, {
+					"velocidad": velocidad,
+				}) or hubo_cambio
 			0x90:   # calavera de una criatura
-				msg.saltar(1 + 4 + 1)
+				if msg.sin_leer() < 6:
+					return
+				msg.leer_u8()
+				var id_calavera: int = msg.leer_u32()
+				var calavera: int = msg.leer_u8()
+				hubo_cambio = _actualizar_estado_criatura(id_calavera, {
+					"calavera": calavera,
+				}) or hubo_cambio
 			0x91:   # escudo de party de una criatura
-				msg.saltar(1 + 4 + 1)
+				if msg.sin_leer() < 6:
+					return
+				msg.leer_u8()
+				var id_escudo: int = msg.leer_u32()
+				var escudo_party: int = msg.leer_u8()
+				hubo_cambio = _actualizar_estado_criatura(id_escudo, {
+					"escudo_party": escudo_party,
+				}) or hubo_cambio
 
 			# ---------------------------------------------------------
 			#  Nosotros
@@ -770,26 +813,42 @@ func _absorber(mundo: Dictionary) -> void:
 		casillas[donde] = mundo["casillas"][donde]
 	for bicho in mundo["criaturas"]:
 		var id: int = bicho["id"]
+		# 0x63 solo trae id y direccion. Una apariencia cero tambien puede
+		# pertenecer legitimamente a una criatura completa con lookTypeEx, por
+		# eso la ausencia de velocidad distingue el marcador corto sin adivinar.
+		var descripcion_corta: bool = not bicho.has("velocidad")
 		var nombre: String = bicho["nombre"]
 		if nombre == "" and criaturas.has(id):
 			nombre = criaturas[id]["nombre"]
 		var apariencia: int = bicho.get("apariencia", 0)
-		if apariencia == 0 and criaturas.has(id):
+		if descripcion_corta and criaturas.has(id):
 			# El caso corto (0x63) no manda el aspecto; se conserva el que ya
 			# sabiamos, si no la criatura desaparece al girar.
 			apariencia = criaturas[id]["apariencia"]
 		var vida := int(bicho.get("vida", 100))
-		if apariencia == 0 and criaturas.has(id):
+		if descripcion_corta and criaturas.has(id):
 			# Los mensajes cortos de criatura traen 100 como valor de relleno;
 			# no deben curar visualmente al monster mientras se mueve.
 			vida = int(criaturas[id].get("vida", vida))
+		var anterior: Dictionary = criaturas.get(id, {})
 		criaturas[id] = {
 			"pos": bicho["donde"],
 			"nombre": nombre,
 			"apariencia": apariencia,
 			"direccion": bicho.get("direccion", 2),
 			"vida": vida,
+			"luz_nivel": bicho.get("luz_nivel",
+				anterior.get("luz_nivel", 0)),
+			"luz_color": bicho.get("luz_color",
+				anterior.get("luz_color", 0)),
+			"velocidad": bicho.get("velocidad",
+				anterior.get("velocidad", 0)),
+			"calavera": bicho.get("calavera",
+				anterior.get("calavera", 0)),
+			"escudo_party": bicho.get("escudo_party",
+				anterior.get("escudo_party", 0)),
 		}
+		estado_criatura_actualizado.emit(id, criaturas[id].duplicate())
 
 
 func reiniciar_sesion() -> void:
@@ -815,18 +874,31 @@ func reiniciar_sesion() -> void:
 	luz_mundo_recibida = false
 
 
-func _sacar_de_casilla(donde: Vector3i, pila: int) -> void:
+func _sacar_de_casilla(donde: Vector3i, pila: int) -> Dictionary:
 	if not casillas.has(donde):
-		return
+		return {}
 	var cosas: Array = casillas[donde]
 	if pila < 0 or pila >= cosas.size():
-		return
+		return {}
 	var cosa: Dictionary = cosas[pila]
 	if cosa.get("tipo") == "criatura":
 		criaturas.erase(cosa.get("id"))
 	cosas.remove_at(pila)
 	if cosas.is_empty():
 		casillas.erase(donde)
+	return cosa
+
+
+func _actualizar_estado_criatura(id: int, campos: Dictionary) -> bool:
+	"""Aplica solo datos enviados por TVP a una criatura ya conocida."""
+	if not criaturas.has(id):
+		return false
+	var estado: Dictionary = criaturas[id]
+	for campo in campos:
+		estado[campo] = campos[campo]
+	criaturas[id] = estado
+	estado_criatura_actualizado.emit(id, estado.duplicate())
+	return true
 
 
 func _insertar_cosa_nueva(cosas: Array, cosa: Dictionary) -> void:

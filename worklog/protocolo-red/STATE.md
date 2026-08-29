@@ -2,7 +2,7 @@
 
 Estado: LISTO_PARA_REVISION
 Ultimo agente: codex
-Ultima actualizacion: 2026-08-26T05:28:46-06:00
+Ultima actualizacion: 2026-08-29T05:23:17-06:00
 Contrato publicado: SI
 
 ## Depende de
@@ -22,16 +22,29 @@ Definir y probar framing, version, mensajes, errores y compatibilidad de red.
   invalidos sin abrir sockets.
 - Prueba punta a punta contra `servidor_propio/servidor.tscn`: `HELLO`,
   `WELCOME`, cuatro movimientos cardinales y cinco estados confirmados.
+- Contrato 1.1.0 publicado para el estado de criatura TVP 7.72.
+- `AddCreature` conserva luz, velocidad, skull y party shield; el marcador
+  corto de giro mantiene los valores anteriores y ya no cura visualmente.
+- `0x8D`, `0x8F`, `0x90` y `0x91` actualizan solo criaturas conocidas,
+  emiten estado confirmado y consumen IDs desconocidos sin desalinear.
+- `0x6C` de `mi_id` con HP autoritativo cero emite `jugador_muerto`; una
+  retirada con HP positivo queda distinguida como teleport/refresh posible.
+- `estado_criatura_self_test.gd` cubre payload completo, concatenacion,
+  truncados, desconocidos, giro corto, teleport y muerte; toda la regresion
+  de protocolo, contenedores, controles, eventos, spells, main y editor pasa.
 
 ## Falta
 
 - Validar el recorrido contra el servidor Godot propio con dos clientes.
 - Mantener el adaptador TVP 7.72 separado de este framing JSON.
+- El consumidor debe reaccionar a `jugador_muerto`, enviar logout `0x14` y
+  presentar la reentrada; pertenece al siguiente carril de cliente.
+- QA debe hacer pruebas vivas de muerte/corpse/loot y actualizar la matriz
+  global de opcodes que todavia describe `0x8D/0x8F/0x90/0x91` como SKIP.
 
 ## Bloqueos activos
 
-- `GIT_SIN_AUTORIZACION_PARA_COMMIT_PUSH`: este turno no tiene autorizacion
-  explicita para crear commit o hacer push.
+- Ninguno.
 
 ## Decisiones
 
@@ -49,3 +62,7 @@ Definir y probar framing, version, mensajes, errores y compatibilidad de red.
 - El warning de cierre `Unreferenced static string to 0: servers` proviene del
   runtime de Godot al apagar el servidor de prueba y no afecto su codigo de
   salida ni el recorrido.
+- Continuidad: ejecutar
+  `Godot_v4.7.2-stable_win64_console.exe --headless --path cliente3d --script res://red/estado_criatura_self_test.gd`.
+  El siguiente carril no debe volver a inferir muerte solo desde `0x6C`: debe
+  consumir la señal ya validada y conservar la autoridad del servidor.

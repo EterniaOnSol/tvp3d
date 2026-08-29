@@ -1,6 +1,6 @@
 # Contrato: protocolo-red
 
-Version: 1.0.0
+Version: 1.1.0
 Estado: PUBLICADO
 Propietario: protocolo-red
 Depende de: modelo-comun 1.0.0
@@ -124,6 +124,38 @@ perfil propio por similitud de nombres.
 - Cliente 3D y pruebas del carril `qa`.
 - `cliente3d/red/conexion772.gd`, unicamente como adaptador independiente de
   compatibilidad, no como consumidor del JSON propio.
+
+### Estado de criatura del adaptador 7.72
+
+El adaptador conserva como estado confirmado los campos que
+`ProtocolGame::AddCreature` envia con cada criatura completa:
+
+```text
+light_level uint8
+light_color uint8
+speed       uint16 little-endian
+skull       uint8
+shield      uint8
+```
+
+Los cambios posteriores usan exactamente:
+
+| Opcode | Payload servidor -> cliente | Efecto permitido |
+|---:|---|---|
+| `0x8D` | `creature_id uint32, level uint8, color uint8` | Actualizar luz de una criatura conocida |
+| `0x8F` | `creature_id uint32, speed uint16` | Actualizar velocidad de una criatura conocida |
+| `0x90` | `creature_id uint32, skull uint8` | Actualizar skull de una criatura conocida |
+| `0x91` | `creature_id uint32, shield uint8` | Actualizar shield de party de una criatura conocida |
+
+Un cambio para un id no conocido se consume por completo para mantener la
+alineacion, pero no crea una criatura. Cada cambio aceptado emite el estado
+completo confirmado; ningun valor se calcula en el cliente.
+
+La retirada `0x6C` del propio `mi_id` solo representa muerte cuando las stats
+autoritativas mas recientes tienen vida cero. Una retirada con vida positiva
+puede pertenecer a teleport o refresh y no debe emitir muerte. Este adaptador
+solo emite el evento y marca al jugador fuera del mundo; cerrar la conexion y
+presentar la UI corresponden al consumidor.
 
 ## Compatibilidad y versionado
 

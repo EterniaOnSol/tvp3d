@@ -304,11 +304,11 @@ func _leer_criatura(msg) -> Dictionary:
 	bicho["vida"] = msg.leer_u8()        # porcentaje
 	bicho["direccion"] = msg.leer_u8()
 	_leer_apariencia(msg, bicho)
-	msg.leer_u8()                        # nivel de luz
-	msg.leer_u8()                        # color de luz
+	bicho["luz_nivel"] = msg.leer_u8()
+	bicho["luz_color"] = msg.leer_u8()
 	bicho["velocidad"] = msg.leer_u16()
-	msg.leer_u8()                        # calavera
-	msg.leer_u8()                        # escudo de party
+	bicho["calavera"] = msg.leer_u8()
+	bicho["escudo_party"] = msg.leer_u8()
 	# Y se acabo. En 7.72 NO viene el emblema de guild ni el byte de "se
 	# puede caminar por encima": los dos son de 8.x en adelante.
 	return bicho
