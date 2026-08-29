@@ -1,6 +1,6 @@
 # Contrato: assets
 
-Version: 1.3.0
+Version: 1.4.0
 Estado: PUBLICADO
 Propietario: assets
 Depende de: ninguno
@@ -168,6 +168,24 @@ Reglas:
 - Cliente 3D y visor de validacion.
 - Editor de mapas.
 - Pruebas de paridad y reportes de conversion.
+
+## Catalogo de protocolo 7.72
+
+`python herramientas/extraer_items772.py` genera
+`cliente3d/assets/items772.json`, indexado por el `client id` que
+`NetworkMessage::addItem` envia por red. Los nombres salen de
+`servidor/data/items/items.xml`; las banderas y el cruce server/client id,
+de `items.otb`.
+
+La generacion debe auditar todos los roots `corpse` declarados por monstruos,
+los corpses de jugador de `servidor/src/const.h` y cada transformacion
+`decayto` alcanzable. Si una etapa no tiene entrada OTB, client id exportado o
+nombre resoluble, el comando falla y no publica silenciosamente un catalogo
+incompleto. Cuando varios server ids comparten client id, un nombre vacio no
+puede tapar otro nombre real del XML para el mismo sprite.
+
+`cliente3d/assets/items772_flags.json` es un artefacto de render separado y no
+es salida de `extraer_items772.py`; esta auditoria no cambia su formato.
 
 ## Compatibilidad y versionado
 

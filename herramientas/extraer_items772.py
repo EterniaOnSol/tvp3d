@@ -13,6 +13,8 @@ De donde sale cada cosa
 -----------------------
     servidor/data/items/items.otb -> grupo y banderas por id de servidor
     servidor/data/items/items.xml -> nombre por id de servidor
+    servidor/data/monster/**/*.xml -> corpses que puede crear un monstruo
+    servidor/src/const.h -> corpses masculino y femenino de jugadores
 
 El formato del .otb esta sacado del codigo del propio servidor
 (`src/items.cpp:215-432` y `src/itemloader.h:91-162`), no adivinado: un
@@ -35,6 +37,8 @@ RAIZ = Path(__file__).resolve().parent.parent
 BASE = RAIZ / "servidor" / "data" / "items"
 OTB = BASE / "items.otb"
 XML = BASE / "items.xml"
+MONSTRUOS = RAIZ / "servidor" / "data" / "monster"
+CONST_H = RAIZ / "servidor" / "src" / "const.h"
 SALIDA = RAIZ / "cliente3d" / "assets" / "items772.json"
 
 # Marcadores del arbol (los mismos del .otbm).
@@ -165,6 +169,13 @@ def leer_otb():
 
 RE_ITEM = re.compile(r'<item\s+id="(\d+)"[^>]*?name="([^"]*)"', re.I)
 RE_RANGO = re.compile(r'<item\s+fromid="(\d+)"\s+toid="(\d+)"[^>]*?name="([^"]*)"', re.I)
+RE_BLOQUE_ITEM = re.compile(
+    r'<item\s+[^>]*\bid="(\d+)"[^>]*>(.*?)</item>', re.I | re.S)
+RE_DECAY = re.compile(
+    r'<attribute\s+key="decayto"\s+value="(-?\d+)"', re.I)
+RE_CORPSE = re.compile(r'\bcorpse="(\d+)"', re.I)
+RE_CORPSE_JUGADOR = re.compile(
+    r'ITEM_(?:MALE|FEMALE)_CORPSE\s*=\s*(\d+)', re.I)
 
 
 def leer_nombres():
@@ -176,6 +187,70 @@ def leer_nombres():
         for sid in range(int(desde), int(hasta) + 1):
             nombres[sid] = nombre.strip()
     return nombres
+
+
+def leer_decay():
+    """Lee server id -> decayTo del mismo XML que consume Items::loadFromXml.
+
+    Se usa un lector acotado porque la declaracion XML historica del archivo
+    7.72 no es aceptada por ElementTree, aunque pugixml del servidor si carga
+    sus nodos de items.
+    """
+    texto = XML.read_text(encoding="latin-1")
+    decay = {}
+    for sid, cuerpo in RE_BLOQUE_ITEM.findall(texto):
+        coincidencia = RE_DECAY.search(cuerpo)
+        decay[int(sid)] = int(coincidencia.group(1)) if coincidencia else -1
+    return decay
+
+
+def leer_raices_corpse():
+    """Lee los ids que Creature::dropCorpse puede crear directamente."""
+    raices = set()
+    for ruta in MONSTRUOS.rglob("*.xml"):
+        texto = ruta.read_text(encoding="latin-1")
+        raices.update(int(valor) for valor in RE_CORPSE.findall(texto))
+    texto_constantes = CONST_H.read_text(encoding="latin-1")
+    raices.update(int(valor) for valor in RE_CORPSE_JUGADOR.findall(texto_constantes))
+    return raices
+
+
+def etapas_decay(raices, decay):
+    """Expande las transformaciones que internalDecayItem puede ejecutar."""
+    etapas = set()
+    for raiz in raices:
+        sid = raiz
+        cadena = set()
+        while sid > 0:
+            if sid in cadena:
+                raise ValueError("ciclo de decay desde server id %d" % raiz)
+            cadena.add(sid)
+            etapas.add(sid)
+            sid = decay.get(sid, -1)
+            if sid < 0:
+                break
+    return etapas
+
+
+def auditar_corpses(items, catalogo):
+    """Comprueba que cada corpse producible resuelva client id y nombre."""
+    raices = leer_raices_corpse()
+    etapas = etapas_decay(raices, leer_decay())
+    errores = []
+    for sid in sorted(etapas):
+        item = items.get(sid)
+        if item is None:
+            errores.append("server id %d no existe en items.otb" % sid)
+            continue
+        cid = item["cid"]
+        ficha = catalogo.get(cid)
+        if ficha is None:
+            errores.append(
+                "server id %d / client id %d no fue exportado" % (sid, cid))
+        elif not str(ficha.get("nombre", "")).strip():
+            errores.append(
+                "server id %d / client id %d llega sin nombre" % (sid, cid))
+    return raices, etapas, errores
 
 
 def main():
@@ -197,11 +272,21 @@ def main():
         if anterior is None:
             por_cliente[cid] = ficha
             continue
+        # Si dos server ids comparten sprite, no dejar que el primero sin
+        # nombre tape el nombre real disponible en items.xml.
+        if not anterior["nombre"] and ficha["nombre"]:
+            anterior["nombre"] = ficha["nombre"]
         if (anterior["apilable"] != ficha["apilable"]
                 or anterior["liquido"] != ficha["liquido"]):
             choques += 1
             print("  OJO: el id de cliente %d no se pone de acuerdo "
                   "(apilable/liquido) entre dos items de servidor" % cid)
+
+    raices, etapas, errores_corpse = auditar_corpses(items, por_cliente)
+    if errores_corpse:
+        for error in errores_corpse:
+            print("  ERROR corpse: %s" % error)
+        raise SystemExit("catalogo incompleto para corpses/decay")
 
     salida = {str(cid): ficha for cid, ficha in sorted(por_cliente.items())}
 
@@ -220,6 +305,8 @@ def main():
     print("  llevan byte de color   : %d liquidos" % liquidos)
     print("  son suelo              : %d" % suelos)
     print("  desacuerdos            : %d" % choques)
+    print("  raices de corpse       : %d" % len(raices))
+    print("  etapas de corpse/decay : %d" % len(etapas))
     print("-> %s" % SALIDA)
 
 
