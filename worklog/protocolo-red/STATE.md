@@ -1,8 +1,8 @@
 # Estado: protocolo-red
 
 Estado: LISTO_PARA_REVISION
-Ultimo agente: codex
-Ultima actualizacion: 2026-08-29T05:23:17-06:00
+Ultimo agente: claude
+Ultima actualizacion: 2026-08-29T10:15:00-06:00
 Contrato publicado: SI
 
 ## Depende de
@@ -32,6 +32,29 @@ Definir y probar framing, version, mensajes, errores y compatibilidad de red.
 - `estado_criatura_self_test.gd` cubre payload completo, concatenacion,
   truncados, desconocidos, giro corto, teleport y muerte; toda la regresion
   de protocolo, contenedores, controles, eventos, spells, main y editor pasa.
+- Contrato 1.2.0: la muerte ya no depende del indice de pila. Se emite cuando
+  la retirada `0x6C` es de `mi_id` **o** de la casilla `mi_pos`, y la vida
+  autoritativa es cero. `Player::drainHealth` manda ese `0xA0` con vida cero
+  antes de `Game::removeCreature`, asi que la vida siempre llega a tiempo; el
+  indice de pila no.
+- Medido contra el servidor real: la muerte que fallaba tres veces seguidas
+  ahora se emite. Prueba viva completa: muerte confirmada, logout `0x14`,
+  sesion cerrada por el servidor, reingreso vivo y corpse con loot.
+- `red/mapa_self_test.gd`: 13 comprobaciones que codifican los saltos igual que
+  `GetFloorDescription` (contador `skip` desde -1, tandas de 255, desfase por
+  piso). El lector de mapas cae en la coordenada correcta y consume el mensaje
+  entero en todos los casos bien formados.
+- `EstadoMundo` comprueba la invariante del servidor —el jugador siempre esta
+  descrito en su propia casilla— y, si no se cumple, deja `mapa_alineado` en
+  falso y emite `mapa_desalineado` con los client ids sin catalogo.
+- `red/diagnostico_pila_viva.gd`: entra con un personaje, no toca nada y
+  muestra la pila de la casilla propia y sus vecinas. Es la forma rapida de
+  ver si el mapa vivo esta alineado.
+
+- Capturado el mapa vivo que falla: `generated/capturas/entrada_mundo.bin`,
+  2242 bytes del `0x64` real en `(32082,32145,6)`. El mismo recorrido en el
+  templo `(32369,32241,7)` llega perfecto, asi que el fallo depende del sitio.
+- `red/analizar_captura.gd` reproduce el caso sin servidor y descarta causas.
 
 ## Falta
 
@@ -44,7 +67,32 @@ Definir y probar framing, version, mensajes, errores y compatibilidad de red.
 
 ## Bloqueos activos
 
-- Ninguno.
+- BLOQUE ABIERTO, SIGUIENTE TURNO DE ESTE CARRIL: el `0x64` de algunas zonas
+  deja al jugador fuera de su casilla. El lector pide mas casillas de las que
+  el servidor mando y termina interpretando los bytes siguientes como items
+  imposibles. Ya no es silencioso: `mapa_alineado` queda en falso y se emite
+  `mapa_desalineado`.
+
+  Descartado con evidencia, para no repetir trabajo:
+
+  - No es la regla de saltos. Las cuatro variantes posibles (+0/+1 en la marca
+    normal, 255/256 en la tanda) dejan la captura igual de desalineada.
+  - No es un item suelto con el ancho equivocado. Se probaron las 594
+    posiciones de item de la captura sumando y restando un byte: ninguna
+    alinea.
+  - No es el tamano de la ventana: `Map::maxClientViewportX/Y` valen 8 y 6, y
+    `sendMapDescription` manda 18x14, que es lo que pide el lector.
+  - No es `GetTileDescription`: suelo, top items, criaturas en orden inverso y
+    down items, con tope de 10, es exactamente lo que lee el cliente.
+  - No es el algoritmo en si: `red/mapa_self_test.gd` codifica los saltos como
+    el C++ —incluido el `skip == 0xFE` propio de esta rama, que hace tandas de
+    256 desde -1 y de 255 desde 0— y pasa 13/13.
+
+  Por donde seguir: comparar la captura contra una franja chica y conocida
+  (`0x65`-`0x68` de un paso) o contra el IR de esa zona, que hoy no la cubre;
+  y revisar si algun item de la captura se serializa distinto de lo que dice
+  el catalogo, mirando `NetworkMessage::addItem` con el item real del servidor
+  en la mano y no solo sus banderas.
 
 ## Decisiones
 
@@ -53,6 +101,9 @@ Definir y probar framing, version, mensajes, errores y compatibilidad de red.
 | TCP propio como primera version | Encaja con el ritmo de Tibia y simplifica entrega inicial | si |
 | Framing de 4 bytes little-endian + opcode de 1 byte + JSON UTF-8 | Coincide con `protocolo_tvp3d.gd` y permite inspeccion sencilla durante la primera rebanada | si |
 | El decoder devuelve siempre `buffer`, incluso con un frame incompleto | Evita perder bytes cuando TCP fragmenta el encabezado o el cuerpo | si |
+| La muerte no depende del indice de pila del `0x6C` | El indice solo vale si la pila local coincide con la del servidor, y eso se rompe cuando el mapa llega desalineado; la casilla y la vida cero son autoritativas siempre | si |
+| Un mapa desalineado se denuncia, no se corrige adivinando | Los anchos de item no se pueden deducir del mensaje: inventarlos corrompe todo lo que sigue sin dejar rastro | no |
+| La captura del mapa vivo se versiona como fixture | Permite reproducir el fallo sin servidor y sin depender de donde este parado nadie | si |
 
 ## Notas para quien retome
 
@@ -62,6 +113,10 @@ Definir y probar framing, version, mensajes, errores y compatibilidad de red.
 - El warning de cierre `Unreferenced static string to 0: servers` proviene del
   runtime de Godot al apagar el servidor de prueba y no afecto su codigo de
   salida ni el recorrido.
+- Herramientas de este carril, ninguna toca el mundo:
+  `--script res://red/diagnostico_pila_viva.gd` entra, va al campo y muestra la
+  pila de la casilla propia; `--script res://red/analizar_captura.gd` recorre
+  la captura versionada sin servidor.
 - Continuidad: ejecutar
   `Godot_v4.7.2-stable_win64_console.exe --headless --path cliente3d --script res://red/estado_criatura_self_test.gd`.
   El siguiente carril no debe volver a inferir muerte solo desde `0x6C`: debe

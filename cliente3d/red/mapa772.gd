@@ -56,6 +56,8 @@ const ALTO := 14
 var _items := {}
 var _render_flags := {}
 var _sin_datos := 0   ## items que llegaron y no estaban en el catalogo
+var _cids_sin_datos := {}  ## client id -> veces que llego sin catalogo
+var _primer_desconocido := {}  ## donde y cid del primer item sin catalogo
 
 # --- estado mientras se lee una descripcion de mapa ---
 var _salto := 0
@@ -228,14 +230,22 @@ func leer_cosa(msg, donde: Vector3i, criaturas: Array) -> Dictionary:
 		bicho["donde"] = donde
 		criaturas.append(bicho)
 		return {"tipo": "criatura", "id": bicho["id"]}
-	return _leer_item(msg)
+	var antes_item := _sin_datos
+	var item := _leer_item(msg)
+	if _sin_datos > antes_item and _primer_desconocido.is_empty():
+		_primer_desconocido = {"donde": donde, "cid": int(item.get("cid", -1))}
+	return item
 
 
 func _leer_item(msg) -> Dictionary:
 	var cid: int = msg.leer_u16()
 	var info := info_item(cid)
 	if info.is_empty():
+		# Sin catalogo no se sabe si el item trae byte de cantidad o de color,
+		# asi que el ancho es una suposicion y el resto del mensaje puede
+		# quedar corrido. Se deja constancia del id exacto en vez de callarlo.
 		_sin_datos += 1
+		_cids_sin_datos[cid] = int(_cids_sin_datos.get(cid, 0)) + 1
 	# networkmessage.cpp:101-105 — el byte extra es cantidad para apilables
 	# y color para liquidos. En 7.72 no hay byte de animacion. El color no
 	# es el FluidType interno: el servidor lo traduce antes de enviarlo.
@@ -328,3 +338,16 @@ func _leer_apariencia(msg, bicho: Dictionary) -> void:
 
 func items_sin_datos() -> int:
 	return _sin_datos
+
+
+func primer_item_sin_datos() -> Dictionary:
+	"""Donde y con que client id se leyo el primer item fuera del catalogo."""
+	return _primer_desconocido.duplicate()
+
+
+func cids_sin_datos() -> Array:
+	"""Client ids que llegaron sin entrada en el catalogo, de mas a menos."""
+	var ids: Array = _cids_sin_datos.keys()
+	ids.sort_custom(func(a, b):
+		return int(_cids_sin_datos[a]) > int(_cids_sin_datos[b]))
+	return ids

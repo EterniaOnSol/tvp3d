@@ -10,21 +10,21 @@ Sex = 0
 PlayerKillerEnd = 0
 BankBalance = 0
 Blessings = 0
-LastLoginSaved = 1788015471
-LastLogout = 1788015471
-Position = [32369,32241,7]
+LastLoginSaved = 1788020788
+LastLogout = 1788020799
+Position = [32368,32240,7]
 DefaultOutfit = (128, 78-106-58-95)
 
-Level = 2
-Experience = 114
-Health = 145
-MaxHealth = 145
+Level = 1
+Experience = 57
+Health = 140
+MaxHealth = 140
 Mana = 0
 MaxMana = 0
 ManaSpent = 0
 MagicLevel = 0
 Soul = 100
-Capacity = 41000
+Capacity = 40000
 Vocation = 0
 Stamina = 2520
 
@@ -46,8 +46,6 @@ Murders = {}
 
 VIP = ()
 
-Armor = (2650)
-Left = (2382)
-Ammo = (2050 Duration=594000)
+Right = (2006 FluidType=0)
 
 

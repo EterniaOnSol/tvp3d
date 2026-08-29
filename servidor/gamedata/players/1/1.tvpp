@@ -10,9 +10,9 @@ Sex = 0
 PlayerKillerEnd = 0
 BankBalance = 0
 Blessings = 0
-LastLoginSaved = 1788015478
-LastLogout = 1788015579
-Position = [32081,32143,6]
+LastLoginSaved = 1788021432
+LastLogout = 1788021454
+Position = [32369,32241,7]
 DefaultOutfit = (136, 78-106-58-95)
 
 Level = 1
@@ -36,7 +36,7 @@ Skill = (4, 10, 0)
 Skill = (5, 10, 0)
 Skill = (6, 10, 0)
 
-Condition = (256,0,-1,0,0,0,0,0,0,-1,0,9,101000,0)
+Condition = (256,0,-1,0,0,0,0,0,0,-1,0,9,21000,0)
 Spells = {}
 
 QuestValues = {}
@@ -45,12 +45,10 @@ StringQuestValues = {}
 
 Murders = {}
 
-VIP = (2)
+VIP = (16,2)
 
 Backpack = (1988 Content={2674 Amount=1, 2595 Content={2599}, 2152 Amount=92, 2148 Amount=55, 2595 Content={2599, 2476}})
-Right = (2006 FluidType=0)
 Left = (2006 FluidType=0)
-Ammo = (2006 FluidType=0)
 
 
 Depot = (1, {2594 Content={2050 Duration=531000}})

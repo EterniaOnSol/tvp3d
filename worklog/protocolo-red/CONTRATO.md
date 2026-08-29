@@ -1,6 +1,6 @@
 # Contrato: protocolo-red
 
-Version: 1.1.0
+Version: 1.2.0
 Estado: PUBLICADO
 Propietario: protocolo-red
 Depende de: modelo-comun 1.0.0
@@ -151,11 +151,44 @@ Un cambio para un id no conocido se consume por completo para mantener la
 alineacion, pero no crea una criatura. Cada cambio aceptado emite el estado
 completo confirmado; ningun valor se calcula en el cliente.
 
-La retirada `0x6C` del propio `mi_id` solo representa muerte cuando las stats
-autoritativas mas recientes tienen vida cero. Una retirada con vida positiva
-puede pertenecer a teleport o refresh y no debe emitir muerte. Este adaptador
-solo emite el evento y marca al jugador fuera del mundo; cerrar la conexion y
-presentar la UI corresponden al consumidor.
+La retirada `0x6C` representa la muerte del jugador cuando se cumplen las dos
+condiciones autoritativas a la vez:
+
+1. La retirada es del jugador: el `id` retirado es `mi_id`, **o** la casilla
+   del mensaje es la posicion confirmada `mi_pos`.
+2. Las stats autoritativas mas recientes tienen vida cero.
+
+La segunda condicion es la que distingue muerte de teleport o refresh: una
+retirada con vida positiva nunca emite muerte. La primera no puede depender
+solo del indice de pila. `Player::drainHealth` (`servidor/src/player.cpp:1402`)
+manda el `0xA0` con vida cero antes de que `Game::removeCreature` retire al
+jugador, asi que la vida cero siempre llega primero; el indice de pila, en
+cambio, solo vale si la pila local coincide con la del servidor.
+
+La muerte se emite una sola vez por sesion: si el jugador ya esta fuera del
+mundo, un `0x6C` posterior en la misma casilla no vuelve a emitirla. Este
+adaptador solo emite el evento y marca al jugador fuera del mundo; cerrar la
+conexion y presentar la UI corresponden al consumidor.
+
+### Alineacion del mapa
+
+El servidor siempre describe al jugador dentro de su propia casilla. Al
+terminar de leer una descripcion de mapa, el adaptador comprueba esa invariante
+y, si no se cumple, deja `mapa_alineado` en falso y emite
+`mapa_desalineado(detalle)` con la posicion, la cantidad de items sin catalogo,
+sus client ids y el primero de ellos.
+
+Un mapa desalineado no se corrige adivinando: en 7.72 los apilables y los
+liquidos traen un byte extra y nada en el mensaje lo anuncia
+(`servidor/src/networkmessage.cpp:95-105`), asi que un ancho equivocado
+desplaza todo lo que sigue. Mientras `mapa_alineado` sea falso, ningun
+consumidor debe confiar en los indices de pila de esa casilla: ni para
+`0x6C`, ni para usar un item del suelo, ni para moverlo.
+
+El lector tiene self-test propio en `red/mapa_self_test.gd`, que codifica los
+saltos igual que `GetFloorDescription` —contador `skip` que arranca en -1,
+tandas de 255 y desfase por piso— y exige que cada casilla caiga en la
+coordenada que dijo el servidor consumiendo el mensaje entero.
 
 ## Compatibilidad y versionado
 

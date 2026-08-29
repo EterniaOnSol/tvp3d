@@ -142,6 +142,51 @@ func _init() -> void:
 	assert(textos.back() == "death packet aligned")
 	assert(muerte.sin_leer() == 0)
 
+	# La muerte real del 2026-08-29: el catalogo de items no alcanzo para leer
+	# el mapa, la pila local quedo corrida y el indice del 0x6C apunto a otra
+	# cosa. La muerte igual tiene que emitirse, porque la casilla del mensaje
+	# es la del jugador y la vida autoritativa es cero.
+	estado.adentro = true
+	estado.mi_pos = posicion
+	estado.estadisticas = {"vida": 0}
+	estado.casillas[posicion] = [
+		{"tipo": "item", "cid": 1234, "nombre": "fire"},
+	]
+	muertes.clear()
+	var muerte_pila_corrida: RefCounted = _retiro(posicion, 1)
+	estado.procesar(muerte_pila_corrida)
+	assert(muertes == [posicion])
+	assert(not estado.adentro)
+	assert(muerte_pila_corrida.sin_leer() == 0)
+
+	# Con la pila corrida pero vida positiva sigue sin haber muerte: eso es
+	# teleport, refresh o un item que desaparecio de nuestra casilla.
+	estado.adentro = true
+	estado.estadisticas = {"vida": 120}
+	estado.casillas[posicion] = [
+		{"tipo": "item", "cid": 1234, "nombre": "fire"},
+	]
+	muertes.clear()
+	var retiro_vivo: RefCounted = _retiro(posicion, 1)
+	estado.procesar(retiro_vivo)
+	assert(muertes.is_empty())
+	assert(estado.adentro)
+
+	# Una retirada en otra casilla nunca es nuestra muerte, ni con vida cero.
+	estado.adentro = true
+	estado.estadisticas = {"vida": 0}
+	muertes.clear()
+	var retiro_ajeno: RefCounted = _retiro(posicion + Vector3i(1, 0, 0), 0)
+	estado.procesar(retiro_ajeno)
+	assert(muertes.is_empty())
+	assert(estado.adentro)
+
+	# El mapa se declara desalineado si el jugador no aparece en su casilla.
+	assert(estado.mapa_alineado)
+	estado.casillas.clear()
+	estado._revisar_alineacion()
+	assert(not estado.mapa_alineado)
+
 	print("Estado criatura TVP 7.72 self-test: OK")
 	quit()
 

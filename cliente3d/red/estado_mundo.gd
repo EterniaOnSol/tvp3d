@@ -62,12 +62,18 @@ signal disparo_distancia(origen: Vector3i, destino: Vector3i, tipo: int)
 signal cuadrado_criatura(id: int, color: int)
 ## Estado visual/mecanico confirmado por AddCreature y 0x8D/0x8F/0x90/0x91.
 signal estado_criatura_actualizado(id: int, estado: Dictionary)
-## Esta rama no envia death dialog: muerte es 0x6C de mi_id con HP=0.
+## Esta rama no envia death dialog: muerte es la retirada 0x6C de nuestra
+## casilla con la vida autoritativa en cero.
 signal jugador_muerto(posicion: Vector3i)
+## El mapa leido no cuadra con la posicion confirmada del jugador. Casi siempre
+## es un item cuyo ancho no esta en el catalogo; la pila local no sirve.
+signal mapa_desalineado(detalle: Dictionary)
 ## El servidor cancelo el objetivo de combate (0xA3).
 signal objetivo_cancelado()
 signal voz_recibida(orador_id: int, trama: PackedByteArray)
 
+## Falso cuando el ultimo mapa se leyo corrido: los indices de pila no valen.
+var mapa_alineado := true
 var casillas := {}     ## Vector3i -> Array de cosas
 var criaturas := {}    ## id -> {pos, nombre, apariencia}
 var inventario := {}   ## slot -> cosa
@@ -151,6 +157,7 @@ func _leer_mensajes(msg) -> void:
 				criaturas.clear()
 				_absorber(_mapa.leer_descripcion(
 					msg, mi_pos.x - 8, mi_pos.y - 6, mi_pos.z, 18, 14))
+				_revisar_alineacion()
 				mapa_recibido.emit(mi_pos)
 				hubo_cambio = true
 
@@ -268,11 +275,19 @@ func _leer_mensajes(msg) -> void:
 				var donde_menos: Vector3i = msg.leer_posicion()
 				var pila: int = msg.leer_u8()
 				var retirada: Dictionary = _sacar_de_casilla(donde_menos, pila)
-				if int(retirada.get("id", 0)) == mi_id \
+				# La muerte se decide con datos autoritativos que no dependen de
+				# que la pila local coincida con la del servidor: la casilla del
+				# `0x6C`, la posicion confirmada del jugador y su vida. Cuando el
+				# catalogo de items no alcanza para leer el mapa, la pila local
+				# queda corrida y el indice del `0x6C` deja de significar nada;
+				# la vida cero, en cambio, la manda `Player::drainHealth` antes
+				# de que `Game::removeCreature` retire al jugador.
+				var yo_retirado := int(retirada.get("id", 0)) == mi_id \
+					or donde_menos == mi_pos
+				if yo_retirado and adentro \
 						and int(estadisticas.get("vida", 1)) <= 0:
-					# En Player::death las stats con HP=0 se envian antes de que
-					# Game::removeCreature quite al jugador. Una retirada con HP
-					# positivo puede ser teleport y no es una muerte.
+					# Una retirada con vida positiva puede ser teleport o
+					# refresh, y esa no es una muerte.
 					adentro = false
 					jugador_muerto.emit(donde_menos)
 				casilla_actualizada.emit(donde_menos, 0x6C)
@@ -962,6 +977,38 @@ func _insertar_cosa_nueva(cosas: Array, cosa: Dictionary) -> void:
 			continue
 		break
 	cosas.insert(indice, cosa)
+
+
+func _revisar_alineacion() -> void:
+	"""El servidor siempre describe al jugador dentro de su propia casilla.
+
+	Si al terminar de leer el mapa nuestra criatura no esta en `mi_pos`, la
+	descripcion se leyo corrida. Pasa cuando un item llega con un ancho que el
+	catalogo no conoce: en 7.72 los apilables y los liquidos traen un byte
+	extra y nada en el mensaje lo anuncia, asi que un id ausente o mal marcado
+	en `assets/items772.json` desplaza todo lo que sigue. No se puede arreglar
+	adivinando anchos; lo que corresponde es no dar por buena esa pila y
+	decirlo.
+	"""
+	if mi_id == 0:
+		return
+	var alineado := false
+	for cosa in casillas.get(mi_pos, []):
+		if cosa.get("tipo") == "criatura" and int(cosa.get("id", 0)) == mi_id:
+			alineado = true
+			break
+	mapa_alineado = alineado
+	if alineado:
+		return
+	var detalle := {
+		"mi_pos": mi_pos,
+		"items_sin_catalogo": _mapa.items_sin_datos(),
+		"cids_sin_catalogo": _mapa.cids_sin_datos(),
+		"primer_item_sin_catalogo": _mapa.primer_item_sin_datos(),
+	}
+	push_warning("Mapa desalineado: el jugador no aparece en su casilla %s. %s"
+		% [str(mi_pos), str(detalle)])
+	mapa_desalineado.emit(detalle)
 
 
 func _poner_en_pila(donde: Vector3i, pila: int, reemplazo: Dictionary) -> void:
