@@ -49,6 +49,10 @@ func _process(delta: float) -> void:
 		_durmio = true
 		print("Servidor movio al personaje a la cama; reconectando para validar despertar.")
 		_con.cerrar()
+		_con.queue_free()
+		_con = null
+		_fase = "despertar jugador"
+		_reentrar_despues()
 		return
 	if _tiempo > 180.0:
 		_fallar("timeout en fase %s" % _fase)
