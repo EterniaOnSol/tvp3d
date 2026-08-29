@@ -96,3 +96,22 @@ la columna `reversible`: se pueden corregir sin migracion ni contrato roto.
 Antes de trabajar, lee `AGENTS.md`, `CARRILES.md`, todo
 `worklog/EVENTS.jsonl`, el `STATE.md` del carril y los contratos de sus
 dependencias. Usa los skills `tomar-carril` y `cerrar-turno` en cada turno.
+
+## Skills compartidos
+
+Los procedimientos del proyecto viven versionados en el repositorio, asi que
+valen para cualquier agente sin importar con que herramienta se ejecute. Un
+agente que no los cargue solo tiene que abrir el archivo y seguirlo paso a
+paso; son la misma fuente para todos.
+
+| Skill | Archivo | Para que |
+|---|---|---|
+| `tomar-carril` | `.claude/skills/tomar-carril/SKILL.md` | Abrir un carril verificando contratos, propiedad de rutas y exclusividad |
+| `publicar-contrato` | `.claude/skills/publicar-contrato/SKILL.md` | Publicar el `CONTRATO.md` antes de implementar |
+| `cerrar-turno` | `.claude/skills/cerrar-turno/SKILL.md` | Cerrar dejando estado, decisiones, evento y relevo |
+| `revisar-carril` | `.claude/skills/revisar-carril/SKILL.md` | Revision cruzada de un carril ajeno |
+| `orquestar` | `.claude/skills/orquestar/SKILL.md` | Calcular la ruta critica y despachar trabajo sin escribir produccion |
+
+Estos archivos son la version unica. Si un procedimiento cambia, se cambia ahi
+y no se copia a otra carpeta por agente: dos copias divergentes valen menos que
+ninguna.
