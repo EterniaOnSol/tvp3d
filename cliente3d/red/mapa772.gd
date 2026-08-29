@@ -62,6 +62,9 @@ var _primer_desconocido := {}  ## donde y cid del primer item sin catalogo
 # --- estado mientras se lee una descripcion de mapa ---
 var _salto := 0
 var _menos_uno := true
+## Tras una marca normal, el casillero siguiente es una casilla descrita por el
+## servidor, aunque su descripcion no traiga ni una cosa.
+var _toca_casilla := false
 
 
 func _init() -> void:
@@ -149,6 +152,7 @@ func leer_pisos(msg, x0: int, y0: int, ancho: int, alto: int, pisos: Array) -> D
 
 	_salto = 0
 	_menos_uno = true
+	_toca_casilla = false
 	for piso in pisos:
 		_leer_piso(msg, x0, y0, piso[0], ancho, alto, piso[1], casillas, criaturas)
 
@@ -174,23 +178,36 @@ func _leer_piso(msg, x0: int, y0: int, z: int, ancho: int, alto: int,
 			if msg.sin_leer() < 2:
 				return
 
-			if msg.espiar_u16() >= 0xFF00:
+			if not _toca_casilla and msg.espiar_u16() >= 0xFF00:
 				var marca: int = msg.leer_u16()
 				var vacios: int
 				if marca == 0xFFFF:
 					# Tanda completa (protocolgame.cpp:654-657). Son 255
 					# vacios si el contador venia de 0, y 256 si venia de -1.
-					# Despues el servidor lo deja de nuevo en -1.
+					# Despues el servidor lo deja de nuevo en -1. Detras de una
+					# tanda NO viene una casilla descrita: la racha sigue.
 					vacios = 255 + (1 if _menos_uno else 0)
 					_menos_uno = true
 				else:
 					vacios = (marca & 0xFF) + (1 if _menos_uno else 0)
 					_menos_uno = false
+					# La marca normal solo se escribe justo antes de describir
+					# una casilla (protocolgame.cpp:646-653), asi que el
+					# casillero siguiente le pertenece aunque su descripcion
+					# venga vacia.
+					_toca_casilla = true
 				if vacios > 0:
 					_salto = vacios - 1   # este casillero ya es uno de los vacios
 					continue
 				# vacios == 0: no hubo ninguno, la casilla viene aca nomas.
 
+			# Una casilla que existe pero no tiene nada visible se describe con
+			# CERO bytes: Tile::getGround, los items y las criaturas que el
+			# jugador puede ver pueden faltar todos (protocolgame.cpp:566-614).
+			# Ocurre con las casillas que solo llevan banderas de zona. El
+			# casillero se consume igual; si no, todo lo que sigue queda corrido
+			# un lugar por cada una de ellas.
+			_toca_casilla = false
 			_menos_uno = false
 			var cosas := _leer_casilla(msg, Vector3i(x, y, z), criaturas)
 			if not cosas.is_empty():

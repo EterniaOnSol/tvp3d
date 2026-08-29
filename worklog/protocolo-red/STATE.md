@@ -55,6 +55,25 @@ Definir y probar framing, version, mensajes, errores y compatibilidad de red.
   2242 bytes del `0x64` real en `(32082,32145,6)`. El mismo recorrido en el
   templo `(32369,32241,7)` llega perfecto, asi que el fallo depende del sitio.
 - `red/analizar_captura.gd` reproduce el caso sin servidor y descarta causas.
+- RESUELTO el desalineamiento del mapa. La causa la dio el OTBM del servidor
+  usado como oraculo: en la casilla real numero 256 el lector aterrizaba en
+  `(32076,32146,6)` cuando el servidor describia `(32076,32147,6)`. Entre las
+  dos casillas el mensaje traia dos marcas pegadas, `(10,0xFF)` y `(1,0xFF)`,
+  y el OTBM decia que ahi habia 12 vacias, no 11.
+- El motivo: una marca normal se escribe justo antes de describir una casilla,
+  y esa casilla puede ocupar cero bytes cuando no tiene suelo, items ni
+  criaturas visibles. El lector se salteaba ese casillero y perdia un lugar
+  por cada uno.
+- Con el arreglo, el mismo mapa vivo entrega 356 casillas —exactamente las que
+  el OTBM dice que hay en esa ventana—, el jugador aparece en su casilla y no
+  queda ningun client id fuera del catalogo.
+- `red/mapa_captura_self_test.gd` fija la regresion con los bytes reales; el
+  mensaje se consume entero, incluidos el `0xA2` y el `0x6B` que vienen detras
+  del mapa.
+- Contrato 1.3.0 con la regla escrita.
+- La prueba viva completa quedo en un solo fallo, y es de otro carril: la
+  limpieza del demon con `/killall`. El corpse del jugador, que fallaba antes,
+  ahora pasa.
 
 ## Falta
 
@@ -67,13 +86,15 @@ Definir y probar framing, version, mensajes, errores y compatibilidad de red.
 
 ## Bloqueos activos
 
-- BLOQUE ABIERTO, SIGUIENTE TURNO DE ESTE CARRIL: el `0x64` de algunas zonas
-  deja al jugador fuera de su casilla. El lector pide mas casillas de las que
-  el servidor mando y termina interpretando los bytes siguientes como items
-  imposibles. Ya no es silencioso: `mapa_alineado` queda en falso y se emite
-  `mapa_desalineado`.
+- SOLICITUD A `qa` (ruta suya): en la corrida viva del mapa ya alineado, el
+  unico fallo que queda es "la limpieza retira al demon invocado". `/killall`
+  solo alcanza el cuadro alrededor de quien lo dice y el verdugo puede haberse
+  movido. Es logica de la prueba, no del protocolo. Conviene tambien adoptar
+  `red/mapa_captura_self_test.gd` en la matriz local.
 
-  Descartado con evidencia, para no repetir trabajo:
+- CERRADO el 2026-08-29: el `0x64` desalineado. Se deja el rastro de lo que se
+  descarto antes de dar con la causa, que fue una casilla descrita con cero
+  bytes:
 
   - No es la regla de saltos. Las cuatro variantes posibles (+0/+1 en la marca
     normal, 255/256 en la tanda) dejan la captura igual de desalineada.
@@ -88,11 +109,11 @@ Definir y probar framing, version, mensajes, errores y compatibilidad de red.
     el C++ —incluido el `skip == 0xFE` propio de esta rama, que hace tandas de
     256 desde -1 y de 255 desde 0— y pasa 13/13.
 
-  Por donde seguir: comparar la captura contra una franja chica y conocida
-  (`0x65`-`0x68` de un paso) o contra el IR de esa zona, que hoy no la cubre;
-  y revisar si algun item de la captura se serializa distinto de lo que dice
-  el catalogo, mirando `NetworkMessage::addItem` con el item real del servidor
-  en la mano y no solo sus banderas.
+  Lo que si funciono: usar `servidor/data/world/map.otbm` como oraculo. El
+  OTBM dice que casillas existen, y esa secuencia es exactamente la que el
+  servidor describe, asi que la primera coordenada en la que el lector se
+  aparta senala el punto justo. Vale la pena repetir ese metodo ante cualquier
+  duda de alineacion.
 
 ## Decisiones
 

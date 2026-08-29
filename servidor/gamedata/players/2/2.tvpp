@@ -10,13 +10,13 @@ Sex = 0
 PlayerKillerEnd = 0
 BankBalance = 0
 Blessings = 0
-LastLoginSaved = 1788020788
-LastLogout = 1788020799
-Position = [32368,32240,7]
+LastLoginSaved = 1788023060
+LastLogout = 1788023061
+Position = [32369,32241,7]
 DefaultOutfit = (128, 78-106-58-95)
 
 Level = 1
-Experience = 57
+Experience = 52
 Health = 140
 MaxHealth = 140
 Mana = 0

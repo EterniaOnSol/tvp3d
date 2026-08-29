@@ -1,6 +1,6 @@
 # Contrato: protocolo-red
 
-Version: 1.2.0
+Version: 1.3.0
 Estado: PUBLICADO
 Propietario: protocolo-red
 Depende de: modelo-comun 1.0.0
@@ -189,6 +189,26 @@ El lector tiene self-test propio en `red/mapa_self_test.gd`, que codifica los
 saltos igual que `GetFloorDescription` —contador `skip` que arranca en -1,
 tandas de 255 y desfase por piso— y exige que cada casilla caiga en la
 coordenada que dijo el servidor consumiendo el mensaje entero.
+
+### Casillas que existen y no describen nada
+
+Una marca normal `(n, 0xFF)` no significa solo "vinieron n vacias": el
+servidor la escribe **justo antes de describir una casilla**
+(`protocolgame.cpp:646-653`), asi que el casillero siguiente le pertenece.
+
+Esa casilla puede ocupar cero bytes. `GetTileDescription` no escribe nada si la
+casilla no tiene suelo, ni items, ni criaturas visibles para ese jugador
+(`protocolgame.cpp:566-614`); en el mapa real pasa con las casillas que solo
+llevan banderas de zona. El resultado son dos marcas pegadas, y el lector debe
+consumir igual el casillero de en medio: si lo saltea, pierde un lugar por cada
+una y todo lo que sigue cae en la coordenada equivocada.
+
+Detras de una tanda `0xFFFF` **no** viene una casilla descrita: esa marca la
+escribe la rama de casilla vacia y la racha continua.
+
+Esta regla se comprueba con bytes reales del servidor en
+`red/mapa_captura_self_test.gd`, sobre la captura versionada
+`generated/capturas/entrada_mundo.bin`.
 
 ## Compatibilidad y versionado
 

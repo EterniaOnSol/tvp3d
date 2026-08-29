@@ -39,6 +39,7 @@ func _initialize() -> void:
 	_probar_casillas_sueltas()
 	_probar_tanda_de_255()
 	_probar_varios_pisos()
+	_probar_casilla_sin_nada()
 
 	if _fallas > 0:
 		printerr("Self-test del mapa: %d falla(s)" % _fallas)
@@ -228,6 +229,63 @@ func _probar_tanda_de_255() -> void:
 		"entrego %s" % str(casillas.keys()))
 	_comprobar("la tanda de 255 consume todo el mensaje",
 		int(salida["sobran"]) == 0, "sobran %d bytes" % int(salida["sobran"]))
+
+
+func _probar_casilla_sin_nada() -> void:
+	# El caso que rompia el mapa real: una casilla que EXISTE para el servidor
+	# pero no tiene nada que describir. `GetTileDescription` no escribe ni un
+	# byte, asi que quedan dos marcas pegadas. El casillero se consume igual, y
+	# si el lector lo saltea todo lo que sigue queda corrido un lugar.
+	var z0 := 7
+	var x0 := 31600
+	var y0 := 31600
+	var vacia := Vector2i(x0 + 2, y0 + 3)
+	var primera := Vector2i(x0, y0)
+	var ultima := Vector2i(x0 + 8, y0 + 6)
+	var cod := Codificador.new()
+	for nx in range(ANCHO):
+		for ny in range(ALTO):
+			var donde := Vector2i(x0 + nx, y0 + ny)
+			if donde == vacia:
+				cod.casilla(0, _cid_simple)   # existe y no describe nada
+			elif donde == primera or donde == ultima:
+				cod.casilla(1, _cid_simple)
+			else:
+				cod.vacia()
+	for piso in range(6, -1, -1):
+		_codificar_piso(cod, {}, x0, y0, z0 - piso, 1)
+	cod.cerrar()
+
+	var salida := _leer(cod.bytes, x0, y0, z0)
+	var casillas: Dictionary = salida["casillas"]
+	_comprobar("una casilla existente y sin nada no corre a las siguientes",
+		casillas.has(Vector3i(ultima.x, ultima.y, z0)),
+		"la casilla de despues quedo en %s" % str(casillas.keys()))
+	_comprobar("una casilla existente y sin nada no se guarda como casilla",
+		not casillas.has(Vector3i(vacia.x, vacia.y, z0)))
+	_comprobar("con una casilla vacia descrita se consume todo el mensaje",
+		int(salida["sobran"]) == 0, "sobran %d bytes" % int(salida["sobran"]))
+
+	# Dos casillas vacias descritas seguidas, que es como aparecen en el mapa
+	# real cuando hay una franja de casillas con solo banderas de zona.
+	var cod2 := Codificador.new()
+	for nx in range(ANCHO):
+		for ny in range(ALTO):
+			var donde := Vector2i(x0 + nx, y0 + ny)
+			if donde == Vector2i(x0 + 4, y0 + 4) or donde == Vector2i(x0 + 4, y0 + 5):
+				cod2.casilla(0, _cid_simple)
+			elif donde == ultima:
+				cod2.casilla(1, _cid_simple)
+			else:
+				cod2.vacia()
+	for piso in range(6, -1, -1):
+		_codificar_piso(cod2, {}, x0, y0, z0 - piso, 1)
+	cod2.cerrar()
+	var salida2 := _leer(cod2.bytes, x0, y0, z0)
+	_comprobar("dos casillas vacias descritas seguidas tampoco corren el mapa",
+		(salida2["casillas"] as Dictionary).has(Vector3i(ultima.x, ultima.y, z0)))
+	_comprobar("con dos casillas vacias descritas se consume todo el mensaje",
+		int(salida2["sobran"]) == 0, "sobran %d bytes" % int(salida2["sobran"]))
 
 
 func _probar_varios_pisos() -> void:
