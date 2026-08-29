@@ -5,7 +5,7 @@ extends Node
 # Lo que se mide es la persistencia de verdad: un objeto guardado en el depot
 # tiene que seguir ahi despues de cerrar la sesion y volver a entrar.
 #
-#   1. El god se para al lado del depot de Rookgaard y abre su mochila.
+#   1. El god se para al lado del depot de Thais y abre su mochila.
 #   2. Abre el locker con `0x82`: ese es el depot.
 #   3. Mueve el primer objeto de la mochila al depot con `0x78`.
 #   4. Sale con logout `0x14` y vuelve a entrar.
@@ -16,7 +16,7 @@ extends Node
 # mochila, y si esta vacia el god se crea una etiqueta con `/i`. Al final todo
 # queda como estaba.
 #
-# El depot de Rookgaard salio del mapa del propio servidor
+# El depot de Thais salio del mapa del propio servidor
 # (`servidor/data/world/map.otbm`): el locker server id 2589 esta en
 # `(32354,32231,7)`, y `servidor/data/items/items.xml:6341-6345` lo declara
 # `type=depot` con capacidad 30.
@@ -32,7 +32,7 @@ const CUENTA := 123456
 const CLAVE := "123456"
 const PERSONAJE := "GOD VALENTINO"
 
-## Locker del depot de Rookgaard y la baldosa que hay que pisar.
+## Locker del depot de Thais y la baldosa que hay que pisar.
 ##
 ## No alcanza con estar al lado: `data/scripts/movements/other/tiles.lua` carga
 ## el depot del jugador cuando pisa una de esas baldosas (item 426 aca) dentro
@@ -187,7 +187,7 @@ func _entrar_de_nuevo() -> void:
 #  Recorrido
 # -----------------------------------------------------------------
 func _ir_al_depot() -> void:
-	print("Yendo al depot de Rookgaard %s." % str(POS_LOCKER))
+	print("Yendo al depot de Thais %s." % str(POS_LOCKER))
 	_con.enviar_hablar("/gotopos %d,%d,%d" % [
 		POS_AFUERA.x, POS_AFUERA.y, POS_AFUERA.z])
 	_pasar_a("salir de la baldosa")

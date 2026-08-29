@@ -65,7 +65,7 @@ asi que no sirve para "refrescar".
 | Comprobar | Se vuelve a abrir todo | **El objeto sigue en el cofre** |
 | Devolver | `0x78` del cofre a la mochila | El cofre vuelve a N y la mochila suma uno |
 
-El depot de Rookgaard salio del mapa del propio servidor: locker server id 2589
+El depot de Thais salio del mapa del propio servidor: locker server id 2589
 en `(32354,32231,7)`, baldosa 426 en `(32354,32230,7)`.
 
 ## Resultado del 2026-08-29
@@ -85,7 +85,7 @@ Prueba viva del depot: OK
 
 ## Limites y suciedad conocida
 
-- Solo se prueba el depot de Rookgaard y con un objeto entero. Guardar
+- Solo se prueba el depot de Thais y con un objeto entero. Guardar
   apilables, partir pilas y el tope de `getMaxDepotItems` quedan sin recorrido
   vivo.
 - Las corridas fallidas de este mismo dia, antes de entender lo de la baldosa,

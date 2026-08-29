@@ -2,7 +2,7 @@
 
 Estado: LISTO_PARA_REVISION
 Ultimo agente: claude
-Ultima actualizacion: 2026-08-29T15:10:00-06:00
+Ultima actualizacion: 2026-08-29T16:00:00-06:00
 Contrato publicado: SI
 
 ## Depende de
@@ -123,7 +123,15 @@ Probar contratos, recorridos completos, concurrencia, fixtures y regresiones.
   Sin pisar la baldosa se abre el mueble del mapa, que acepta objetos y no es
   de nadie: es la trampa mas facil del recorrido.
 - La fila de la matriz global se parte en dos: `Depot` pasa a COMPROBADO y
-  `Mail/parcels` queda PARCIAL con lo que falta.
+  `Mail/parcels` queda BLOQUEADO por el servidor.
+- Correccion: el depot probado es el de **Thais**, no el de Rookgaard. Los
+  personajes de prueba salen en el templo de Thais `(32369,32241,7)` y su
+  depot esta a quince casillas. Rookgaard no tiene depot ni correo, igual que
+  en el Tibia original.
+- Prueba viva de parcel y mailbox escrita y corriendo en Thais. Se traba
+  siempre en el mismo punto y con la causa localizada: al usar una etiqueta el
+  servidor contesta `You cannot use this object` por la guarda de
+  `game.cpp:2556-2560`. Evidencia en `docs/qa/PRUEBA_VIVA_PARCEL.md`.
 
 ## Falta
 
@@ -135,9 +143,8 @@ Probar contratos, recorridos completos, concurrencia, fixtures y regresiones.
   iniciar un trade.
 - En la prueba viva de muerte, el unico fallo que queda es la limpieza del
   demon con `/killall`, que solo alcanza el cuadro alrededor de quien lo dice.
-- Parcels y mailbox: falta la prueba viva. Ya estan las dos piezas que
-  faltaban, la ventana de texto para escribir la etiqueta y el mailbox del
-  mapa en `(32372,32253,7)`.
+- Parcels y mailbox: la prueba viva existe pero no puede terminar hasta que el
+  carril `servidor` deje pasar los items legibles en esa guarda.
 - Las corridas fallidas del depot dejaron dos parcels del god dentro del
   mueble del mapa en `(32354,32231,7)`. No rompen nada pero estan ahi.
 
