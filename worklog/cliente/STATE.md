@@ -2,7 +2,7 @@
 
 Estado: LISTO_PARA_REVISION
 Ultimo agente: claude
-Ultima actualizacion: 2026-08-29T12:30:00-06:00
+Ultima actualizacion: 2026-08-29T13:50:00-06:00
 Contrato publicado: SI
 
 ## Depende de
@@ -57,8 +57,13 @@ Construir la experiencia jugable 3D y mostrar solo estado confirmado.
   mismo. Elegir una accion manda su opcode y no cambia ningun escudo: eso lo
   confirma el servidor con el `0x91`.
 - La experiencia compartida no se ofrece; el cliente 7.72 no tenia ese boton.
-- `pruebas/prueba_party_ui.tscn`: 14 comprobaciones en verde, una por cada
-  combinacion de escudos y una que verifica que mandar no adelanta estado.
+- Contrato 1.4.0: el menu ofrece `Trade with <nombre>`. Son dos pasos como el
+  "use with": primero a quien, y el clic siguiente sobre un objeto manda el
+  `0x7D`. El derecho cancela, y despues de cancelar el objeto se usa como
+  siempre. Si el otro salio de la vista no se manda nada.
+- `pruebas/prueba_party_ui.tscn`: 20 comprobaciones en verde, una por cada
+  combinacion de escudos, las dos formas de direccionar el objeto ofrecido, y
+  las que verifican que mandar no adelanta estado.
 - `pruebas/prueba_estado_criatura_ui.tscn`: 20 comprobaciones en verde,
   incluidos los cambios `0x90`, `0x91` y `0x8F` en vivo y el valor desconocido
   que se oculta.
@@ -72,9 +77,10 @@ Construir la experiencia jugable 3D y mostrar solo estado confirmado.
 - Representar la calavera y el escudo tambien sobre la criatura en el mundo 3D.
   Hoy no hay placa de nombre flotante en `mundo3d.gd`, asi que ese trabajo es
   otro turno.
-- Solicitud a `qa` (ruta suya): adoptar `prueba_party_ui` en
-  `matriz_qa_local.gd` y hacer la prueba viva de party con dos clientes,
-  mirando los escudos de los dos lados; es lo unico observable.
+- ATENDIDA: `qa` adopto `prueba_party_ui` en la matriz, que va 16/16, y corrio
+  la party viva con dos clientes.
+- Solicitud a `qa` (ruta suya): agregar a la prueba viva de trade el camino de
+  produccion, que hoy empieza en el menu de criatura y no en la prueba.
 - Ver el menu de party en una ventana real: hasta ahora solo se comprobo
   headless, que no dibuja el popup.
 
@@ -95,6 +101,7 @@ Construir la experiencia jugable 3D y mostrar solo estado confirmado.
 | El boton derecho del Battle List abre un menu en vez de seguir de una | Es lo que hace el cliente clasico, y seguir sigue estando dentro del menu | si |
 | El menu de party se arma con los escudos y no con una lista propia | Esta rama no manda ningun paquete de party; inventar una lista seria estado que el servidor no confirmo | no |
 | La experiencia compartida no se ofrece en la interfaz | El cliente 7.72 no tenia ese boton; el transporte queda por si se decide agregarla | si |
+| El trade empieza por el jugador y sigue por el objeto | Es el orden inverso al del cliente clasico, pero el menu de criatura ya existe y el patron de dos pasos ya estaba en el cliente; se da vuelta el dia que haya menu de objeto | si |
 | La calavera y el escudo se dibujan por codigo, no con un sprite importado | Esta rama no tiene `Tibia.pic`, que es donde vive ese icono en el cliente 2D; inventar un PNG parecido seria peor que una forma propia con el color exacto de la tabla | si |
 | La velocidad solo se muestra del personaje propio | El cliente 7.72 no ensena la velocidad ajena en ningun panel; mostrarla del objetivo seria informacion que el juego original no da | si |
 | El texto de cada valor va en tooltip y en ingles | La pantalla es en ingles como Tibia, y el color solo no distingue una invitacion enviada de una recibida | si |

@@ -47,6 +47,15 @@ class ConexionParty:
 	func enviar_salir_de_party() -> void:
 		ordenes.append(["salir", 0])
 
+	func enviar_solicitar_comercio(origen: Vector3i, cid: int, stackpos: int,
+			id_jugador: int) -> void:
+		ordenes.append(["comerciar", id_jugador, origen, cid, stackpos])
+
+	func enviar_usar_item(_posicion: Vector3i, cid: int, _stackpos: int = 1,
+			_indice: int = 0) -> void:
+		# Sin trade a medio armar, un clic en el objeto lo usa como siempre.
+		ordenes.append(["usar", cid])
+
 
 class MundoParty:
 	var _disco := DiscoParty.new()
@@ -122,33 +131,33 @@ func _ready() -> void:
 
 	print("El menu sale de los escudos confirmados:")
 	_fijar_escudos(estado, 0, 0)
-	_comprobar(_acciones(interfaz, OTRO) == ["atacar", "seguir", "invitar"],
+	_comprobar(_acciones(interfaz, OTRO) == ["atacar", "seguir", "comerciar", "invitar"],
 		"sin party de por medio se ofrece invitar")
 
 	_fijar_escudos(estado, 0, 1)
-	_comprobar(_acciones(interfaz, OTRO) == ["atacar", "seguir", "unirse"],
+	_comprobar(_acciones(interfaz, OTRO) == ["atacar", "seguir", "comerciar", "unirse"],
 		"si nos invitaron se ofrece unirse")
 
 	_fijar_escudos(estado, 0, 2)
-	_comprobar(_acciones(interfaz, OTRO) == ["atacar", "seguir", "revocar"],
+	_comprobar(_acciones(interfaz, OTRO) == ["atacar", "seguir", "comerciar", "revocar"],
 		"si lo invitamos se ofrece revocar")
 
 	_fijar_escudos(estado, 4, 3)
 	_comprobar(_acciones(interfaz, OTRO)
-			== ["atacar", "seguir", "liderazgo", "salir"],
+			== ["atacar", "seguir", "comerciar", "liderazgo", "salir"],
 		"el lider puede pasar el liderazgo a un miembro y salir")
 
 	_fijar_escudos(estado, 3, 4)
-	_comprobar(_acciones(interfaz, OTRO) == ["atacar", "seguir", "salir"],
+	_comprobar(_acciones(interfaz, OTRO) == ["atacar", "seguir", "comerciar", "salir"],
 		"un miembro no manda sobre el lider, pero puede salir")
 
 	_fijar_escudos(estado, 3, 0)
-	_comprobar(_acciones(interfaz, OTRO) == ["atacar", "seguir", "salir"],
+	_comprobar(_acciones(interfaz, OTRO) == ["atacar", "seguir", "comerciar", "salir"],
 		"un miembro que no es lider no invita a nadie")
 
 	_fijar_escudos(estado, 4, 0)
 	_comprobar(_acciones(interfaz, OTRO)
-			== ["atacar", "seguir", "invitar", "salir"],
+			== ["atacar", "seguir", "comerciar", "invitar", "salir"],
 		"el lider si puede invitar a alguien de afuera")
 
 	print("Cada opcion manda su orden y nada mas:")
@@ -167,6 +176,41 @@ func _ready() -> void:
 	_comprobar(int(estado.criaturas[YO]["escudo_party"]) == 0
 			and int(estado.criaturas[OTRO]["escudo_party"]) == 0,
 		"mandar una orden no cambia ningun escudo por su cuenta")
+
+	print("Ofrecer un trade son dos pasos, como el use with:")
+	var vial := {"cid": 2874, "nombre": "vial", "liquido": false}
+	con.ordenes.clear()
+	interfaz.ejecutar_accion_criatura("comerciar", OTRO)
+	_comprobar(con.ordenes.is_empty(),
+		"elegir a quien todavia no manda nada")
+	interfaz.usar_inventario(5, vial)
+	_comprobar(con.ordenes == [["comerciar", OTRO, Vector3i(0xFFFF, 5, 0),
+			2874, 0]],
+		"el objeto del equipo va con (0xFFFF, ranura, 0) y stackpos 0")
+
+	con.ordenes.clear()
+	interfaz.ejecutar_accion_criatura("comerciar", OTRO)
+	interfaz.usar_ranura("contenedor", 2, 3, vial)
+	_comprobar(con.ordenes == [["comerciar", OTRO,
+			Vector3i(0xFFFF, 0x40 | 2, 3), 2874, 0]],
+		"un objeto de un contenedor lleva el bit 0x40 en la Y")
+
+	con.ordenes.clear()
+	interfaz.ejecutar_accion_criatura("comerciar", OTRO)
+	_comprobar(interfaz.cancelar_uso_con(),
+		"el clic derecho cancela el trade a medio armar")
+	interfaz.usar_inventario(5, vial)
+	_comprobar(con.ordenes == [["usar", 2874]],
+		"despues de cancelar, el clic vuelve a usar el objeto")
+
+	con.ordenes.clear()
+	interfaz.ejecutar_accion_criatura("comerciar", OTRO)
+	estado.criaturas.erase(OTRO)
+	interfaz.usar_inventario(5, vial)
+	_comprobar(con.ordenes.is_empty(),
+		"si el otro se fue de la vista no se manda la oferta")
+	estado.criaturas[OTRO] = {"pos": estado.mi_pos + Vector3i(1, 0, 0),
+		"nombre": "Partner", "vida": 100, "escudo_party": 0}
 
 	print("El menu tambien conserva atacar y seguir:")
 	interfaz.ejecutar_accion_criatura("atacar", OTRO)

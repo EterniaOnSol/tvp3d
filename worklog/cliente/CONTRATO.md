@@ -1,6 +1,6 @@
 # Contrato: cliente
 
-Version: 1.3.0
+Version: 1.4.0
 Estado: PUBLICADO
 Propietario: cliente
 Depende de: modelo-comun 1.0.0, protocolo-red 1.1.0, assets 1.3.0
@@ -188,6 +188,27 @@ Si el servidor rechaza la accion, lo dice por `0xB4` como cualquier otra.
 
 La experiencia compartida (`0xA8`) no se ofrece: el cliente 7.72 no tenia ese
 boton. El transporte existe si alguna vez se decide agregarla.
+
+### Ofrecer un trade
+
+El menu de un jugador incluye `Trade with <nombre>`. Ofrecer es de dos pasos,
+igual que el "use with" de las runas que este cliente ya usa:
+
+1. Se elige a quien. No se manda nada todavia.
+2. El clic siguiente sobre un objeto del equipo o de un contenedor manda el
+   `0x7D` con ese objeto y ese jugador.
+
+El objeto se direcciona como en cualquier mensaje de objeto: `(0xFFFF, ranura,
+0)` para el equipo y `(0xFFFF, 0x40 | contenedor, ranura)` para un contenedor,
+con `stackpos` 0.
+
+El boton derecho cancela el trade a medio armar, y despues de cancelar el clic
+vuelve a usar el objeto como siempre. Si el otro jugador dejo de estar a la
+vista, no se manda nada y se avisa.
+
+El orden es el inverso al del cliente clasico, que empieza por el objeto. Se
+eligio asi porque el menu de criatura ya existe y el patron de dos pasos ya
+esta en el cliente; es reversible el dia que haya menu de objeto.
 
 ## Pruebas de cierre
 

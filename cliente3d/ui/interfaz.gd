@@ -80,6 +80,9 @@ var _battle_name_labels: Dictionary = {}
 var _battle_health_bars: Dictionary = {}
 var _battle_marcas: Dictionary = {}
 var _menu_criatura: PopupMenu
+## Trade a medio armar: a quien se le va a ofrecer, mientras se espera que el
+## jugador elija con que objeto.
+var _trade_pendiente := {}
 var _battle_ids: Array = []
 var _battle_anim_tiempo := 0.0
 var _stash_window
@@ -1438,6 +1441,7 @@ func acciones_de_criatura(id: int) -> Array:
 	var acciones: Array = [["atacar", "Attack"], ["seguir", "Follow"]]
 	if not es_jugador(id) or id == _estado.mi_id:
 		return acciones
+	acciones.append(["comerciar", "Trade with %s" % _nombre_de(id)])
 	var suyo := _escudo_de(id)
 	var mio := _escudo_de(_estado.mi_id)
 	var en_party := mio == 3 or mio == 4
@@ -1502,6 +1506,13 @@ func ejecutar_accion_criatura(accion: String, id: int) -> void:
 		"seguir":
 			_seleccionar_objetivo(id, true)
 			return
+	if accion == "comerciar":
+		# Primera mitad del trade: se recuerda a quien y el jugador elige el
+		# objeto con el clic siguiente, igual que el "use with" de runas.
+		_trade_pendiente = {"id": id, "nombre": _nombre_de(id)}
+		_anotar("Trade with %s: click the item you want to offer."
+			% _nombre_de(id))
+		return
 	if con == null:
 		return
 	match accion:
@@ -1524,6 +1535,28 @@ func ejecutar_accion_criatura(accion: String, id: int) -> void:
 
 func _nombre_de(id: int) -> String:
 	return _nombre_criatura(id, _estado.criaturas.get(id, {}))
+
+
+func _ofrecer_en_comercio(tipo: String, id_contenedor: int, slot: int,
+		cosa: Dictionary) -> void:
+	"""Manda el `0x7D` con el objeto elegido y el jugador ya recordado.
+
+	Quien decide si ese objeto se puede ofrecer, si hay distancia y si el otro
+	acepta es el servidor; aca solo se arma la intencion."""
+	var id := int(_trade_pendiente.get("id", 0))
+	var nombre_otro := str(_trade_pendiente.get("nombre", ""))
+	_trade_pendiente.clear()
+	var con = _mundo._con if _mundo != null else null
+	if con == null or id <= 0:
+		return
+	if not _estado.criaturas.has(id):
+		_anotar("%s is no longer in view." % nombre_otro)
+		return
+	con.enviar_solicitar_comercio(
+		_posicion_de_item(tipo, id_contenedor, slot),
+		int(cosa.get("cid", 0)), 0, id)
+	_anotar("Offering %s to %s." % [
+		str(cosa.get("nombre", "item")), nombre_otro])
 
 
 func _actualizar_seleccion_battle() -> void:
@@ -1773,6 +1806,10 @@ func usar_inventario(slot: int, cosa: Dictionary) -> void:
 
 func usar_ranura(tipo: String, id_contenedor: int, slot: int,
 		cosa: Dictionary) -> void:
+	if not _trade_pendiente.is_empty():
+		# Segunda mitad del trade: ya se eligio a quien, ahora el objeto.
+		_ofrecer_en_comercio(tipo, id_contenedor, slot, cosa)
+		return
 	if _es_runa(cosa) or bool(cosa.get("liquido", false)):
 		if _mundo.preparar_uso_con(tipo, id_contenedor, slot, cosa):
 			var nombre := str(cosa.get("nombre", "spell rune"))
@@ -1868,6 +1905,10 @@ func mirar_ranura(tipo: String, id_contenedor: int, slot: int,
 
 
 func cancelar_uso_con() -> bool:
+	if not _trade_pendiente.is_empty():
+		_anotar("Trade with %s cancelled." % str(_trade_pendiente.get("nombre", "")))
+		_trade_pendiente.clear()
+		return true
 	if _mundo == null or not _mundo.esta_esperando_uso_con():
 		return false
 	_mundo.cancelar_uso_con()
