@@ -444,6 +444,21 @@ func enviar_subir_contenedor(id_contenedor: int) -> void:
 	enviar_juego(PackedByteArray([0x88, id_contenedor & 0xFF]))
 
 
+func enviar_texto_ventana(id_ventana: int, texto: String) -> void:
+	"""Escribe el texto de un cartel, carta o etiqueta (0x89).
+
+	`ProtocolGame::parseTextWindow` (protocolgame.cpp:1095-1100) lee el id de
+	ventana y el texto. El servidor valida si ese item se podia escribir y si
+	el jugador sigue cerca; si no, contesta un `0xB4`."""
+	if id_ventana <= 0:
+		return
+	var mensaje := MENSAJE.new()
+	mensaje.escribir_u8(0x89)
+	mensaje.escribir_u32(id_ventana)
+	mensaje.escribir_texto(texto)
+	enviar_juego(mensaje.datos)
+
+
 func enviar_solicitar_comercio(origen: Vector3i, client_id: int,
 		stackpos: int, id_jugador: int) -> void:
 	"""Ofrece un objeto a otro jugador (0x7D).

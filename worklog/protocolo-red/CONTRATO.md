@@ -1,6 +1,6 @@
 # Contrato: protocolo-red
 
-Version: 1.5.0
+Version: 1.6.0
 Estado: PUBLICADO
 Propietario: protocolo-red
 Depende de: modelo-comun 1.0.0
@@ -169,6 +169,35 @@ La muerte se emite una sola vez por sesion: si el jugador ya esta fuera del
 mundo, un `0x6C` posterior en la misma casilla no vuelve a emitirla. Este
 adaptador solo emite el evento y marca al jugador fuera del mundo; cerrar la
 conexion y presentar la UI corresponden al consumidor.
+
+### Ventana de texto
+
+El servidor la abre al usar un cartel, una carta o la etiqueta de una parcel.
+
+`0x96` servidor -> cliente (`protocolgame.cpp:2091-2115`):
+
+```text
+uint32 id_ventana
+item        client id, mas un byte si es apilable o liquido
+uint16      maximo de caracteres
+string      texto actual
+string      quien lo escribio, vacio si nadie
+```
+
+`0x89` cliente -> servidor (`protocolgame.cpp:1095-1100`): `uint32 id_ventana`
+y el texto nuevo. Sin id de ventana no se envia nada; un texto vacio si es un
+envio valido, porque borrar lo escrito es una accion legitima.
+
+El paquete **no dice si el item se puede escribir**. Las dos ramas de
+`sendTextWindow` mandan la misma forma: la unica diferencia es que el primer
+`uint16` es el maximo permitido o el largo del texto ya escrito. El cliente por
+lo tanto no lo adivina: expone lo que llego y deja que el servidor rechace el
+`0x89` con un `0xB4` si ese item no se podia escribir.
+
+El adaptador conserva la ultima ventana en `ultima_ventana_texto` y la emite
+por `ventana_texto(datos)`. Una ventana truncada no se emite.
+
+Self-test con bytes exactos en `red/ventana_texto_self_test.gd`.
 
 ### Comercio entre jugadores
 

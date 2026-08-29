@@ -68,12 +68,16 @@ signal jugador_muerto(posicion: Vector3i)
 ## El mapa leido no cuadra con la posicion confirmada del jugador. Casi siempre
 ## es un item cuyo ancho no esta en el catalogo; la pila local no sirve.
 signal mapa_desalineado(detalle: Dictionary)
+## El servidor abrio la ventana de texto de un cartel, carta o etiqueta (0x96).
+signal ventana_texto(datos: Dictionary)
 ## El servidor cancelo el objetivo de combate (0xA3).
 signal objetivo_cancelado()
 signal voz_recibida(orador_id: int, trama: PackedByteArray)
 
 ## Falso cuando el ultimo mapa se leyo corrido: los indices de pila no valen.
 var mapa_alineado := true
+## Ultima ventana de texto que abrio el servidor, tal cual llego.
+var ultima_ventana_texto := {}
 var casillas := {}     ## Vector3i -> Array de cosas
 var criaturas := {}    ## id -> {pos, nombre, apariencia}
 var inventario := {}   ## slot -> cosa
@@ -568,6 +572,39 @@ func _leer_mensajes(msg) -> void:
 				hubo_cambio = _actualizar_estado_criatura(id_escudo, {
 					"escudo_party": escudo_party,
 				}) or hubo_cambio
+
+			0x96:   # ventana de texto (protocolgame.cpp:2091-2115)
+				# El servidor la manda al usar un cartel, una carta o una
+				# etiqueta. El paquete no dice si se puede escribir: manda un
+				# maximo y, si no correspondia, rechaza el 0x89 con un 0xB4.
+				if msg.sin_leer() < 5:
+					return
+				msg.leer_u8()
+				var id_ventana: int = msg.leer_u32()
+				if not _mapa.puede_leer_cosa(msg):
+					return
+				var recien_ventana := []
+				var cosa_ventana: Dictionary = _mapa.leer_cosa(
+					msg, Vector3i.ZERO, recien_ventana)
+				if msg.sin_leer() < 2:
+					return
+				var maximo: int = msg.leer_u16()
+				if msg.sin_leer() < 2:
+					return
+				var texto_ventana: String = msg.leer_texto()
+				if msg.sin_leer() < 2:
+					return
+				var autor: String = msg.leer_texto()
+				ultima_ventana_texto = {
+					"id": id_ventana,
+					"cid": int(cosa_ventana.get("cid", 0)),
+					"nombre": str(cosa_ventana.get("nombre", "")),
+					"texto": texto_ventana,
+					"autor": autor,
+					"maximo": maximo,
+				}
+				ventana_texto.emit(ultima_ventana_texto.duplicate())
+				hubo_cambio = true
 
 			# ---------------------------------------------------------
 			#  Nosotros

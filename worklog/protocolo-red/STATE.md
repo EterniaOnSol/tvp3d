@@ -2,7 +2,7 @@
 
 Estado: LISTO_PARA_REVISION
 Ultimo agente: claude
-Ultima actualizacion: 2026-08-29T13:15:00-06:00
+Ultima actualizacion: 2026-08-29T14:20:00-06:00
 Contrato publicado: SI
 
 ## Depende de
@@ -86,6 +86,15 @@ Definir y probar framing, version, mensajes, errores y compatibilidad de red.
   0)`, y sin `player_id` valido no se manda nada.
 - `red/comercio_self_test.gd`: 7 comprobaciones con bytes exactos de `0x7D` a
   `0x80`, incluidas las dos formas de direccionar un objeto.
+- Contrato 1.6.0: la ventana de texto. El `0x96` entrante trae id, item,
+  maximo, texto y autor; el `0x89` saliente escribe. Hasta ahora el cliente no
+  conocia ninguno de los dos, asi que usar un cartel o una etiqueta cortaba el
+  resto del mensaje sin decir nada.
+- El paquete no dice si el item se puede escribir: las dos ramas de
+  `sendTextWindow` mandan la misma forma. El cliente no lo adivina y deja que
+  el servidor rechace el `0x89` si no correspondia.
+- `red/ventana_texto_self_test.gd`: 15 comprobaciones con bytes exactos, con
+  etiqueta en blanco, mensaje pegado detras y ventana truncada.
 - La prueba viva completa quedo en un solo fallo, y es de otro carril: la
   limpieza del demon con `/killall`. El corpse del jugador, que fallaba antes,
   ahora pasa.
