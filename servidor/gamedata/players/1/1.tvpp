@@ -10,9 +10,9 @@ Sex = 0
 PlayerKillerEnd = 0
 BankBalance = 0
 Blessings = 0
-LastLoginSaved = 1787998975
-LastLogout = 1787999066
-Position = [32413,32218,7]
+LastLoginSaved = 1788015478
+LastLogout = 1788015579
+Position = [32081,32143,6]
 DefaultOutfit = (136, 78-106-58-95)
 
 Level = 1
@@ -36,7 +36,7 @@ Skill = (4, 10, 0)
 Skill = (5, 10, 0)
 Skill = (6, 10, 0)
 
-Condition = (256,0,-1,0,0,0,0,0,0,-1,0,9,90000,0)
+Condition = (256,0,-1,0,0,0,0,0,0,-1,0,9,101000,0)
 Spells = {}
 
 QuestValues = {}
