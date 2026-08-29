@@ -31,6 +31,9 @@ var _limpio := false
 var _god_movido := false
 var _jugador_movido := false
 var _limpieza_movida := false
+var _tileinfo_sent := false
+var _cama_esperando := false
+var _sleep_reconnect_started := false
 
 func _ready() -> void:
 	_abrir_login(GOD)
@@ -39,6 +42,13 @@ func _process(delta: float) -> void:
 	_tiempo += delta
 	_espera += delta
 	if _terminando:
+		return
+	if _fase.begins_with("esperar") and not _sleep_reconnect_started \
+			and _estado != null and _estado.mi_pos == CAMA:
+		_sleep_reconnect_started = true
+		_durmio = true
+		print("Servidor movio al personaje a la cama; reconectando para validar despertar.")
+		_con.cerrar()
 		return
 	if _tiempo > 180.0:
 		_fallar("timeout en fase %s" % _fase)
@@ -104,6 +114,18 @@ func _al_mapa(_pos: Vector3i) -> void:
 	if _fase == "ir cama":
 		if _estado.mi_pos != USO_CAMA:
 			return
+		if _cama_esperando:
+			return
+		if not _tileinfo_sent:
+			_tileinfo_sent = true
+			_cama_esperando = true
+			_con.enviar_hablar("/tileinfo %d,%d,%d" % [USO_CAMA.x, USO_CAMA.y, USO_CAMA.z])
+			# El fixture puede traer CONDITION_INFIGHT persistido; BedItem::canUse
+			# debe observar al jugador fuera de combate, no falsear el resultado.
+			await get_tree().create_timer(40.0).timeout
+			if _terminando:
+				return
+			_cama_esperando = false
 		if not _estado.casillas.has(CAMA):
 			return
 		var pila := 0
@@ -159,7 +181,7 @@ func _al_cerrarse() -> void:
 		_con.queue_free()
 		_con = null
 		_fase = "despertar jugador"
-		_abrir_login(JUGADOR)
+		_reentrar_despues()
 		return
 	if _fase == "salir jugador":
 		_con.queue_free()
@@ -203,6 +225,12 @@ func _limpiar_owner_despues() -> void:
 	_con.enviar_hablar("/owner none")
 	_fase = "salir limpieza"
 	_con.enviar_logout()
+
+func _reentrar_despues() -> void:
+	await get_tree().create_timer(6.0).timeout
+	if _terminando:
+		return
+	_abrir_login(JUGADOR)
 
 func _physics_process(_delta: float) -> void:
 	if _terminando:

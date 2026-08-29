@@ -33,11 +33,13 @@ function talkaction.onSay(player, words, param)
 
 	local mailbox = tile:getItemByType(ITEM_TYPE_MAILBOX)
 	local depot = tile:getItemByType(ITEM_TYPE_DEPOT)
+	local house = tile:getHouse()
 	-- La bandera es lo que dispara la entrega en `Tile::postAddNotification`;
 	-- que el item este no alcanza si el tile no quedo marcado.
 	player:sendTextMessage(MESSAGE_STATUS_CONSOLE_BLUE, string.format(
-		"tileinfo %d,%d,%d: mailbox=%s depot=%s items=%d flagMailbox=%s flagPZ=%s",
+		"tileinfo %d,%d,%d: house=%s mailbox=%s depot=%s items=%d flagMailbox=%s flagPZ=%s",
 		pos.x, pos.y, pos.z,
+		house and house:getId() or "no",
 		mailbox and mailbox:getId() or "no",
 		depot and depot:getId() or "no",
 		tile:getItemCount(),

@@ -2,7 +2,7 @@
 
 Estado: BLOQUEADO
 Ultimo agente: codex
-Ultima actualizacion: 2026-08-29T16:22:00-06:00
+Ultima actualizacion: 2026-08-29T16:35:00-06:00
 Contrato publicado: SI
 
 ## Depende de
@@ -31,6 +31,11 @@ Probar contratos, recorridos completos, concurrencia, fixtures y regresiones.
   `House::addTile`, que registra camas y marca las casillas de casa como PZ.
   Commit `5dcdabc` publicado. Falta repetir la prueba viva cuando Docker
   Desktop vuelva a exponer su socket.
+- Retest parcial tras reiniciar Docker: `/tileinfo 32328,32230,7` devuelve
+  `flagPZ=true`, confirmando el efecto del arreglo. La corrida completa se
+  atasco en login despues de multiples sesiones previas; owner y premium fueron
+  restaurados a `0`. Accion concreta: ejecutar una corrida limpia con el servidor
+  recien iniciado y sin sesiones residuales.
 - Atención operativa: la última preparación de la prueba dejó pendiente
   confirmar/restaurar `houses.id=6.owner` y `accounts.id=123456.premium_ends_at`
   porque el motor Docker cayó antes de la limpieza. Restaurar ambos a `0` antes
