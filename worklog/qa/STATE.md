@@ -27,6 +27,10 @@ Probar contratos, recorridos completos, concurrencia, fixtures y regresiones.
 
 - Cierre versionado en `24c9ab7` y publicado en `origin/main`; `git diff
   --check` pasa y los eventos JSON son validos.
+- Correccion preparada en `servidor/src/iomap.cpp`: el cargador TVP ahora usa
+  `House::addTile`, que registra camas y marca las casillas de casa como PZ.
+  Commit `5dcdabc` publicado. Falta repetir la prueba viva cuando Docker
+  Desktop vuelva a exponer su socket.
 
 - Andamiaje creado.
 - Publicado el contrato de QA v1.0.0.
