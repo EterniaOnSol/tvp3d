@@ -111,6 +111,8 @@ Probar contratos, recorridos completos, concurrencia, fixtures y regresiones.
   matriz global pasa a COMPROBADO.
 - La matriz local adopta `party_ui`, `party_protocolo` y `mapa_captura`, y
   termina 16/16 OK.
+- La prueba viva de trade dejo de armar el `0x7D` a mano: usa el metodo que
+  publico `protocolo-red` 1.5.0 y volvio a pasar entera contra el servidor.
 
 ## Falta
 

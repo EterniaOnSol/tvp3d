@@ -94,21 +94,17 @@ Definir y probar framing, version, mensajes, errores y compatibilidad de red.
 
 - Validar el recorrido contra el servidor Godot propio con dos clientes.
 - Mantener el adaptador TVP 7.72 separado de este framing JSON.
-- El consumidor debe reaccionar a `jugador_muerto`, enviar logout `0x14` y
-  presentar la reentrada; pertenece al siguiente carril de cliente.
-- QA debe hacer pruebas vivas de muerte/corpse/loot y actualizar la matriz
-  global de opcodes que todavia describe `0x8D/0x8F/0x90/0x91` como SKIP.
+- Actualizar `worklog/OPCODES_772.md`, que todavia describe
+  `0x8D/0x8F/0x90/0x91` como SKIP y no menciona party ni el `0x7D` saliente.
 
 ## Bloqueos activos
 
-- SOLICITUD A `cliente` (ruta suya, `cliente3d/ui/` y `mundo3d.gd`): falta la
-  interfaz de party. El transporte ya esta y los escudos ya se dibujan en el
-  Battle List y en el Target; falta invitar, aceptar, pasar liderazgo y salir,
-  y decidir si se ofrece la experiencia compartida, que el cliente 7.72
-  original no tenia.
-- SOLICITUD A `qa` (ruta suya): probar party viva con dos clientes, igual que
-  se hizo con trade y VIP. Lo unico observable es el escudo `0x91` de cada
-  lado; no hay paquete de party que esperar.
+- ATENDIDA el 2026-08-29: la solicitud de interfaz de party. `cliente` 1.3.0
+  publico el menu del Battle List con invitar, unirse, revocar, pasar
+  liderazgo y salir, armado con los escudos confirmados.
+- ATENDIDA el 2026-08-29: la solicitud de party viva. `qa` la corrio con dos
+  clientes y los escudos de los dos lados contaron la misma party en cada
+  paso (`docs/qa/PRUEBA_VIVA_PARTY.md`).
 - SOLICITUD A `qa` (ruta suya): en la corrida viva del mapa ya alineado, el
   unico fallo que queda es "la limpieza retira al demon invocado". `/killall`
   solo alcanza el cuadro alrededor de quien lo dice y el verdugo puede haberse

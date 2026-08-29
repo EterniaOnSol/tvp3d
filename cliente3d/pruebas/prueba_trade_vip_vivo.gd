@@ -7,9 +7,9 @@ extends Node
 # dos objetos por la ruta autoritativa de trade. Al final Valentino sale y el
 # god debe recibir el cambio online -> offline.
 #
-# La solicitud inicial de trade se arma aca porque el cliente publicado todavia
-# no expone el 0x7D saliente. Eso permite probar al servidor y al parser sin
-# invadir el carril protocolo-red, que es quien debe publicar ese metodo.
+# La solicitud inicial de trade usa el 0x7D saliente que publico
+# `protocolo-red` 1.5.0. Antes se armaba a mano aca, cuando el cliente todavia
+# no exponia ese metodo.
 
 const CONEXION := preload("res://red/conexion772.gd")
 const ESTADO := preload("res://red/estado_mundo.gd")
@@ -357,13 +357,9 @@ func _enviar_oferta_personaje() -> void:
 
 func _enviar_solicitud_trade(conexion, slot: int, cid: int,
 		id_contraparte: int) -> void:
-	# ProtocolGame::parseRequestTrade: position, client id, stackpos, player id.
-	var carga := PackedByteArray([0x7D, 0xFF, 0xFF,
-		slot & 0xFF, (slot >> 8) & 0xFF, 0,
-		cid & 0xFF, (cid >> 8) & 0xFF, 0,
-		id_contraparte & 0xFF, (id_contraparte >> 8) & 0xFF,
-		(id_contraparte >> 16) & 0xFF, (id_contraparte >> 24) & 0xFF])
-	conexion.enviar_juego(carga)
+	# `protocolo-red` 1.5.0 ya publica el 0x7D saliente con el atajo de
+	# inventario, asi que la prueba dejo de armar esos bytes a mano.
+	conexion.enviar_solicitar_comercio_inventario(slot, cid, id_contraparte)
 
 
 func _al_oferta(quien: String, nombre: String, propia: bool,
