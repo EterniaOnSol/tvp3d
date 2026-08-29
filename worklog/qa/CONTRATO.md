@@ -1,6 +1,6 @@
 # Contrato: qa
 
-Version: 1.3.0
+Version: 1.4.0
 Estado: PUBLICADO
 Propietario: qa
 Depende de: assets, protocolo-red
@@ -47,6 +47,25 @@ diferencias y 1 criatura ignorada.
 ## Compatibilidad
 
 El reporte es adicional y no altera `EstadoMundo`, el IR ni el protocolo.
+
+## Certificacion viva de casas y camas
+
+La prueba `pruebas/prueba_casa_cama_vivo.tscn` debe cubrir una casa reproducible
+del mapa real y conservar la autoridad del servidor en cada paso:
+
+- El personaje god asigna temporalmente la casa 6 a `Valentino` y luego limpia
+  el propietario al terminar.
+- `Valentino` entra por la salida de la casa, usa una cama real y debe ser
+  expulsado por el servidor al quedar dormido.
+- Al reconectar, el servidor debe despertar al personaje, limpiar el sleeper y
+  devolverlo a la entrada de la casa; la posicion persistida no puede depender
+  de una prediccion del cliente.
+- Un personaje no propietario debe recibir rechazo al usar la misma cama.
+
+La prueba no modifica `servidor/data`; solo usa talkactions de god y paquetes
+de uso de item contra el servidor de prueba. Si el mapa no contiene la cama o
+la autoridad no expone alguno de estos pasos, el resultado es bloqueo
+documentado y no una aprobacion parcial.
 
 ## Certificacion viva de muerte y corpse
 

@@ -2,7 +2,7 @@
 
 Estado: LISTO_PARA_REVISION
 Ultimo agente: codex
-Ultima actualizacion: 2026-08-29T15:18:00-06:00
+Ultima actualizacion: 2026-08-29T18:48:00-06:00
 Contrato publicado: SI
 
 ## Depende de
@@ -16,6 +16,14 @@ Contrato publicado: SI
 Probar contratos, recorridos completos, concurrencia, fixtures y regresiones.
 
 ## Hecho
+
+- Casas/camas: se inspecciono la casa 6 (Sunset Homes, Flat 01), con camas
+  reales en `(32329,32230,7)` y entrada `(32333,32232,7)`. La prueba viva
+  `prueba_casa_cama_vivo.tscn` deja el propietario y la cuenta premium
+  restaurados, pero TVP responde `You cannot use this object` al usar la cama
+  desde el interior. No se certifica dormir/despertar ni persistencia hasta
+  resolver la condicion autoritativa de uso (zona PZ/permisos); queda como
+  bloqueo reproducible, no como aprobado parcial.
 
 - Andamiaje creado.
 - Publicado el contrato de QA v1.0.0.
