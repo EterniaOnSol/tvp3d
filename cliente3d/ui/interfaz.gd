@@ -8,6 +8,7 @@ const VENTANA := preload("res://ui/ventana.gd")
 const BARRA := preload("res://ui/barra.gd")
 const RANURA := preload("res://ui/ranura.gd")
 const MINIMAPA := preload("res://ui/minimapa.gd")
+const MARCA := preload("res://ui/marca_criatura.gd")
 # El protocolo transporta client IDs, no los IDs internos del servidor.
 const IDS_MONEDAS := [3031, 3035, 3043]
 const IDS_MONEDAS_SERVIDOR := {
@@ -72,6 +73,7 @@ var _battle_sprite_slots: Dictionary = {}
 var _battle_rows: Dictionary = {}
 var _battle_name_labels: Dictionary = {}
 var _battle_health_bars: Dictionary = {}
+var _battle_marcas: Dictionary = {}
 var _battle_ids: Array = []
 var _battle_anim_tiempo := 0.0
 var _stash_window
@@ -95,6 +97,7 @@ var _vitales_mp
 var _target_window
 var _target_sprite: TextureRect
 var _target_name: Label
+var _target_marcas: Dictionary = {}
 var _target_bar
 var _objetivo_id := 0
 var _comercio_window
@@ -1078,15 +1081,21 @@ func _armar_objetivo() -> void:
 	detalles.size_flags_vertical = Control.SIZE_SHRINK_CENTER
 	detalles.add_theme_constant_override("separation", 4)
 	contenido.add_child(detalles)
+	var linea_nombre := HBoxContainer.new()
+	linea_nombre.add_theme_constant_override("separation", 4)
+	linea_nombre.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	detalles.add_child(linea_nombre)
 	_target_name = VENTANA.etiqueta("", 11)
 	_target_name.horizontal_alignment = HORIZONTAL_ALIGNMENT_LEFT
 	_target_name.vertical_alignment = VERTICAL_ALIGNMENT_CENTER
 	_target_name.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
 	_target_name.custom_minimum_size = Vector2(135, 20)
+	_target_name.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 	_target_name.add_theme_color_override("font_color", Color(1.0, 1.0, 1.0, 1.0))
 	_target_name.add_theme_color_override("font_outline_color", Color(0.0, 0.0, 0.0, 1.0))
 	_target_name.add_theme_constant_override("outline_size", 3)
-	detalles.add_child(_target_name)
+	linea_nombre.add_child(_target_name)
+	_target_marcas = _agregar_marcas(linea_nombre, 14.0)
 	_target_bar = BARRA.new(Color(0.78, 0.18, 0.18), "", 14)
 	detalles.add_child(_target_bar)
 
@@ -1133,7 +1142,7 @@ func _actualizar_skills(stats: Dictionary) -> void:
 			int(stats.get("vida_max", 0))],
 		"Mana": "%d / %d" % [int(stats.get("mana", 0)),
 			int(stats.get("mana_max", 0))],
-		"Speed": str(stats.get("velocidad", 0)),
+		"Speed": str(_velocidad_propia()),
 		"Capacity": str(stats.get("capacidad", 0)),
 		"Food": str(stats.get("food", stats.get("comida", 0))),
 		"Stamina": str(stats.get("stamina", 0)),
@@ -1188,6 +1197,7 @@ func _actualizar_battle() -> void:
 	_battle_rows.clear()
 	_battle_name_labels.clear()
 	_battle_health_bars.clear()
+	_battle_marcas.clear()
 	_battle_ids = ids_actuales.duplicate()
 	for hijo in _battle_box.get_children():
 		hijo.free()
@@ -1281,6 +1291,11 @@ func _agregar_fila_battle(id: int, criatura: Dictionary) -> void:
 	detalles.size_flags_vertical = Control.SIZE_EXPAND_FILL
 	detalles.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	caja.add_child(detalles)
+	var linea := HBoxContainer.new()
+	linea.add_theme_constant_override("separation", 3)
+	linea.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	linea.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	detalles.add_child(linea)
 	var nombre := VENTANA.etiqueta(_nombre_criatura(id, criatura), 10)
 	nombre.custom_minimum_size.y = 14
 	nombre.clip_text = false
@@ -1288,8 +1303,10 @@ func _agregar_fila_battle(id: int, criatura: Dictionary) -> void:
 	nombre.add_theme_color_override("font_color", Color(0.96, 0.96, 0.96))
 	nombre.add_theme_color_override("font_outline_color", Color(0.0, 0.0, 0.0, 0.95))
 	nombre.add_theme_constant_override("outline_size", 2)
-	detalles.add_child(nombre)
+	linea.add_child(nombre)
 	_battle_name_labels[id] = nombre
+	_battle_marcas[id] = _agregar_marcas(linea, 11.0)
+	_actualizar_marcas(_battle_marcas[id], criatura)
 	var porcentaje := clampf(float(criatura.get("vida", 100)) / 100.0, 0.0, 1.0)
 	var barra = BARRA.new(Color(0.68, 0.18, 0.18), "", 7)
 	barra.size_flags_horizontal = Control.SIZE_EXPAND_FILL
@@ -1314,6 +1331,35 @@ func _actualizar_datos_fila_battle(id: int, criatura: Dictionary) -> void:
 	var sprite: TextureRect = _battle_sprite_slots.get(id)
 	if is_instance_valid(sprite):
 		_actualizar_sprite_battle(sprite, criatura, 0)
+	_actualizar_marcas(_battle_marcas.get(id, {}), criatura)
+
+
+func _agregar_marcas(padre: Control, lado: float) -> Dictionary:
+	"""Crea la calavera y el escudo de party de una criatura en ese orden."""
+	var marcas := {
+		MARCA.CALAVERA: MARCA.new(MARCA.CALAVERA, lado),
+		MARCA.ESCUDO: MARCA.new(MARCA.ESCUDO, lado),
+	}
+	for clase in marcas:
+		padre.add_child(marcas[clase])
+	return marcas
+
+
+func _actualizar_marcas(marcas: Dictionary, criatura: Dictionary) -> void:
+	"""Solo copia lo que el servidor confirmo; una ausencia no se rellena."""
+	for clase in marcas:
+		var marca = marcas[clase]
+		if is_instance_valid(marca):
+			marca.mostrar(int(criatura.get(clase, 0)))
+
+
+func _velocidad_propia() -> int:
+	"""La velocidad del personaje llega en `AddCreature` y en `0x8F`, no en el
+	`0xA0` de stats: se lee del estado de criatura de `mi_id`."""
+	if _estado == null:
+		return 0
+	var propia: Dictionary = _estado.criaturas.get(_estado.mi_id, {})
+	return int(propia.get("velocidad", 0))
 
 
 func _cargar_nombres_criaturas() -> void:
@@ -1436,6 +1482,7 @@ func mostrar_objetivo(id: int) -> bool:
 	_target_window.visible = true
 	_actualizar_sprite_battle(_target_sprite, criatura, 0)
 	_target_name.text = _nombre_criatura(id, criatura)
+	_actualizar_marcas(_target_marcas, criatura)
 	var porcentaje := clampf(float(criatura.get("vida", 100)) / 100.0, 0.0, 1.0)
 	_target_bar.fijar(porcentaje, "%d%%" % int(porcentaje * 100.0))
 	_actualizar_seleccion_battle()

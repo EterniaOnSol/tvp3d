@@ -1,6 +1,6 @@
 # Contrato: cliente
 
-Version: 1.1.0
+Version: 1.2.0
 Estado: PUBLICADO
 Propietario: cliente
 Depende de: modelo-comun 1.0.0, protocolo-red 1.1.0, assets 1.3.0
@@ -123,6 +123,41 @@ Un mensaje del servidor que cancele un logout voluntario no cancela esta
 salida: la muerte ya ocurrio en la autoridad y no es reversible desde el
 cliente.
 
+## Estado de criatura visible en la UI
+
+Esta seccion aplica al cliente jugable de la rama TVP 7.72. Los tres valores
+que `protocolo-red` 1.1.0 conserva —velocidad, calavera y escudo de party— se
+muestran, no se calculan. El cliente no deduce una calavera del combate, un
+escudo de un mensaje de chat ni una velocidad de la distancia recorrida.
+
+| Dato | Fuente unica | Donde se ve |
+|---|---|---|
+| Velocidad propia | `EstadoMundo.criaturas[mi_id]["velocidad"]`, puesta por `AddCreature` y por `0x8F` | Fila `Speed` de la ventana Skills |
+| Calavera | `EstadoMundo.criaturas[id]["calavera"]`, puesta por `AddCreature` y por `0x90` | Fila del Battle List y panel Target |
+| Escudo de party | `EstadoMundo.criaturas[id]["escudo_party"]`, puesta por `AddCreature` y por `0x91` | Fila del Battle List y panel Target |
+
+La velocidad propia no se lee del `0xA0`: ese paquete de 7.72 no la
+transporta y usarlo mostraba siempre cero.
+
+Las dos tablas de significado viven en `cliente3d/ui/marca_criatura.gd` como
+dato, copiadas de `servidor/src/const.h:179-193`:
+
+| Valor | Calavera | Escudo de party |
+|---:|---|---|
+| 0 | sin marca | sin marca |
+| 1 | `Yellow Skull` | `Party invitation received` |
+| 2 | `Green Skull` | `Party invitation sent` |
+| 3 | `White Skull` | `Party member` |
+| 4 | `Red Skull` | `Party leader` |
+
+El sentido del escudo es el que resuelve `Player::getPartyShield`
+(`servidor/src/player.cpp:3742-3767`) desde el jugador que mira; el cliente no
+vuelve a decidir quien invito a quien.
+
+Un valor fuera de la tabla se oculta y no se dibuja con un color aproximado.
+Un valor ausente vale cero, que tambien es sin marca. Un cambio de calavera o
+de escudo no reconstruye la fila del Battle List.
+
 ## Pruebas de cierre
 
 - La escena arranca sin renderer con `--headless` y no produce errores de
@@ -137,3 +172,8 @@ cliente.
   cuenta al cerrarse el socket.
 - La reentrada pedida por el jugador limpia la sesion y vuelve al selector de
   personajes.
+- Una criatura con calavera o escudo confirmados los muestra en el Battle List
+  y en el Target con el nombre exacto de la tabla; una sin ellos no muestra
+  marca, y un valor desconocido se oculta.
+- `Speed` de la ventana Skills muestra la velocidad confirmada de `mi_id` y la
+  cambia al recibir un `0x8F`.
