@@ -1,8 +1,8 @@
 # Estado: qa
 
-Estado: EN_CURSO
-Ultimo agente: codex
-Ultima actualizacion: 2026-08-29T05:05:36-06:00
+Estado: LISTO_PARA_REVISION
+Ultimo agente: claude
+Ultima actualizacion: 2026-08-29T07:05:00-06:00
 Contrato publicado: SI
 
 ## Depende de
@@ -52,21 +52,36 @@ Probar contratos, recorridos completos, concurrencia, fixtures y regresiones.
 - Validado el checkpoint actual en ocho procesos Godot: contenedores/canales,
   controles, eventos/trade, modelos authored, formas, spells, escena principal
   y escaneo de editor terminaron con codigo cero.
+- `prueba_muerte_reentrada` adoptada en la matriz local: 10/10 OK y reporte
+  regenerado.
+- Prueba viva de muerte, corpse y loot ejecutada contra el servidor TVP:
+  un demon invocado con `/m` mato al personaje, el servidor dejo el corpse
+  `dead human`, el `0x6C` de `mi_id` con vida cero emitio la muerte, el
+  logout `0x14` termino la sesion y el reingreso devolvio un personaje vivo
+  en su templo.
+- Mitad de corpse y loot repetible sola con `--solo-loot`: dos corridas
+  independientes abrieron el corpse `dead rat` y leyeron loot distinto
+  (`gold coin x3` y `x4`), que es el que decide el servidor.
+- Evidencia, etapas, limites y efectos publicados en
+  `docs/qa/PRUEBA_VIVA_MUERTE_LOOT.md`; matriz global actualizada.
 
 ## Falta
 
 - Completar matriz de red de todos los recorridos y errores contra un servidor
   legacy disponible.
 - Repetir la checklist desde un clon limpio para la prueba de entrega.
-- Probar en vivo muerte/reentrada, corpse y loot; luego trade y VIP con dos
-  clientes.
-- Conservar y probar velocidad, skull y party shield que el cliente aun
-  descarta en `0x8F`, `0x90` y `0x91`.
-- Implementar el relevo de muerte segun esta rama: retirada de `mi_id` por
-  `0x6C`, bloqueo de input y logout `0x14`; no existe un opcode de death.
+- Automatizar la precondicion de la corrida completa de muerte: llevar al
+  personaje fuera de la zona de proteccion sin intervencion manual, con el
+  pathfinding real del cliente o con un teleport armado por el god.
+- Probar trade y VIP con dos clientes reales.
+- Representar en la UI la velocidad, skull y party shield que el protocolo
+  ya conserva.
 
 ## Bloqueos activos
 
+- La corrida completa de la prueba viva de muerte exige que el personaje este
+  parado fuera de una zona de proteccion. Es una precondicion documentada, no
+  un fallo: la prueba la detecta y lo dice.
 - La prueba manual de puertas y runas sigue pendiente; la prueba automatizada
   del life ring ya pasa contra el servidor reconstruido.
 - El cambio de reacquisicion de monstruos en C++ requiere reconstruccion y
@@ -77,6 +92,9 @@ Probar contratos, recorridos completos, concurrencia, fixtures y regresiones.
 | Decision | Motivo | Reversible |
 |---|---|---|
 | Las pruebas de fecha usan reloj fijado | Evita que fallen con el paso de los meses | si |
+| La prueba viva no camina al personaje para salir del templo | Caminar a ciegas no sale de la zona de proteccion y un auto-walk inventado seria la intencion de cliente que la prueba no debe simular | si |
+| La mitad de corpse y loot se hace siempre en `32082,32145,6` | Es una casilla comprobada fuera de zona de proteccion, asi la media prueba se repite sin depender de donde quedo nadie | si |
+| El monstruo del corpse se remata con `/killall` si el cuerpo a cuerpo tarda | El personaje god es nivel 1 y la prueba mide corpse y loot, no el ritmo de combate | si |
 
 ## Notas para quien retome
 
@@ -84,3 +102,11 @@ Probar contratos, recorridos completos, concurrencia, fixtures y regresiones.
   carril revisado.
 - El runner local no arranca servidores ni toca datos persistentes; las
   pruebas de red siguen siendo explícitas y secuenciales.
+- La prueba viva SI toca datos persistentes: una corrida completa le cuesta un
+  nivel al personaje normal y deja sus objetos en el corpse. Para restaurarlo
+  estan la semilla `servidor/docker/data/02-data.sql` y
+  `servidor/gamedata/players/`.
+- Si el CLI de Docker en Windows se cuelga, el motor suele seguir vivo: se lo
+  mira por el socket de adentro de WSL y se arregla reiniciando Docker
+  Desktop. El 2026-08-29 el contenedor `servidor-server-1` estaba caido y los
+  puertos 7171/7172 seguian escuchando sin nadie detras.
