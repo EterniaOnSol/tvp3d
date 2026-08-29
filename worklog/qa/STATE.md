@@ -1,8 +1,8 @@
 # Estado: qa
 
-Estado: LISTO_PARA_REVISION
+Estado: BLOQUEADO
 Ultimo agente: codex
-Ultima actualizacion: 2026-08-29T18:52:00-06:00
+Ultima actualizacion: 2026-08-29T16:22:00-06:00
 Contrato publicado: SI
 
 ## Depende de
