@@ -152,6 +152,10 @@ MapDataLoadResult_t IOMap::loadMapData()
 			if (houseId != 0) {
 				House* house = g_game.map.houses.addHouse(houseId);
 				tile->setHouse(house);
+				// The TVP map format carries the house id on each tile. Register the
+				// tile through House::addTile as the OTBM loader does, so beds receive
+				// the house pointer and every house tile gets protection-zone flags.
+				house->addTile(tile);
 			}
 
 			uint32_t tileFlags = 0;

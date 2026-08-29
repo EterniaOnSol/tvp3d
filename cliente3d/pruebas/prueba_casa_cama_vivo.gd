@@ -14,6 +14,7 @@ const CASA := 6
 const ENTRADA := Vector3i(32333, 32232, 7)
 const INTERIOR := Vector3i(32331, 32230, 7)
 const CAMA := Vector3i(32329, 32230, 7)
+const USO_CAMA := Vector3i(32328, 32230, 7)
 
 var _login
 var _con
@@ -27,6 +28,9 @@ var _terminando := false
 var _durmio := false
 var _desperto := false
 var _limpio := false
+var _god_movido := false
+var _jugador_movido := false
+var _limpieza_movida := false
 
 func _ready() -> void:
 	_abrir_login(GOD)
@@ -75,7 +79,9 @@ func _al_mapa(_pos: Vector3i) -> void:
 	print("MAPA fase=%s pos=%s casillas=%d" % [_fase, _estado.mi_pos, _estado.casillas.size()])
 	if _fase == "login god":
 		_fase = "ir god casa"
-		_con.enviar_hablar("/gotohouse %d" % CASA)
+		if not _god_movido:
+			_god_movido = true
+			_con.enviar_hablar("/gotohouse %d" % CASA)
 		if _estado.mi_pos.distance_to(ENTRADA) <= 2.0:
 			_enviar_interior_despues()
 		return
@@ -87,9 +93,17 @@ func _al_mapa(_pos: Vector3i) -> void:
 		return
 	if _fase == "entrar jugador":
 		_fase = "ir jugador casa"
-		_con.enviar_hablar("/gotohouse %d" % CASA)
+		if not _jugador_movido:
+			_jugador_movido = true
+			_con.enviar_hablar("/gotohouse %d" % CASA)
 		return
 	if _fase == "ir jugador casa":
+		_fase = "ir cama"
+		_con.enviar_hablar("/gotopos %d,%d,%d" % [USO_CAMA.x, USO_CAMA.y, USO_CAMA.z])
+		return
+	if _fase == "ir cama":
+		if _estado.mi_pos != USO_CAMA:
+			return
 		if not _estado.casillas.has(CAMA):
 			return
 		var pila := 0
@@ -116,7 +130,9 @@ func _al_mapa(_pos: Vector3i) -> void:
 		return
 	if _fase == "limpiar god":
 		_fase = "ir limpieza casa"
-		_con.enviar_hablar("/gotohouse %d" % CASA)
+		if not _limpieza_movida:
+			_limpieza_movida = true
+			_con.enviar_hablar("/gotohouse %d" % CASA)
 		return
 	if _fase == "ir limpieza casa":
 		if _estado.mi_pos.distance_to(ENTRADA) > 2.0:
@@ -133,6 +149,7 @@ func _al_cerrarse() -> void:
 		# Cierre despues de asignar: abrir al propietario.
 		_con.queue_free()
 		_con = null
+		_jugador_movido = false
 		_fase = "entrar jugador"
 		_abrir_login(JUGADOR)
 		return
@@ -147,6 +164,7 @@ func _al_cerrarse() -> void:
 	if _fase == "salir jugador":
 		_con.queue_free()
 		_con = null
+		_limpieza_movida = false
 		_fase = "limpiar god"
 		_abrir_login(GOD)
 		return
