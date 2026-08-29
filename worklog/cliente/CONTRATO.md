@@ -1,6 +1,6 @@
 # Contrato: cliente
 
-Version: 1.4.0
+Version: 1.5.0
 Estado: PUBLICADO
 Propietario: cliente
 Depende de: modelo-comun 1.0.0, protocolo-red 1.1.0, assets 1.3.0
@@ -210,6 +210,20 @@ El orden es el inverso al del cliente clasico, que empieza por el objeto. Se
 eligio asi porque el menu de criatura ya existe y el patron de dos pasos ya
 esta en el cliente; es reversible el dia que haya menu de objeto.
 
+### Ventana de texto
+
+El servidor la abre con el `0x96` al usar un cartel, una carta o la etiqueta de
+una parcel, y la respuesta vuelve por el `0x89` (`protocolo-red` 1.6.0).
+
+La ventana muestra **solo lo que mando el servidor**: el nombre del item, quien
+lo escribio y el texto actual. El maximo de caracteres tambien es suyo: al
+escribir se corta ahi y se avisa cuantos quedan.
+
+El paquete **no dice si el item se puede escribir**, asi que el cliente no lo
+adivina: deja escribir siempre que el maximo sea mayor que cero y, si no
+correspondia, el servidor rechaza el `0x89` con un `0xB4`. `Ok` manda lo
+escrito; `Cancel` y `Esc` cierran sin mandar nada.
+
 ## Pruebas de cierre
 
 - La escena arranca sin renderer con `--headless` y no produce errores de
@@ -229,6 +243,8 @@ esta en el cliente; es reversible el dia que haya menu de objeto.
   marca, y un valor desconocido se oculta.
 - `Speed` de la ventana Skills muestra la velocidad confirmada de `mi_id` y la
   cambia al recibir un `0x8F`.
+- La ventana de texto muestra el texto y el autor que mando el servidor, corta
+  en su maximo, y al aceptar devuelve el id de ventana y el texto tal cual.
 - El menu de una criatura ofrece exactamente las acciones de party que
   permiten los escudos confirmados, y ninguna sobre un monstruo, un NPC o uno
   mismo.

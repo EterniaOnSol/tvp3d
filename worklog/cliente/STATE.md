@@ -2,7 +2,7 @@
 
 Estado: LISTO_PARA_REVISION
 Ultimo agente: claude
-Ultima actualizacion: 2026-08-29T13:50:00-06:00
+Ultima actualizacion: 2026-08-29T18:10:00-06:00
 Contrato publicado: SI
 
 ## Depende de
@@ -64,6 +64,14 @@ Construir la experiencia jugable 3D y mostrar solo estado confirmado.
 - `pruebas/prueba_party_ui.tscn`: 20 comprobaciones en verde, una por cada
   combinacion de escudos, las dos formas de direccionar el objeto ofrecido, y
   las que verifican que mandar no adelanta estado.
+- Contrato 1.5.0: la ventana de texto de carteles, cartas y etiquetas. La abre
+  el servidor con el `0x96` y la respuesta va por el `0x89`. Muestra el nombre
+  del item, quien lo escribio y el texto actual; corta en el maximo que puso el
+  servidor y no adivina permisos, porque el paquete no dice si el item se puede
+  escribir.
+- `pruebas/prueba_ventana_texto_ui.tscn`: 13 comprobaciones en verde, con
+  etiqueta en blanco, texto mas largo que el maximo, cartel ya escrito y
+  cancelar sin mandar nada. Adoptada en la matriz, que queda 17/17.
 - `pruebas/prueba_estado_criatura_ui.tscn`: 20 comprobaciones en verde,
   incluidos los cambios `0x90`, `0x91` y `0x8F` en vivo y el valor desconocido
   que se oculta.

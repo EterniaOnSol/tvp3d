@@ -49,6 +49,7 @@ const COORD := preload("res://comun/coordenadas_tibia.gd")
 const INTERFAZ := preload("res://ui/interfaz.gd")
 const LOGIN := preload("res://ui/login.gd")
 const MUERTE := preload("res://ui/muerte.gd")
+const VENTANA_TEXTO := preload("res://ui/ventana_texto.gd")
 const VOZ := preload("res://red/voz_proximidad.gd")
 const GUION_MAGIC_WALL := preload("res://mundo/magic_wall_3d.gd")
 const MODELO_OBJ := preload("res://mundo/modelo_obj.gd")
@@ -204,6 +205,7 @@ var _catalogo
 var _interfaz
 var _login
 var _muerte
+var _ventana_texto
 var _voz
 var _host_servidor := HOST_LOCAL
 var _cuenta_login := 0
@@ -422,6 +424,9 @@ func _ready() -> void:
 	_estado.objetivo_cancelado.connect(_al_objetivo_cancelado)
 	# Muerte: 0x6C de mi_id con vida autoritativa cero. No hay opcode propio.
 	_estado.jugador_muerto.connect(_al_morir)
+	# La ventana de texto la abre el servidor con el 0x96 al usar un cartel,
+	# una carta o la etiqueta de una parcel.
+	_estado.ventana_texto.connect(_al_ventana_texto)
 	_estado.voz_recibida.connect(_voz.recibir_frame)
 	# El servidor pregunta cada 5 segundos si seguimos vivos
 	# (protocolgame.cpp:1628-1638). Hay que contestarle.
@@ -444,6 +449,9 @@ func _ready() -> void:
 	_muerte = MUERTE.new()
 	_muerte.solicito_reentrada.connect(volver_desde_muerte)
 	add_child(_muerte)
+	_ventana_texto = VENTANA_TEXTO.new()
+	_ventana_texto.escribio.connect(_al_escribir_texto)
+	add_child(_ventana_texto)
 	_login.mostrar_login()
 	var credenciales := _credenciales_de_arranque()
 	if not credenciales.is_empty():
@@ -870,6 +878,18 @@ func _iniciar_salida(destino: String) -> void:
 	_interfaz.visible = false
 	_avisar("Logging out...")
 	_con.enviar_logout()
+
+
+func _al_ventana_texto(datos: Dictionary) -> void:
+	"""El servidor abrio la ventana de texto de un item (0x96)."""
+	if _ventana_texto != null:
+		_ventana_texto.mostrar(datos)
+
+
+func _al_escribir_texto(id_ventana: int, texto: String) -> void:
+	"""El jugador acepto: se manda lo escrito y el servidor decide si vale."""
+	if _con != null:
+		_con.enviar_texto_ventana(id_ventana, texto)
 
 
 func _al_morir(posicion: Vector3i) -> void:
