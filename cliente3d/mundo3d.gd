@@ -48,6 +48,7 @@ const IR_TROZOS := preload("res://red/ir_trozos.gd")
 const COORD := preload("res://comun/coordenadas_tibia.gd")
 const INTERFAZ := preload("res://ui/interfaz.gd")
 const LOGIN := preload("res://ui/login.gd")
+const MUERTE := preload("res://ui/muerte.gd")
 const VOZ := preload("res://red/voz_proximidad.gd")
 const GUION_MAGIC_WALL := preload("res://mundo/magic_wall_3d.gd")
 const MODELO_OBJ := preload("res://mundo/modelo_obj.gd")
@@ -202,6 +203,7 @@ var _disco
 var _catalogo
 var _interfaz
 var _login
+var _muerte
 var _voz
 var _host_servidor := HOST_LOCAL
 var _cuenta_login := 0
@@ -256,8 +258,16 @@ var _rechazados := false
 ## Ese cierre es normal y no debe reemplazar la lista por un mensaje de error.
 var _lista_personajes_recibida := false
 ## Operacion de salida solicitada por el jugador: "personajes" vuelve a la
-## lista de personajes y "login" vuelve al formulario de cuenta.
+## lista de personajes y "login" vuelve al formulario de cuenta. La salida
+## "muerte" no la pide el jugador: la dispara la muerte confirmada por el
+## servidor y deja la pantalla de reentrada esperando su decision.
 var _salida_pendiente := ""
+## Muerte confirmada por `EstadoMundo.jugador_muerto`. Mientras esta puesto no
+## sale ninguna intencion nueva del cliente. Esta rama no manda dialogo de
+## muerte, asi que este es el unico estado de muerte que existe aca.
+var _muerto := false
+## Donde nos retiro el servidor al morir. Solo se guarda para el log.
+var _pos_muerte := Vector3i.ZERO
 ## 0x64 es la descripcion completa que el servidor envia al entrar o al
 ## teletransportar. Se consume junto con `cambio`, antes de que el usuario
 ## pueda hacer otro map-click.
@@ -410,13 +420,15 @@ func _ready() -> void:
 	_estado.mensaje_pantalla.connect(_al_mensaje_pantalla)
 	_estado.cuadrado_criatura.connect(_al_cuadrado_criatura)
 	_estado.objetivo_cancelado.connect(_al_objetivo_cancelado)
+	# Muerte: 0x6C de mi_id con vida autoritativa cero. No hay opcode propio.
+	_estado.jugador_muerto.connect(_al_morir)
 	_estado.voz_recibida.connect(_voz.recibir_frame)
 	# El servidor pregunta cada 5 segundos si seguimos vivos
 	# (protocolgame.cpp:1628-1638). Hay que contestarle.
 	_estado.pedido_ping.connect(func(): _con.enviar_juego(PackedByteArray([0x1E])))
 	_estado.rechazados.connect(_al_ser_rechazados)
 	_estado.mensaje_servidor.connect(_al_mensaje_servidor)
-	_con = CONEXION.new()
+	_con = _nueva_conexion()
 	add_child(_con)
 	_voz.configurar_conexion(_con)
 	_con.error_red.connect(_al_fallar)
@@ -429,6 +441,9 @@ func _ready() -> void:
 	_login.solicito_login.connect(_solicitar_login)
 	_login.solicito_personaje.connect(_seleccionar_personaje)
 	add_child(_login)
+	_muerte = MUERTE.new()
+	_muerte.solicito_reentrada.connect(volver_desde_muerte)
+	add_child(_muerte)
 	_login.mostrar_login()
 	var credenciales := _credenciales_de_arranque()
 	if not credenciales.is_empty():
@@ -718,6 +733,16 @@ func _host_de_arranque() -> String:
 	return HOST_LOCAL
 
 
+func _nueva_conexion():
+	"""Punto unico donde nace la conexion 7.72.
+
+	Existe para que una prueba headless pueda seguir el recorrido de muerte y
+	reentrada sin abrir un socket real. El cliente normal siempre recibe el
+	adaptador de verdad.
+	"""
+	return CONEXION.new()
+
+
 func _solicitar_login(cuenta: int, clave: String) -> void:
 	if cuenta <= 0 or clave.is_empty() or _estado.adentro:
 		return
@@ -729,7 +754,7 @@ func _solicitar_login(cuenta: int, clave: String) -> void:
 	if _con != null:
 		_con.cerrar()
 		_con.queue_free()
-	_con = CONEXION.new()
+	_con = _nueva_conexion()
 	add_child(_con)
 	_voz.configurar_conexion(_con)
 	_con.error_red.connect(_al_fallar)
@@ -755,7 +780,7 @@ func _al_recibir_personajes(motd: String, personajes: Array) -> void:
 func _pedir_lista_despues_de_logout() -> void:
 	_lista_personajes_recibida = false
 	_rechazados = false
-	_con = CONEXION.new()
+	_con = _nueva_conexion()
 	add_child(_con)
 	_voz.configurar_conexion(_con)
 	_con.error_red.connect(_al_fallar)
@@ -773,7 +798,7 @@ func _seleccionar_personaje(personaje: Dictionary) -> void:
 	if _con != null:
 		_con.cerrar()
 		_con.queue_free()
-	_con = CONEXION.new()
+	_con = _nueva_conexion()
 	add_child(_con)
 	_voz.configurar_conexion(_con)
 	_con.error_red.connect(_al_fallar)
@@ -791,6 +816,11 @@ func _seleccionar_personaje(personaje: Dictionary) -> void:
 func _al_entramos() -> void:
 	_salida_pendiente = ""
 	_npc_hablar_pendiente_id = 0
+	# Reentrar despues de morir devuelve el control: la muerte anterior no
+	# puede seguir bloqueando la sesion nueva.
+	_muerto = false
+	if _muerte != null:
+		_muerte.ocultar()
 	if _login != null:
 		_login.visible = false
 	if _interfaz != null:
@@ -842,10 +872,84 @@ func _iniciar_salida(destino: String) -> void:
 	_con.enviar_logout()
 
 
+func _al_morir(posicion: Vector3i) -> void:
+	"""El servidor confirmo nuestra muerte y no hay dialogo que esperar.
+
+	`EstadoMundo` emite esto solo cuando el `0x6C` retira a `mi_id` con la
+	vida autoritativa en cero. Esta rama de TVP no tiene `sendDeath` ni
+	`sendReLoginWindow`: `Creature::onDeath` deja el corpse, `Player::death`
+	aplica las perdidas y `Game::removeCreature` nos saca de la casilla
+	dejando la conexion abierta. Lo unico que corresponde hacer al cliente es
+	dejar de pedir cosas, avisar y mandar el logout `0x14`, que
+	`ProtocolGame::logout` (protocolgame.cpp:303-336) convierte en
+	`disconnect()` porque el jugador ya fue removido.
+	"""
+	if _muerto:
+		return   # una sola muerte por sesion, aunque llegue otro 0x6C
+	_muerto = true
+	_pos_muerte = posicion
+	_salida_pendiente = "muerte"
+	# Ninguna intencion a medio armar sobrevive a la muerte.
+	_uso_con_pendiente.clear()
+	_actualizar_cursor_uso()
+	limpiar_objetivo_visual()
+	_ataque_pendiente_id = 0
+	_objeto_pendiente = {}
+	_direccion_diferida = Vector2i.ZERO
+	_objetivo_diferido = Vector3i(-9999, -9999, -9999)
+	_acceso_reintento_pendiente = false
+	_arrastrando_objeto = false
+	_arrastre_objeto_pendiente = false
+	_objeto_arrastre = {}
+	if _interfaz != null:
+		_interfaz.visible = false
+	if _login != null:
+		_login.visible = false
+	if _muerte != null:
+		_muerte.mostrar()
+	_avisar("You are dead.")
+	print("Muerte confirmada en (%d, %d, %d): se envia logout 0x14" % [
+		posicion.x, posicion.y, posicion.z])
+	if _con != null:
+		_con.enviar_logout()
+
+
+func volver_desde_muerte() -> void:
+	"""El jugador acepto la muerte: se vuelve al selector de personajes."""
+	if not _muerto:
+		return
+	_muerto = false
+	_salida_pendiente = ""
+	if _muerte != null:
+		_muerte.ocultar()
+	if _con != null:
+		# Normalmente el servidor ya cerro al recibir el 0x14. Si todavia no
+		# lo hizo, no dejamos una sesion colgada detras del selector.
+		_con.cerrar()
+		_con.queue_free()
+		_con = null
+	if _estado != null:
+		_estado.reiniciar_sesion()
+	if _interfaz != null:
+		_interfaz.visible = false
+	if _login != null:
+		_login.visible = true
+	if _cuenta_login <= 0 or _clave_login.is_empty():
+		if _login != null:
+			_login.mostrar_login()
+		return
+	_pedir_lista_despues_de_logout()
+
+
+func esta_muerto() -> bool:
+	return _muerto
+
+
 func _al_mensaje_servidor(texto: String) -> void:
 	# ProtocolGame usa el mismo 0xB4 para las respuestas de logout. Si el
 	# servidor rechazo la solicitud, seguimos jugando con la misma conexion.
-	if not _salida_pendiente.is_empty() \
+	# La muerte no se cancela: ya ocurrio en la autoridad del servidor.
+	if _salida_pendiente != "muerte" and not _salida_pendiente.is_empty() \
 			and texto.to_lower().contains("logout"):
 		_salida_pendiente = ""
 		_login.visible = false
@@ -907,6 +1011,19 @@ func _al_ser_rechazados(motivo: String) -> void:
 func _al_cerrarse() -> void:
 	if _voz != null:
 		_voz.detener()
+	if _salida_pendiente == "muerte":
+		# El servidor cerro despues del logout que mandamos al morir. La
+		# pantalla de reentrada queda a la vista: volver al selector lo decide
+		# el jugador, no el cierre del socket.
+		_salida_pendiente = ""
+		if _estado != null:
+			_estado.reiniciar_sesion()
+		if _con != null:
+			_con.queue_free()
+		_con = null
+		if _interfaz != null:
+			_interfaz.visible = false
+		return
 	if not _salida_pendiente.is_empty():
 		var destino := _salida_pendiente
 		_salida_pendiente = ""
@@ -4140,7 +4257,7 @@ func _mover_camara(delta: float) -> void:
 
 
 func _leer_teclas() -> void:
-	if _solo_mirar or not _estado.adentro \
+	if _solo_mirar or _muerto or not _estado.adentro \
 			or (_interfaz != null and _interfaz.esta_escribiendo()) \
 			or not _uso_con_pendiente.is_empty() \
 			or _desde_ultimo_paso < ESPERA_ENTRE_PASOS:
@@ -4248,6 +4365,10 @@ func _cancelar_accion() -> void:
 
 
 func _unhandled_input(evento: InputEvent) -> void:
+	if _muerto:
+		# Muerte confirmada: el mundo sigue dibujado detras de la pantalla de
+		# reentrada, pero el cliente ya no pide nada mas.
+		return
 	if _interfaz != null and _interfaz.esta_escribiendo():
 		if evento is InputEventKey and evento.pressed \
 				and evento.keycode == KEY_ESCAPE:
