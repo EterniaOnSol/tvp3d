@@ -62,6 +62,8 @@ Probar contratos, recorridos completos, concurrencia, fixtures y regresiones.
   clientes.
 - Conservar y probar velocidad, skull y party shield que el cliente aun
   descarta en `0x8F`, `0x90` y `0x91`.
+- Implementar el relevo de muerte segun esta rama: retirada de `mi_id` por
+  `0x6C`, bloqueo de input y logout `0x14`; no existe un opcode de death.
 
 ## Bloqueos activos
 
