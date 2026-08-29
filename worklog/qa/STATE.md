@@ -2,7 +2,7 @@
 
 Estado: LISTO_PARA_REVISION
 Ultimo agente: claude
-Ultima actualizacion: 2026-08-29T07:05:00-06:00
+Ultima actualizacion: 2026-08-29T09:10:00-06:00
 Contrato publicado: SI
 
 ## Depende de
@@ -64,24 +64,44 @@ Probar contratos, recorridos completos, concurrencia, fixtures y regresiones.
   (`gold coin x3` y `x4`), que es el que decide el servidor.
 - Evidencia, etapas, limites y efectos publicados en
   `docs/qa/PRUEBA_VIVA_MUERTE_LOOT.md`; matriz global actualizada.
+- La precondicion del duelo ya no es manual: el god va al campo y trae al
+  personaje con `/c`, la talkaction del servidor. El cliente no camina ni
+  simula intenciones, y la confirmacion la da la posicion autoritativa de la
+  propia sesion del personaje.
+- La prueba abre dos sesiones simultaneas (personaje y god) y respeta
+  `Ban::acceptConnection`: un solo login por corrida y seis segundos entre
+  sesiones nuevas.
+- Modo `--solo-campo`: prueba solo la precondicion, retira el verdugo antes de
+  que mate a nadie y devuelve el personaje a su templo con `omani`. Cinco
+  comprobaciones en verde y codigo cero, repetible sin costo.
+- `--solo-loot` sigue en verde y ahora distingue su propia rata por id nuevo y
+  su corpse por casilla que no tenia corpse antes de la caza; el campo tiene
+  ratas salvajes y restos de corridas viejas.
+- `prueba_estado_criatura_ui` adoptada en `matriz_qa_local.gd`, que termina
+  11/11 OK.
 
 ## Falta
 
 - Completar matriz de red de todos los recorridos y errores contra un servidor
   legacy disponible.
 - Repetir la checklist desde un clon limpio para la prueba de entrega.
-- Automatizar la precondicion de la corrida completa de muerte: llevar al
-  personaje fuera de la zona de proteccion sin intervencion manual, con el
-  pathfinding real del cliente o con un teleport armado por el god.
 - Probar trade y VIP con dos clientes reales.
-- Representar en la UI la velocidad, skull y party shield que el protocolo
-  ya conserva.
+- Volver a correr la prueba completa en verde cuando `protocolo-red` cierre la
+  carrera de la senal de muerte.
 
 ## Bloqueos activos
 
-- La corrida completa de la prueba viva de muerte exige que el personaje este
-  parado fuera de una zona de proteccion. Es una precondicion documentada, no
-  un fallo: la prueba la detecta y lo dice.
+- SOLICITUD A `protocolo-red` (ruta suya, `cliente3d/red/`): la muerte no se
+  emite cuando el golpe mortal y la restauracion de `Player::death` caen en el
+  mismo tick. La regla actual exige un `0xA0` con vida cero y ese paquete
+  puede no existir nunca: el cliente ve la vida ya restaurada y descarta la
+  muerte. Tres corridas completas seguidas del 2026-08-29 fallaron ahi, con el
+  corpse `dead human` y el `You are dead.` del servidor en el mismo log. La
+  corrida completa NO termina en verde por esto.
+- En una corrida el corpse del rat llego como item sin nombre resoluble
+  (`pila: ?`) y la prueba no lo reconocio. Con `--solo-loot` el mismo recorrido
+  pasa, asi que el hueco parece estar en el nombre de alguna etapa de
+  descomposicion; es dato de `assets`.
 - La prueba manual de puertas y runas sigue pendiente; la prueba automatizada
   del life ring ya pasa contra el servidor reconstruido.
 - El cambio de reacquisicion de monstruos en C++ requiere reconstruccion y
@@ -93,6 +113,10 @@ Probar contratos, recorridos completos, concurrencia, fixtures y regresiones.
 |---|---|---|
 | Las pruebas de fecha usan reloj fijado | Evita que fallen con el paso de los meses | si |
 | La prueba viva no camina al personaje para salir del templo | Caminar a ciegas no sale de la zona de proteccion y un auto-walk inventado seria la intencion de cliente que la prueba no debe simular | si |
+| Al personaje lo saca del templo el servidor con `/c`, no el cliente | Es una talkaction del propio servidor: mueve a la criatura a la casilla libre mas cercana al god y el cliente solo mira donde lo dejaron | si |
+| La prueba mantiene dos sesiones simultaneas | El `/c` solo alcanza a un personaje conectado, y asi el duelo no necesita relogueos | si |
+| El god no se teletransporta encima de un monstruo vivo | El empujon del teleport deja la casilla en un estado que la prueba lee mal; sobre un corpse si puede pararse | si |
+| El duelo ocurre siempre en la misma casilla de campo | Es la unica comprobada fuera de zona de proteccion, y asi la corrida no depende de donde quedo nadie | si |
 | La mitad de corpse y loot se hace siempre en `32082,32145,6` | Es una casilla comprobada fuera de zona de proteccion, asi la media prueba se repite sin depender de donde quedo nadie | si |
 | El monstruo del corpse se remata con `/killall` si el cuerpo a cuerpo tarda | El personaje god es nivel 1 y la prueba mide corpse y loot, no el ritmo de combate | si |
 
@@ -105,7 +129,13 @@ Probar contratos, recorridos completos, concurrencia, fixtures y regresiones.
 - La prueba viva SI toca datos persistentes: una corrida completa le cuesta un
   nivel al personaje normal y deja sus objetos en el corpse. Para restaurarlo
   estan la semilla `servidor/docker/data/02-data.sql` y
-  `servidor/gamedata/players/`.
+  `servidor/gamedata/players/`. El 2026-08-29 se ejecutaron cuatro corridas
+  completas, asi que Valentino quedo varios niveles abajo.
+- Para probar la precondicion sin costo se usa `--solo-campo`. Solo la corrida
+  completa mata al personaje.
+- Si una corrida se cuelga y se la mata a mano, conviene esperar antes de la
+  siguiente: el servidor todavia considera conectado al personaje y
+  `Ban::acceptConnection` cuenta las conexiones de la IP.
 - Si el CLI de Docker en Windows se cuelga, el motor suele seguir vivo: se lo
   mira por el socket de adentro de WSL y se arregla reiniciando Docker
   Desktop. El 2026-08-29 el contenedor `servidor-server-1` estaba caido y los

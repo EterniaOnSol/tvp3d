@@ -1,7 +1,7 @@
 {
 	"failed": 0,
 	"format": "tvp3d.qa.matrix.v1",
-	"passed": 10,
+	"passed": 11,
 	"results": [
 		{
 			"codigo": 0,
@@ -38,6 +38,12 @@
 			"nombre": "muerte_reentrada",
 			"ok": true,
 			"salida": "Godot Engine v4.7.2.stable.official.ed1daf0bf - https://godotengine.org\r\n\r\n  OK  retiro con vida positiva no es muerte\r\n  OK  0x6C de mi_id con vida cero emite muerte una vez\r\n  OK  la muerte deja al jugador fuera del mundo\r\n  OK  el paquete de muerte queda alineado\r\nMuerte confirmada en (32097, 32219, 7): se envia logout 0x14\r\n  OK  la muerte bloquea las intenciones del cliente\r\n  OK  la muerte envia exactamente un logout 0x14\r\n  OK  la muerte oculta la interfaz de juego\r\n  OK  la muerte muestra la pantalla de reentrada\r\n  OK  la pantalla usa el texto del servidor\r\n  OK  la muerte no vuelve sola al formulario de cuenta\r\n  OK  una segunda retirada no reenvia logout\r\n  OK  la muerte no se cancela con un mensaje de logout\r\n  OK  el cierre tras morir conserva la pantalla de reentrada\r\n  OK  el cierre tras morir suelta la conexion\r\n  OK  el cierre tras morir limpia la sesion\r\n  OK  el cierre tras morir no muestra el formulario de cuenta\r\n  OK  la pantalla de reentrada tiene su accion de volver\r\n  OK  la reentrada oculta la pantalla de muerte\r\n  OK  la reentrada devuelve el control\r\n  OK  la reentrada vuelve al selector de personajes\r\n  OK  la reentrada no reabre el formulario de cuenta\r\nMuerte y reentrada 7.72: OK\r\n"
+		},
+		{
+			"codigo": 0,
+			"nombre": "estado_criatura_ui",
+			"ok": true,
+			"salida": "Godot Engine v4.7.2.stable.official.ed1daf0bf - https://godotengine.org\r\n\r\nMarcas de criatura en Battle:\r\n  OK   la calavera roja de Killer se dibuja\r\n  OK   la calavera roja se nombra Red Skull\r\n  OK   el escudo amarillo de Killer dice Party leader\r\n  OK   la calavera blanca de Partner se distingue de la roja\r\n  OK   el escudo azul de Partner dice Party member\r\n  OK   una criatura sin calavera ni escudo no muestra marcas inventadas\r\nVelocidad propia en Skills:\r\n  OK   Speed muestra la velocidad de mi_id, no un cero de stats\r\nCambios en vivo (0x90, 0x91 y 0x8F):\r\n  OK   un cambio de calavera no reconstruye la fila del Battle\r\n  OK   el 0x90 amarillo reemplaza la calavera roja\r\n  OK   el 0x91 cambia el escudo a la invitacion enviada\r\n  OK   el 0x8F actualiza la velocidad mostrada en Skills\r\nMarcas en el panel Target:\r\n  OK   el Target acepta a Partner como objetivo\r\n  OK   el Target repite la calavera blanca de Partner\r\n  OK   el Target repite el escudo azul de Partner\r\n  OK   al cambiar a la Rat el Target no conserva marcas del objetivo anterior\r\nTablas de dominio:\r\n  OK   la tabla de calaveras cubre Skulls_t 1..4 sin SKULL_NONE\r\n  OK   la tabla de escudos cubre PartyShields_t 1..4 sin SHIELD_NONE\r\n  OK   un valor fuera de la tabla no tiene marca que dibujar\r\n  OK   una calavera desconocida se oculta en vez de adivinar un color\r\nOK: la UI representa velocidad, calavera y escudo de party\r\n"
 		},
 		{
 			"codigo": 0,

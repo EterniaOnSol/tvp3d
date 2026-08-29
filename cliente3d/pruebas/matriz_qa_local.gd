@@ -36,6 +36,11 @@ func _init() -> void:
 				"pruebas/prueba_muerte_reentrada.tscn"]),
 		},
 		{
+			"nombre": "estado_criatura_ui",
+			"argumentos": PackedStringArray(["--headless", "--path", _raiz(),
+				"pruebas/prueba_estado_criatura_ui.tscn"]),
+		},
+		{
 			"nombre": "eventos_visuales",
 			"argumentos": PackedStringArray(["--headless", "--path", _raiz(),
 				"pruebas/prueba_eventos_visuales.tscn"]),
