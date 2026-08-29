@@ -2,7 +2,7 @@
 
 Estado: LISTO_PARA_REVISION
 Ultimo agente: codex
-Ultima actualizacion: 2026-08-29T18:48:00-06:00
+Ultima actualizacion: 2026-08-29T18:52:00-06:00
 Contrato publicado: SI
 
 ## Depende de
@@ -24,6 +24,9 @@ Probar contratos, recorridos completos, concurrencia, fixtures y regresiones.
   desde el interior. No se certifica dormir/despertar ni persistencia hasta
   resolver la condicion autoritativa de uso (zona PZ/permisos); queda como
   bloqueo reproducible, no como aprobado parcial.
+
+- Cierre versionado en `24c9ab7` y publicado en `origin/main`; `git diff
+  --check` pasa y los eventos JSON son validos.
 
 - Andamiaje creado.
 - Publicado el contrato de QA v1.0.0.
