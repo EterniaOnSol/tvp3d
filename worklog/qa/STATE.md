@@ -31,6 +31,10 @@ Probar contratos, recorridos completos, concurrencia, fixtures y regresiones.
   `House::addTile`, que registra camas y marca las casillas de casa como PZ.
   Commit `5dcdabc` publicado. Falta repetir la prueba viva cuando Docker
   Desktop vuelva a exponer su socket.
+- Atención operativa: la última preparación de la prueba dejó pendiente
+  confirmar/restaurar `houses.id=6.owner` y `accounts.id=123456.premium_ends_at`
+  porque el motor Docker cayó antes de la limpieza. Restaurar ambos a `0` antes
+  de cualquier otra prueba.
 
 - Andamiaje creado.
 - Publicado el contrato de QA v1.0.0.
