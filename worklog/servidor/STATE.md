@@ -1,8 +1,8 @@
 # Estado: servidor
 
 Estado: LISTO_PARA_REVISION
-Ultimo agente: codex
-Ultima actualizacion: 2026-08-26T05:45:03-06:00
+Ultimo agente: claude
+Ultima actualizacion: 2026-08-29T17:30:00-06:00
 Contrato publicado: SI
 
 ## Depende de
@@ -16,6 +16,23 @@ Contrato publicado: SI
 Construir el servidor Godot headless autoritativo, sus reglas y persistencia.
 
 ## Hecho
+
+- Los items escribibles y legibles vuelven a poder usarse. La guarda de
+  `game.cpp:2556-2560` los rechazaba antes de llegar a
+  `Actions::internalUseItem`, que es donde `canReadText` abre la ventana de
+  texto, asi que no se podia escribir una etiqueta ni una carta ni leer un
+  cartel, y el correo entero quedaba inutilizable. Ahora la guarda tambien
+  deja pasar `canReadText`.
+- Servidor reconstruido con ese cambio (`docker compose up --build`), que de
+  paso compilo la reacquisicion de monstruos de `monster.cpp` que estaba
+  pendiente desde el 2026-08-27.
+- Comprobado en vivo: la ventana de texto abre, guarda lo escrito y lo
+  devuelve al releerla; la etiqueta escrita entra en la parcel y el mailbox se
+  lleva la parcel de la casilla.
+- Dos talkactions de diagnostico para QA, que no cambian reglas de juego:
+  `/tileinfo` dice que ve el servidor en una casilla (mailbox, depot, banderas
+  y textos de los items) y `/limpiarpruebas` saca del inventario los objetos
+  que dejan las pruebas vivas.
 
 - Andamiaje creado.
 - Contrato v1.0.0 publicado para arranque, sesiones, autoridad y movimiento.

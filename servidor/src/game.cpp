@@ -2555,8 +2555,14 @@ void Game::playerUseItem(uint32_t playerId, const Position pos, uint8_t stackPos
 	}
 	// Food is registered by data/scripts/actions/other/food.lua but its legacy
 	// OTB entry is not marked useable. Let a registered action authorize it.
+	// Readable and writeable items -signs, letters and the label that
+	// addresses a parcel- are not marked useable either, and their whole
+	// behaviour lives in Actions::internalUseItem, which opens the text
+	// window from canReadText. Without this they never reach it and the mail
+	// service cannot work at all.
+	const ItemType& useItemType = Item::items[item->getID()];
 	if (!item->isUseable() && !item->getContainer() && !item->getDoor()
-			&& !g_actions->hasAction(item)) {
+			&& !useItemType.canReadText && !g_actions->hasAction(item)) {
 		player->sendCancelMessage(RETURNVALUE_CANNOTUSETHISOBJECT);
 		return;
 	}
