@@ -2,7 +2,7 @@
 
 Estado: LISTO_PARA_REVISION
 Ultimo agente: claude
-Ultima actualizacion: 2026-08-29T10:15:00-06:00
+Ultima actualizacion: 2026-08-29T12:00:00-06:00
 Contrato publicado: SI
 
 ## Depende de
@@ -71,6 +71,16 @@ Definir y probar framing, version, mensajes, errores y compatibilidad de red.
   mensaje se consume entero, incluidos el `0xA2` y el `0x6B` que vienen detras
   del mapa.
 - Contrato 1.3.0 con la regla escrita.
+- Contrato 1.4.0: transporte de party. Las seis ordenes `0xA3` a `0xA8` con los
+  payloads de `protocolgame.cpp:1171-1207`, y un id vacio que no se manda.
+- Este servidor no contesta ningun paquete de party: la party se deduce de los
+  escudos `0x91`, que `Party` manda para cada miembro e invitado
+  (`servidor/src/party.cpp:39-268`).
+- `red/party_self_test.gd`: 21 comprobaciones con bytes exactos, incluidos los
+  cinco valores de escudo y un escudo de criatura desconocida que se consume
+  sin inventarla ni desalinear el mensaje siguiente.
+- Comprobado en vivo que el servidor acepta `0xA7` y `0xA8` sin cortar la
+  sesion: despues de mandarlos, el mapa del teleport llega alineado.
 - La prueba viva completa quedo en un solo fallo, y es de otro carril: la
   limpieza del demon con `/killall`. El corpse del jugador, que fallaba antes,
   ahora pasa.
@@ -86,6 +96,14 @@ Definir y probar framing, version, mensajes, errores y compatibilidad de red.
 
 ## Bloqueos activos
 
+- SOLICITUD A `cliente` (ruta suya, `cliente3d/ui/` y `mundo3d.gd`): falta la
+  interfaz de party. El transporte ya esta y los escudos ya se dibujan en el
+  Battle List y en el Target; falta invitar, aceptar, pasar liderazgo y salir,
+  y decidir si se ofrece la experiencia compartida, que el cliente 7.72
+  original no tenia.
+- SOLICITUD A `qa` (ruta suya): probar party viva con dos clientes, igual que
+  se hizo con trade y VIP. Lo unico observable es el escudo `0x91` de cada
+  lado; no hay paquete de party que esperar.
 - SOLICITUD A `qa` (ruta suya): en la corrida viva del mapa ya alineado, el
   unico fallo que queda es "la limpieza retira al demon invocado". `/killall`
   solo alcanza el cuadro alrededor de quien lo dice y el verdugo puede haberse

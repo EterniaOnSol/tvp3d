@@ -54,6 +54,10 @@ var _llave := PackedInt64Array()
 var _cifrado := false          ## ya se acordó la llave XTEA
 var _buf := PackedByteArray()
 
+## Ultimo paquete de juego que se mando. Sirve para comprobar los bytes en un
+## self-test sin abrir un socket; el envio real no depende de esto.
+var ultimo_envio_juego := PackedByteArray()
+
 
 # --------------------------------------------------------------------
 #  Arranque
@@ -261,6 +265,7 @@ func _enviar(carga: PackedByteArray, cifrar: bool) -> void:
 
 func enviar_juego(carga: PackedByteArray) -> void:
 	"""Manda un paquete ya dentro de la partida (siempre cifrado)."""
+	ultimo_envio_juego = carga.duplicate()
 	_enviar(carga, true)
 
 
@@ -461,6 +466,58 @@ func enviar_atacar(id_criatura: int) -> void:
 		id_criatura & 0xFF, (id_criatura >> 8) & 0xFF,
 		(id_criatura >> 16) & 0xFF, (id_criatura >> 24) & 0xFF])
 	enviar_juego(carga)
+
+
+# --------------------------------------------------------------------
+#  Party (protocolgame.cpp:536-541 y 1171-1207)
+#
+#  Las seis ordenes van del cliente al servidor y todas llevan el id de
+#  criatura del otro jugador, salvo salir y experiencia compartida. Lo que
+#  vuelve no es un paquete de party: es el escudo de cada criatura por el
+#  `0x91`, que ya conserva `estado_mundo.gd`.
+# --------------------------------------------------------------------
+func _party_con_id(opcode: int, id_criatura: int) -> void:
+	if id_criatura <= 0:
+		# Un id cero no identifica a nadie; el servidor lo buscaria y
+		# respondaria con un cancel. No se manda.
+		return
+	enviar_juego(PackedByteArray([opcode,
+		id_criatura & 0xFF, (id_criatura >> 8) & 0xFF,
+		(id_criatura >> 16) & 0xFF, (id_criatura >> 24) & 0xFF]))
+
+
+func enviar_invitar_a_party(id_criatura: int) -> void:
+	"""Invita a un jugador a nuestra party (0xA3)."""
+	_party_con_id(0xA3, id_criatura)
+
+
+func enviar_unirse_a_party(id_criatura: int) -> void:
+	"""Acepta la invitacion del lider indicado (0xA4)."""
+	_party_con_id(0xA4, id_criatura)
+
+
+func enviar_revocar_invitacion_party(id_criatura: int) -> void:
+	"""Retira una invitacion que habiamos hecho (0xA5)."""
+	_party_con_id(0xA5, id_criatura)
+
+
+func enviar_pasar_liderazgo_party(id_criatura: int) -> void:
+	"""Le pasa el liderazgo de la party a un miembro (0xA6)."""
+	_party_con_id(0xA6, id_criatura)
+
+
+func enviar_salir_de_party() -> void:
+	"""Sale de la party (0xA7). No lleva payload."""
+	enviar_juego(PackedByteArray([0xA7]))
+
+
+func enviar_experiencia_compartida(activa: bool) -> void:
+	"""Pide activar o desactivar la experiencia compartida (0xA8).
+
+	El servidor acepta la orden (`parseEnableSharedPartyExperience`), pero
+	ofrecerla o no es decision de la interfaz: el cliente 7.72 original no
+	tenia ese boton. Aca solo esta el transporte."""
+	enviar_juego(PackedByteArray([0xA8, 1 if activa else 0]))
 
 
 func enviar_seguir(id_criatura: int) -> void:

@@ -1,6 +1,6 @@
 # Contrato: protocolo-red
 
-Version: 1.3.0
+Version: 1.4.0
 Estado: PUBLICADO
 Propietario: protocolo-red
 Depende de: modelo-comun 1.0.0
@@ -169,6 +169,35 @@ La muerte se emite una sola vez por sesion: si el jugador ya esta fuera del
 mundo, un `0x6C` posterior en la misma casilla no vuelve a emitirla. Este
 adaptador solo emite el evento y marca al jugador fuera del mundo; cerrar la
 conexion y presentar la UI corresponden al consumidor.
+
+### Party
+
+Las ordenes de party van del cliente al servidor y son las que acepta
+`ProtocolGame::parsePacket` (`protocolgame.cpp:536-541`), con los payloads de
+`protocolgame.cpp:1171-1207`:
+
+| Opcode | Orden | Payload |
+|---:|---|---|
+| `0xA3` | Invitar a la party | `creature_id uint32` |
+| `0xA4` | Unirse a la party de ese lider | `creature_id uint32` |
+| `0xA5` | Revocar una invitacion propia | `creature_id uint32` |
+| `0xA6` | Pasar el liderazgo | `creature_id uint32` |
+| `0xA7` | Salir de la party | sin payload |
+| `0xA8` | Experiencia compartida | `uint8` (1 activa, 0 no) |
+
+Un id de criatura cero o negativo no identifica a nadie y no se envia.
+
+**Este servidor no manda ningun paquete de party.** Lo unico que vuelve es el
+escudo de cada criatura por el `0x91` que ya define este contrato: `Party`
+llama a `sendCreatureShield` para cada miembro e invitado cuando algo cambia
+(`servidor/src/party.cpp:39-268`). El cliente no debe esperar una lista de
+miembros ni inventarla: la party se deduce de los escudos confirmados.
+
+`0xA8` existe en este servidor, pero el cliente 7.72 original no tenia boton de
+experiencia compartida. Aca solo esta el transporte; ofrecerlo o no es decision
+de la interfaz.
+
+Self-test con los bytes exactos en `red/party_self_test.gd`.
 
 ### Alineacion del mapa
 

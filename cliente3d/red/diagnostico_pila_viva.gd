@@ -88,6 +88,12 @@ func _process(delta: float) -> bool:
 		_pedido_teleport = true
 		print("templo: mi_pos=%s alineado=%s" % [
 			str(_estado.mi_pos), str(_estado.mapa_alineado)])
+		# Las ordenes de party sin party: el servidor las acepta y no contesta
+		# nada. Si el opcode estuviera mal, cortaria la conexion y el mapa del
+		# teleport no llegaria.
+		_con.enviar_salir_de_party()
+		_con.enviar_experiencia_compartida(false)
+		_con.enviar_invitar_a_party(0)   # no debe mandarse nada
 		_con.enviar_hablar("/gotopos %d,%d,%d" % [
 			POS_CAMPO.x, POS_CAMPO.y, POS_CAMPO.z])
 		return false
