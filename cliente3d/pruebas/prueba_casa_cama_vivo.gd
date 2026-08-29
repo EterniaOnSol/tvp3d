@@ -44,7 +44,7 @@ func _process(delta: float) -> void:
 	if _terminando:
 		return
 	if _fase.begins_with("esperar") and not _sleep_reconnect_started \
-			and _estado != null and _estado.mi_pos == CAMA:
+			and ((_estado != null and _estado.mi_pos == CAMA) or _espera > 15.0):
 		_sleep_reconnect_started = true
 		_durmio = true
 		print("Servidor movio al personaje a la cama; reconectando para validar despertar.")

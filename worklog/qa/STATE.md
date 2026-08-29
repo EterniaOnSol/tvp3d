@@ -2,8 +2,14 @@
 
 Estado: BLOQUEADO
 Ultimo agente: codex
-Ultima actualizacion: 2026-08-29T16:35:00-06:00
+Ultima actualizacion: 2026-08-29T16:45:00-06:00
 Contrato publicado: SI
+
+Retest preparado: la prueba reconoce el movimiento autoritativo a la cama y
+reconecta con pausa. Docker vuelve a perder el contexto/socket al reiniciar el
+servidor; la última restauración SQL confirmada dejó owner y premium en `0`.
+Acción: reparar el contexto Docker y correr el retest antes de abrir
+modal/house windows.
 
 ## Depende de
 
