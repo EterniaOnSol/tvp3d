@@ -2,7 +2,7 @@
 
 Estado: LISTO_PARA_REVISION
 Ultimo agente: claude
-Ultima actualizacion: 2026-08-29T13:30:00-06:00
+Ultima actualizacion: 2026-08-29T15:10:00-06:00
 Contrato publicado: SI
 
 ## Depende de
@@ -113,6 +113,17 @@ Probar contratos, recorridos completos, concurrencia, fixtures y regresiones.
   termina 16/16 OK.
 - La prueba viva de trade dejo de armar el `0x7D` a mano: usa el metodo que
   publico `protocolo-red` 1.5.0 y volvio a pasar entera contra el servidor.
+- Depot probado en vivo: `pruebas/prueba_depot_vivo.tscn` guarda un objeto,
+  cierra la sesion, vuelve a entrar y el objeto sigue en el `depot chest`.
+  Seis comprobaciones en verde y codigo cero, sin tocar las cosas de nadie.
+- Tres reglas de esta rama que no eran obvias quedaron escritas en
+  `docs/qa/PRUEBA_VIVA_DEPOT.md`: hay que PISAR la baldosa para que el servidor
+  cargue el depot del jugador, las cosas viven en el `depot chest` de adentro
+  del locker, y la ventana de contenedor la elige el cliente en el `0x82`.
+  Sin pisar la baldosa se abre el mueble del mapa, que acepta objetos y no es
+  de nadie: es la trampa mas facil del recorrido.
+- La fila de la matriz global se parte en dos: `Depot` pasa a COMPROBADO y
+  `Mail/parcels` queda PARCIAL con lo que falta.
 
 ## Falta
 
@@ -124,6 +135,11 @@ Probar contratos, recorridos completos, concurrencia, fixtures y regresiones.
   iniciar un trade.
 - En la prueba viva de muerte, el unico fallo que queda es la limpieza del
   demon con `/killall`, que solo alcanza el cuadro alrededor de quien lo dice.
+- Parcels y mailbox: falta la prueba viva. Ya estan las dos piezas que
+  faltaban, la ventana de texto para escribir la etiqueta y el mailbox del
+  mapa en `(32372,32253,7)`.
+- Las corridas fallidas del depot dejaron dos parcels del god dentro del
+  mueble del mapa en `(32354,32231,7)`. No rompen nada pero estan ahi.
 
 ## Bloqueos activos
 
