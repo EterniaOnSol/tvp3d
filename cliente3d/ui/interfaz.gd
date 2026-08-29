@@ -1676,11 +1676,10 @@ func _al_habilidades_actualizadas(_datos: Dictionary) -> void:
 	_refrescar()
 
 
-func _al_mensaje_servidor(_texto: String) -> void:
-	# Los 0xB4 del servidor ya se pintan en mundo3d.gd con su clase y una
-	# duracion corta. No son conversaciones, asi que no se guardan en el
-	# historial del chat (por ejemplo: "Sorry, not possible.").
-	pass
+func _al_mensaje_servidor(texto: String) -> void:
+	# Conservamos tambien los 0xB4 en el historial: los mensajes de look y los
+	# rechazos deben poder leerse y copiarse aunque el aviso flotante expire.
+	_anotar(texto)
 
 
 func _al_habla(quien: String, texto: String, _clase: int) -> void:

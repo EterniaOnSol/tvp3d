@@ -79,11 +79,20 @@ BedItem* BedItem::getNextBedItem() const
 bool BedItem::canUse(Player* player)
 {
 	if (!player || !house || !player->isPremium() || player->getZone() != ZONE_PROTECTION) {
+		std::cout << "[BedDiag] canUse rechazado item=" << getID()
+			<< " house=" << (house ? house->getId() : 0)
+			<< " player=" << (player ? player->getName() : "null")
+			<< " premium=" << (player && player->isPremium())
+			<< " zone=" << (player ? player->getZone() : ZONE_PROTECTION)
+			<< " pos=" << getPosition().x << "," << getPosition().y
+			<< "," << getPosition().z << std::endl;
 		return false;
 	}
 
 	const ItemType& iType = Item::items[getID()];
 	if (!(iType.bedPartnerDir == DIRECTION_SOUTH || iType.bedPartnerDir == DIRECTION_EAST)) {
+		std::cout << "[BedDiag] mitad no activa item=" << getID()
+			<< " partnerDir=" << iType.bedPartnerDir << std::endl;
 		return false;
 	}
 
