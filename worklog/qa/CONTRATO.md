@@ -1,6 +1,6 @@
 # Contrato: qa
 
-Version: 1.2.0
+Version: 1.3.0
 Estado: PUBLICADO
 Propietario: qa
 Depende de: assets, protocolo-red
@@ -85,6 +85,35 @@ Reglas:
 - El objetivo acepta `--personaje=<nombre>` y `--guid=<numero>`. Otra cuenta
   puede darse con `--cuenta=<numero> --clave-env=<variable>`; la clave se lee
   del entorno y no se escribe en argumentos, reportes ni logs.
-- Hasta que `protocolo-red` publique el iniciador saliente, la prueba arma el
-  `0x7D` exacto dentro de QA. Esto certifica servidor, parser y transferencia,
-  pero no declara utilizable la iniciacion desde la interfaz de produccion.
+- La prueba usa el iniciador `0x7D` publicado por `protocolo-red` 1.5.0. Esto
+  certifica servidor, parser y transferencia; el camino que empieza en el menu
+  de criatura sigue requiriendo su propia prueba viva de interfaz.
+
+## Certificacion viva de mail y parcels
+
+La entrega se prueba contra el servidor reconstruido con
+`pruebas/prueba_parcel_vivo.tscn`. Debe escribir y releer la etiqueta, meterla
+en la parcel, comprobar que el mailbox la retira de la casilla y encontrarla
+en el depot 1 del destinatario. Es una prueba mutante: crea parcels y cambia
+los archivos persistidos de los personajes, por lo que no pertenece a la
+matriz local ni se repite cuando el usuario ya confirmo el recorrido vivo.
+
+## Certificacion viva de reacquisicion de monstruos
+
+La prueba explicita es:
+
+```text
+Godot_v4.7.2-stable_win64_console.exe --headless --path cliente3d pruebas/prueba_reacquisicion_monstruo.tscn
+```
+
+Reglas:
+
+- El servidor reune al god y al personaje fuera de PZ e invoca un monstruo
+  nuevo, identificado por su id de criatura.
+- Un primer golpe solo cuenta si el texto autoritativo nombra al monstruo
+  invocado; una criatura silvestre cercana no sirve como evidencia.
+- El servidor mueve al jugador 39 SQM fuera de la ventana visible, en el mismo
+  piso y fuera de PZ, y lo devuelve inmediatamente.
+- El cierre exige otro golpe nombrado despues del regreso y que el mismo id de
+  criatura siga presente. Luego limpia el monstruo y devuelve al personaje a
+  su templo.

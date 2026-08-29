@@ -1,8 +1,8 @@
 # Estado: qa
 
 Estado: LISTO_PARA_REVISION
-Ultimo agente: claude
-Ultima actualizacion: 2026-08-29T16:00:00-06:00
+Ultimo agente: codex
+Ultima actualizacion: 2026-08-29T15:18:00-06:00
 Contrato publicado: SI
 
 ## Depende de
@@ -132,19 +132,32 @@ Probar contratos, recorridos completos, concurrencia, fixtures y regresiones.
   siempre en el mismo punto y con la causa localizada: al usar una etiqueta el
   servidor contesta `You cannot use this object` por la guarda de
   `game.cpp:2556-2560`. Evidencia en `docs/qa/PRUEBA_VIVA_PARCEL.md`.
+- Correccion compensatoria: el servidor ya deja usar la etiqueta y el usuario
+  confirmo que la parcel llega al depot del destinatario. Los archivos vivos
+  conservan parcels dirigidas dentro de depot 1; mail/parcels pasa a
+  COMPROBADO sin repetir la prueba mutante.
+- `prueba_reacquisicion_monstruo.tscn` certifica el cambio compilado de
+  `monster.cpp`: un `cave rat` identificado golpeo, el servidor movio al
+  personaje 39 SQM fuera de vista y, al devolverlo, el mismo id retomo el
+  ataque. Corrida final: vida 133 -> 131 -> salida/regreso -> 128, mismo id y
+  limpieza confirmada, codigo 0.
+- La prueba descarto una primera corrida donde los golpes eran de un `spider`
+  silvestre y endurecio el oracle: solo cuenta dano cuyo mensaje nombra al
+  monstruo invocado. Evidencia en
+  `docs/qa/PRUEBA_VIVA_REACQUISICION.md`.
+- La matriz local se repitio despues del cambio y termino 17/17 OK.
 
 ## Falta
 
 - Completar matriz de red de todos los recorridos y errores contra un servidor
   legacy disponible.
 - Repetir la checklist desde un clon limpio para la prueba de entrega.
-- Conectar el `0x7D` saliente a una interaccion de produccion: el metodo ya
-  esta publicado y la prueba lo usa, pero la interfaz todavia no ofrece
-  iniciar un trade.
+- Probar en vivo el camino de produccion que inicia trade desde el menu de la
+  criatura y luego selecciona el objeto.
 - En la prueba viva de muerte, el unico fallo que queda es la limpieza del
   demon con `/killall`, que solo alcanza el cuadro alrededor de quien lo dice.
-- Parcels y mailbox: la prueba viva existe pero no puede terminar hasta que el
-  carril `servidor` deje pasar los items legibles en esa guarda.
+- Casas/camas: permisos, dormir/despertar y persistencia real contra la
+  autoridad del servidor.
 - Las corridas fallidas del depot dejaron dos parcels del god dentro del
   mueble del mapa en `(32354,32231,7)`. No rompen nada pero estan ahi.
 
@@ -157,11 +170,13 @@ Probar contratos, recorridos completos, concurrencia, fixtures y regresiones.
   OTBM, con el jugador en la suya.
 - ATENDIDA el 2026-08-29: el `0x7D` saliente. `protocolo-red` 1.5.0 lo publico
   con el atajo de inventario y la prueba viva ya lo usa en vez de armar los
-  bytes. Queda para `cliente` ofrecerlo como accion en el menu de criatura.
+  bytes. `cliente` 1.4.0 ya lo ofrece; falta la prueba viva que empieza en ese
+  menu.
 - La prueba manual de puertas y runas sigue pendiente; la prueba automatizada
   del life ring ya pasa contra el servidor reconstruido.
-- El cambio de reacquisicion de monstruos en C++ requiere reconstruccion y
-  prueba viva; no esta certificado por la matriz headless del cliente.
+- ATENDIDA el 2026-08-29: reacquisicion de monstruos. El servidor ya estaba
+  reconstruido y la prueba viva por salida/regreso de la ventana termino en
+  codigo cero con el mismo id de criatura.
 
 ## Decisiones
 
@@ -177,7 +192,8 @@ Probar contratos, recorridos completos, concurrencia, fixtures y regresiones.
 | El monstruo del corpse se remata con `/killall` si el cuerpo a cuerpo tarda | El personaje god es nivel 1 y la prueba mide corpse y loot, no el ritmo de combate | si |
 | Una pila solo certifica un corpse si `mapa_alineado` es verdadero | Sin el jugador en `mi_pos`, los indices y objetos locales no representan el paquete del servidor | no |
 | La prueba viva de trade normaliza las manos y usa dos server id 2006 | El servidor necesita dos ofertas reales para ejecutar `playerAcceptTrade`; el usuario autorizo alterar los personajes de prueba | si |
-| QA arma temporalmente el `0x7D` inicial | Permite certificar la autoridad sin invadir `cliente3d/red/`, reservado al otro agente; debe desaparecer cuando el carril publique el metodo | si |
+| QA usa el `0x7D` publicado, no bytes armados a mano | La prueba viva debe cubrir el mismo transporte que usa produccion | no |
+| Un golpe de reacquisicion debe nombrar al monstruo invocado | El campo contiene criaturas silvestres; una bajada de vida sola produjo un falso positivo real con un spider | no |
 
 ## Notas para quien retome
 
@@ -209,3 +225,7 @@ Probar contratos, recorridos completos, concurrencia, fixtures y regresiones.
 - El 2026-08-29 Son Goku estaba offline antes de la prueba. No se cambio su
   clave: solo se cambio su asociacion de cuenta durante la corrida y se
   restauro inmediatamente despues, aun ante fallo.
+- La prueba de reacquisicion mueve y dana temporalmente a Valentino. Tras la
+  corrida final se restauraron exactamente los timestamps, posicion, vida y
+  duracion de condicion que tenian sus archivos al abrir este turno; los
+  depots y demas cambios previos del usuario quedaron intactos.

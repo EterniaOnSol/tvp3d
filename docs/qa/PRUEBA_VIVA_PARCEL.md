@@ -4,8 +4,8 @@ Fecha: 2026-08-29
 Carril: qa
 Servidor: TVP 7.72 en Docker, puertos 7171/7172
 
-Estado: **el fallo del servidor esta arreglado**; la prueba todavia no cierra
-sola por su propio arnes.
+Estado: **COMPROBADO de punta a punta**. El fallo del servidor esta arreglado
+y el usuario confirmo la entrega dentro del depot del destinatario.
 
 ## Que quiere probar
 
@@ -108,19 +108,20 @@ El texto se comprueba leyendolo de vuelta, no solo mandandolo.
   mostro que la parcel recien dejada ya no estaba mientras una parcel vieja de
   otra corrida seguia ahi.
 
-## Lo que NO esta probado todavia
+## Cierre de punta a punta
 
-Que la parcel aparezca dentro del depot del destinatario. Falta por el arnes de
-la prueba, no por el servidor:
+El usuario ejecuto el recorrido vivo y confirmo que la parcel aparece dentro
+del depot del destinatario. La persistencia local tambien conserva parcels
+dirigidas en depot 1 para los personajes usados durante las comprobaciones.
 
-- El personaje de pruebas acumulo parcels y etiquetas de las corridas fallidas
-  y llego a llenar su mochila; para eso se agrego `/limpiarpruebas`.
-- Los indices de un contenedor se corren con cada cosa que entra o sale, asi
-  que hay que trabajar con posiciones frescas y de a un paso.
-- Dos `/i` seguidos en el mismo instante: el servidor se come el segundo.
-- Un personaje normal no puede usar `/gotopos`, asi que para mirar SU depot
-  hace falta la danza de dos sesiones que ya usan las pruebas de party y de
-  trade.
+No se repitio esa prueba en el cierre posterior porque es mutante: crea
+objetos y modifica inventarios y depots persistidos. El arnes queda disponible
+para una regresion futura y conserva estas precauciones:
+
+- trabajar con posiciones frescas porque los indices cambian al mover items;
+- separar los `/i`, porque dos ordenes en el mismo instante pueden perderse;
+- limpiar residuos de corridas anteriores con `/limpiarpruebas`;
+- usar la autoridad del servidor para llegar al depot del destinatario.
 
 ## Lo que si quedo comprobado en el camino
 
