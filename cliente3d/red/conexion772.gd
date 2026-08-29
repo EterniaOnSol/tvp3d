@@ -302,6 +302,70 @@ func enviar_hablar(texto: String) -> void:
 	enviar_juego(mensaje.datos)
 
 
+func enviar_pedir_canales() -> void:
+	"""Solicita la lista real de canales (0x97)."""
+	enviar_juego(PackedByteArray([0x97]))
+
+
+func enviar_abrir_canal(id_canal: int) -> void:
+	"""Abre un canal de la lista (0x98 + uint16)."""
+	enviar_juego(PackedByteArray([0x98, id_canal & 0xFF,
+		(id_canal >> 8) & 0xFF]))
+
+
+func enviar_cerrar_canal(id_canal: int) -> void:
+	"""Cierra un canal abierto (0x99 + uint16)."""
+	enviar_juego(PackedByteArray([0x99, id_canal & 0xFF,
+		(id_canal >> 8) & 0xFF]))
+
+
+func enviar_abrir_canal_privado(nombre: String) -> void:
+	"""Abre un privado por nombre (0x9A + string)."""
+	var mensaje := MENSAJE.new()
+	mensaje.escribir_u8(0x9A)
+	mensaje.escribir_texto(nombre.strip_edges())
+	enviar_juego(mensaje.datos)
+
+
+func enviar_crear_canal_privado() -> void:
+	"""Crea el canal privado del jugador (0xAA)."""
+	enviar_juego(PackedByteArray([0xAA]))
+
+
+func enviar_hablar_en_canal(id_canal: int, texto: String,
+		clase: int = 0x05) -> void:
+	"""Envia una frase al canal usando parseSay 7.72.
+
+	El servidor es quien valida que el canal este abierto y que la clase sea
+	legal; el cliente solo construye el wire format exacto.
+	"""
+	var mensaje := MENSAJE.new()
+	mensaje.escribir_u8(0x96)
+	mensaje.escribir_u8(clase)
+	mensaje.escribir_u16(id_canal)
+	mensaje.escribir_texto(texto.strip_edges())
+	enviar_juego(mensaje.datos)
+
+
+func enviar_agregar_vip(nombre: String) -> void:
+	"""Agrega un personaje a la lista VIP (0xDC)."""
+	var limpio := nombre.strip_edges()
+	if limpio.is_empty():
+		return
+	var mensaje := MENSAJE.new()
+	mensaje.escribir_u8(0xDC)
+	mensaje.escribir_texto(limpio)
+	enviar_juego(mensaje.datos)
+
+
+func enviar_quitar_vip(guid: int) -> void:
+	"""Quita un personaje de la lista VIP (0xDD)."""
+	var mensaje := MENSAJE.new()
+	mensaje.escribir_u8(0xDD)
+	mensaje.escribir_u32(guid)
+	enviar_juego(mensaje.datos)
+
+
 func enviar_usar_item(posicion: Vector3i, client_id: int, stackpos: int = 1,
 		indice: int = 0) -> void:
 	"""Usa un item del mapa (opcode 0x82, parseUseItem del servidor)."""
@@ -373,6 +437,22 @@ func enviar_cerrar_contenedor(id_contenedor: int) -> void:
 func enviar_subir_contenedor(id_contenedor: int) -> void:
 	"""Muestra el contenedor padre en la misma ventana (0x88)."""
 	enviar_juego(PackedByteArray([0x88, id_contenedor & 0xFF]))
+
+
+func enviar_aceptar_comercio() -> void:
+	"""Acepta la oferta actual del comercio jugador-a-jugador (0x7F)."""
+	enviar_juego(PackedByteArray([0x7F]))
+
+
+func enviar_cerrar_comercio() -> void:
+	"""Cancela el comercio jugador-a-jugador (0x80)."""
+	enviar_juego(PackedByteArray([0x80]))
+
+
+func enviar_mirar_comercio(es_contraparte: bool, indice: int) -> void:
+	"""Pide el look de un objeto dentro de la ventana de trade (0x7E)."""
+	enviar_juego(PackedByteArray([0x7E, 1 if es_contraparte else 0,
+		indice & 0xFF]))
 
 
 func enviar_atacar(id_criatura: int) -> void:

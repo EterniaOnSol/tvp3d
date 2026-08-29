@@ -511,19 +511,23 @@ void Monster::onCreatureFound(Creature* creature, bool pushFront/* = false*/)
 
 void Monster::onCreatureEnter(Creature* creature)
 {
-	// Si el jugador vuelve a entrar en el rango, no dependemos solamente de
-	// que el siguiente ciclo de idle despierte al monster. Se reacquire aqui
-	// y se reactiva su lista de pensamiento inmediatamente.
-	if (!attackedCreature && isHostile() && creature && creature->getPlayer()
+	// Si el objetivo vuelve a entrar en la ventana visible, hay dos casos:
+	//  - un objetivo nuevo que acaba de aparecer;
+	//  - el mismo objetivo que se conservo durante una desaparicion temporal.
+	// En el segundo caso `attackedCreature` ya no es null, por lo que la
+	// condicion anterior nunca lo reacquiria y el monster quedaba en IDLE.
+	if (isHostile() && creature && creature->getPlayer()
 			&& isOpponent(creature) && isTarget(creature)) {
 		const Player* player = creature->getPlayer();
 		if (!player->hasFlag(PlayerFlag_IgnoredByMonsters)
 				&& (canSeeInvisibility() || !creature->isInvisible())
-				&& selectTarget(creature)) {
+				&& (attackedCreature == creature
+					|| !attackedCreature && selectTarget(creature))) {
 			Target = creature;
 			State = STATE::ATTACKING;
 			setIdle(false);
 			clearToDo();
+			addYieldToDo();
 		}
 	}
 	onCreatureFound(creature, true);

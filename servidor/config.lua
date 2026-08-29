@@ -137,7 +137,8 @@ forceMonsterTypesOnLoad = false
 luaItemDesc = false
 staminaSystem = false
 showPlayerLogInConsole = true
-disabledMailboxes = "Rookgaard,Isle of Solitude"
+-- Mailboxes are enabled in every town, including Rookgaard.
+disabledMailboxes = ""
 vipFreeLimit = 20
 vipPremiumLimit = 100
 depotFreeLimit = 1000

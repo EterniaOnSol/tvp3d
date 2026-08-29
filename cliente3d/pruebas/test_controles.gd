@@ -53,9 +53,13 @@ class ConexionAtaque:
 	var detenciones := 0
 	var usos_criatura: Array = []
 	var usos_item: Array = []
+	var frases: Array = []
 
 	func enviar_atacar(id: int) -> void:
 		ataques.append(id)
+
+	func enviar_hablar(texto: String) -> void:
+		frases.append(texto)
 
 	func enviar_auto_camino(camino: Array) -> void:
 		caminos.append(camino)
@@ -145,6 +149,7 @@ func _ready() -> void:
 	_comprobar("sprites de criaturas tienen orden estable", _probar_orden_criaturas(mundo))
 	_comprobar("ataque directo envia el ID de la criatura", _probar_ataque_directo(mundo))
 	_comprobar("ataque lejano se acerca por ruta caminable", _probar_ataque_a_distancia(mundo))
+	_comprobar("NPC recibe hi en vez de ataque", _probar_hablar_npc(mundo))
 	_comprobar("clic derecho quieto ataca criatura", _probar_click_derecho_criatura())
 	_comprobar("arrastre reconoce criatura y usa client id 99", _probar_arrastre_criatura(mundo))
 	_comprobar("recoger item del suelo usa slot de inventario", _probar_recoger_item(mundo))
@@ -361,6 +366,20 @@ func _probar_ataque_a_distancia(mundo) -> bool:
 	return conexion.ataques == [42]
 
 
+func _probar_hablar_npc(mundo) -> bool:
+	var estado := EstadoRuta.new()
+	estado.mi_pos = Vector3i(0, 0, 7)
+	estado.criaturas[0x80000001] = {
+		"pos": Vector3i(2, 0, 7), "nombre": "Test NPC", "apariencia": 128,
+	}
+	var conexion := ConexionAtaque.new()
+	mundo._estado = estado
+	mundo._con = conexion
+	mundo._solo_mirar = false
+	var correcto: bool = mundo.hablar_con_npc(0x80000001)
+	return correcto and conexion.frases == ["hi"] and conexion.ataques.is_empty()
+
+
 func _probar_click_derecho_criatura() -> bool:
 	var mundo := MundoClickDerecho.new()
 	mundo._estado = EstadoRuta.new()
@@ -424,11 +443,16 @@ func _probar_recoger_item(mundo) -> bool:
 	if not correcto or conexion.movimientos.size() != 1:
 		return false
 	var movimiento: Dictionary = conexion.movimientos[0]
-	return movimiento["origen"] == estado.mi_pos \
+	var entero_ok: bool = movimiento["origen"] == estado.mi_pos \
 		and movimiento["client_id"] == 3031 \
 		and movimiento["stackpos"] == 2 \
 		and movimiento["destino"] == Vector3i(0xFFFF, 3, 0) \
 		and movimiento["cantidad"] == 2
+	# La cantidad elegida por la UI se conserva hasta el byte count de 0x78.
+	var parcial: bool = mundo.recoger_objeto_en_ranura(estado.mi_pos, datos, 2,
+		"inventario", -1, 3, 1)
+	return entero_ok and parcial and conexion.movimientos.size() == 2 \
+		and conexion.movimientos[1]["cantidad"] == 1
 
 
 func _probar_items_protocolo() -> bool:

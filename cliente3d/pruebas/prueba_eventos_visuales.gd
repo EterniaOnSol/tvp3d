@@ -7,6 +7,8 @@ var _fallas := 0
 var _dialogo := {}
 var _mensaje := {}
 var _cuadrado := {}
+var _comercio := []
+var _comercio_cerro := false
 
 
 func _ready() -> void:
@@ -18,6 +20,9 @@ func _ready() -> void:
 		_mensaje = {"texto": texto, "clase": clase})
 	estado.cuadrado_criatura.connect(func(id, color):
 		_cuadrado = {"id": id, "color": color})
+	estado.comercio_actualizado.connect(func(nombre, propio, items):
+		_comercio.append({"nombre": nombre, "propio": propio, "items": items}))
+	estado.comercio_cerrado.connect(func(): _comercio_cerro = true)
 
 	var msg := MENSAJE.new()
 	msg.escribir_u8(0xAA)
@@ -34,6 +39,17 @@ func _ready() -> void:
 	msg.escribir_u8(0x86)
 	msg.escribir_u32(42)
 	msg.escribir_u8(180)
+	msg.escribir_u8(0x7D)
+	msg.escribir_texto("Alice")
+	msg.escribir_u8(1)
+	msg.escribir_u16(3031)
+	msg.escribir_u8(25)
+	msg.escribir_u8(0x7E)
+	msg.escribir_texto("Alice")
+	msg.escribir_u8(1)
+	msg.escribir_u16(3035)
+	msg.escribir_u8(3)
+	msg.escribir_u8(0x7F)
 	estado.procesar(msg)
 
 	_comprobar("dialogo conserva nombre, posicion y clase",
@@ -47,6 +63,15 @@ func _ready() -> void:
 	_comprobar("cuadrado conserva criatura y color",
 		int(_cuadrado.get("id", 0)) == 42
 		and int(_cuadrado.get("color", 0)) == 180)
+	_comprobar("trade conserva las dos ofertas",
+		_comercio.size() == 2
+		and _comercio[0].get("nombre") == "Alice"
+		and bool(_comercio[0].get("propio", false))
+		and int(_comercio[0].get("items", [])[0].get("cid", 0)) == 3031
+		and not bool(_comercio[1].get("propio", true))
+		and int(_comercio[1].get("items", [])[0].get("cid", 0)) == 3035)
+	_comprobar("trade cierra su estado",
+		_comercio_cerro and not estado.comercio.get("activo", true))
 	_comprobar("los eventos no desalinean el paquete", msg.sin_leer() == 0)
 	print("Eventos visuales TVP3D: %d falla(s)" % _fallas)
 	get_tree().quit(1 if _fallas > 0 else 0)

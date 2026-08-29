@@ -2,7 +2,7 @@
 
 Estado: EN_CURSO
 Ultimo agente: codex
-Ultima actualizacion: 2026-08-27T19:29:05-06:00
+Ultima actualizacion: 2026-08-29T05:05:36-06:00
 Contrato publicado: SI
 
 ## Depende de
@@ -47,17 +47,28 @@ Probar contratos, recorridos completos, concurrencia, fixtures y regresiones.
 - El servidor reconstruido conserva la regeneracion otorgada por equipo dentro
   de proteccion: Guuille, con life ring en la ranura 9, paso de 157 a 160 de
   vida y de 1079 a 1082 de mana durante una medicion real de 7 segundos.
+- Publicada `docs/qa/PARIDAD_772_2026-08-29.md`: matriz global basada en el
+  servidor autoritativo que separa COMPROBADO, PARCIAL y AUSENTE.
+- Validado el checkpoint actual en ocho procesos Godot: contenedores/canales,
+  controles, eventos/trade, modelos authored, formas, spells, escena principal
+  y escaneo de editor terminaron con codigo cero.
 
 ## Falta
 
 - Completar matriz de red de todos los recorridos y errores contra un servidor
   legacy disponible.
 - Repetir la checklist desde un clon limpio para la prueba de entrega.
+- Probar en vivo muerte/reentrada, corpse y loot; luego trade y VIP con dos
+  clientes.
+- Conservar y probar velocidad, skull y party shield que el cliente aun
+  descarta en `0x8F`, `0x90` y `0x91`.
 
 ## Bloqueos activos
 
 - La prueba manual de puertas y runas sigue pendiente; la prueba automatizada
   del life ring ya pasa contra el servidor reconstruido.
+- El cambio de reacquisicion de monstruos en C++ requiere reconstruccion y
+  prueba viva; no esta certificado por la matriz headless del cliente.
 
 ## Decisiones
 

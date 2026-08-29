@@ -2,6 +2,13 @@ local config = {
 	createEmptyVial = true,
 }
 
+-- Parametros de las bebidas de la version 7.4/7.72. Mantenerlos aqui hace
+-- explicito que el subtipo del vial sigue siendo FLUID_MANAFLUID (10) y que
+-- solo cambia la cantidad restaurada y el retraso para lanzar hechizos.
+local manaFluidMin = 25
+local manaFluidMax = 75
+local manaFluidSpellDelay = 1000
+
 local items = {
 	1775, 2005, 2006, 2007, 2008, 2009,
 	2011, 2012, 2013, 2014, 2015, 2023,
@@ -55,8 +62,8 @@ function action.onUse(player, item, fromPosition, target, toPosition)
 			elseif item.type == FLUID_SLIME then
 				player:addCondition(poison)
 			elseif item.type == FLUID_MANAFLUID then
-				target:setEarliestSpellTime(1000)
-				target:addMana(math.random(25, 75))
+				target:setEarliestSpellTime(manaFluidSpellDelay)
+				target:addMana(math.random(manaFluidMin, manaFluidMax))
 				toPosition:sendMagicEffect(CONST_ME_MAGIC_BLUE)
 			elseif item.type == FLUID_LIFEFLUID then
 				target:addHealth(math.random(25, 50))

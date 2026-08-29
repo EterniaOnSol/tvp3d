@@ -58,6 +58,10 @@ const ARCHIVO_MAPPING := "res://assets/mappings/items.json"
 const ARCHIVO_INDICE_IR := "res://generated/maps/rookgaard_100sqm_chunks/index.json"
 const ARCHIVO_CAMA := "res://assets/modelos/bed.obj"
 const ARCHIVO_CAMA_PERSONA := "res://assets/modelos/bed-person.obj"
+const ARCHIVO_TEXTURA_CAMA := "res://assets/modelos/bed-texture.png"
+const ARCHIVO_TEXTURA_CAMA_PERSONA := "res://assets/modelos/bed-person-texture.png"
+const ARCHIVO_LAMPARA := "res://assets/modelos/street-lamp.obj"
+const ARCHIVO_TEXTURA_LAMPARA := "res://assets/modelos/street-lamp-texture.png"
 const IDS_CAMA_PIE := [2488, 2494, 2496, 2498]
 ## Las piezas 4633-4644 son las transiciones de orilla que usa el mapa de
 ## Rookgaard. Su franja marron y su agua azul se conservan; las partes
@@ -101,9 +105,12 @@ const ALTO_PISO := COORD.FLOOR_WORLD_HEIGHT
 ## El mapa logico sigue usando sus niveles normales; solo la arquitectura
 ## exterior se abre visualmente para que una casa tenga volumen real.
 const ALTURA_PLANTA_VISUAL := ALTO_PISO * 2.0
-## Las montanas son terreno elevado, no muros: se les da una altura propia
-## para que el relieve acompañe la escala vertical nueva de las casas.
-const ALTURA_MONTANA_VISUAL := ALTO_PISO * 1.20
+## Las montanas ocupan todo el intervalo visual de un piso. La vista exterior
+## tambien dibuja los niveles 0..6 sobre la superficie (z=7); si la meseta
+## mide menos que esa separacion queda una franja de cielo y parece flotando.
+## El lado exterior sigue siendo una pendiente, pero el volumen llega hasta
+## la siguiente capa para que las montanas formen un relieve continuo.
+const ALTURA_MONTANA_VISUAL := ALTURA_PLANTA_VISUAL
 ## Alturas visuales de las construcciones. No se derivan del alto del sprite:
 ## el DAT describe una imagen 2D, no la altura fisica de una pared.
 const ALTO_MUEBLE := ALTO_PISO * 0.42
@@ -121,10 +128,6 @@ const RADIO_CORTE_INTERIOR := 18
 ## ventana se completa en segundo plano para que una escalera no deje al
 ## jugador esperando a que nazcan miles de instancias lejanas.
 const RADIO_INMEDIATO := 16
-## Pisos de abajo que se muestran junto al piso jugable. Z+1 es el primer
-## nivel inferior en Tibia; mantenerlo visible evita que la vista se corte en
-## el color del fondo al mirar desde un barco o una construccion elevada.
-var _pisos_abajo_visibles := 1
 ## Cuanto hay que caminar para rearmar el decorado. Rearmarlo en cada
 ## paso no se nota en pantalla y cuesta medio segundo.
 ## El decorado se mantiene mientras caminamos dentro del margen del radio.
@@ -150,6 +153,10 @@ const UMBRAL_ARRASTRE_MOUSE := 3.0
 const DURACION_VISUAL_PASO := 0.26
 const MULTIPLICADOR_DIAGONAL := 3.0
 const ESCALA_JUGADOR := 0.5
+## En el servidor los NPC usan el rango reservado 0x80000000+.
+## No tienen que entrar al ciclo de ataque de los monsters.
+const ID_MINIMO_NPC := 0x80000000
+const RANGO_DIALOGO_NPC := 3
 ## La camara filtra posicion y objetivo con la misma señal. Mirar al nodo
 ## del jugador directamente hacia que el mundo tiemble al confirmar pasos.
 const SUAVIDAD_CAMARA := 10.0
@@ -260,6 +267,7 @@ var _sprites
 var _malla_losa: PlaneMesh
 var _mallas := {}
 var _mallas_cama := {}
+var _malla_lampara: ArrayMesh
 var _materiales := {}
 var _mappings := {}
 ## Parametros editables durante la ejecucion. El modo de ajuste reconstruye
@@ -296,6 +304,7 @@ var _jugador_t := 1.0
 var _jugador_duracion := DURACION_VISUAL_PASO
 var _jugador_moviendose := false
 var _jugador_es_sprite := false
+var _npc_hablar_pendiente_id := 0
 ## Altura logica estable de la camara. No sigue el movimiento visual del
 ## sprite, porque eso haria que todo el mapa pareciera saltar.
 var _jugador_y_estable := 0.0
@@ -328,7 +337,7 @@ var _ataque_pendiente_id := 0
 var _objeto_pendiente := {}
 var _direccion_diferida := Vector2i.ZERO
 var _objetivo_diferido := Vector3i(-9999, -9999, -9999)
-## Runa seleccionada para la segunda mitad de un "Use With".
+## Runa o mana fluid seleccionada para la segunda mitad de un "Use With".
 var _uso_con_pendiente := {}
 
 
@@ -781,6 +790,7 @@ func _seleccionar_personaje(personaje: Dictionary) -> void:
 
 func _al_entramos() -> void:
 	_salida_pendiente = ""
+	_npc_hablar_pendiente_id = 0
 	if _login != null:
 		_login.visible = false
 	if _interfaz != null:
@@ -789,9 +799,11 @@ func _al_entramos() -> void:
 		# El cliente deja el modo ofensivo y el chase activos para que el
 		# objetivo seleccionado por Battle dispare el ciclo de combate real.
 		_con.enviar_modos_combate(1, 1, 1)
+		if _con.has_method("enviar_pedir_canales"):
+			_con.enviar_pedir_canales()
 	if _voz != null:
 		_voz.iniciar()
-	_avisar("Connected. Select a creature in Battle or click it to attack.")
+		_avisar("Connected. Select a creature in Battle, or click an NPC to talk.")
 
 
 func solicitar_cambio_personaje() -> void:
@@ -1170,6 +1182,7 @@ func _color_texto_combate(texto: String) -> Color:
 
 
 func _al_paso_cancelado() -> void:
+	_npc_hablar_pendiente_id = 0
 	_avisar("Blocked.")
 
 
@@ -1186,6 +1199,7 @@ func detener_movimiento_para_uso() -> void:
 	_uso_con_pendiente.clear()
 	_actualizar_cursor_uso()
 	_ataque_pendiente_id = 0
+	_npc_hablar_pendiente_id = 0
 	_direccion_diferida = Vector2i.ZERO
 	_objetivo_diferido = Vector3i(-9999, -9999, -9999)
 	_con.enviar_detener_auto_camino()
@@ -1193,7 +1207,7 @@ func detener_movimiento_para_uso() -> void:
 
 func preparar_uso_con(tipo: String, id_contenedor: int, slot: int,
 		cosa: Dictionary) -> bool:
-	"""Selecciona una runa para usarla con una criatura o una casilla.
+	"""Selecciona una runa o fluido para usarlo con un objetivo.
 
 	El servidor 7.72 distingue 0x84 (Use With Creature) de 0x83 (Use With
 	Item/tile). La primera mitad se guarda aqui; el destino se elige con el
@@ -1214,10 +1228,14 @@ func preparar_uso_con(tipo: String, id_contenedor: int, slot: int,
 		"origen": origen,
 		"cid": cid,
 		"nombre": str(cosa.get("nombre", "spell rune")),
+		"es_fluido": bool(cosa.get("liquido", false)),
 	}
 	_actualizar_cursor_uso()
-	_avisar("Use with %s: click a creature or map tile. Esc cancels." %
-		str(cosa.get("nombre", "spell rune")))
+	var destino := "your character" \
+		if bool(cosa.get("liquido", false)) \
+		else "a creature or map tile"
+	_avisar("Use with %s: click %s. Esc cancels." % [
+		str(cosa.get("nombre", "spell rune")), destino])
 	return true
 
 
@@ -1234,7 +1252,10 @@ func usar_con_criatura_pendiente(id: int) -> bool:
 	if _uso_con_pendiente.is_empty() or _con == null or id <= 0:
 		return false
 	var criatura: Dictionary = _estado.criaturas.get(id, {})
-	if criatura.is_empty() or id == _estado.mi_id:
+	var es_fluido := bool(_uso_con_pendiente.get("es_fluido", false))
+	if id == _estado.mi_id and es_fluido and criatura.is_empty():
+		criatura = {"nombre": "your character"}
+	if criatura.is_empty() or (id == _estado.mi_id and not es_fluido):
 		return false
 	var origen: Vector3i = _uso_con_pendiente.get("origen", Vector3i.ZERO)
 	var cid := int(_uso_con_pendiente.get("cid", 0))
@@ -1252,6 +1273,15 @@ func _usar_con_clic(posicion_mouse: Vector2) -> void:
 	var posicion = _casilla_bajo_mouse(posicion_mouse)
 	if posicion == null or posicion.z != _estado.mi_pos.z:
 		_avisar("Choose a target inside the game map.")
+		return
+	# A mana fluid solo se puede beber sobre el personaje propio. El jugador
+	# es un modelo 3D separado de estado.criaturas, por eso se detecta aqui
+	# por su rectangulo proyectado antes de intentar el flujo generico.
+	if bool(_uso_con_pendiente.get("es_fluido", false)):
+		if _clic_sobre_jugador(posicion_mouse):
+			if usar_con_criatura_pendiente(_estado.mi_id):
+				return
+		_avisar("Use the mana fluid on your character.")
 		return
 	var criatura_id := _criatura_bajo_mouse(posicion_mouse)
 	if criatura_id == 0:
@@ -1273,6 +1303,23 @@ func _usar_con_clic(posicion_mouse: Vector2) -> void:
 	_actualizar_cursor_uso()
 	_avisar("Using %s on (%d, %d, %d)..." % [
 		nombre, posicion.x, posicion.y, posicion.z])
+
+
+func _clic_sobre_jugador(posicion_mouse: Vector2) -> bool:
+	"""Comprueba el cuerpo del modelo propio, no solo el suelo bajo el clic."""
+	if _camara == null or not is_instance_valid(_jugador_nodo):
+		return false
+	var base_3d := _jugador_nodo.position + Vector3(0.0, 0.02, 0.0)
+	var cabeza_3d := _jugador_nodo.position + Vector3(0.0,
+		1.18 * ESCALA_JUGADOR, 0.0)
+	var base := _camara.unproject_position(base_3d)
+	var cabeza := _camara.unproject_position(cabeza_3d)
+	var altura_pantalla := maxf(24.0, absf(base.y - cabeza.y))
+	var ancho_pantalla := maxf(18.0, altura_pantalla * 0.40)
+	return posicion_mouse.x >= base.x - ancho_pantalla \
+		and posicion_mouse.x <= base.x + ancho_pantalla \
+		and posicion_mouse.y >= minf(base.y, cabeza.y) - 8.0 \
+		and posicion_mouse.y <= maxf(base.y, cabeza.y) + 8.0
 
 
 # --------------------------------------------------------------------
@@ -1306,6 +1353,7 @@ func _al_cambiar() -> void:
 		rearmado = _rearmar_escenario(aqui)
 	_actualizar_jugador_confirmado(aqui, rearmado)
 	_intentar_ataque_pendiente()
+	_intentar_hablar_npc_pendiente()
 	_dibujar_criaturas()
 	_actualizar_visibilidad_interior()
 	_avisar("TVP3D   (%d, %d, %d)   %d things   %d creatures\nChunk %s   unmapped %d\nWASD/arrows/QE-ZC walk | left click auto-walk | right drag camera | wheel zoom" % [
@@ -1329,7 +1377,7 @@ func _al_casilla_actualizada(posicion: Vector3i, _opcode: int) -> void:
 	"""
 	if not _estado.adentro or _centro_escenario.x < -9000:
 		return
-	if posicion.z < _centro_escenario.z or posicion.z > _centro_escenario.z + _pisos_abajo_visibles:
+	if not _nivel_renderizable(posicion, _centro_escenario):
 		return
 	if absi(posicion.x - _centro_escenario.x) > RADIO \
 			or absi(posicion.y - _centro_escenario.y) > RADIO:
@@ -1412,13 +1460,16 @@ func _elementos_de_casilla(posicion: Vector3i) -> Array:
 
 
 func _nivel_renderizable(donde: Vector3i, centro: Vector3i) -> bool:
-	if donde.z > centro.z + _pisos_abajo_visibles:
-		return false
+	if donde.z > centro.z:
+		# Desde un piso alto se conserva la silueta vertical hasta la planta
+		# baja (z=7), pero no se dibuja el contenido de esos pisos. Los niveles
+		# subterraneos (z>7) nunca entran en la vista exterior.
+		return centro.z < 7 and donde.z <= 7
 	if donde.z < centro.z:
-		# En la superficie, z=7 es el nivel 0 de Tibia y z=0..6 son
-		# construcciones sobre el jugador. En el subterraneo no mostramos la
-		# superficie como si fuera un techo del tunel.
-		return centro.z <= 7 and donde.z >= maxi(0, centro.z - 6)
+		# Desde z=7 se deben ver todos los niveles superiores, incluido z=0.
+		# El recorte anterior empezaba en z=1 y hacia desaparecer el nivel mas
+		# alto de las piramides y de algunos edificios de Ankrahmun.
+		return centro.z <= 7 and donde.z >= 0
 	return true
 
 
@@ -1456,6 +1507,38 @@ func _filtrar_construccion_superior(elementos) -> Array:
 	return salida
 
 
+func _filtrar_paredes_nivel_inferior(elementos, nivel: int) -> Array:
+	"""Conserva las paredes del nivel inferior y descarta su contenido.
+
+	Desde una terraza o una piramide se ve la fachada completa del edificio,
+	pero no deben aparecer sus suelos, muebles, objetos ni criaturas flotando
+	entre plantas. Las paredes siguen usando su altura y textura normales.
+	"""
+	var salida: Array = []
+	for elemento in elementos:
+		var cid := _cid_de_elemento(elemento)
+		var info: Dictionary = _catalogo.info_item(cid)
+		if _forma_de_item(cid, info, nivel) == Forma.CAJA:
+			salida.append(elemento)
+	return salida
+
+
+func _elementos_visibles_por_nivel(elementos, donde: Vector3i,
+		centro: Vector3i) -> Array:
+	if _es_nivel_superior(donde, centro):
+		return _filtrar_construccion_superior(elementos)
+	if donde.z > centro.z:
+		# z=7 es la planta baja/superficie. Desde una piramide hay que verla
+		# completa: caminos, suelo, decoracion y sus paredes.
+		if centro.z < 7 and donde.z == 7:
+			return elementos
+		# Los niveles intermedios solo aportan la silueta de sus paredes; sus
+		# pisos y objetos no deben quedar suspendidos entre la piramide y la
+		# ciudad.
+		return _filtrar_paredes_nivel_inferior(elementos, donde.z)
+	return elementos
+
+
 func _es_pared_de_edificio(posicion: Vector3i) -> bool:
 	"""Indica si un SQM contiene un muro/puerta estructural del edificio."""
 	for cid in _ids_de_casilla(posicion):
@@ -1466,7 +1549,7 @@ func _es_pared_de_edificio(posicion: Vector3i) -> bool:
 
 
 func _esta_dentro_de_edificio(posicion: Vector3i) -> bool:
-	"""Reconoce una sala por sus muros cardinales, sin alterar el bloqueo."""
+	"""Reconoce una sala o una casilla cubierta, sin alterar el bloqueo."""
 	if _estado == null or _catalogo == null or _sprites == null:
 		return false
 	var direcciones := [
@@ -1481,8 +1564,29 @@ func _esta_dentro_de_edificio(posicion: Vector3i) -> bool:
 				break
 	# Tres lados cerrados es suficiente para incluir habitaciones con puerta,
 	# esquinas y pasillos interiores, sin ocultar muros por caminar junto a una
-	# fachada exterior.
-	return paredes_direcciones >= 3
+	# fachada exterior. Algunas salas tienen menos lados porque la cubierta
+	# superior es la señal mas fiable de que estamos dentro.
+	return paredes_direcciones >= 3 or _hay_cubierta_sobre(posicion)
+
+
+func _es_cubierta(info: Dictionary) -> bool:
+	var nombre := String(info.get("nombre", "")).to_lower()
+	return nombre.contains("roof") or (nombre.contains("floor") \
+		and bool(info.get("suelo", false)))
+
+
+func _hay_cubierta_sobre(posicion: Vector3i) -> bool:
+	# En Tibia z menor significa un piso superior. Revisar las tres plantas
+	# inmediatas cubre edificios de varios pisos sin activar el modo interior
+	# por una estructura demasiado lejana.
+	if posicion.z > 7:
+		return false
+	for nivel in range(posicion.z - 1, maxi(-1, posicion.z - 4), -1):
+		var encima := Vector3i(posicion.x, posicion.y, nivel)
+		for cid in _ids_de_casilla(encima):
+			if _es_cubierta(_catalogo.info_item(int(cid))):
+				return true
+	return false
 
 
 func _clave_instancia_visual(nodo: MultiMeshInstance3D, indice: int) -> String:
@@ -1490,8 +1594,9 @@ func _clave_instancia_visual(nodo: MultiMeshInstance3D, indice: int) -> String:
 
 
 func _ocultar_pared_interior(referencia: Dictionary) -> String:
-	if int(referencia.get("forma", -1)) != Forma.CAJA:
-		return ""
+	# El nombre se conserva por compatibilidad con los parches dinamicos, pero
+	# dentro de un edificio tambien se ocultan los pisos, techos y escaleras
+	# del nivel superior. Las paredes del nivel actual nunca pasan por aqui.
 	var nodo: MultiMeshInstance3D = referencia.get("nodo") as MultiMeshInstance3D
 	var indice := int(referencia.get("indice", -1))
 	if not is_instance_valid(nodo) or nodo.multimesh == null \
@@ -1529,7 +1634,7 @@ func _restaurar_todas_las_paredes_interior() -> void:
 
 
 func _actualizar_visibilidad_interior() -> void:
-	"""Corta solo los muros cercanos mientras el jugador esta dentro."""
+	"""Oculta los pisos superiores solo mientras el jugador esta dentro."""
 	if _estado == null or not _estado.adentro \
 			or _centro_escenario.x < -9000:
 		_restaurar_todas_las_paredes_interior()
@@ -1538,9 +1643,9 @@ func _actualizar_visibilidad_interior() -> void:
 	var objetivo := {}
 	if _esta_dentro_de_edificio(aqui):
 		for posicion in _instancias_por_casilla.keys():
-			if not posicion is Vector3i or posicion.z != aqui.z \
-					or absi(posicion.x - aqui.x) > RADIO_CORTE_INTERIOR \
-					or absi(posicion.y - aqui.y) > RADIO_CORTE_INTERIOR:
+			if not posicion is Vector3i or posicion.z >= aqui.z \
+				or absi(posicion.x - aqui.x) > RADIO_CORTE_INTERIOR \
+				or absi(posicion.y - aqui.y) > RADIO_CORTE_INTERIOR:
 				continue
 			for referencia in _instancias_por_casilla[posicion]:
 				var clave := _ocultar_pared_interior(referencia)
@@ -1576,8 +1681,8 @@ func _actualizar_casilla_visual(posicion: Vector3i) -> void:
 
 	var grupos := {}
 	var elementos := _elementos_de_casilla(posicion)
-	if _es_nivel_superior(posicion, _centro_escenario):
-		elementos = _filtrar_construccion_superior(elementos)
+	elementos = _elementos_visibles_por_nivel(elementos, posicion,
+		_centro_escenario)
 	if elementos.is_empty():
 		return
 
@@ -1726,7 +1831,7 @@ func _actualizar_sprite_jugador(fase: int) -> void:
 
 func _actualizar_jugador_confirmado(aqui: Vector3i, rearmado: bool) -> void:
 	_crear_jugador_visual()
-	var destino := COORD.tibia_a_mundo(aqui, _centro_escenario, LADO, ALTO_PISO)
+	var destino := _posicion_de_apoyo_jugador(aqui)
 	_jugador_y_estable = destino.y
 	var primera_posicion := _jugador_pos_confirmada.x < -9000
 	if primera_posicion or rearmado or aqui.z != _jugador_pos_confirmada.z:
@@ -1749,6 +1854,37 @@ func _actualizar_jugador_confirmado(aqui: Vector3i, rearmado: bool) -> void:
 			_jugador_fase = -1
 			_jugador_moviendose = true
 	_jugador_pos_confirmada = aqui
+
+
+func _posicion_de_apoyo_jugador(aqui: Vector3i) -> Vector3:
+	"""Pone al personaje sobre la plataforma visual de una construccion.
+
+	Las paredes visuales de los pisos elevados miden dos unidades y nacen en
+	la base del SQM. El punto logico de Tibia sigue siendo el mismo, pero el
+	personaje debe apoyar los pies en la parte superior de esa geometria cuando
+	esta dentro de una piramide o edificio; de lo contrario queda a media altura
+	dentro de sus paredes.
+	"""
+	var destino := _posicion_visual_de_casilla(aqui, _centro_escenario)
+	if aqui.z >= 7 or not _hay_plataforma_visual(aqui):
+		return destino
+	destino.y += _alto_pared_visual
+	return destino
+
+
+func _hay_plataforma_visual(aqui: Vector3i) -> bool:
+	"""Detecta una estructura cercana sin convertir el terreno en plataforma."""
+	var direcciones := [
+		Vector3i.ZERO, Vector3i(1, 0, 0), Vector3i(-1, 0, 0),
+		Vector3i(0, 1, 0), Vector3i(0, -1, 0),
+	]
+	for direccion in direcciones:
+		if _es_pared_de_edificio(aqui + direccion):
+			return true
+	# En el centro de una sala grande la pared puede quedar a mas de un SQM.
+	# Reutilizar la misma deteccion que corta los pisos superiores evita que el
+	# personaje vuelva a hundirse al alejarse del borde de la piramide.
+	return _esta_dentro_de_edificio(aqui)
 
 
 func _direccion_de_movimiento(delta: Vector3i) -> int:
@@ -1852,9 +1988,8 @@ func _rearmar_escenario_inmediato(centro: Vector3i, radio: int = RADIO) -> void:
 	var grupos := {}
 
 	for donde in delo_disco:
-		# El servidor manda varios pisos. El propio y el inmediatamente inferior
-		# son jugables; desde la superficie tambien se dibuja la construccion de
-		# los pisos superiores para que las casas no desaparezcan al mirar arriba.
+		# El servidor manda varios pisos, pero en la escena solo se conserva la
+		# planta actual y, cuando corresponde, la arquitectura de pisos superiores.
 		if not _nivel_renderizable(donde, centro):
 			continue
 		# Si el servidor ya nos hablo de esta casilla, mandan sus datos:
@@ -1862,8 +1997,8 @@ func _rearmar_escenario_inmediato(centro: Vector3i, radio: int = RADIO) -> void:
 		if _estado.casillas.has(donde):
 			continue
 		var elementos_disco = delo_disco[donde]
-		if _es_nivel_superior(donde, centro):
-			elementos_disco = _filtrar_construccion_superior(elementos_disco)
+		elementos_disco = _elementos_visibles_por_nivel(elementos_disco,
+			donde, centro)
 		_juntar_casilla(grupos, donde, elementos_disco)
 
 	for donde in _estado.casillas:
@@ -1872,8 +2007,8 @@ func _rearmar_escenario_inmediato(centro: Vector3i, radio: int = RADIO) -> void:
 		if absi(donde.x - centro.x) > radio or absi(donde.y - centro.y) > radio:
 			continue
 		var elementos_estado := _elementos_de_casilla(donde)
-		if _es_nivel_superior(donde, centro):
-			elementos_estado = _filtrar_construccion_superior(elementos_estado)
+		elementos_estado = _elementos_visibles_por_nivel(elementos_estado,
+			donde, centro)
 		_juntar_casilla(grupos, donde, elementos_estado)
 
 	# El orden de insercion del mapa depende de los trozos que se cargaron.
@@ -1926,8 +2061,8 @@ func _construir_escenario_diferido(centro: Vector3i) -> void:
 				and absi(donde.y - centro.y) <= RADIO_INMEDIATO \
 				and not _estado.casillas.has(donde):
 			var elementos_disco = disco_nuevo[donde]
-			if _es_nivel_superior(donde, centro):
-				elementos_disco = _filtrar_construccion_superior(elementos_disco)
+			elementos_disco = _elementos_visibles_por_nivel(elementos_disco,
+				donde, centro)
 			_juntar_casilla(grupos_cercanos, donde, elementos_disco, centro)
 		indice += 1
 		if Time.get_ticks_usec() - inicio_tanda >= PRESUPUESTO_REARMADO_US:
@@ -1944,8 +2079,8 @@ func _construir_escenario_diferido(centro: Vector3i) -> void:
 				and absi(donde.x - centro.x) <= RADIO_INMEDIATO \
 				and absi(donde.y - centro.y) <= RADIO_INMEDIATO:
 			var elementos_estado := _elementos_de_casilla(donde)
-			if _es_nivel_superior(donde, centro):
-				elementos_estado = _filtrar_construccion_superior(elementos_estado)
+			elementos_estado = _elementos_visibles_por_nivel(elementos_estado,
+				donde, centro)
 			_juntar_casilla(grupos_cercanos, donde, elementos_estado, centro)
 		indice += 1
 		if Time.get_ticks_usec() - inicio_tanda >= PRESUPUESTO_REARMADO_US:
@@ -2006,8 +2141,8 @@ func _construir_escenario_diferido(centro: Vector3i) -> void:
 				or absi(donde.y - centro.y) > RADIO_INMEDIATO) \
 				and not _estado.casillas.has(donde):
 			var elementos_disco = disco_nuevo[donde]
-			if _es_nivel_superior(donde, centro):
-				elementos_disco = _filtrar_construccion_superior(elementos_disco)
+			elementos_disco = _elementos_visibles_por_nivel(elementos_disco,
+				donde, centro)
 			_juntar_casilla(grupos_lejanos, donde, elementos_disco, centro)
 		indice += 1
 		if Time.get_ticks_usec() - inicio_tanda >= PRESUPUESTO_REARMADO_US:
@@ -2025,8 +2160,8 @@ func _construir_escenario_diferido(centro: Vector3i) -> void:
 				and absi(donde.x - centro.x) <= RADIO \
 				and absi(donde.y - centro.y) <= RADIO:
 			var elementos_estado := _elementos_de_casilla(donde)
-			if _es_nivel_superior(donde, centro):
-				elementos_estado = _filtrar_construccion_superior(elementos_estado)
+			elementos_estado = _elementos_visibles_por_nivel(elementos_estado,
+				donde, centro)
 			_juntar_casilla(grupos_lejanos, donde, elementos_estado, centro)
 		indice += 1
 		if Time.get_ticks_usec() - inicio_tanda >= PRESUPUESTO_REARMADO_US:
@@ -2132,11 +2267,6 @@ func _juntar_casilla(grupos: Dictionary, donde: Vector3i, ids,
 		# visible como plano; las paredes de los SQM vecinos no se modifican.
 		if hay_acceso_de_piso and forma == Forma.CAJA:
 			continue
-		# Al mostrar el piso inferior se conserva el suelo y los objetos utiles,
-		# pero sus paredes estructurales no deben atravesar visualmente el piso
-		# actual. Se vuelven a filtrar aqui tambien para los parches dinamicos.
-		if forma == Forma.CAJA and donde.z > origen.z:
-			continue
 		var orientacion := OrientacionPared.EJE_X
 		if forma == Forma.CAJA:
 			orientacion = _orientacion_de_pared(donde, cid)
@@ -2176,17 +2306,21 @@ func _juntar_casilla(grupos: Dictionary, donde: Vector3i, ids,
 			Forma.MUEBLE:
 				var altura_mueble := ALTO_MUEBLE
 				if _es_cama_modelo(cid):
-					altura_mueble = _altura_modelo_cama()
-				y += altura_mueble * 0.5 + apilado * 0.01
+					# El OBJ authored empieza en la base del piso; no usar la
+					# media altura generica de los muebles porque la eleva.
+					y += 0.01
+				else:
+					y += altura_mueble * 0.5 + apilado * 0.01
 				apilado += 1
 			Forma.PASAMANOS:
 				y += ALTO_PASAMANOS * 0.5 + apilado * 0.01
 				apilado += 1
 			Forma.LAMINA:
 				if _es_lampara_calle(info):
-					# No heredar el apilado de otros objetos: la lampara
-					# debe quedar siempre apoyada en su SQM.
-					y += alto * 0.5 + 0.01
+					# El modelo authored empieza en su base (Y=0). El sprite 2D
+					# se centraba en el SQM y dejaba la lampara flotando.
+					# Este origen queda justo sobre el piso.
+					y += 0.01
 				else:
 					y += alto * 0.5 + apilado * 0.01
 					apilado += 1
@@ -2614,6 +2748,74 @@ func _malla_cama_de(dormida: bool) -> ArrayMesh:
 	return malla
 
 
+func _malla_lampara_de() -> ArrayMesh:
+	if _malla_lampara != null:
+		return _malla_lampara
+	var malla: ArrayMesh = MODELO_OBJ.cargar(ARCHIVO_LAMPARA)
+	if malla != null:
+		_malla_lampara = malla
+	return malla
+
+
+func _material_lampara() -> StandardMaterial3D:
+	var clave := "__modelo_lampara"
+	if _materiales.has(clave):
+		return _materiales[clave]
+	var mat := StandardMaterial3D.new()
+	var textura = load(ARCHIVO_TEXTURA_LAMPARA)
+	if textura is Texture2D:
+		mat.albedo_texture = textura
+	else:
+		push_warning("No se pudo cargar la textura de la street lamp: "
+				+ ARCHIVO_TEXTURA_LAMPARA)
+		mat.albedo_color = Color("#5f5a4d")
+	mat.shading_mode = BaseMaterial3D.SHADING_MODE_UNSHADED
+	mat.texture_filter = BaseMaterial3D.TEXTURE_FILTER_NEAREST
+	mat.transparency = BaseMaterial3D.TRANSPARENCY_ALPHA_SCISSOR
+	mat.alpha_scissor_threshold = 0.5
+	mat.cull_mode = BaseMaterial3D.CULL_DISABLED
+	mat.roughness = 0.82
+	_materiales[clave] = mat
+	return mat
+
+
+func _volcar_lampara_grupo(grupo: Dictionary, malla: ArrayMesh) -> void:
+	"""Dibuja las street lamps authored apoyadas en la base del SQM.
+
+	El OBJ se comparte en un MultiMesh para no crear un nodo por lampara.
+	La animacion de luz se agregara despues; por ahora el modelo conserva
+	siempre su textura estatica y su posicion real.
+	"""
+	var mm := MultiMesh.new()
+	mm.transform_format = MultiMesh.TRANSFORM_3D
+	mm.mesh = malla
+	var sitios: Array = grupo.get("donde", [])
+	mm.instance_count = sitios.size()
+	for indice in range(sitios.size()):
+		mm.set_instance_transform(indice,
+			Transform3D(Basis(), sitios[indice]))
+
+	var nodo := MultiMeshInstance3D.new()
+	nodo.name = "StreetLampAuthored_%d" % int(grupo.get("cid", 0))
+	nodo.multimesh = mm
+	nodo.material_override = _material_lampara()
+	var destino: Node3D = _piso_mundo
+	if is_instance_valid(_destino_volcado):
+		destino = _destino_volcado
+	destino.add_child(nodo)
+	var tabla := _instancias_en_construccion if is_instance_valid(_destino_volcado) \
+			else _instancias_por_casilla
+	if _actualizando_casilla:
+		tabla = _instancias_por_casilla
+	var casillas: Array = grupo.get("casillas", [])
+	for indice in range(casillas.size()):
+		var posicion: Vector3i = casillas[indice]
+		if not tabla.has(posicion):
+			tabla[posicion] = []
+		tabla[posicion].append({"nodo": nodo, "indice": indice,
+			"forma": Forma.LAMINA})
+
+
 func _altura_modelo_cama() -> float:
 	var malla := _malla_cama_de(false)
 	if malla == null:
@@ -2648,10 +2850,16 @@ func _material_modelo_cama(dormida: bool = false) -> StandardMaterial3D:
 	if _materiales.has(clave):
 		return _materiales[clave]
 	var mat := StandardMaterial3D.new()
-	# Los OBJ entregados referencian PNG externos que aun no estan en la
-	# carpeta. Este color de respaldo mantiene el modelo visible hasta que se
-	# agreguen esas texturas, sin volver a la caja provisional.
-	mat.albedo_color = Color("#9a5b47") if not dormida else Color("#b77859")
+	var ruta_textura := ARCHIVO_TEXTURA_CAMA_PERSONA if dormida \
+			else ARCHIVO_TEXTURA_CAMA
+	var textura = load(ruta_textura)
+	if textura is Texture2D:
+		mat.albedo_texture = textura
+	else:
+		# Respaldo para que el modelo no desaparezca si falta el PNG en una
+		# exportacion incompleta.
+		mat.albedo_color = Color("#9a5b47") if not dormida \
+				else Color("#b77859")
 	mat.shading_mode = BaseMaterial3D.SHADING_MODE_PER_PIXEL
 	mat.texture_filter = BaseMaterial3D.TEXTURE_FILTER_NEAREST
 	mat.cull_mode = BaseMaterial3D.CULL_DISABLED
@@ -2705,6 +2913,12 @@ func _volcar_grupo(clave: String, grupo: Dictionary) -> void:
 		var malla_cama = _malla_cama_de(false)
 		if malla_cama != null:
 			_volcar_cama_grupo(grupo, malla_cama)
+			return
+	if forma == Forma.LAMINA and _es_lampara_calle(
+			_catalogo.info_item(cid)):
+		var malla_lampara := _malla_lampara_de()
+		if malla_lampara != null:
+			_volcar_lampara_grupo(grupo, malla_lampara)
 			return
 	if cid in IDS_MAGIC_WALL:
 		_volcar_magic_wall_grupo(grupo)
@@ -2887,7 +3101,10 @@ func _altura_montana(cid: int) -> float:
 	if (cid >= 1081 and cid <= 1086) or (cid >= 1112 and cid <= 1122):
 		return ALTURA_MONTANA_VISUAL
 	if cid == 1127 or cid == 1128:
-		return ALTO_PISO * 0.78
+		# Son transiciones de montaña, pero en la vista 3D también deben cerrar
+		# el intervalo completo entre z=7 y z=6. El sprite sigue siendo el mismo;
+		# solo se corrige el volumen que lo sostiene.
+		return ALTURA_MONTANA_VISUAL
 	return ALTURA_MONTANA_VISUAL
 
 
@@ -3120,11 +3337,96 @@ func _aplicar_materiales_estructura(mesh: Mesh, cuadro: Dictionary,
 	var estructura := mesh as ArrayMesh
 	if estructura == null or estructura.get_surface_count() < 2:
 		return
-	estructura.surface_set_material(0, _material_estructura(forma, info))
+	var familia_ankrahmun := _familia_pared_ankrahmun(cid, info) \
+		if forma == Forma.CAJA else 0
+	if familia_ankrahmun != 0:
+		# Las tapas y los laterales estrechos deben tener el mismo acabado que
+		# la cara principal; de lo contrario el muro cambia a marron al girar.
+		estructura.surface_set_material(0,
+			_material_pared_ankrahmun(familia_ankrahmun))
+	else:
+		estructura.surface_set_material(0, _material_estructura(forma, info))
 	if forma == Forma.CAJA:
-		estructura.surface_set_material(1, _material_estructura(forma, info, cid))
+		if familia_ankrahmun != 0:
+			# Las paredes authored son cajas, pero su cara visible conserva el
+			# patron original de la pared de Tibia en vez de una paleta plana.
+			estructura.surface_set_material(1,
+				_material_pared_ankrahmun(familia_ankrahmun))
+		else:
+			estructura.surface_set_material(1, _material_estructura(forma, info, cid))
 	else:
 		estructura.surface_set_material(1, _material(cuadro, forma))
+
+
+func _familia_pared_ankrahmun(cid: int, info: Dictionary) -> int:
+	var nombre := String(info.get("nombre", "")).to_lower()
+	if nombre != "sandstone wall":
+		return 0
+	if cid >= 1334 and cid <= 1340:
+		return 2 # Arenisca gris de las piezas 1334-1340.
+	if (cid >= 1305 and cid <= 1315) or (cid >= 1329 and cid <= 1333):
+		return 1 # Arenisca dorada de las piezas principales de Ankrahmun.
+	return 0
+
+
+func _material_pared_ankrahmun(familia: int) -> ShaderMaterial:
+	var clave := "__pared_ankrahmun_%d" % familia
+	if _materiales.has(clave):
+		return _materiales[clave]
+	# 1316 contiene una baldosa de arenisca de 32x32 dentro de su cuadro de
+	# 64x64. Usar solo esa zona opaca evita que el fondo transparente aparezca
+	# como parches marrones y da una textura mas grande y limpia.
+	var cid_muestra := 1316 if familia == 1 else 1334
+	var cuadro: Dictionary = _sprites.cuadro_item(cid_muestra, 0)
+	if cuadro.is_empty():
+		return ShaderMaterial.new()
+	var shader := Shader.new()
+	shader.code = """
+shader_type spatial;
+render_mode unshaded, cull_disabled;
+
+uniform sampler2D pared_texture : source_color, filter_nearest;
+uniform vec4 pared_region;
+uniform vec2 repeticiones;
+uniform vec3 color_base;
+
+void fragment() {
+    // La textura de suelo 1316 es un cuadrado opaco de arenisca, no un
+    // sprite diagonal. Se repite pocas veces para que la pared conserve
+    // detalle pixel-art sin convertir cada tramo en una tira de azulejos.
+    vec2 uv = fract(UV * repeticiones);
+    vec4 muestra = texture(pared_texture, pared_region.xy + uv * pared_region.zw);
+    vec3 color = muestra.rgb;
+    if (muestra.a < 0.5) {
+        color = color_base;
+    }
+    // Sombra muy leve en el borde de cada bloque: da juntas de mamposteria
+    // sin dibujar una cuadricula negra sobre el acabado original.
+    float borde = min(min(uv.x, 1.0 - uv.x), min(uv.y, 1.0 - uv.y));
+    color *= mix(0.86, 1.0, smoothstep(0.0, 0.07, borde));
+    ALBEDO = color;
+    ALPHA = 1.0;
+}
+"""
+	var material := ShaderMaterial.new()
+	material.shader = shader
+	material.set_shader_parameter("pared_texture", cuadro["lamina"])
+	# sprites772 devuelve Vector3 (el tercer componente queda reservado para
+	# la lamina); para el shader solo usamos los dos primeros componentes.
+	var corrimiento: Vector3 = cuadro["corrimiento"]
+	var escala: Vector3 = cuadro["escala"]
+	var recorte := Vector4(0.0, 0.0, 0.5, 0.5) if familia == 1 else Vector4(
+		31.0 / 64.0, 15.0 / 64.0, 16.0 / 64.0, 16.0 / 64.0)
+	material.set_shader_parameter("pared_region", Vector4(
+		corrimiento.x + escala.x * recorte.x,
+		corrimiento.y + escala.y * recorte.y,
+		escala.x * recorte.z, escala.y * recorte.w))
+	material.set_shader_parameter("repeticiones",
+		Vector2(1.0, 2.0) if familia == 1 else Vector2(1.0, 1.7))
+	material.set_shader_parameter("color_base",
+		Vector3(0.62, 0.48, 0.22) if familia == 1 else Vector3(0.40, 0.41, 0.42))
+	_materiales[clave] = material
+	return material
 
 
 func _material_montana(cid: int = -1) -> StandardMaterial3D:
@@ -3251,7 +3553,11 @@ func _malla_cruz(ancho: float, alto: float) -> ArrayMesh:
 
 func _material(cuadro: Dictionary, forma: int, cid: int = -1,
 		color_liquido: int = 0) -> Material:
-	if color_liquido == COLOR_LIQUIDO_SANGRE:
+	# Los pools son el liquido mismo y se pueden recolorear completos. Los
+	# recipientes (viales) conservan su sprite: la UI pinta su contenido con
+	# una mascara detras del recipiente, no con este material.
+	if color_liquido > 0 and forma == Forma.ACOSTADA \
+			and _es_pool_de_liquido(_catalogo.info_item(cid)):
 		return _material_liquido(cuadro, forma, color_liquido)
 	if forma == Forma.ACOSTADA and _es_borde_agua(cid):
 		return _material_borde_agua(cuadro, forma)
@@ -3295,8 +3601,8 @@ func _material_liquido(cuadro: Dictionary, forma: int,
 	"""Recolorea un pool sin perder el alpha ni el pixel-art original.
 
 	Los sprites base de los pools son azules porque el client ID es compartido
-	por todos los FluidType. El servidor manda el color aparte; para sangre
-	convertimos el brillo del sprite a rojo y conservamos su silueta.
+	por todos los FluidType. El servidor manda el color aparte; convertimos el
+	brillo del sprite al color de ese byte y conservamos su silueta.
 	"""
 	var clave := "__liquido_%s_%d_%d" % [cuadro["clave"], forma, color_liquido]
 	if _materiales.has(clave):
@@ -3325,9 +3631,24 @@ void fragment() {
 	material.set_shader_parameter("liquido_region", Vector4(
 		cuadro["corrimiento"].x, cuadro["corrimiento"].y,
 		cuadro["escala"].x, cuadro["escala"].y))
-	material.set_shader_parameter("tinte", Color(0.78, 0.055, 0.035, 1.0))
+	var color := _color_de_liquido(color_liquido)
+	material.set_shader_parameter("tinte", Vector3(color.r, color.g, color.b))
 	_materiales[clave] = material
 	return material
+
+
+func _color_de_liquido(color_liquido: int) -> Color:
+	# Es la misma paleta que usa la UI. El color 7 queda provisionalmente azul
+	# de agua para mana fluid hasta definir la paleta final.
+	match color_liquido:
+		1: return Color(0.20, 0.58, 1.00, 1.0)
+		2: return Color(1.00, 0.12, 0.08, 1.0)
+		3: return Color(1.00, 0.67, 0.10, 1.0)
+		4: return Color(0.18, 0.88, 0.24, 1.0)
+		5: return Color(0.94, 0.86, 0.20, 1.0)
+		6: return Color(0.96, 0.96, 1.00, 1.0)
+		7: return Color(0.20, 0.58, 1.00, 1.0)
+		_: return Color.WHITE
 
 
 func _es_borde_agua(cid: int) -> bool:
@@ -3420,37 +3741,45 @@ func _dibujar_criaturas() -> void:
 		if int(id) == _estado.mi_id:
 			continue
 		var c: Dictionary = _estado.criaturas[id]
-		# Las criaturas fuera de la ventana vertical tampoco se dibujan:
-		# una criatura de Z+1 puede quedar flotando dentro del piso actual.
-		if c["pos"].z < _estado.mi_pos.z \
-			or c["pos"].z > _estado.mi_pos.z + _pisos_abajo_visibles:
+		# En el exterior alto la ventana visual abarca toda la ciudad de z=0 a
+		# z=7: tambien deben verse los jugadores que caminan en la planta baja.
+		# Bajo tierra se conserva la regla estricta del piso actual.
+		if _estado.mi_pos.z <= 7:
+			if c["pos"].z < 0 or c["pos"].z > 7:
+				continue
+		elif c["pos"].z != _estado.mi_pos.z:
 			continue
 		visibles[int(id)] = true
-		# Los monsters y NPCs conservan el cuerpo cubico provisional, pero la
-		# cara del cubo usa el recorte real del outfit que ya exporto
-		# herramientas/extraer_sprites772.py. No se crea ningun modelo nuevo.
+		# Monsters y NPCs son laminas verticales, como en Doom: se conserva el
+		# recorte real del outfit y el material billboard gira la lamina hacia la
+		# camara. No se modifica ni se genera ningun sprite nuevo.
 		var tipo: int = c["apariencia"]
 		var alto: float = clampf(_sprites.alto_de_outfit(tipo) * LADO * 0.72,
 			LADO * 0.55, ALTO_PISO * 2.4)
 		var direccion: int = int(c.get("direccion", 2))
 		var cuadro: Dictionary = _sprites.cuadro_outfit(tipo, direccion, 0)
-		var lado := LADO * (0.62 if alto < ALTO_PISO * 1.2 else 0.78)
+		var proporcion := 0.62
+		if not cuadro.is_empty() and float(cuadro["escala"].y) > 0.0:
+			proporcion = float(cuadro["escala"].x) / float(cuadro["escala"].y)
+		var ancho := clampf(alto * proporcion, LADO * 0.45, LADO * 1.8)
 		var m: MeshInstance3D = _nodos_criaturas.get(int(id))
 		if not is_instance_valid(m):
 			m = MeshInstance3D.new()
 			m.set_meta("creature_id", int(id))
 			_piso_bichos.add_child(m)
 			_nodos_criaturas[int(id)] = m
-		var cubo := m.mesh as BoxMesh
-		if cubo == null or cubo.size != Vector3(lado, alto, lado):
-			cubo = BoxMesh.new()
-			cubo.size = Vector3(lado, alto, lado)
-			m.mesh = cubo
-		m.material_override = _material_cubo_criatura(c, cuadro)
+		var lamina := m.mesh as QuadMesh
+		if lamina == null or lamina.size != Vector2(ancho, alto):
+			lamina = QuadMesh.new()
+			lamina.size = Vector2(ancho, alto)
+			m.mesh = lamina
+		m.material_override = _material_de_criatura(cuadro) \
+			if not cuadro.is_empty() else _material_cubo_criatura(c, cuadro)
+		m.cast_shadow = GeometryInstance3D.SHADOW_CASTING_SETTING_OFF
 		m.set_meta("creature_id", int(id))
 		m.set_meta("server_name", str(c.get("nombre", "Creature")))
 		var p: Vector3i = c["pos"]
-		var posicion_3d := COORD.tibia_a_mundo(p, _centro_escenario, LADO, ALTO_PISO)
+		var posicion_3d := _posicion_visual_de_casilla(p, _centro_escenario)
 		m.position = Vector3(posicion_3d.x, posicion_3d.y + alto * 0.5 + 0.02,
 			posicion_3d.z)
 		var fases: int = _sprites.fases_de_outfit(tipo, direccion)
@@ -3549,7 +3878,7 @@ func _animar_criaturas() -> void:
 		var direccion := int(criatura.get("direccion", 2))
 		var cuadro: Dictionary = _sprites.cuadro_outfit(tipo, direccion, fase)
 		if not cuadro.is_empty():
-			nodo.material_override = _material_cubo_criatura(criatura, cuadro)
+			nodo.material_override = _material_de_criatura(cuadro)
 
 
 func _animar_efectos(delta: float) -> void:
@@ -3660,11 +3989,7 @@ func _procesar_ajuste_vivo(evento: InputEventKey) -> bool:
 	if not evento.pressed or evento.echo:
 		return false
 	if evento.keycode == KEY_F6:
-		_pisos_abajo_visibles = 1 if _pisos_abajo_visibles == 0 else 0
-		if _centro_escenario.x > -9000:
-			_rearmar_escenario(_centro_escenario)
-		_avisar("Lower floors: %s (F6 to toggle)" % (
-			"visible" if _pisos_abajo_visibles else "hidden"))
+		_avisar("Lower floors: hidden")
 		return true
 	if evento.keycode == KEY_F7:
 		_ajuste_vivo = not _ajuste_vivo
@@ -3929,9 +4254,9 @@ func _unhandled_input(evento: InputEvent) -> void:
 			_interfaz.cancelar_chat()
 			get_viewport().set_input_as_handled()
 			return
-		if evento is InputEventMouse:
-			get_viewport().set_input_as_handled()
-			return
+		# El LineEdit consume sus propios clics por la fase GUI, pero los
+		# eventos que ocurren sobre el mapa deben seguir llegando aca. Asi se
+		# puede girar la camara con el boton derecho mientras se escribe.
 	if evento is InputEventKey and evento.keycode == KEY_V:
 		# V queda libre para el LineEdit del chat; fuera de él es pulsar-para-
 		# hablar y debe recibir tanto el press como el release.
@@ -4121,8 +4446,8 @@ func _terminar_arrastre_objeto(posicion_mouse: Vector2) -> void:
 	_arrastre_objeto_pendiente = false
 	_objeto_arrastre = {}
 	_consumido = true
-	var destino = _casilla_bajo_mouse(posicion_mouse)
-	if destino == null or destino.z != _estado.mi_pos.z:
+	var destino = _casilla_visible_bajo_mouse(posicion_mouse)
+	if destino == null:
 		_avisar("You cannot throw there.")
 		return
 	if destino == origen:
@@ -4174,7 +4499,7 @@ func _enviar_arrastre(origen: Vector3i, objeto: Dictionary,
 
 func recoger_objeto_en_ranura(origen: Vector3i, objeto: Dictionary,
 		stackpos: int, tipo_destino: String, id_destino: int,
-		ranura_destino: int) -> bool:
+		ranura_destino: int, cantidad_override: int = -1) -> bool:
 	"""Mueve un item del suelo a inventario/contenedor con el 0x78 real."""
 	if _con == null or not _estado.adentro or stackpos < 0:
 		return false
@@ -4189,34 +4514,39 @@ func recoger_objeto_en_ranura(origen: Vector3i, objeto: Dictionary,
 		if id_destino < 0:
 			return false
 		destino = Vector3i(0xFFFF, 0x40 | id_destino, ranura_destino)
-	var cantidad := int(cosa.get("cantidad", 1))
+	var total := clampi(int(cosa.get("cantidad", 1)), 1, 255)
+	var cantidad := total if cantidad_override <= 0 else clampi(
+		cantidad_override, 1, total)
 	_con.enviar_mover_ubicacion(origen, cid, stackpos, destino, cantidad)
 	_avisar("Picking up %s..." % str(cosa.get("nombre", "item")))
 	return true
 
 
-func soltar_inventario_en_mouse(posicion_mouse: Vector2, datos: Dictionary) -> void:
+func soltar_inventario_en_mouse(posicion_mouse: Vector2, datos: Dictionary,
+		cantidad_override: int = -1) -> void:
 	"""Recibe un item de la interfaz y lo deja sobre el mundo."""
 	if _con == null or not _estado.adentro:
 		return
-	var destino = _casilla_bajo_mouse(posicion_mouse)
-	if destino == null or destino.z != _estado.mi_pos.z:
+	var destino = _casilla_visible_bajo_mouse(posicion_mouse)
+	if destino == null:
 		_avisar("You cannot throw there.")
 		return
 	var cid := int(datos.get("cid", 0))
 	var slot := int(datos.get("slot", -1))
 	if cid <= 0 or slot < 0:
 		return
+	var total := clampi(int(datos.get("cantidad", 1)), 1, 255)
+	var cantidad := total if cantidad_override <= 0 else clampi(
+		cantidad_override, 1, total)
 	var tipo: String = str(datos.get("tipo", "inventario"))
 	if tipo == "contenedor":
 		var id_contenedor := int(datos.get("contenedor", -1))
 		if id_contenedor < 0:
 			return
 		_con.enviar_mover_ubicacion(Vector3i(0xFFFF, 0x40 | id_contenedor, slot),
-			cid, 0, destino, int(datos.get("cantidad", 1)))
+			cid, 0, destino, cantidad)
 	else:
-		_con.enviar_mover_inventario(slot, cid, destino,
-			int(datos.get("cantidad", 1)))
+		_con.enviar_mover_inventario(slot, cid, destino, cantidad)
 	_avisar("Moving %s..." % str(datos.get("nombre", "item")))
 
 
@@ -4279,12 +4609,12 @@ func _puerta_bajo_mouse(posicion_mouse: Vector2) -> Dictionary:
 	# casilla que esta en ambas fuentes.
 	var posiciones := {}
 	for donde in _mapa_visible.keys():
-		if donde is Vector3i and donde.z == _estado.mi_pos.z \
+		if donde is Vector3i and _nivel_visible_para_interaccion(donde.z) \
 				and absi(donde.x - _centro_escenario.x) <= RADIO \
 				and absi(donde.y - _centro_escenario.y) <= RADIO:
 			posiciones[donde] = true
 	for donde in _estado.casillas.keys():
-		if donde is Vector3i and donde.z == _estado.mi_pos.z \
+		if donde is Vector3i and _nivel_visible_para_interaccion(donde.z) \
 				and absi(donde.x - _centro_escenario.x) <= RADIO \
 				and absi(donde.y - _centro_escenario.y) <= RADIO:
 			posiciones[donde] = true
@@ -4345,7 +4675,7 @@ func _puerta_bajo_mouse(posicion_mouse: Vector2) -> Dictionary:
 
 func _hit_puerta_en_pantalla(posicion: Vector3i, cid: int,
 		posicion_mouse: Vector2) -> Dictionary:
-	var mundo := COORD.tibia_a_mundo(posicion, _centro_escenario, LADO, ALTO_PISO)
+	var mundo := _posicion_visual_de_casilla(posicion, _centro_escenario)
 	var alto := maxf(float(_sprites.alto_en_casillas(cid)) * LADO, LADO * 0.80)
 	var ancho := maxf(float(_sprites.ancho_en_casillas(cid)) * LADO, LADO * 0.70)
 	var base := _camara.unproject_position(mundo + Vector3(0.0, 0.02, 0.0))
@@ -4408,8 +4738,24 @@ func _indice_contenedor_libre() -> int:
 
 
 func _mirar_en_casilla(posicion_mouse: Vector2) -> void:
+	var criatura_id := _criatura_bajo_mouse(posicion_mouse)
+	if criatura_id != 0:
+		var criatura: Dictionary = _estado.criaturas.get(criatura_id, {})
+		var posicion_criatura: Vector3i = criatura.get("pos",
+			Vector3i(-9999, -9999, -9999))
+		if posicion_criatura.x > -9000:
+			_seleccionar_inspector(posicion_criatura)
+			if _con != null and _estado.adentro:
+				# STACKPOS_LOOK hace que el servidor elija la criatura visible de
+				# esa casilla, incluso cuando esta en la planta baja z=7.
+				_con.enviar_mirar(posicion_criatura, 0, 0)
+				_avisar("Looking at %s (%d, %d, %d)..." % [
+					str(criatura.get("nombre", "Creature")),
+					posicion_criatura.x, posicion_criatura.y, posicion_criatura.z])
+			return
 	var puerta := _puerta_bajo_mouse(posicion_mouse)
-	var posicion = puerta.get("posicion", _casilla_bajo_mouse(posicion_mouse))
+	var posicion = puerta.get("posicion",
+		_casilla_visible_bajo_mouse(posicion_mouse))
 	if posicion == null:
 		return
 	_seleccionar_inspector(posicion)
@@ -4446,7 +4792,11 @@ func _caminar_a_casilla(posicion_mouse: Vector2) -> void:
 
 
 func atacar_criatura(id: int) -> bool:
-	"""Selecciona un monster/NPC con el protocolo real 0xA1.
+	"""Selecciona un monster con el protocolo real 0xA1.
+
+	Los NPC comparten la estructura de criatura en el mapa, pero el servidor
+	los reserva en el rango 0x80000000+. Para ellos un clic es una conversacion,
+	no un ataque.
 
 	Si esta fuera del rango que acepta el servidor, primero camina hasta la
 	primera casilla caminable dentro de rango y envia el ataque al confirmarse
@@ -4457,6 +4807,8 @@ func atacar_criatura(id: int) -> bool:
 	var criatura: Dictionary = _estado.criaturas.get(id, {})
 	if criatura.is_empty() or int(id) == _estado.mi_id:
 		return false
+	if _es_npc(id):
+		return hablar_con_npc(id)
 	fijar_objetivo_visual(id)
 	if _interfaz != null and _interfaz.has_method("mostrar_objetivo"):
 		_interfaz.mostrar_objetivo(id)
@@ -4476,6 +4828,50 @@ func atacar_criatura(id: int) -> bool:
 	return true
 
 
+func _es_npc(id: int) -> bool:
+	return es_npc(id)
+
+
+func es_npc(id: int) -> bool:
+	return id >= ID_MINIMO_NPC
+
+
+func hablar_con_npc(id: int) -> bool:
+	"""Habla con el NPC usando el mismo SAY que acepta el cliente clasico.
+
+	El servidor valida la distancia, el foco y el comportamiento Lua/NPC. Si
+	esta fuera de rango, el cliente solo busca una casilla vecina caminable y
+	manda `hi` despues de confirmar la llegada.
+	"""
+	if _solo_mirar or _con == null or not _estado.adentro or not _es_npc(id):
+		return false
+	var npc: Dictionary = _estado.criaturas.get(id, {})
+	if npc.is_empty():
+		return false
+	var posicion: Vector3i = npc.get("pos", Vector3i(-9999, -9999, -9999))
+	if posicion.z != _estado.mi_pos.z:
+		_avisar("That NPC is on another floor.")
+		return false
+	fijar_objetivo_visual(id)
+	if _interfaz != null and _interfaz.has_method("mostrar_objetivo"):
+		_interfaz.mostrar_objetivo(id)
+	if _en_rango_ataque(_estado.mi_pos, posicion, RANGO_DIALOGO_NPC):
+		_npc_hablar_pendiente_id = 0
+		_con.enviar_hablar("hi")
+		_avisar("Talking to %s..." % str(npc.get("nombre", "NPC")))
+		return true
+	var camino := _buscar_ruta_hasta_rango(_estado.mi_pos, posicion,
+		RANGO_DIALOGO_NPC)
+	if camino.is_empty():
+		_avisar("No reachable NPC.")
+		return false
+	_npc_hablar_pendiente_id = id
+	_ataque_pendiente_id = 0
+	_con.enviar_auto_camino(camino)
+	_avisar("Approaching %s..." % str(npc.get("nombre", "NPC")))
+	return true
+
+
 func _intentar_ataque_pendiente() -> void:
 	if _ataque_pendiente_id == 0 or _con == null:
 		return
@@ -4492,9 +4888,25 @@ func _intentar_ataque_pendiente() -> void:
 	_avisar("Attacking %s..." % str(criatura.get("nombre", "Creature")))
 
 
-static func _en_rango_ataque(origen: Vector3i, destino: Vector3i) -> bool:
-	return origen.z == destino.z and absi(origen.x - destino.x) <= 8 \
-		and absi(origen.y - destino.y) <= 8
+func _intentar_hablar_npc_pendiente() -> void:
+	if _npc_hablar_pendiente_id == 0 or _con == null:
+		return
+	var npc: Dictionary = _estado.criaturas.get(_npc_hablar_pendiente_id, {})
+	if npc.is_empty():
+		_npc_hablar_pendiente_id = 0
+		return
+	var posicion: Vector3i = npc.get("pos", Vector3i(-9999, -9999, -9999))
+	if not _en_rango_ataque(_estado.mi_pos, posicion, RANGO_DIALOGO_NPC):
+		return
+	_npc_hablar_pendiente_id = 0
+	_con.enviar_hablar("hi")
+	_avisar("Talking to %s..." % str(npc.get("nombre", "NPC")))
+
+
+static func _en_rango_ataque(origen: Vector3i, destino: Vector3i,
+		rango: int = 8) -> bool:
+	return origen.z == destino.z and absi(origen.x - destino.x) <= rango \
+		and absi(origen.y - destino.y) <= rango
 
 
 func _criatura_en_casilla(posicion: Vector3i) -> int:
@@ -4523,11 +4935,11 @@ func _criatura_bajo_mouse(posicion_mouse: Vector2) -> int:
 			continue
 		var criatura: Dictionary = _estado.criaturas[id]
 		var posicion: Vector3i = criatura.get("pos", Vector3i(-9999, -9999, -9999))
-		if posicion.z != _estado.mi_pos.z:
+		if not _nivel_visible_para_interaccion(posicion.z):
 			continue
 		var alto := clampf(_sprites.alto_de_outfit(int(criatura.get("apariencia", 0))) * LADO * 0.72,
 			LADO * 0.55, ALTO_PISO * 2.4)
-		var mundo := COORD.tibia_a_mundo(posicion, _centro_escenario, LADO, ALTO_PISO)
+		var mundo := _posicion_visual_de_casilla(posicion, _centro_escenario)
 		var base := _camara.unproject_position(mundo + Vector3(0.0, 0.02, 0.0))
 		var cabeza := _camara.unproject_position(mundo + Vector3(0.0, alto, 0.0))
 		var altura_pantalla := maxf(18.0, absf(base.y - cabeza.y))
@@ -4608,8 +5020,9 @@ func _liberar_movimiento_diferido() -> void:
 		_desde_ultimo_paso = 0.0
 
 
-func _buscar_ruta_hasta_rango(origen: Vector3i, objetivo: Vector3i) -> Array:
-	if _en_rango_ataque(origen, objetivo):
+func _buscar_ruta_hasta_rango(origen: Vector3i, objetivo: Vector3i,
+		rango: int = 8) -> Array:
+	if _en_rango_ataque(origen, objetivo, rango):
 		return []
 	var abiertos: Array = [origen]
 	var cabeza := 0
@@ -4622,7 +5035,7 @@ func _buscar_ruta_hasta_rango(origen: Vector3i, objetivo: Vector3i) -> Array:
 	while cabeza < abiertos.size() and abiertos.size() <= MAX_CASILLAS_RUTA:
 		var actual: Vector3i = abiertos[cabeza]
 		cabeza += 1
-		if actual != origen and _en_rango_ataque(actual, objetivo):
+		if actual != origen and _en_rango_ataque(actual, objetivo, rango):
 			return _reconstruir_ruta(anterior, origen, actual)
 		for delta in [Vector3i(0, -1, 0), Vector3i(1, 0, 0),
 				Vector3i(0, 1, 0), Vector3i(-1, 0, 0)]:
@@ -4653,10 +5066,28 @@ func _reconstruir_ruta(anterior: Dictionary, origen: Vector3i,
 func _casilla_bajo_mouse(posicion_mouse: Vector2):
 	if _camara == null or _centro_escenario.x < -9000 or not _estado.adentro:
 		return null
+	return _casilla_en_nivel_bajo_mouse(posicion_mouse, _estado.mi_pos.z)
+
+
+func _nivel_visible_para_interaccion(nivel: int) -> bool:
+	if _estado == null:
+		return false
+	# En la vista exterior de una piramide el mundo jugable visible es z=0..7.
+	# Los pisos subterraneos no participan en look ni en throw.
+	if _estado.mi_pos.z <= 7:
+		return nivel >= 0 and nivel <= 7
+	return nivel == _estado.mi_pos.z
+
+
+func _casilla_en_nivel_bajo_mouse(posicion_mouse: Vector2, nivel: int):
+	if _camara == null or _centro_escenario.x < -9000 or not _estado.adentro:
+		return null
+	if not _nivel_visible_para_interaccion(nivel):
+		return null
 	var origen := _camara.project_ray_origin(posicion_mouse)
 	var direccion := _camara.project_ray_normal(posicion_mouse)
-	var piso := COORD.tibia_a_mundo(Vector3i(_estado.mi_pos.x, _estado.mi_pos.y,
-		_estado.mi_pos.z), _centro_escenario, LADO, ALTO_PISO).y
+	var piso := _posicion_visual_de_casilla(Vector3i(_estado.mi_pos.x,
+		_estado.mi_pos.y, nivel), _centro_escenario).y
 	if absf(direccion.y) < 0.0001:
 		return null
 	var distancia := (piso - origen.y) / direccion.y
@@ -4668,10 +5099,41 @@ func _casilla_bajo_mouse(posicion_mouse: Vector2):
 	var tile := Vector3i(
 		_centro_escenario.x + floori(punto.x / LADO + 0.5),
 		_centro_escenario.y + floori(punto.z / LADO + 0.5),
-		_estado.mi_pos.z)
+		nivel)
 	if absi(tile.x - _centro_escenario.x) > RADIO or absi(tile.y - _centro_escenario.y) > RADIO:
 		return null
 	return tile
+
+
+func _casilla_visible_bajo_mouse(posicion_mouse: Vector2):
+	"""Resuelve un clic sobre cualquiera de los niveles visibles.
+
+	El movimiento normal sigue usando la planta del jugador. Look y throw, en
+	cambio, pueden apuntar al suelo de la ciudad cuando el jugador esta arriba.
+	"""
+	if _camara == null or _centro_escenario.x < -9000 or not _estado.adentro:
+		return null
+	var niveles: Array[int] = []
+	if _estado.mi_pos.z <= 7:
+		# La planta baja es el destino mas habitual para lanzar desde una cima.
+		niveles.append(7)
+		for nivel in range(6, -1, -1):
+			niveles.append(nivel)
+	else:
+		niveles.append(_estado.mi_pos.z)
+	var elegido = null
+	var mejor_distancia := INF
+	for nivel in niveles:
+		var tile = _casilla_en_nivel_bajo_mouse(posicion_mouse, nivel)
+		if tile == null:
+			continue
+		var visual := _posicion_visual_de_casilla(tile, _centro_escenario)
+		var pantalla := _camara.unproject_position(visual + Vector3(0.0, 0.03, 0.0))
+		var distancia := posicion_mouse.distance_to(pantalla)
+		if distancia < mejor_distancia:
+			mejor_distancia = distancia
+			elegido = tile
+	return elegido
 
 
 func _seleccionar_inspector(posicion: Vector3i) -> void:

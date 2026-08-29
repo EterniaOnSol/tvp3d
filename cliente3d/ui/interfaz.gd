@@ -75,6 +75,9 @@ var _battle_health_bars: Dictionary = {}
 var _battle_ids: Array = []
 var _battle_anim_tiempo := 0.0
 var _stash_window
+var _vip_window
+var _vip_box: VBoxContainer
+var _vip_input: LineEdit
 var _hotkeys_window
 var _spellbook_window
 var _spellbook_box: VBoxContainer
@@ -94,10 +97,21 @@ var _target_sprite: TextureRect
 var _target_name: Label
 var _target_bar
 var _objetivo_id := 0
+var _comercio_window
+var _comercio_propio_box: VBoxContainer
+var _comercio_contraparte_box: VBoxContainer
+var _comercio_nombre := ""
+var _comercio_propio: Array = []
+var _comercio_contraparte: Array = []
 var _slots: Dictionary = {}
 var _slots_contenedor: Dictionary = {}
 var _ventanas_contenedor: Dictionary = {}
 var _contenedores_visuales: Dictionary = {}
+var _dialogo_cantidad: ConfirmationDialog
+var _canales_box: HBoxContainer
+var _botones_canales: Dictionary = {}
+var _canal_actual := 0
+var _nombre_canal_actual := "Default"
 var _dock_izq: VBoxContainer
 var _dock_der_interno: VBoxContainer
 var _dock_der_externo: VBoxContainer
@@ -125,6 +139,13 @@ func _ready() -> void:
 	_estado.habilidades_actualizadas.connect(_al_habilidades_actualizadas)
 	_estado.habla_recibida.connect(_al_habla)
 	_estado.mensaje_servidor.connect(_al_mensaje_servidor)
+	_estado.comercio_actualizado.connect(_al_comercio_actualizado)
+	_estado.comercio_cerrado.connect(_al_comercio_cerrado)
+	_estado.vip_actualizado.connect(_al_vip_actualizado)
+	_estado.vip_reiniciado.connect(_al_vip_reiniciado)
+	_estado.canales_actualizados.connect(_al_canales_actualizados)
+	_estado.canal_abierto.connect(_al_canal_abierto)
+	_estado.canal_cerrado.connect(_al_canal_cerrado)
 	_estado.objetivo_cancelado.connect(_al_objetivo_cancelado)
 	_refrescar()
 
@@ -158,6 +179,7 @@ func _armar() -> void:
 	_armar_battle()
 	_armar_chat()
 	_armar_objetivo()
+	_armar_comercio()
 
 
 func _armar_docks() -> void:
@@ -351,6 +373,8 @@ func _armar_acciones() -> void:
 		boton.custom_minimum_size.x = 44
 		if nombre == "Battle":
 			boton.pressed.connect(func(): _alternar_ventana(_battle_window))
+		elif nombre == "Vip":
+			boton.pressed.connect(func(): _alternar_ventana(_vip_window))
 		elif nombre == "Stash":
 			boton.pressed.connect(func(): _alternar_ventana(_stash_window))
 		else:
@@ -597,13 +621,95 @@ func _armar_skills() -> void:
 func _armar_vip() -> void:
 	var panel = _ventana("VIP", Control.PRESET_TOP_LEFT,
 		10, 340, 200, 432)
-	var nombres := [
-		["Dawn2", true], ["Dawn4", true], ["Dawn3", false], ["Dawn5", false],
-	]
-	for datos in nombres:
-		var fila := VENTANA.etiqueta(str(datos[0]), 10,
-			Color(0.35, 0.82, 0.35) if datos[1] else VENTANA.TENUE)
-		panel.cuerpo.add_child(fila)
+	_vip_window = panel
+	# El limite y el estado ya los decide el servidor. Este control solo
+	# envia el nombre y muestra las respuestas 0xD2-0xD4.
+	var entrada := HBoxContainer.new()
+	entrada.add_theme_constant_override("separation", 3)
+	_vip_input = LineEdit.new()
+	_vip_input.placeholder_text = "Character name"
+	_vip_input.add_theme_font_size_override("font_size", 9)
+	_vip_input.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	_vip_input.custom_minimum_size.y = 20
+	_vip_input.text_submitted.connect(func(_texto: String): _agregar_vip())
+	entrada.add_child(_vip_input)
+	var agregar := _hacer_boton("+", "Add character to VIP")
+	agregar.custom_minimum_size = Vector2(22, 20)
+	agregar.pressed.connect(_agregar_vip)
+	entrada.add_child(agregar)
+	panel.cuerpo.add_child(entrada)
+	var scroll := ScrollContainer.new()
+	scroll.horizontal_scroll_mode = ScrollContainer.SCROLL_MODE_DISABLED
+	scroll.vertical_scroll_mode = ScrollContainer.SCROLL_MODE_AUTO
+	scroll.custom_minimum_size = Vector2(0, 42)
+	scroll.size_flags_vertical = Control.SIZE_EXPAND_FILL
+	panel.cuerpo.add_child(scroll)
+	_vip_box = VBoxContainer.new()
+	_vip_box.add_theme_constant_override("separation", 1)
+	_vip_box.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	scroll.add_child(_vip_box)
+	_refrescar_vip()
+
+
+func _agregar_vip() -> void:
+	if _vip_input == null:
+		return
+	var nombre := _vip_input.text.strip_edges()
+	if nombre.is_empty():
+		return
+	var con = _mundo._con
+	if con == null or not _estado.adentro:
+		_anotar("Connect to the game before adding VIP entries.")
+		return
+	con.enviar_agregar_vip(nombre)
+	_vip_input.clear()
+	_anotar("Adding %s to VIP..." % nombre)
+
+
+func _quitar_vip(guid: int, nombre: String) -> void:
+	var con = _mundo._con
+	if con == null or not _estado.adentro:
+		return
+	con.enviar_quitar_vip(guid)
+	_anotar("Removing %s from VIP..." % nombre)
+
+
+func _al_vip_actualizado(_guid: int, _entrada: Dictionary) -> void:
+	_refrescar_vip()
+
+
+func _al_vip_reiniciado() -> void:
+	_refrescar_vip()
+
+
+func _refrescar_vip() -> void:
+	if _vip_box == null:
+		return
+	for hijo in _vip_box.get_children():
+		hijo.free()
+	var guids: Array = _estado.vip.keys()
+	guids.sort()
+	if guids.is_empty():
+		var vacio := VENTANA.etiqueta("No VIP entries", 9, VENTANA.TENUE)
+		vacio.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+		_vip_box.add_child(vacio)
+		return
+	for guid in guids:
+		var entrada: Dictionary = _estado.vip.get(guid, {})
+		var nombre := str(entrada.get("nombre", "Player %d" % int(guid)))
+		var conectado := int(entrada.get("estado", 0)) != 0
+		var fila := HBoxContainer.new()
+		fila.add_theme_constant_override("separation", 2)
+		var etiqueta := VENTANA.etiqueta(
+			("● " if conectado else "○ ") + nombre, 9,
+			Color(0.35, 0.82, 0.35) if conectado else VENTANA.TENUE)
+		etiqueta.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+		fila.add_child(etiqueta)
+		var quitar := _hacer_boton("x", "Remove %s from VIP" % nombre)
+		quitar.custom_minimum_size = Vector2(20, 18)
+		quitar.pressed.connect(_quitar_vip.bind(int(guid), nombre))
+		fila.add_child(quitar)
+		_vip_box.add_child(fila)
 
 
 func _armar_minimapa() -> void:
@@ -722,19 +828,16 @@ func _armar_battle() -> void:
 func _armar_chat() -> void:
 	var panel = _ventana("Chat", Control.PRESET_BOTTOM_WIDE,
 		210, -170, -210, -10)
-	var canales := HBoxContainer.new()
-	canales.add_theme_constant_override("separation", 4)
-	for nombre in ["Default", "Server Log", "Help", "Loot", "Trade"]:
-		var canal := _hacer_boton(nombre)
-		canal.custom_minimum_size = Vector2(0, 17)
-		canal.add_theme_color_override("font_color", VENTANA.TENUE)
-		canales.add_child(canal)
+	_canales_box = HBoxContainer.new()
+	_canales_box.add_theme_constant_override("separation", 4)
+	_canales_box.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	_agregar_boton_canal(0, "Default")
 	var chat_off := _hacer_boton("Chat off", "Toggle chat display")
 	chat_off.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 	chat_off.alignment = HORIZONTAL_ALIGNMENT_RIGHT
 	chat_off.pressed.connect(func(): _chat.visible = not _chat.visible)
-	canales.add_child(chat_off)
-	panel.cuerpo.add_child(canales)
+	_canales_box.add_child(chat_off)
+	panel.cuerpo.add_child(_canales_box)
 	_chat = RichTextLabel.new()
 	_chat.bbcode_enabled = false
 	_chat.scroll_active = true
@@ -750,6 +853,207 @@ func _armar_chat() -> void:
 	_chat_input.text_submitted.connect(_decir)
 	fila.add_child(_chat_input)
 	panel.cuerpo.add_child(fila)
+
+
+func _agregar_boton_canal(id: int, nombre: String) -> void:
+	if _canales_box == null or _botones_canales.has(id):
+		return
+	var canal := _hacer_boton(nombre, "Open %s" % nombre)
+	canal.custom_minimum_size = Vector2(0, 17)
+	canal.add_theme_color_override("font_color", VENTANA.TENUE)
+	canal.pressed.connect(_seleccionar_canal.bind(id, nombre))
+	# Chat off permanece al final; los canales nuevos se insertan antes.
+	var posicion := maxi(0, _canales_box.get_child_count() - 1)
+	_canales_box.add_child(canal)
+	_canales_box.move_child(canal, posicion)
+	_botones_canales[id] = canal
+
+
+func _quitar_boton_canal(id: int) -> void:
+	if id == 0 or not _botones_canales.has(id):
+		return
+	var boton = _botones_canales[id]
+	_botones_canales.erase(id)
+	if is_instance_valid(boton):
+		boton.queue_free()
+
+
+func _seleccionar_canal(id: int, nombre: String) -> void:
+	_canal_actual = id
+	_nombre_canal_actual = nombre
+	if id != 0 and _mundo != null and _mundo._con != null \
+		and not _estado.canales_abiertos.has(id):
+		_mundo._con.enviar_abrir_canal(id)
+		_anotar("Opening channel %s..." % nombre)
+	if _chat_input != null:
+		_chat_input.placeholder_text = "Say in %s..." % nombre \
+			if id != 0 else "Say something..."
+
+
+func _al_canales_actualizados(lista: Array) -> void:
+	for id in _botones_canales.keys():
+		if int(id) != 0:
+			_quitar_boton_canal(int(id))
+	for canal in lista:
+		_agregar_boton_canal(int(canal.get("id", 0)),
+			str(canal.get("nombre", "Channel")))
+
+
+func _al_canal_abierto(id: int, nombre: String) -> void:
+	_agregar_boton_canal(id, nombre)
+	_seleccionar_canal(id, nombre)
+
+
+func _al_canal_cerrado(id: int) -> void:
+	_quitar_boton_canal(id)
+	if _canal_actual == id:
+		_seleccionar_canal(0, "Default")
+
+
+func _armar_comercio() -> void:
+	# Trade no se acopla a los docks: debe quedar visible sobre el mundo,
+	# igual que en el cliente clasico, mientras las dos ofertas se actualizan.
+	var panel = VENTANA.new("Trade", true)
+	panel.set_anchors_preset(Control.PRESET_CENTER)
+	panel.offset_left = -210
+	panel.offset_top = -145
+	panel.offset_right = 210
+	panel.offset_bottom = 145
+	panel.custom_minimum_size = Vector2(420, 290)
+	panel.cerrar_solicitado.connect(_cerrar_comercio)
+	_root.add_child(panel)
+	_comercio_window = panel
+
+	var ayuda := VENTANA.etiqueta(
+		"Both players must accept. The server validates the transfer.", 9,
+		VENTANA.TENUE)
+	ayuda.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+	panel.cuerpo.add_child(ayuda)
+	var columnas := HBoxContainer.new()
+	columnas.size_flags_vertical = Control.SIZE_EXPAND_FILL
+	columnas.add_theme_constant_override("separation", 8)
+	panel.cuerpo.add_child(columnas)
+	var columna_propia := _crear_columna_comercio("Your offer")
+	columnas.add_child(columna_propia)
+	_comercio_propio_box = columna_propia.get_node("Items") as VBoxContainer
+	var columna_contraparte := _crear_columna_comercio("Partner offer")
+	columnas.add_child(columna_contraparte)
+	_comercio_contraparte_box = columna_contraparte.get_node("Items") as VBoxContainer
+	var acciones := HBoxContainer.new()
+	acciones.alignment = BoxContainer.ALIGNMENT_CENTER
+	acciones.add_theme_constant_override("separation", 8)
+	var aceptar := _hacer_boton("Accept", "Accept the current trade offer")
+	aceptar.pressed.connect(_aceptar_comercio)
+	acciones.add_child(aceptar)
+	var cancelar := _hacer_boton("Cancel", "Cancel the current trade")
+	cancelar.pressed.connect(_cerrar_comercio)
+	acciones.add_child(cancelar)
+	panel.cuerpo.add_child(acciones)
+	panel.visible = false
+
+
+func _crear_columna_comercio(titulo: String) -> VBoxContainer:
+	var columna := VBoxContainer.new()
+	columna.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	columna.size_flags_vertical = Control.SIZE_EXPAND_FILL
+	var encabezado := VENTANA.etiqueta(titulo, 10,
+		Color(0.95, 0.82, 0.48))
+	encabezado.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+	columna.add_child(encabezado)
+	var lista := VBoxContainer.new()
+	lista.name = "Items"
+	lista.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	lista.size_flags_vertical = Control.SIZE_EXPAND_FILL
+	lista.add_theme_constant_override("separation", 3)
+	columna.add_child(lista)
+	return columna
+
+
+func _al_comercio_actualizado(nombre: String, propio: bool,
+		items: Array) -> void:
+	_comercio_nombre = nombre
+	if propio:
+		_comercio_propio = items.duplicate(true)
+	else:
+		_comercio_contraparte = items.duplicate(true)
+	if _comercio_window == null:
+		return
+	_comercio_window.fijar_titulo("Trade with %s" % nombre)
+	_comercio_window.visible = true
+	_refrescar_comercio()
+
+
+func _al_comercio_cerrado() -> void:
+	_comercio_propio.clear()
+	_comercio_contraparte.clear()
+	_comercio_nombre = ""
+	if _comercio_window != null:
+		_comercio_window.visible = false
+
+
+func _refrescar_comercio() -> void:
+	if _comercio_propio_box == null or _comercio_contraparte_box == null:
+		return
+	_refrescar_lista_comercio(_comercio_propio_box, _comercio_propio, false)
+	_refrescar_lista_comercio(_comercio_contraparte_box,
+		_comercio_contraparte, true)
+
+
+func _refrescar_lista_comercio(lista: VBoxContainer, items: Array,
+		es_contraparte: bool) -> void:
+	for hijo in lista.get_children():
+		hijo.queue_free()
+	if items.is_empty():
+		var vacio := VENTANA.etiqueta("(empty)", 9, VENTANA.TENUE)
+		vacio.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+		lista.add_child(vacio)
+		return
+	for indice in range(items.size()):
+		var cosa: Dictionary = items[indice]
+		var fila := HBoxContainer.new()
+		fila.custom_minimum_size.y = 34
+		var icono := TextureRect.new()
+		icono.custom_minimum_size = Vector2(32, 32)
+		icono.expand_mode = TextureRect.EXPAND_IGNORE_SIZE
+		icono.stretch_mode = TextureRect.STRETCH_KEEP_ASPECT_CENTERED
+		icono.texture_filter = CanvasItem.TEXTURE_FILTER_NEAREST
+		icono.texture = icono_para_item(int(cosa.get("cid", 0)))
+		icono.mouse_filter = Control.MOUSE_FILTER_IGNORE
+		fila.add_child(icono)
+		var nombre := str(cosa.get("nombre", "item"))
+		var cantidad := int(cosa.get("cantidad", 1))
+		var etiqueta := VENTANA.etiqueta(
+			("%s x%d" % [nombre, cantidad]) if cantidad > 1 else nombre,
+			9)
+		etiqueta.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+		etiqueta.vertical_alignment = VERTICAL_ALIGNMENT_CENTER
+		fila.add_child(etiqueta)
+		var mirar := _hacer_boton("Look", "Look at this trade item")
+		mirar.custom_minimum_size.x = 42
+		mirar.pressed.connect(_mirar_comercio.bind(es_contraparte, indice))
+		fila.add_child(mirar)
+		lista.add_child(fila)
+
+
+func _mirar_comercio(es_contraparte: bool, indice: int) -> void:
+	var con = _mundo._con
+	if con != null:
+		con.enviar_mirar_comercio(es_contraparte, indice)
+
+
+func _aceptar_comercio() -> void:
+	var con = _mundo._con
+	if con != null:
+		con.enviar_aceptar_comercio()
+		_anotar("Trade accepted; waiting for the partner.")
+
+
+func _cerrar_comercio() -> void:
+	var con = _mundo._con
+	if con != null and bool(_estado.comercio.get("activo", false)):
+		con.enviar_cerrar_comercio()
+	if _comercio_window != null:
+		_comercio_window.visible = false
 
 
 func _armar_objetivo() -> void:
@@ -947,7 +1251,9 @@ func _agregar_fila_battle(id: int, criatura: Dictionary) -> void:
 	fila.custom_minimum_size.y = 40
 	fila.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 	fila.clip_contents = false
-	fila.tooltip_text = "Left click: attack  |  Right click: follow"
+	fila.tooltip_text = "Left click: talk  |  Right click: follow" \
+		if _mundo != null and _mundo.has_method("es_npc") and _mundo.es_npc(id) \
+		else "Left click: attack  |  Right click: follow"
 	fila.gui_input.connect(func(evento): _input_battle(evento, id))
 	_battle_rows[id] = fila
 	_aplicar_estilo_fila_battle(fila, id)
@@ -1154,7 +1460,9 @@ func _seleccionar_objetivo(id: int, seguir: bool) -> void:
 	# gate the call by peeking at the connection, otherwise a valid Battle row
 	# click can be swallowed while the connection is being replaced on login.
 	if _mundo.atacar_criatura(id):
-		_anotar("Attacking %s." % _target_name.text)
+		var accion := "Talking to" if _mundo.has_method("es_npc") \
+			and _mundo.es_npc(id) else "Attacking"
+		_anotar("%s %s." % [accion, _target_name.text])
 
 
 func _al_inventario_actualizado(_slot: int, _cosa: Dictionary) -> void:
@@ -1169,8 +1477,11 @@ func _al_habilidades_actualizadas(_datos: Dictionary) -> void:
 	_refrescar()
 
 
-func _al_mensaje_servidor(texto: String) -> void:
-	_anotar("[Server] " + texto)
+func _al_mensaje_servidor(_texto: String) -> void:
+	# Los 0xB4 del servidor ya se pintan en mundo3d.gd con su clase y una
+	# duracion corta. No son conversaciones, asi que no se guardan en el
+	# historial del chat (por ejemplo: "Sorry, not possible.").
+	pass
 
 
 func _al_habla(quien: String, texto: String, _clase: int) -> void:
@@ -1193,8 +1504,15 @@ func _decir(texto: String) -> void:
 		return
 	var con = _mundo._con
 	if con != null:
-		con.enviar_hablar(limpio)
-	_anotar("You: " + limpio)
+		if _canal_actual == 0:
+			# El opcode extendido F2 del servidor conserva el auto-walk mientras
+			# se escribe en Default.
+			con.enviar_hablar(limpio)
+			_anotar("You: " + limpio)
+		else:
+			# Los canales usan parseSay 7.72: clase amarilla + uint16 channel.
+			con.enviar_hablar_en_canal(_canal_actual, limpio)
+			_anotar("[%s] You: %s" % [_nombre_canal_actual, limpio])
 	_chat_input.clear()
 	_chat_input.release_focus()
 
@@ -1256,16 +1574,46 @@ func icono_para_item(cid: int) -> Texture2D:
 	return atlas
 
 
+func color_para_liquido(color_liquido: int) -> Color:
+	"""Color visual del byte de liquido que manda el protocolo 7.72.
+
+	El sprite del vial es compartido por todos los fluidos. El byte adicional
+	que lee mapa772.gd es el que permite pintar la variante correcta en la UI.
+	Se devuelve con alpha para que el sprite original del vial conserve sus
+	detalles y el tinte solo lo coloree.
+	"""
+	match color_liquido:
+		1: # water
+			return Color(0.20, 0.58, 1.00, 0.68)
+		2: # blood / life fluid
+			return Color(1.00, 0.12, 0.08, 0.68)
+		3: # beer, wine, mud and similar amber fluids
+			return Color(1.00, 0.67, 0.10, 0.62)
+		4: # slime
+			return Color(0.18, 0.88, 0.24, 0.68)
+		5: # lemonade / urine
+			return Color(0.94, 0.86, 0.20, 0.62)
+		6: # milk
+			return Color(0.96, 0.96, 1.00, 0.42)
+		7: # mana fluid provisional: usar azul de agua mientras definimos la paleta
+			return Color(0.20, 0.58, 1.00, 0.70)
+		_:
+			return Color(1.0, 1.0, 1.0, 0.0)
+
+
 func usar_inventario(slot: int, cosa: Dictionary) -> void:
 	usar_ranura("inventario", -1, slot, cosa)
 
 
 func usar_ranura(tipo: String, id_contenedor: int, slot: int,
 		cosa: Dictionary) -> void:
-	if _es_runa(cosa):
+	if _es_runa(cosa) or bool(cosa.get("liquido", false)):
 		if _mundo.preparar_uso_con(tipo, id_contenedor, slot, cosa):
-			_anotar("Use with %s: click a creature or map tile." %
-				str(cosa.get("nombre", "spell rune")))
+			var nombre := str(cosa.get("nombre", "spell rune"))
+			var destino := "your character" \
+				if bool(cosa.get("liquido", false)) \
+				else "a creature or map tile"
+			_anotar("Use with %s: click %s." % [nombre, destino])
 		return
 	if _es_anillo(cosa):
 		_equipar_anillo(tipo, id_contenedor, slot, cosa)
@@ -1371,10 +1719,70 @@ func mover_a_ranura(datos: Dictionary, tipo_destino: String,
 	var con = _mundo._con
 	if con == null:
 		return
+	if _es_pila_divisible(datos):
+		_pedir_cantidad_movimiento(datos, func(cantidad: int):
+			_enviar_movimiento_a_ranura(datos, tipo_destino, id_destino,
+				ranura_destino, cantidad))
+		return
+	_enviar_movimiento_a_ranura(datos, tipo_destino, id_destino,
+		ranura_destino, int(datos.get("cantidad", 1)))
+
+
+func _enviar_movimiento_a_ranura(datos: Dictionary, tipo_destino: String,
+		id_destino: int, ranura_destino: int, cantidad: int) -> void:
+	var tipo_origen: String = str(datos.get("tipo", "inventario"))
+	var id_origen: int = int(datos.get("contenedor", -1))
+	var ranura_origen: int = int(datos.get("slot", -1))
+	var total := maxi(1, int(datos.get("cantidad", 1)))
+	var cantidad_real := clampi(cantidad, 1, mini(255, total))
+	var con = _mundo._con
+	if con == null:
+		return
 	var origen := _posicion_de_item(tipo_origen, id_origen, ranura_origen)
 	var destino := _posicion_de_item(tipo_destino, id_destino, ranura_destino)
 	con.enviar_mover_ubicacion(origen, int(datos.get("cid", 0)), 0,
-		destino, int(datos.get("cantidad", 1)))
+		destino, cantidad_real)
+
+
+func _es_pila_divisible(datos: Dictionary) -> bool:
+	return bool(datos.get("apilable", false)) \
+		and int(datos.get("cantidad", 1)) > 1
+
+
+func _pedir_cantidad_movimiento(datos: Dictionary, accion: Callable) -> void:
+	"""Pide la cantidad sin inventar el resultado del movimiento.
+
+	El unico efecto que produce la confirmacion es enviar 0x78 con el count
+	seleccionado. La respuesta y el estado final siguen viniendo del servidor.
+	"""
+	if is_instance_valid(_dialogo_cantidad):
+		_dialogo_cantidad.queue_free()
+	var total := clampi(int(datos.get("cantidad", 1)), 1, 255)
+	var dialogo := ConfirmationDialog.new()
+	_dialogo_cantidad = dialogo
+	dialogo.title = "Move stack"
+	dialogo.dialog_text = "%s (%d available)\nHow many do you want to move?" % [
+		str(datos.get("nombre", "item")), total]
+	var selector := SpinBox.new()
+	selector.min_value = 1
+	selector.max_value = total
+	selector.step = 1
+	selector.value = total
+	selector.custom_minimum_size = Vector2(170, 0)
+	# Godot 4.7 no expone un get_vbox() publico en ConfirmationDialog. El
+	# popup tiene un tamano fijo y el selector se coloca dentro del area libre
+	# debajo del texto nativo del dialogo.
+	selector.position = Vector2(58, 76)
+	dialogo.add_child(selector)
+	dialogo.confirmed.connect(func():
+		_dialogo_cantidad = null
+		accion.call(clampi(int(selector.value), 1, total))
+		dialogo.queue_free())
+	dialogo.canceled.connect(func():
+		_dialogo_cantidad = null
+		dialogo.queue_free())
+	add_child(dialogo)
+	dialogo.popup_centered(Vector2(300, 150))
 
 
 func _posicion_de_item(tipo: String, id_contenedor: int, ranura: int) -> Vector3i:
@@ -1386,6 +1794,10 @@ func _posicion_de_item(tipo: String, id_contenedor: int, ranura: int) -> Vector3
 
 
 func _soltar_item_en_mundo(posicion_mouse: Vector2, datos: Dictionary) -> void:
+	if _es_pila_divisible(datos):
+		_pedir_cantidad_movimiento(datos, func(cantidad: int):
+			_mundo.soltar_inventario_en_mouse(posicion_mouse, datos, cantidad))
+		return
 	_mundo.soltar_inventario_en_mouse(posicion_mouse, datos)
 
 
@@ -1399,6 +1811,13 @@ func recibir_objeto_del_mundo(posicion_mouse: Vector2, origen: Vector3i,
 	var pila := int(datos.get("stackpos", -1))
 	if objeto.get("tipo") != "item" or pila < 0:
 		return false
+	if _es_pila_divisible(objeto):
+		_pedir_cantidad_movimiento(objeto, func(cantidad: int):
+			_mundo.recoger_objeto_en_ranura(origen, datos, pila,
+				str(destino.get("tipo", "inventario")),
+				int(destino.get("contenedor", -1)),
+				int(destino.get("slot", -1)), cantidad))
+		return true
 	return _mundo.recoger_objeto_en_ranura(origen, datos, pila,
 		str(destino.get("tipo", "inventario")),
 		int(destino.get("contenedor", -1)), int(destino.get("slot", -1)))
@@ -1494,7 +1913,10 @@ func _refrescar_contenedor(id: int, datos: Dictionary,
 	grilla.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 	grilla.size_flags_vertical = Control.SIZE_SHRINK_BEGIN
 	scroll.add_child(grilla)
-	var capacidad := mini(32, maxi(1, int(datos.get("capacidad", 1))))
+	# capacity es un byte del paquete 0x6E. El cliente clasico muestra todas
+	# las ranuras que anuncia el servidor; limitarlo a 32 ocultaba contenido
+	# real de corpses, depots y contenedores grandes.
+	var capacidad := mini(255, maxi(1, int(datos.get("capacidad", 1))))
 	var items: Array = datos.get("items", [])
 	var items_anteriores: Array = anterior.get("items", [])
 	for ranura in range(capacidad):

@@ -10,33 +10,32 @@ Sex = 0
 PlayerKillerEnd = 0
 BankBalance = 0
 Blessings = 0
-LastLoginSaved = 1787919270
-LastLogout = 1787919634
-Position = [32339,32214,7]
+LastLoginSaved = 1787998455
+LastLogout = 1787998587
+Position = [32416,32220,7]
 DefaultOutfit = (128, 78-106-58-95)
 
-Level = 193
-Experience = 116466232
-Health = 2966
-MaxHealth = 3030
-Mana = 950
-MaxMana = 960
-ManaSpent = 5670241777886634044
+Level = 186
+Experience = 104820497
+Health = 2830
+MaxHealth = 2925
+Mana = 913
+MaxMana = 925
+ManaSpent = 4769673966104639284
 MagicLevel = 34
 Soul = 200
-Capacity = 520000
+Capacity = 502500
 Vocation = 4
 Stamina = 2520
 
-Skill = (0, 198, 0)
-Skill = (2, 198, 0)
-Skill = (1, 198, 0)
-Skill = (3, 198, 52)
-Skill = (4, 131, 0)
-Skill = (5, 198, 1090393840)
-Skill = (6, 198, 1077072216)
+Skill = (0, 196, 0)
+Skill = (2, 196, 0)
+Skill = (1, 196, 0)
+Skill = (3, 196, 15)
+Skill = (4, 130, 0)
+Skill = (5, 197, 431266672)
+Skill = (6, 197, 859347434)
 
-Condition = (4096,-1,363000,0,0,0,0,0,0,-1,6000,1,12000,1)
 Spells = {}
 
 QuestValues = {(32,1),(33,1),(34,1),(59,1),(116,1),(117,1),(118,1)}
@@ -47,8 +46,10 @@ Murders = {}
 
 VIP = ()
 
-Backpack = (1987 Content={2148 Amount=96})
-Left = (2378)
+Backpack = (1987 Content={2152 Amount=99, 2120, 2148 Amount=4})
+Armor = (2472)
+Right = (2522)
+Left = (2431)
 Legs = (2495)
 Feet = (2195)
 Ammo = (2580)

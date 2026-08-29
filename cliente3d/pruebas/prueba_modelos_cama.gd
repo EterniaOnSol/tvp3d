@@ -9,6 +9,7 @@ const ESTADO := preload("res://red/estado_mundo.gd")
 const RUTAS := [
 	"res://assets/modelos/bed.obj",
 	"res://assets/modelos/bed-person.obj",
+	"res://assets/modelos/street-lamp.obj",
 ]
 
 
@@ -34,7 +35,7 @@ func _init() -> void:
 	mundo._piso_mundo = Node3D.new()
 	var grupo := {
 		"cid": 2487,
-		"donde": [Vector3(0.0, 0.42, 0.0)],
+		"donde": [Vector3(0.0, 0.01, 0.0)],
 		"casillas": [Vector3i(32063, 32224, 7)],
 	}
 	mundo._volcar_cama_grupo(grupo, MODELO_OBJ.cargar(RUTAS[0]))
@@ -42,7 +43,37 @@ func _init() -> void:
 		printerr("FALLO: el renderer no creo la instancia 3D de la cama")
 		quit(1)
 		return
+	var nodo_cama := mundo._piso_mundo.get_child(0) as MultiMeshInstance3D
+	var base_modelo_y := nodo_cama.multimesh.mesh.get_aabb().position.y
+	if absf(base_modelo_y) > 0.002:
+		printerr("FALLO: la base de la cama no queda apoyada en el piso")
+		quit(1)
+		return
 	print("OK: el renderer crea la instancia 3D de la cama")
+	var info_lampara: Dictionary = mundo._catalogo.info_item(2109)
+	if mundo._forma_de_item(2109, info_lampara) != MUNDO.Forma.LAMINA:
+		printerr("FALLO: el item 2109 no se clasifica como street lamp")
+		quit(1)
+		return
+	var grupo_lampara := {
+		"cid": 2109,
+		"forma": MUNDO.Forma.LAMINA,
+		"orientacion": 0,
+		"donde": [Vector3(2.0, 0.01, 0.0)],
+		"casillas": [Vector3i(32064, 32224, 7)],
+	}
+	mundo._volcar_grupo("street-lamp", grupo_lampara)
+	if mundo._piso_mundo.get_child_count() != 2:
+		printerr("FALLO: el renderer no creo la street lamp authored")
+		quit(1)
+		return
+	var nodo_lampara := mundo._piso_mundo.get_child(1) as MultiMeshInstance3D
+	if nodo_lampara == null or nodo_lampara.multimesh == null \
+			or nodo_lampara.multimesh.mesh.get_aabb().size.y < 1.0:
+		printerr("FALLO: la street lamp no tiene una malla vertical valida")
+		quit(1)
+		return
+	print("OK: el renderer crea la street lamp authored apoyada en el SQM")
 	mundo._piso_mundo.free()
 	mundo.free()
 	quit(0)

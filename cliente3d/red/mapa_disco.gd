@@ -24,6 +24,10 @@ var _indice := {}
 var _lado := 64
 var _archivo: FileAccess
 var _cargados := {}     ## "tx_ty" -> {Vector3i -> PackedInt32Array}
+## En modo completo se conserva el binario compacto de cada trozo. No se
+## convierten los 576 trozos a diccionarios a la vez porque eso multiplica el
+## archivo de 46 MiB hasta varios gigabytes.
+var _bytes_en_memoria := {} ## "tx_ty" -> PackedByteArray
 var _listo := false
 var _mapa_completo := false
 
@@ -63,7 +67,7 @@ func listo() -> bool:
 
 
 func trozos_cargados() -> int:
-	return _cargados.size()
+	return _indice.size() if _mapa_completo else _cargados.size()
 
 
 func cargar_completo() -> void:
@@ -78,12 +82,21 @@ func cargar_completo() -> void:
 		return
 	var inicio := Time.get_ticks_msec()
 	var cargados := 0
+	var bytes_totales := 0
 	for clave in _indice:
-		_trozo(str(clave))
+		var clave_trozo := str(clave)
+		var sitio = _indice.get(clave_trozo)
+		if sitio == null:
+			continue
+		_archivo.seek(int(sitio[0]))
+		var datos := _archivo.get_buffer(int(sitio[1]))
+		_bytes_en_memoria[clave_trozo] = datos
+		bytes_totales += datos.size()
 		cargados += 1
 	_mapa_completo = true
-	print("Mapa completo precargado: %d trozos en %.2f s" % [
-		cargados, float(Time.get_ticks_msec() - inicio) / 1000.0])
+	print("Mapa completo precargado: %d trozos, %.1f MiB, en %.2f s" % [
+		cargados, float(bytes_totales) / 1048576.0,
+		float(Time.get_ticks_msec() - inicio) / 1000.0])
 
 
 func mapa_completo() -> bool:
@@ -122,12 +135,12 @@ func casillas_de(centro: Vector3i, radio: int) -> Dictionary:
 				if absi(donde.x - centro.x) <= radio and absi(donde.y - centro.y) <= radio:
 					salida[donde] = trozo[donde]
 
-	# En modo completo no se suelta nada: todas las zonas permanecen
-	# disponibles aunque el personaje cambie de ciudad o de piso.
-	if not _mapa_completo:
-		for clave in _cargados.keys():
-			if not cerca.has(clave):
-				_cargados.erase(clave)
+	# El binario completo permanece en memoria, pero los diccionarios decodificados
+	# de la ventana anterior se sueltan. Asi cambiar de zona no acumula millones
+	# de Vector3i y PackedInt32Array, y tampoco vuelve a tocar el disco.
+	for clave in _cargados.keys():
+		if not cerca.has(clave):
+			_cargados.erase(clave)
 
 	return salida
 
@@ -140,8 +153,12 @@ func _trozo(clave: String) -> Dictionary:
 		_cargados[clave] = {}
 		return {}
 
-	_archivo.seek(int(sitio[0]))
-	var b := _archivo.get_buffer(int(sitio[1]))
+	var b: PackedByteArray
+	if _bytes_en_memoria.has(clave):
+		b = _bytes_en_memoria[clave]
+	else:
+		_archivo.seek(int(sitio[0]))
+		b = _archivo.get_buffer(int(sitio[1]))
 	var partes := clave.split("_")
 	var basex := int(partes[0]) * _lado
 	var basey := int(partes[1]) * _lado

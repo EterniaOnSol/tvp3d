@@ -16,6 +16,7 @@ var _tipo := "inventario"
 var _id_contenedor := -1
 var _objeto: Dictionary = {}
 var _icono: TextureRect
+var _relleno_liquido: Polygon2D
 var _cantidad: Label
 var _duracion: Label
 var _duracion_fondo: PanelContainer
@@ -47,6 +48,22 @@ func _init(interfaz, slot: int, tipo: String = "inventario",
 	fondo.border_color = Color(0.25, 0.27, 0.29)
 	fondo.set_border_width_all(1)
 	add_theme_stylebox_override("panel", fondo)
+
+	# El vial es un recipiente transparente: el contenido debe quedar detras
+	# del sprite, dentro del cuerpo, y nunca colorear el vidrio ni el tapon.
+	_relleno_liquido = Polygon2D.new()
+	var escala_mascara := float(LADO) / 32.0
+	_relleno_liquido.polygon = PackedVector2Array([
+		Vector2(15.0, 14.0) * escala_mascara,
+		Vector2(21.5, 14.0) * escala_mascara,
+		Vector2(23.5, 16.0) * escala_mascara,
+		Vector2(23.5, 21.5) * escala_mascara,
+		Vector2(21.0, 22.8) * escala_mascara,
+		Vector2(16.5, 21.8) * escala_mascara,
+		Vector2(14.5, 18.0) * escala_mascara,
+	])
+	_relleno_liquido.visible = false
+	add_child(_relleno_liquido)
 
 	_icono = TextureRect.new()
 	_icono.expand_mode = TextureRect.EXPAND_IGNORE_SIZE
@@ -97,6 +114,8 @@ func mostrar(cosa: Dictionary) -> void:
 	_objeto = cosa.duplicate(true)
 	if _objeto.is_empty():
 		_icono.texture = _vacia
+		_icono.modulate = Color.WHITE
+		_relleno_liquido.visible = false
 		_cantidad.text = ""
 		_duracion_ms = 0
 		_duracion_inicio_ms = 0
@@ -107,6 +126,13 @@ func mostrar(cosa: Dictionary) -> void:
 			animar_acunado(int(anterior.get("cantidad", 1)))
 		return
 	_icono.texture = _interfaz.icono_para_item(int(_objeto.get("cid", 0)))
+	# El sprite del vial es comun a todos los fluidos. El color viaja en el
+	# byte adicional del objeto y se aplica sin alterar los sprites de criaturas.
+	var color_liquido := int(_objeto.get("color_liquido", 0))
+	_icono.modulate = Color.WHITE
+	_relleno_liquido.color = _interfaz.color_para_liquido(color_liquido)
+	_relleno_liquido.visible = bool(_objeto.get("liquido", false)) \
+		and color_liquido > 0
 	var cantidad := int(_objeto.get("cantidad", 1))
 	_cantidad.text = str(cantidad) if cantidad > 1 else ""
 	var cid_actual := int(_objeto.get("cid", 0))
@@ -210,6 +236,7 @@ func _get_drag_data(_pos: Vector2) -> Variant:
 		"contenedor": _id_contenedor,
 		"cid": int(_objeto.get("cid", 0)),
 		"cantidad": int(_objeto.get("cantidad", 1)),
+		"apilable": bool(_objeto.get("apilable", false)),
 		"nombre": str(_objeto.get("nombre", "item"))}
 
 

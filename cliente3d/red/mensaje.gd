@@ -28,6 +28,24 @@ func tam() -> int:
 	return datos.size()
 
 
+func puede_leer(cantidad: int) -> bool:
+	"""Indica si hay suficientes bytes sin mover el cursor.
+
+	Los mensajes 7.72 pueden venir concatenados. Las lecturas de longitud
+	variable deben comprobarse antes de tocar el buffer para que un paquete
+	truncado no convierta el resto del paquete en basura.
+	"""
+	return cantidad >= 0 and cantidad <= sin_leer()
+
+
+func puede_leer_texto() -> bool:
+	"""Comprueba una cadena de Tibia: u16 de longitud + bytes UTF-8."""
+	if sin_leer() < 2:
+		return false
+	var largo: int = datos[cursor] | (datos[cursor + 1] << 8)
+	return sin_leer() >= 2 + largo
+
+
 # --------------------------------------------------------------------
 #  Leer
 # --------------------------------------------------------------------

@@ -39,6 +39,16 @@ signal mensaje_pantalla(texto: String, clase: int)
 signal inventario_actualizado(slot: int, cosa: Dictionary)
 signal contenedor_actualizado(id: int, datos: Dictionary)
 signal contenedor_cerrado(id: int)
+## 0x7D/0x7E: ofertas del comercio jugador-a-jugador.
+signal comercio_actualizado(nombre: String, propio: bool, items: Array)
+signal comercio_cerrado()
+## 0xD2-0xD4: lista VIP y cambios de presencia.
+signal vip_actualizado(guid: int, entrada: Dictionary)
+signal vip_reiniciado()
+## 0xAB/0xAC/0xB2/0xB3: canales del chat clasico.
+signal canales_actualizados(canales: Array)
+signal canal_abierto(id: int, nombre: String)
+signal canal_cerrado(id: int)
 signal estadisticas_actualizadas(datos: Dictionary)
 signal habilidades_actualizadas(datos: Dictionary)
 signal entramos()
@@ -58,6 +68,15 @@ var casillas := {}     ## Vector3i -> Array de cosas
 var criaturas := {}    ## id -> {pos, nombre, apariencia}
 var inventario := {}   ## slot -> cosa
 var contenedores := {} ## id -> {nombre, capacidad, items, tiene_padre}
+var comercio := {
+	"activo": false,
+	"nombre": "",
+	"propio": [],
+	"contraparte": [],
+}
+var vip := {}          ## guid -> {guid, nombre, estado}
+var canales := {}      ## id -> nombre disponible para abrir
+var canales_abiertos := {} ## id -> nombre actualmente abierto
 var estadisticas := {}
 var habilidades := {}
 ## Luz global enviada por el servidor (0x82). El cliente 3D la usa para
@@ -279,17 +298,21 @@ func _leer_mensajes(msg) -> void:
 				if msg.sin_leer() < 8:
 					return
 				msg.leer_u8()
+				if not _mapa.puede_leer_cosa(msg):
+					return
 				var id_contenedor: int = msg.leer_u8()
 				var recien_contenedor := []
 				var item_contenedor: Dictionary = _mapa.leer_cosa(
 					msg, Vector3i.ZERO, recien_contenedor)
+				if not msg.puede_leer_texto() or msg.sin_leer() < 3:
+					return
 				var nombre_contenedor: String = msg.leer_texto()
 				var capacidad_contenedor: int = msg.leer_u8()
 				var tiene_padre: bool = msg.leer_u8() != 0
 				var cantidad_items: int = msg.leer_u8()
 				var items_contenedor := []
 				for _i in range(cantidad_items):
-					if msg.sin_leer() < 2:
+					if not _mapa.puede_leer_cosa(msg):
 						return
 					items_contenedor.append(_mapa.leer_cosa(
 						msg, Vector3i.ZERO, []))
@@ -304,14 +327,20 @@ func _leer_mensajes(msg) -> void:
 					contenedores[id_contenedor])
 				hubo_cambio = true
 			0x6F:   # se cerro un contenedor
+				if msg.sin_leer() < 2:
+					return
 				msg.leer_u8()
 				var id_cerrado: int = msg.leer_u8()
 				contenedores.erase(id_cerrado)
 				contenedor_cerrado.emit(id_cerrado)
 				hubo_cambio = true
 			0x70:   # entro algo a un contenedor
+				if msg.sin_leer() < 2:
+					return
 				msg.leer_u8()
 				var id_agregado: int = msg.leer_u8()
+				if not _mapa.puede_leer_cosa(msg):
+					return
 				if contenedores.has(id_agregado):
 					var agregado: Dictionary = _mapa.leer_cosa(msg, Vector3i.ZERO, [])
 					var lista_agregada: Array = contenedores[id_agregado]["items"]
@@ -325,9 +354,13 @@ func _leer_mensajes(msg) -> void:
 					_mapa.leer_cosa(msg, Vector3i.ZERO, [])
 				hubo_cambio = true
 			0x71:   # cambio algo adentro de un contenedor
+				if msg.sin_leer() < 3:
+					return
 				msg.leer_u8()
 				var id_actualizado: int = msg.leer_u8()
 				var ranura_contenedor: int = msg.leer_u8()
+				if not _mapa.puede_leer_cosa(msg):
+					return
 				var actualizado: Dictionary = _mapa.leer_cosa(msg, Vector3i.ZERO, [])
 				if contenedores.has(id_actualizado):
 					var lista_actualizada: Array = contenedores[id_actualizado]["items"]
@@ -337,6 +370,8 @@ func _leer_mensajes(msg) -> void:
 					contenedor_actualizado.emit(id_actualizado, contenedores[id_actualizado])
 				hubo_cambio = true
 			0x72:   # salio algo de un contenedor
+				if msg.sin_leer() < 3:
+					return
 				msg.leer_u8()
 				var id_quitado: int = msg.leer_u8()
 				var ranura_quitada: int = msg.leer_u8()
@@ -347,9 +382,48 @@ func _leer_mensajes(msg) -> void:
 						lista_quitada.remove_at(ranura_quitada)
 					contenedor_actualizado.emit(id_quitado, contenedores[id_quitado])
 				hubo_cambio = true
+
+			# ---------------------------------------------------------
+			#  Comercio jugador-a-jugador
+			# ---------------------------------------------------------
+			0x7D, 0x7E:   # oferta propia / oferta de la contraparte
+				# protocolgame.cpp:1465-1501: nombre, cantidad y lista de
+				# objetos serializados con NetworkMessage::addItem.
+				if msg.sin_leer() < 3:
+					return
+				var opcode_comercio: int = msg.leer_u8()
+				if not msg.puede_leer_texto() or msg.sin_leer() < 3:
+					return
+				var nombre_comercio: String = msg.leer_texto()
+				var cantidad_ofertas: int = msg.leer_u8()
+				var ofertas := []
+				for _i in range(cantidad_ofertas):
+					if not _mapa.puede_leer_cosa(msg):
+						return
+					ofertas.append(_mapa.leer_cosa(msg, Vector3i.ZERO, []))
+				comercio["activo"] = true
+				comercio["nombre"] = nombre_comercio
+				var es_oferta_propia := opcode_comercio == 0x7D
+				if es_oferta_propia:
+					comercio["propio"] = ofertas
+				else:
+					comercio["contraparte"] = ofertas
+				comercio_actualizado.emit(nombre_comercio, es_oferta_propia,
+					ofertas)
+				hubo_cambio = true
+			0x7F:   # el servidor cerro el comercio
+				msg.leer_u8()
+				comercio = {"activo": false, "nombre": "", "propio": [],
+					"contraparte": []}
+				comercio_cerrado.emit()
+				hubo_cambio = true
 			0x78:   # una casilla del inventario (protocolgame.cpp:2018-2029)
+				if msg.sin_leer() < 2:
+					return
 				msg.leer_u8()
 				var ranura: int = msg.leer_u8()
+				if not _mapa.puede_leer_cosa(msg):
+					return
 				var recien_inventario := []
 				var cosa_inventario: Dictionary = _mapa.leer_cosa(
 					msg, Vector3i.ZERO, recien_inventario)
@@ -357,6 +431,8 @@ func _leer_mensajes(msg) -> void:
 				inventario_actualizado.emit(ranura, cosa_inventario)
 				hubo_cambio = true
 			0x79:   # una casilla del inventario que quedo vacia
+				if msg.sin_leer() < 2:
+					return
 				msg.leer_u8()
 				var ranura_vacia: int = msg.leer_u8()
 				inventario.erase(ranura_vacia)
@@ -538,8 +614,60 @@ func _leer_mensajes(msg) -> void:
 				habla_recibida.emit(quien_habla, texto_habla, como)
 				dialogo_recibido.emit(quien_habla, texto_habla,
 					posicion_habla, como)
+			0xAB:   # lista de canales (ProtocolGame::sendChannelsDialog)
+				if msg.sin_leer() < 2:
+					return
+				msg.leer_u8()
+				var cantidad_canales: int = msg.leer_u8()
+				var lista_canales := []
+				canales.clear()
+				for _i in range(cantidad_canales):
+					if msg.sin_leer() < 2:
+						return
+					var id_canal: int = msg.leer_u16()
+					if not msg.puede_leer_texto():
+						return
+					var nombre_canal: String = msg.leer_texto()
+					canales[id_canal] = nombre_canal
+					lista_canales.append({"id": id_canal, "nombre": nombre_canal})
+				canales_actualizados.emit(lista_canales)
+			0xAC:   # el servidor abrio un canal existente
+				if msg.sin_leer() < 3:
+					return
+				msg.leer_u8()
+				var id_abierto: int = msg.leer_u16()
+				if not msg.puede_leer_texto():
+					return
+				var nombre_abierto: String = msg.leer_texto()
+				canales[id_abierto] = nombre_abierto
+				canales_abiertos[id_abierto] = nombre_abierto
+				canal_abierto.emit(id_abierto, nombre_abierto)
+			0xAD:   # respuesta de abrir canal privado por nombre
+				if msg.sin_leer() < 3:
+					return
+				msg.leer_u8()
+				if not msg.puede_leer_texto():
+					return
+				# El servidor no incluye el id en este mensaje; el canal privado
+				# se confirma despues con 0xB2 si corresponde.
+				msg.leer_texto()
 			0xB3:   # se cerro un canal privado
-				msg.saltar(1 + 2)
+				if msg.sin_leer() < 3:
+					return
+				msg.leer_u8()
+				var id_cerrado_canal: int = msg.leer_u16()
+				canales_abiertos.erase(id_cerrado_canal)
+				canal_cerrado.emit(id_cerrado_canal)
+			0xB2:   # se creo/abrio un canal privado
+				if msg.sin_leer() < 3:
+					return
+				msg.leer_u8()
+				var id_privado: int = msg.leer_u16()
+				if not msg.puede_leer_texto():
+					return
+				var nombre_privado: String = msg.leer_texto()
+				canales_abiertos[id_privado] = nombre_privado
+				canal_abierto.emit(id_privado, nombre_privado)
 			0xB4:   # un texto en la pantalla (protocolgame.cpp:1355-1361)
 				msg.leer_u8()
 				var clase_pantalla: int = msg.leer_u8()
@@ -555,12 +683,29 @@ func _leer_mensajes(msg) -> void:
 			#  Amigos y latido
 			# ---------------------------------------------------------
 			0xD2:   # un amigo de la lista (protocolgame.cpp:2184-2191)
+				if msg.sin_leer() < 8:
+					return
 				msg.leer_u8()
-				msg.leer_u32()
-				msg.leer_texto()
-				msg.leer_u8()
+				var guid_vip: int = msg.leer_u32()
+				var nombre_vip: String = msg.leer_texto()
+				var estado_vip: int = msg.leer_u8()
+				var entrada_vip := {
+					"guid": guid_vip,
+					"nombre": nombre_vip,
+					"estado": estado_vip,
+				}
+				vip[guid_vip] = entrada_vip
+				vip_actualizado.emit(guid_vip, entrada_vip)
 			0xD3, 0xD4:   # un amigo se conecto o se fue
-				msg.saltar(1 + 4)
+				if msg.sin_leer() < 5:
+					return
+				var opcode_vip: int = msg.leer_u8()
+				var guid_estado_vip: int = msg.leer_u32()
+				if vip.has(guid_estado_vip):
+					var entrada_estado: Dictionary = vip[guid_estado_vip].duplicate()
+					entrada_estado["estado"] = 1 if opcode_vip == 0xD3 else 0
+					vip[guid_estado_vip] = entrada_estado
+					vip_actualizado.emit(guid_estado_vip, entrada_estado)
 
 			0x1E:   # "seguis ahi?" (protocolgame.cpp:1628-1638)
 				msg.leer_u8()
@@ -653,6 +798,12 @@ func reiniciar_sesion() -> void:
 	criaturas.clear()
 	inventario.clear()
 	contenedores.clear()
+	comercio = {"activo": false, "nombre": "", "propio": [],
+		"contraparte": []}
+	vip.clear()
+	canales.clear()
+	canales_abiertos.clear()
+	vip_reiniciado.emit()
 	estadisticas.clear()
 	habilidades.clear()
 	ultimo_movimiento.clear()

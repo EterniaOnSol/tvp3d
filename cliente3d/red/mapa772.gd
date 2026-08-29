@@ -84,6 +84,23 @@ func info_item(cid: int) -> Dictionary:
 	return _items.get(str(cid), {})
 
 
+func puede_leer_cosa(msg) -> bool:
+	"""Valida el tamaño de un item serializado por NetworkMessage::addItem.
+
+	En 7.72 todos los items empiezan con client id. Solo los apilables y los
+	liquids llevan un byte adicional, y esa bandera sale del catálogo generado
+	desde el servidor. No se debe leer un item incompleto porque el siguiente
+	opcode quedaría interpretado como cantidad/color.
+	"""
+	if msg.sin_leer() < 2:
+		return false
+	var cid: int = msg.espiar_u16()
+	var info := info_item(cid)
+	var extra := 1 if bool(info.get("apilable", false)) \
+		or bool(info.get("liquido", false)) else 0
+	return msg.sin_leer() >= 2 + extra
+
+
 func es_borde_suelo(cid: int) -> bool:
 	return bool(_render_flags.get(str(cid), {}).get("borde_suelo", false))
 
