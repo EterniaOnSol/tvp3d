@@ -2,7 +2,7 @@
 
 Estado: LISTO_PARA_REVISION
 Ultimo agente: claude
-Ultima actualizacion: 2026-08-29T18:10:00-06:00
+Ultima actualizacion: 2026-08-29T19:20:00-06:00
 Contrato publicado: SI
 
 ## Depende de
@@ -16,7 +16,22 @@ Contrato publicado: SI
 Correccion aplicada: el cliente vuelve al selector al cierre autoritativo del
 socket (incluido dormir en cama) y conserva los mensajes 0xB4 del servidor en
 el historial para que look y rechazos puedan leerse y copiarse. Verificado con
-Godot headless --editor --quit; falta probar visualmente con la cama real.
+Godot headless --editor --quit.
+
+Segunda correccion de esta sesion (causa raiz del bloqueo real en Mill Avenue
+1 / house 81): la resolucion de clic sobre una cama usaba el rayo contra el
+plano del piso, igual que cualquier casilla plana. Una cama tiene
+`tiene_alto=true` (su respaldo sube del piso), asi que un clic sobre esa parte
+alta pasaba de largo y caia en la casilla siguiente -en el caso reportado, un
+tramo de pared (client 1281, "framework wall") en vez de la cabecera real
+(client 2493, server 1760). El servidor rechazaba con razon: el `spriteId`
+recibido no coincidia con lo que habia en esa casilla
+(`Game::playerUseItem`, `item->getClientID() != spriteId`).
+
+Verificado con una prueba headless nueva, no con la cuenta real ni con Docker:
+el fix no toca servidor, asi que no hizo falta reconstruir nada. Falta la
+confirmacion visual con el cliente jugable real contra la cuenta 123456 /
+Guillermo Knight (ver "Notas para quien retome").
 
 Construir la experiencia jugable 3D y mostrar solo estado confirmado.
 
@@ -80,6 +95,31 @@ Construir la experiencia jugable 3D y mostrar solo estado confirmado.
 - `pruebas/prueba_estado_criatura_ui.tscn`: 20 comprobaciones en verde,
   incluidos los cambios `0x90`, `0x91` y `0x8F` en vivo y el valor desconocido
   que se oculta.
+- Contrato 1.6.0: la resolucion de clic sobre una cama (`_cama_bajo_mouse`)
+  reutiliza el test de rectangulo en pantalla que ya usan las puertas simples
+  (`_hit_puerta_en_pantalla`), en vez del rayo contra el plano del piso. Se
+  agrega `_es_pieza_de_cama(cid)`, que reconoce cualquier mitad de cama por su
+  nombre de catalogo ("bed"), a diferencia de `_es_cama_modelo` que excluye el
+  pie porque esa funcion elige la malla 3D, no resuelve clics.
+- La busqueda de cama recorre exclusivamente `EstadoMundo.casillas` (la
+  ventana viva), nunca `_mapa_visible` ni el disco, y nunca una casilla vecina
+  por cercania. Se eliminaron los dos parches de "vecindario" que un turno
+  anterior habia dejado sin terminar en `_usar_en_casilla`: buscaban el
+  objeto mas cercano en un radio de 3 casillas cuando el clic resolvia vacio o
+  resolvia un objeto que no era cama, lo cual podia enviar un uso a una
+  casilla distinta de la que el jugador realmente eligio.
+- `_usar_en_casilla` y `_mirar_en_casilla` prueban primero `_cama_bajo_mouse`,
+  luego `_puerta_bajo_mouse` y por ultimo el rayo contra el piso, igual que ya
+  hacian solo con puertas.
+- `pruebas/prueba_cama_bajo_mouse.gd` (`godot --headless -s
+  res://pruebas/prueba_cama_bajo_mouse.gd`): reproduce el sintoma real -clic
+  sobre el respaldo alto de la cabecera cae, por el rayo contra el piso, en
+  una casilla vecina con otro objeto- y comprueba que `_cama_bajo_mouse`
+  igual resuelve la cabecera real (client 2493) y el pie real (client 2494)
+  cada uno en su propia casilla, que un clic lejano no adivina una cama por
+  cercania, y que 1281 ("framework wall") nunca se reconoce como pieza de
+  cama. 5/5 comprobaciones en verde, codigo de salida 0. No registrada todavia
+  en `matriz_qa_local.gd` (ruta de `qa`); ver "Falta".
 
 ## Falta
 
@@ -96,6 +136,22 @@ Construir la experiencia jugable 3D y mostrar solo estado confirmado.
   produccion, que hoy empieza en el menu de criatura y no en la prueba.
 - Ver el menu de party en una ventana real: hasta ahora solo se comprobo
   headless, que no dibuja el popup.
+- Confirmacion visual en Mill Avenue 1 (house 81) con la cuenta 123456 /
+  Guillermo Knight (GUID 4): entrar a la casa, hacer clic sobre cualquiera de
+  las dos mitades de la cama real (server 1760 -> client 2493 en
+  (32393,32176,7); server 1761 -> client 2494 en (32394,32176,7)) y confirmar
+  que el chat ya no repite "You cannot use this object" ni el diagnostico de
+  servidor "[BedDiag] sprite mismatch". Esta sesion no abrio esa conexion en
+  vivo: el servidor sigue autoritativo (no se cambio nada de `servidor/`) y
+  la prueba headless nueva ya prueba la causa raiz del lado del cliente, pero
+  falta el vistazo real con la cuenta.
+- Solicitud a `qa` (ruta suya, `cliente3d/pruebas/matriz_qa_local.gd`):
+  adoptar `prueba_cama_bajo_mouse.gd` en la matriz local, y retomar
+  `prueba_casa_cama_vivo.tscn` contra Mill Avenue 1 / house 81 ahora que la
+  causa raiz del lado cliente esta corregida. El bloqueo que dejo QA
+  (`RETURNVALUE_CANNOTUSETHISOBJECT` en casa 6) puede tener el mismo origen:
+  el cliente enviando el sprite/posicion de una casilla vecina en vez de la
+  cama real.
 
 ## Bloqueos activos
 
@@ -118,6 +174,9 @@ Construir la experiencia jugable 3D y mostrar solo estado confirmado.
 | La calavera y el escudo se dibujan por codigo, no con un sprite importado | Esta rama no tiene `Tibia.pic`, que es donde vive ese icono en el cliente 2D; inventar un PNG parecido seria peor que una forma propia con el color exacto de la tabla | si |
 | La velocidad solo se muestra del personaje propio | El cliente 7.72 no ensena la velocidad ajena en ningun panel; mostrarla del objetivo seria informacion que el juego original no da | si |
 | El texto de cada valor va en tooltip y en ingles | La pantalla es en ingles como Tibia, y el color solo no distingue una invitacion enviada de una recibida | si |
+| La cama se resuelve con rectangulo en pantalla, no con rayo contra el piso | `tiene_alto=true` hace que el rayo pase de largo por el respaldo; es el mismo mecanismo que ya usan las puertas simples, no uno nuevo | si |
+| La busqueda de cama solo mira `EstadoMundo.casillas`, nunca vecinos por cercania | El usuario pidio explicitamente no ocultar el problema con un offset ni con prediccion local; adivinar la casilla mas cercana podia mandar el uso a un objeto que el jugador no eligio | si |
+| Se elimino el parche de "vecindario" que un turno anterior dejo sin terminar en `_usar_en_casilla` | Era una heuristica de cercania (radio 3) sin causa raiz identificada; el fix de rectangulo la vuelve innecesaria y evita que un clic normal reciba un objeto adivinado | si |
 
 ## Notas para quien retome
 
@@ -134,3 +193,27 @@ Construir la experiencia jugable 3D y mostrar solo estado confirmado.
 
 - Corrección pendiente de validación visual: los teletransportes grandes ahora
   fuerzan realineación inmediata del ancla para evitar offsets de interacción.
+
+- Causa raiz del bloqueo de camas reales (esta sesion): NO era un problema de
+  mapeo servidor<->cliente (1760/1761 <-> 2493/2494 ya era correcto) ni de
+  permisos de casa. Era que el clic se resolvia con un rayo contra el piso, y
+  una cama tiene altura (`tiene_alto=true` en `items772.json`). El client id
+  1281 que el servidor rechazaba ("You cannot use this object") es
+  literalmente "framework wall" en el catalogo -un tramo de pared en la
+  casilla vecina, no la cama- lo que probo que el cliente apuntaba a la
+  casilla equivocada, no que el servidor tuviera mal la cama.
+- El fix reutiliza `_hit_puerta_en_pantalla` (rectangulo en pantalla), ya
+  validado para puertas simples. Si algun dia se generaliza a mas objetos con
+  `tiene_alto=true`, esa es la funcion a extender; no crear una nueva.
+- `_es_pieza_de_cama` y `_es_cama_modelo` NO son intercambiables:
+  `_es_cama_modelo` excluye el pie (`IDS_CAMA_PIE`) porque decide que malla 3D
+  autorada usar, y el pie no usa esa malla. `_es_pieza_de_cama` es para
+  resolucion de clic y SI incluye el pie, porque el jugador puede clickear
+  cualquiera de las dos mitades.
+- Continuidad de esta correccion:
+  `Godot_v4.7.2-stable_win64_console.exe --headless --path cliente3d -s res://pruebas/prueba_cama_bajo_mouse.gd`
+  (el ejecutable de Godot 4.7.2 en esta maquina esta en
+  `C:\Users\dell\3DTIBIA\herramientas\godot\`, no en el repo).
+- No se toco `servidor/` en esta correccion; los diagnosticos `[BedDiag]` que
+  ya estaban en `game.cpp` (sucios, sin commitear al abrir este turno) no se
+  modificaron ni se les atribuye autoria de este cierre.

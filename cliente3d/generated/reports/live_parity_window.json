@@ -1,5 +1,1490 @@
 {
-	"mismatches": [],
+	"mismatches": [
+		{
+			"ir_items": [],
+			"kind": "missing_ir",
+			"live_creatures": 0,
+			"live_items": [
+				[
+					870,
+					1
+				]
+			],
+			"position": {
+				"x": 32326,
+				"y": 32226,
+				"z": 7
+			}
+		},
+		{
+			"ir_items": [],
+			"kind": "missing_ir",
+			"live_creatures": 0,
+			"live_items": [
+				[
+					870,
+					1
+				]
+			],
+			"position": {
+				"x": 32326,
+				"y": 32227,
+				"z": 7
+			}
+		},
+		{
+			"ir_items": [],
+			"kind": "missing_ir",
+			"live_creatures": 0,
+			"live_items": [
+				[
+					870,
+					1
+				]
+			],
+			"position": {
+				"x": 32326,
+				"y": 32228,
+				"z": 7
+			}
+		},
+		{
+			"ir_items": [],
+			"kind": "missing_ir",
+			"live_creatures": 0,
+			"live_items": [
+				[
+					870,
+					1
+				],
+				[
+					4658,
+					1
+				]
+			],
+			"position": {
+				"x": 32326,
+				"y": 32229,
+				"z": 7
+			}
+		},
+		{
+			"ir_items": [],
+			"kind": "missing_ir",
+			"live_creatures": 0,
+			"live_items": [
+				[
+					103,
+					1
+				],
+				[
+					4533,
+					1
+				]
+			],
+			"position": {
+				"x": 32326,
+				"y": 32230,
+				"z": 7
+			}
+		},
+		{
+			"ir_items": [],
+			"kind": "missing_ir",
+			"live_creatures": 0,
+			"live_items": [
+				[
+					4528,
+					1
+				],
+				[
+					3681,
+					1
+				]
+			],
+			"position": {
+				"x": 32326,
+				"y": 32231,
+				"z": 7
+			}
+		},
+		{
+			"ir_items": [],
+			"kind": "missing_ir",
+			"live_creatures": 0,
+			"live_items": [
+				[
+					4515,
+					1
+				]
+			],
+			"position": {
+				"x": 32326,
+				"y": 32232,
+				"z": 7
+			}
+		},
+		{
+			"ir_items": [],
+			"kind": "missing_ir",
+			"live_creatures": 0,
+			"live_items": [
+				[
+					4518,
+					1
+				]
+			],
+			"position": {
+				"x": 32326,
+				"y": 32233,
+				"z": 7
+			}
+		},
+		{
+			"ir_items": [],
+			"kind": "missing_ir",
+			"live_creatures": 0,
+			"live_items": [
+				[
+					4517,
+					1
+				]
+			],
+			"position": {
+				"x": 32326,
+				"y": 32234,
+				"z": 7
+			}
+		},
+		{
+			"ir_items": [],
+			"kind": "missing_ir",
+			"live_creatures": 0,
+			"live_items": [
+				[
+					870,
+					1
+				]
+			],
+			"position": {
+				"x": 32327,
+				"y": 32226,
+				"z": 7
+			}
+		},
+		{
+			"ir_items": [],
+			"kind": "missing_ir",
+			"live_creatures": 0,
+			"live_items": [
+				[
+					870,
+					1
+				]
+			],
+			"position": {
+				"x": 32327,
+				"y": 32227,
+				"z": 7
+			}
+		},
+		{
+			"ir_items": [],
+			"kind": "missing_ir",
+			"live_creatures": 0,
+			"live_items": [
+				[
+					870,
+					1
+				]
+			],
+			"position": {
+				"x": 32327,
+				"y": 32228,
+				"z": 7
+			}
+		},
+		{
+			"ir_items": [],
+			"kind": "missing_ir",
+			"live_creatures": 0,
+			"live_items": [
+				[
+					870,
+					1
+				],
+				[
+					4658,
+					1
+				]
+			],
+			"position": {
+				"x": 32327,
+				"y": 32229,
+				"z": 7
+			}
+		},
+		{
+			"ir_items": [],
+			"kind": "missing_ir",
+			"live_creatures": 0,
+			"live_items": [
+				[
+					103,
+					1
+				],
+				[
+					4533,
+					1
+				]
+			],
+			"position": {
+				"x": 32327,
+				"y": 32230,
+				"z": 7
+			}
+		},
+		{
+			"ir_items": [],
+			"kind": "missing_ir",
+			"live_creatures": 0,
+			"live_items": [
+				[
+					4515,
+					1
+				],
+				[
+					3681,
+					1
+				]
+			],
+			"position": {
+				"x": 32327,
+				"y": 32231,
+				"z": 7
+			}
+		},
+		{
+			"ir_items": [],
+			"kind": "missing_ir",
+			"live_creatures": 0,
+			"live_items": [
+				[
+					4526,
+					1
+				]
+			],
+			"position": {
+				"x": 32327,
+				"y": 32232,
+				"z": 7
+			}
+		},
+		{
+			"ir_items": [],
+			"kind": "missing_ir",
+			"live_creatures": 0,
+			"live_items": [
+				[
+					4515,
+					1
+				]
+			],
+			"position": {
+				"x": 32327,
+				"y": 32233,
+				"z": 7
+			}
+		},
+		{
+			"ir_items": [],
+			"kind": "missing_ir",
+			"live_creatures": 0,
+			"live_items": [
+				[
+					4515,
+					1
+				],
+				[
+					3657,
+					1
+				]
+			],
+			"position": {
+				"x": 32327,
+				"y": 32234,
+				"z": 7
+			}
+		},
+		{
+			"ir_items": [],
+			"kind": "missing_ir",
+			"live_creatures": 0,
+			"live_items": [
+				[
+					870,
+					1
+				]
+			],
+			"position": {
+				"x": 32328,
+				"y": 32226,
+				"z": 7
+			}
+		},
+		{
+			"ir_items": [],
+			"kind": "missing_ir",
+			"live_creatures": 0,
+			"live_items": [
+				[
+					870,
+					1
+				]
+			],
+			"position": {
+				"x": 32328,
+				"y": 32227,
+				"z": 7
+			}
+		},
+		{
+			"ir_items": [],
+			"kind": "missing_ir",
+			"live_creatures": 0,
+			"live_items": [
+				[
+					870,
+					1
+				],
+				[
+					4663,
+					1
+				]
+			],
+			"position": {
+				"x": 32328,
+				"y": 32228,
+				"z": 7
+			}
+		},
+		{
+			"ir_items": [],
+			"kind": "missing_ir",
+			"live_creatures": 0,
+			"live_items": [
+				[
+					870,
+					1
+				],
+				[
+					4667,
+					1
+				],
+				[
+					1283,
+					1
+				]
+			],
+			"position": {
+				"x": 32328,
+				"y": 32229,
+				"z": 7
+			}
+		},
+		{
+			"ir_items": [],
+			"kind": "missing_ir",
+			"live_creatures": 0,
+			"live_items": [
+				[
+					103,
+					1
+				],
+				[
+					4533,
+					1
+				],
+				[
+					1281,
+					1
+				]
+			],
+			"position": {
+				"x": 32328,
+				"y": 32230,
+				"z": 7
+			}
+		},
+		{
+			"ir_items": [],
+			"kind": "missing_ir",
+			"live_creatures": 0,
+			"live_items": [
+				[
+					4515,
+					1
+				],
+				[
+					1735,
+					1
+				]
+			],
+			"position": {
+				"x": 32328,
+				"y": 32231,
+				"z": 7
+			}
+		},
+		{
+			"ir_items": [],
+			"kind": "missing_ir",
+			"live_creatures": 0,
+			"live_items": [
+				[
+					4528,
+					1
+				],
+				[
+					1281,
+					1
+				]
+			],
+			"position": {
+				"x": 32328,
+				"y": 32232,
+				"z": 7
+			}
+		},
+		{
+			"ir_items": [],
+			"kind": "missing_ir",
+			"live_creatures": 0,
+			"live_items": [
+				[
+					4516,
+					1
+				],
+				[
+					1281,
+					1
+				]
+			],
+			"position": {
+				"x": 32328,
+				"y": 32233,
+				"z": 7
+			}
+		},
+		{
+			"ir_items": [],
+			"kind": "missing_ir",
+			"live_creatures": 0,
+			"live_items": [
+				[
+					4515,
+					1
+				],
+				[
+					1288,
+					1
+				]
+			],
+			"position": {
+				"x": 32328,
+				"y": 32234,
+				"z": 7
+			}
+		},
+		{
+			"ir_items": [],
+			"kind": "missing_ir",
+			"live_creatures": 0,
+			"live_items": [
+				[
+					870,
+					1
+				]
+			],
+			"position": {
+				"x": 32329,
+				"y": 32226,
+				"z": 7
+			}
+		},
+		{
+			"ir_items": [],
+			"kind": "missing_ir",
+			"live_creatures": 0,
+			"live_items": [
+				[
+					870,
+					1
+				]
+			],
+			"position": {
+				"x": 32329,
+				"y": 32227,
+				"z": 7
+			}
+		},
+		{
+			"ir_items": [],
+			"kind": "missing_ir",
+			"live_creatures": 0,
+			"live_items": [
+				[
+					870,
+					1
+				],
+				[
+					4658,
+					1
+				]
+			],
+			"position": {
+				"x": 32329,
+				"y": 32228,
+				"z": 7
+			}
+		},
+		{
+			"ir_items": [],
+			"kind": "missing_ir",
+			"live_creatures": 0,
+			"live_items": [
+				[
+					103,
+					1
+				],
+				[
+					1282,
+					1
+				]
+			],
+			"position": {
+				"x": 32329,
+				"y": 32229,
+				"z": 7
+			}
+		},
+		{
+			"ir_items": [],
+			"kind": "missing_ir",
+			"live_creatures": 0,
+			"live_items": [
+				[
+					408,
+					1
+				],
+				[
+					2487,
+					1
+				]
+			],
+			"position": {
+				"x": 32329,
+				"y": 32230,
+				"z": 7
+			}
+		},
+		{
+			"ir_items": [],
+			"kind": "missing_ir",
+			"live_creatures": 0,
+			"live_items": [
+				[
+					408,
+					1
+				],
+				[
+					2488,
+					1
+				]
+			],
+			"position": {
+				"x": 32329,
+				"y": 32231,
+				"z": 7
+			}
+		},
+		{
+			"ir_items": [],
+			"kind": "missing_ir",
+			"live_creatures": 0,
+			"live_items": [
+				[
+					408,
+					1
+				]
+			],
+			"position": {
+				"x": 32329,
+				"y": 32232,
+				"z": 7
+			}
+		},
+		{
+			"ir_items": [],
+			"kind": "missing_ir",
+			"live_creatures": 0,
+			"live_items": [
+				[
+					408,
+					1
+				]
+			],
+			"position": {
+				"x": 32329,
+				"y": 32233,
+				"z": 7
+			}
+		},
+		{
+			"ir_items": [],
+			"kind": "missing_ir",
+			"live_creatures": 0,
+			"live_items": [
+				[
+					368,
+					1
+				],
+				[
+					1282,
+					1
+				]
+			],
+			"position": {
+				"x": 32329,
+				"y": 32234,
+				"z": 7
+			}
+		},
+		{
+			"ir_items": [],
+			"kind": "missing_ir",
+			"live_creatures": 0,
+			"live_items": [
+				[
+					870,
+					1
+				],
+				[
+					4657,
+					1
+				]
+			],
+			"position": {
+				"x": 32330,
+				"y": 32226,
+				"z": 7
+			}
+		},
+		{
+			"ir_items": [],
+			"kind": "missing_ir",
+			"live_creatures": 0,
+			"live_items": [
+				[
+					870,
+					1
+				],
+				[
+					4657,
+					1
+				]
+			],
+			"position": {
+				"x": 32330,
+				"y": 32227,
+				"z": 7
+			}
+		},
+		{
+			"ir_items": [],
+			"kind": "missing_ir",
+			"live_creatures": 0,
+			"live_items": [
+				[
+					870,
+					1
+				],
+				[
+					4657,
+					1
+				]
+			],
+			"position": {
+				"x": 32330,
+				"y": 32228,
+				"z": 7
+			}
+		},
+		{
+			"ir_items": [],
+			"kind": "missing_ir",
+			"live_creatures": 0,
+			"live_items": [
+				[
+					103,
+					1
+				],
+				[
+					1734,
+					1
+				]
+			],
+			"position": {
+				"x": 32330,
+				"y": 32229,
+				"z": 7
+			}
+		},
+		{
+			"ir_items": [],
+			"kind": "missing_ir",
+			"live_creatures": 1,
+			"live_items": [
+				[
+					408,
+					1
+				]
+			],
+			"position": {
+				"x": 32330,
+				"y": 32230,
+				"z": 7
+			}
+		},
+		{
+			"ir_items": [],
+			"kind": "missing_ir",
+			"live_creatures": 0,
+			"live_items": [
+				[
+					408,
+					1
+				]
+			],
+			"position": {
+				"x": 32330,
+				"y": 32231,
+				"z": 7
+			}
+		},
+		{
+			"ir_items": [],
+			"kind": "missing_ir",
+			"live_creatures": 0,
+			"live_items": [
+				[
+					408,
+					1
+				]
+			],
+			"position": {
+				"x": 32330,
+				"y": 32232,
+				"z": 7
+			}
+		},
+		{
+			"ir_items": [],
+			"kind": "missing_ir",
+			"live_creatures": 0,
+			"live_items": [
+				[
+					408,
+					1
+				]
+			],
+			"position": {
+				"x": 32330,
+				"y": 32233,
+				"z": 7
+			}
+		},
+		{
+			"ir_items": [],
+			"kind": "missing_ir",
+			"live_creatures": 0,
+			"live_items": [
+				[
+					368,
+					1
+				],
+				[
+					1282,
+					1
+				],
+				[
+					2909,
+					1
+				]
+			],
+			"position": {
+				"x": 32330,
+				"y": 32234,
+				"z": 7
+			}
+		},
+		{
+			"ir_items": [],
+			"kind": "missing_ir",
+			"live_creatures": 0,
+			"live_items": [
+				[
+					103,
+					1
+				]
+			],
+			"position": {
+				"x": 32331,
+				"y": 32226,
+				"z": 7
+			}
+		},
+		{
+			"ir_items": [],
+			"kind": "missing_ir",
+			"live_creatures": 0,
+			"live_items": [
+				[
+					103,
+					1
+				]
+			],
+			"position": {
+				"x": 32331,
+				"y": 32227,
+				"z": 7
+			}
+		},
+		{
+			"ir_items": [],
+			"kind": "missing_ir",
+			"live_creatures": 0,
+			"live_items": [
+				[
+					103,
+					1
+				]
+			],
+			"position": {
+				"x": 32331,
+				"y": 32228,
+				"z": 7
+			}
+		},
+		{
+			"ir_items": [],
+			"kind": "missing_ir",
+			"live_creatures": 0,
+			"live_items": [
+				[
+					103,
+					1
+				],
+				[
+					1282,
+					1
+				],
+				[
+					2909,
+					1
+				]
+			],
+			"position": {
+				"x": 32331,
+				"y": 32229,
+				"z": 7
+			}
+		},
+		{
+			"ir_items": [],
+			"kind": "missing_ir",
+			"live_creatures": 0,
+			"live_items": [
+				[
+					408,
+					1
+				]
+			],
+			"position": {
+				"x": 32331,
+				"y": 32230,
+				"z": 7
+			}
+		},
+		{
+			"ir_items": [],
+			"kind": "missing_ir",
+			"live_creatures": 0,
+			"live_items": [
+				[
+					408,
+					1
+				]
+			],
+			"position": {
+				"x": 32331,
+				"y": 32231,
+				"z": 7
+			}
+		},
+		{
+			"ir_items": [],
+			"kind": "missing_ir",
+			"live_creatures": 0,
+			"live_items": [
+				[
+					408,
+					1
+				]
+			],
+			"position": {
+				"x": 32331,
+				"y": 32232,
+				"z": 7
+			}
+		},
+		{
+			"ir_items": [],
+			"kind": "missing_ir",
+			"live_creatures": 0,
+			"live_items": [
+				[
+					408,
+					1
+				]
+			],
+			"position": {
+				"x": 32331,
+				"y": 32233,
+				"z": 7
+			}
+		},
+		{
+			"ir_items": [],
+			"kind": "missing_ir",
+			"live_creatures": 0,
+			"live_items": [
+				[
+					368,
+					1
+				],
+				[
+					1282,
+					1
+				]
+			],
+			"position": {
+				"x": 32331,
+				"y": 32234,
+				"z": 7
+			}
+		},
+		{
+			"ir_items": [],
+			"kind": "missing_ir",
+			"live_creatures": 0,
+			"live_items": [
+				[
+					103,
+					1
+				]
+			],
+			"position": {
+				"x": 32332,
+				"y": 32226,
+				"z": 7
+			}
+		},
+		{
+			"ir_items": [],
+			"kind": "missing_ir",
+			"live_creatures": 0,
+			"live_items": [
+				[
+					103,
+					1
+				]
+			],
+			"position": {
+				"x": 32332,
+				"y": 32227,
+				"z": 7
+			}
+		},
+		{
+			"ir_items": [],
+			"kind": "missing_ir",
+			"live_creatures": 0,
+			"live_items": [
+				[
+					103,
+					1
+				]
+			],
+			"position": {
+				"x": 32332,
+				"y": 32228,
+				"z": 7
+			}
+		},
+		{
+			"ir_items": [],
+			"kind": "missing_ir",
+			"live_creatures": 0,
+			"live_items": [
+				[
+					103,
+					1
+				],
+				[
+					1290,
+					1
+				]
+			],
+			"position": {
+				"x": 32332,
+				"y": 32229,
+				"z": 7
+			}
+		},
+		{
+			"ir_items": [],
+			"kind": "missing_ir",
+			"live_creatures": 0,
+			"live_items": [
+				[
+					408,
+					1
+				],
+				[
+					1281,
+					1
+				]
+			],
+			"position": {
+				"x": 32332,
+				"y": 32230,
+				"z": 7
+			}
+		},
+		{
+			"ir_items": [],
+			"kind": "missing_ir",
+			"live_creatures": 0,
+			"live_items": [
+				[
+					408,
+					1
+				],
+				[
+					1281,
+					1
+				]
+			],
+			"position": {
+				"x": 32332,
+				"y": 32231,
+				"z": 7
+			}
+		},
+		{
+			"ir_items": [],
+			"kind": "missing_ir",
+			"live_creatures": 0,
+			"live_items": [
+				[
+					408,
+					1
+				],
+				[
+					1638,
+					1
+				]
+			],
+			"position": {
+				"x": 32332,
+				"y": 32232,
+				"z": 7
+			}
+		},
+		{
+			"ir_items": [],
+			"kind": "missing_ir",
+			"live_creatures": 0,
+			"live_items": [
+				[
+					408,
+					1
+				],
+				[
+					1281,
+					1
+				]
+			],
+			"position": {
+				"x": 32332,
+				"y": 32233,
+				"z": 7
+			}
+		},
+		{
+			"ir_items": [],
+			"kind": "missing_ir",
+			"live_creatures": 0,
+			"live_items": [
+				[
+					408,
+					1
+				],
+				[
+					1287,
+					1
+				],
+				[
+					2907,
+					1
+				]
+			],
+			"position": {
+				"x": 32332,
+				"y": 32234,
+				"z": 7
+			}
+		},
+		{
+			"ir_items": [],
+			"kind": "missing_ir",
+			"live_creatures": 0,
+			"live_items": [
+				[
+					103,
+					1
+				]
+			],
+			"position": {
+				"x": 32333,
+				"y": 32226,
+				"z": 7
+			}
+		},
+		{
+			"ir_items": [],
+			"kind": "missing_ir",
+			"live_creatures": 0,
+			"live_items": [
+				[
+					103,
+					1
+				]
+			],
+			"position": {
+				"x": 32333,
+				"y": 32227,
+				"z": 7
+			}
+		},
+		{
+			"ir_items": [],
+			"kind": "missing_ir",
+			"live_creatures": 0,
+			"live_items": [
+				[
+					103,
+					1
+				]
+			],
+			"position": {
+				"x": 32333,
+				"y": 32228,
+				"z": 7
+			}
+		},
+		{
+			"ir_items": [],
+			"kind": "missing_ir",
+			"live_creatures": 0,
+			"live_items": [
+				[
+					103,
+					1
+				],
+				[
+					1734,
+					1
+				]
+			],
+			"position": {
+				"x": 32333,
+				"y": 32229,
+				"z": 7
+			}
+		},
+		{
+			"ir_items": [],
+			"kind": "missing_ir",
+			"live_creatures": 0,
+			"live_items": [
+				[
+					408,
+					1
+				]
+			],
+			"position": {
+				"x": 32333,
+				"y": 32230,
+				"z": 7
+			}
+		},
+		{
+			"ir_items": [],
+			"kind": "missing_ir",
+			"live_creatures": 0,
+			"live_items": [
+				[
+					408,
+					1
+				]
+			],
+			"position": {
+				"x": 32333,
+				"y": 32231,
+				"z": 7
+			}
+		},
+		{
+			"ir_items": [],
+			"kind": "missing_ir",
+			"live_creatures": 0,
+			"live_items": [
+				[
+					408,
+					1
+				]
+			],
+			"position": {
+				"x": 32333,
+				"y": 32232,
+				"z": 7
+			}
+		},
+		{
+			"ir_items": [],
+			"kind": "missing_ir",
+			"live_creatures": 0,
+			"live_items": [
+				[
+					408,
+					1
+				]
+			],
+			"position": {
+				"x": 32333,
+				"y": 32233,
+				"z": 7
+			}
+		},
+		{
+			"ir_items": [],
+			"kind": "missing_ir",
+			"live_creatures": 0,
+			"live_items": [
+				[
+					408,
+					1
+				]
+			],
+			"position": {
+				"x": 32333,
+				"y": 32234,
+				"z": 7
+			}
+		},
+		{
+			"ir_items": [],
+			"kind": "missing_ir",
+			"live_creatures": 0,
+			"live_items": [
+				[
+					870,
+					1
+				],
+				[
+					4659,
+					1
+				]
+			],
+			"position": {
+				"x": 32334,
+				"y": 32226,
+				"z": 7
+			}
+		},
+		{
+			"ir_items": [],
+			"kind": "missing_ir",
+			"live_creatures": 0,
+			"live_items": [
+				[
+					870,
+					1
+				],
+				[
+					4659,
+					1
+				]
+			],
+			"position": {
+				"x": 32334,
+				"y": 32227,
+				"z": 7
+			}
+		},
+		{
+			"ir_items": [],
+			"kind": "missing_ir",
+			"live_creatures": 0,
+			"live_items": [
+				[
+					870,
+					1
+				],
+				[
+					4666,
+					1
+				]
+			],
+			"position": {
+				"x": 32334,
+				"y": 32228,
+				"z": 7
+			}
+		},
+		{
+			"ir_items": [],
+			"kind": "missing_ir",
+			"live_creatures": 0,
+			"live_items": [
+				[
+					103,
+					1
+				],
+				[
+					1284,
+					1
+				]
+			],
+			"position": {
+				"x": 32334,
+				"y": 32229,
+				"z": 7
+			}
+		},
+		{
+			"ir_items": [],
+			"kind": "missing_ir",
+			"live_creatures": 0,
+			"live_items": [
+				[
+					408,
+					1
+				],
+				[
+					1281,
+					1
+				]
+			],
+			"position": {
+				"x": 32334,
+				"y": 32230,
+				"z": 7
+			}
+		},
+		{
+			"ir_items": [],
+			"kind": "missing_ir",
+			"live_creatures": 0,
+			"live_items": [
+				[
+					408,
+					1
+				],
+				[
+					1735,
+					1
+				]
+			],
+			"position": {
+				"x": 32334,
+				"y": 32231,
+				"z": 7
+			}
+		},
+		{
+			"ir_items": [],
+			"kind": "missing_ir",
+			"live_creatures": 0,
+			"live_items": [
+				[
+					408,
+					1
+				],
+				[
+					1281,
+					1
+				]
+			],
+			"position": {
+				"x": 32334,
+				"y": 32232,
+				"z": 7
+			}
+		},
+		{
+			"ir_items": [],
+			"kind": "missing_ir",
+			"live_creatures": 0,
+			"live_items": [
+				[
+					408,
+					1
+				],
+				[
+					1281,
+					1
+				]
+			],
+			"position": {
+				"x": 32334,
+				"y": 32233,
+				"z": 7
+			}
+		},
+		{
+			"ir_items": [],
+			"kind": "missing_ir",
+			"live_creatures": 0,
+			"live_items": [
+				[
+					408,
+					1
+				],
+				[
+					1629,
+					1
+				]
+			],
+			"position": {
+				"x": 32334,
+				"y": 32234,
+				"z": 7
+			}
+		}
+	],
 	"source": {
 		"ir": "res://generated/maps/rookgaard_100sqm.json",
 		"live_protocol": "TVP 7.72 map description 0x64",
@@ -7,15 +1492,15 @@
 	},
 	"summary": {
 		"creatures_ignored": 1,
-		"matches": 81,
-		"mismatches": 0,
+		"matches": 0,
+		"mismatches": 81,
 		"tiles_compared": 81
 	},
 	"version": 1,
 	"window": {
 		"center": {
-			"x": 32097,
-			"y": 32206,
+			"x": 32330,
+			"y": 32230,
 			"z": 7
 		},
 		"radius": 4,

@@ -64,7 +64,8 @@ const ARCHIVO_TEXTURA_CAMA := "res://assets/modelos/bed-texture.png"
 const ARCHIVO_TEXTURA_CAMA_PERSONA := "res://assets/modelos/bed-person-texture.png"
 const ARCHIVO_LAMPARA := "res://assets/modelos/street-lamp.obj"
 const ARCHIVO_TEXTURA_LAMPARA := "res://assets/modelos/street-lamp-texture.png"
-const IDS_CAMA_PIE := [2488, 2494, 2496, 2498]
+const IDS_CAMA_PIE := [2488, 2494]
+const IDS_CAMA_DORMIDA := [2495, 2496, 2497, 2498, 2499, 2500, 2501, 2502]
 ## Las piezas 4633-4644 son las transiciones de orilla que usa el mapa de
 ## Rookgaard. Su franja marron y su agua azul se conservan; las partes
 ## transparentes se rellenan con el mismo pasto 4515 del mapa para que no
@@ -2890,6 +2891,14 @@ func _es_cama_modelo(cid: int) -> bool:
 	return nombre == "bed"
 
 
+func _es_pieza_de_cama(cid: int) -> bool:
+	# A diferencia de `_es_cama_modelo` (que elige la malla 3D autorada y
+	# excluye el pie), esto identifica cualquier mitad de una cama -cabecera o
+	# pie- para la resolucion de clic. Las dos comparten nombre "bed" en el
+	# catalogo de 7.72.
+	return String(_catalogo.info_item(cid).get("nombre", "")).to_lower() == "bed"
+
+
 func _malla_cama_de(dormida: bool) -> ArrayMesh:
 	var clave := "bed-person" if dormida else "bed"
 	if _mallas_cama.has(clave):
@@ -2899,6 +2908,10 @@ func _malla_cama_de(dormida: bool) -> ArrayMesh:
 	if malla != null:
 		_mallas_cama[clave] = malla
 	return malla
+
+
+func _es_cama_dormida(cid: int) -> bool:
+	return cid in IDS_CAMA_DORMIDA
 
 
 func _malla_lampara_de() -> ArrayMesh:
@@ -3040,7 +3053,7 @@ func _volcar_cama_grupo(grupo: Dictionary, malla: ArrayMesh) -> void:
 	var nodo := MultiMeshInstance3D.new()
 	nodo.name = "CamaAuthored_%d" % int(grupo.get("cid", 0))
 	nodo.multimesh = mm
-	nodo.material_override = _material_modelo_cama(false)
+	nodo.material_override = _material_modelo_cama(_es_cama_dormida(int(grupo.get("cid", 0))))
 	var destino: Node3D = _piso_mundo
 	if is_instance_valid(_destino_volcado):
 		destino = _destino_volcado
@@ -3063,7 +3076,7 @@ func _volcar_grupo(clave: String, grupo: Dictionary) -> void:
 	var orientacion: int = grupo.get("orientacion", OrientacionPared.EJE_X)
 	var color_liquido: int = int(grupo.get("color_liquido", 0))
 	if forma == Forma.MUEBLE and _es_cama_modelo(cid):
-		var malla_cama = _malla_cama_de(false)
+		var malla_cama = _malla_cama_de(_es_cama_dormida(cid))
 		if malla_cama != null:
 			_volcar_cama_grupo(grupo, malla_cama)
 			return
@@ -4805,28 +4818,10 @@ func _puerta_bajo_mouse(posicion_mouse: Vector2) -> Dictionary:
 					mejor_profundidad = profundidad
 					elegido = {"posicion": donde,
 						"encontrado": {"cosa": cosa, "stackpos": indice}}
-		else:
-			for indice in range(ids.size() - 1, -1, -1):
-				var cid := int(ids[indice])
-				var info: Dictionary = _catalogo.info_item(cid)
-				if not es_puerta_simple(cid, info):
-					continue
-				var hit := _hit_puerta_en_pantalla(donde, cid, posicion_mouse)
-				if hit.is_empty():
-					continue
-				var distancia := float(hit["distancia"])
-				var profundidad := float(hit["profundidad"])
-				if distancia < mejor_distancia \
-						or (is_equal_approx(distancia, mejor_distancia) \
-						and profundidad < mejor_profundidad):
-					mejor_distancia = distancia
-					mejor_profundidad = profundidad
-					var cosa: Dictionary = info.duplicate()
-					cosa["tipo"] = "item"
-					cosa["cid"] = cid
-					cosa["cantidad"] = 1
-					elegido = {"posicion": donde,
-						"encontrado": {"cosa": cosa, "stackpos": indice}}
+		# No usar puertas del mapa estatico como objetivo interactuable. Tras un
+		# teleport o un rearmado, ese decorado puede conservar coordenadas viejas
+		# y convertir un clic sobre la cama en una puerta fantasma. Las puertas
+		# solo son validas cuando el servidor ya describio la casilla en vivo.
 	return elegido
 
 
@@ -4857,12 +4852,60 @@ func _hit_puerta_en_pantalla(posicion: Vector3i, cid: int,
 		"profundidad": profundidad}
 
 
+func _cama_bajo_mouse(posicion_mouse: Vector2) -> Dictionary:
+	"""Encuentra una mitad de cama por su rectangulo vertical en pantalla.
+
+	Una cama tiene `tiene_alto=true`, igual que una puerta simple: el rayo
+	contra el piso pasa de largo por encima del respaldo y cae en la casilla
+	siguiente, que puede tener cualquier otro objeto. Solo se recorre la
+	ventana viva que ya confirmo el servidor -nunca el mapa estatico ni una
+	casilla vecina adivinada por cercania- porque es la unica fuente que sabe
+	que mitad de la cama esta realmente ahi.
+	"""
+	if _camara == null or _centro_escenario.x < -9000 or not _estado.adentro:
+		return {}
+
+	var elegido := {}
+	var mejor_distancia := INF
+	var mejor_profundidad := INF
+	for donde in _estado.casillas.keys():
+		if not (donde is Vector3i) or not _nivel_visible_para_interaccion(donde.z) \
+				or absi(donde.x - _centro_escenario.x) > RADIO \
+				or absi(donde.y - _centro_escenario.y) > RADIO:
+			continue
+		var cosas: Array = _estado.casillas[donde]
+		for indice in range(cosas.size() - 1, -1, -1):
+			var cosa: Dictionary = cosas[indice]
+			if cosa.get("tipo") != "item":
+				continue
+			var cid := int(cosa.get("cid", 0))
+			if not _es_pieza_de_cama(cid):
+				continue
+			var hit := _hit_puerta_en_pantalla(donde, cid, posicion_mouse)
+			if hit.is_empty():
+				continue
+			var distancia := float(hit["distancia"])
+			var profundidad := float(hit["profundidad"])
+			if distancia < mejor_distancia \
+					or (is_equal_approx(distancia, mejor_distancia) \
+					and profundidad < mejor_profundidad):
+				mejor_distancia = distancia
+				mejor_profundidad = profundidad
+				elegido = {"posicion": donde,
+					"encontrado": {"cosa": cosa, "stackpos": indice}}
+	return elegido
+
+
 func _usar_en_casilla(posicion_mouse: Vector2) -> void:
+	print("[tvp3d] resolver uso mouse=%s centro=%s jugador=%s" % [
+		str(posicion_mouse), str(_centro_escenario), str(_estado.mi_pos)])
+	var cama := _cama_bajo_mouse(posicion_mouse)
 	var puerta := _puerta_bajo_mouse(posicion_mouse)
-	var posicion = puerta.get("posicion", _casilla_bajo_mouse(posicion_mouse))
+	var posicion = cama.get("posicion", puerta.get("posicion",
+		_casilla_bajo_mouse(posicion_mouse)))
 	if posicion == null or posicion.z != _estado.mi_pos.z or _con == null:
 		return
-	var encontrado: Dictionary = puerta.get("encontrado", {})
+	var encontrado: Dictionary = cama.get("encontrado", puerta.get("encontrado", {}))
 	if encontrado.is_empty():
 		encontrado = _item_para_usar_en_casilla(posicion)
 	if encontrado.is_empty():
@@ -4910,20 +4953,23 @@ func _mirar_en_casilla(posicion_mouse: Vector2) -> void:
 					str(criatura.get("nombre", "Creature")),
 					posicion_criatura.x, posicion_criatura.y, posicion_criatura.z])
 			return
+	var cama := _cama_bajo_mouse(posicion_mouse)
 	var puerta := _puerta_bajo_mouse(posicion_mouse)
-	var posicion = puerta.get("posicion",
-		_casilla_visible_bajo_mouse(posicion_mouse))
+	var posicion = cama.get("posicion", puerta.get("posicion",
+		_casilla_visible_bajo_mouse(posicion_mouse)))
 	if posicion == null:
 		return
 	_seleccionar_inspector(posicion)
 	if _con != null and _estado.adentro:
 		# 0x8C usa la casilla y el objeto visible que resuelve el servidor.
-		# Para una puerta simple enviamos tambien su sprite/stackpos, igual que
-		# el uso 0x82, para que el look siga el objeto vertical bajo el cursor.
+		# Para una cama o una puerta simple enviamos tambien su sprite/stackpos,
+		# igual que el uso 0x82, para que el look siga el objeto vertical bajo
+		# el cursor en vez del rayo contra el piso.
 		var client_id := 0
 		var stackpos := 0
-		if not puerta.is_empty():
-			var encontrado: Dictionary = puerta.get("encontrado", {})
+		var vertical: Dictionary = cama if not cama.is_empty() else puerta
+		if not vertical.is_empty():
+			var encontrado: Dictionary = vertical.get("encontrado", {})
 			var cosa: Dictionary = encontrado.get("cosa", {})
 			client_id = int(cosa.get("cid", 0))
 			stackpos = int(encontrado.get("stackpos", 0))

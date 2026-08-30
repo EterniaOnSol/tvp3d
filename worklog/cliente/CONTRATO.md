@@ -1,6 +1,6 @@
 # Contrato: cliente
 
-Version: 1.5.0
+Version: 1.6.0
 Estado: PUBLICADO
 Propietario: cliente
 Depende de: modelo-comun 1.0.0, protocolo-red 1.1.0, assets 1.3.0
@@ -210,6 +210,47 @@ El orden es el inverso al del cliente clasico, que empieza por el objeto. Se
 eligio asi porque el menu de criatura ya existe y el patron de dos pasos ya
 esta en el cliente; es reversible el dia que haya menu de objeto.
 
+### Interaccion con camas reales (casas)
+
+Esta seccion aplica al cliente jugable de la rama TVP 7.72 (`mundo3d.gd`). Una
+cama del catalogo (`items772.json[cid].nombre == "bed"`, cualquiera de sus dos
+mitades) tiene `tiene_alto=true`: su modelo 3D sube desde el piso, igual que
+el marco vertical de una puerta simple. El clic normal para usar u observar
+resuelve la casilla proyectando un rayo contra el plano del piso a la altura
+del jugador; contra un objeto con altura ese rayo puede pasar de largo por
+encima del respaldo y caer en la casilla siguiente, con cualquier otro objeto
+que este ahi. Antes de este contrato eso se traducia en enviar el `spriteId`
+de un objeto distinto (por ejemplo un tramo de pared) en una posicion vecina,
+y el servidor rechazaba con `You cannot use this object` porque, con razon,
+`item->getClientID() != spriteId` en `Game::playerUseItem`.
+
+La correccion reutiliza el mismo mecanismo que ya resuelve puertas simples: un
+test de rectangulo en pantalla contra la altura y el ancho reales del sprite
+(`_hit_puerta_en_pantalla`), en vez de la interseccion con el plano del piso.
+Se aplica con dos reglas fijas:
+
+- La busqueda recorre **exclusivamente** `EstadoMundo.casillas`, la ventana
+  viva que ya confirmo el servidor. Nunca el mapa estatico (`_mapa_visible`)
+  ni el disco, y nunca una casilla vecina elegida por cercania: la unica
+  fuente valida de que mitad de la cama esta en una casilla es el propio
+  servidor, tal como pide `protocolo-red`.
+- La busqueda queda acotada al piso del jugador y al radio de render
+  (`_nivel_visible_para_interaccion`, `RADIO`), igual que las puertas, para no
+  repetir el bug ya corregido de resolver la cama homologa de otro
+  departamento del mismo edificio (Flat 01 contra Flat 11/21).
+
+Si el rectangulo de ninguna cama viva cubre el clic, la resolucion cae al
+camino normal (puerta simple bajo el mouse y, si tampoco hay, la casilla del
+rayo contra el piso). No hay busqueda en vecindario ni offset fijo: si el
+clic no cae sobre el rectangulo real de una cama, no se envia una cama.
+
+El `use` sobre una cama manda el mismo `0x82` que cualquier objeto, con la
+posicion, `spriteId` y `stackpos` que la ventana viva ya confirmo para esa
+mitad exacta. La aceptacion, el rechazo y el efecto (dormir, ocupada, sin
+permiso de la casa) son autoridad exclusiva del servidor; el cliente no
+predice el resultado ni cambia el modelo de la cama hasta que la ventana viva
+lo confirme.
+
 ### Ventana de texto
 
 El servidor la abre con el `0x96` al usar un cartel, una carta o la etiqueta de
@@ -249,3 +290,10 @@ escrito; `Cancel` y `Esc` cierran sin mandar nada.
   permiten los escudos confirmados, y ninguna sobre un monstruo, un NPC o uno
   mismo.
 - Elegir una accion de party envia su opcode y no cambia ningun escudo.
+- Un clic sobre el rectangulo en pantalla de una mitad de cama viva manda el
+  `spriteId` y la posicion exactos de esa mitad, aunque el rayo contra el
+  piso caería en otra casilla.
+- Un clic fuera del rectangulo de cualquier cama viva no envia una cama por
+  cercania: cae al camino normal (puerta, luego rayo contra el piso).
+- La busqueda de cama nunca usa `_mapa_visible` ni el disco, solo
+  `EstadoMundo.casillas`.
