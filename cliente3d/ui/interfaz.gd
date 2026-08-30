@@ -107,8 +107,7 @@ var _chat: RichTextLabel
 var _chat_input: LineEdit
 var _minimapa
 var _skills_box: VBoxContainer
-var _conditions_window
-var _conditions_box: VBoxContainer
+var _conditions_box: HBoxContainer
 var _barra_nivel
 var _barra_magia
 var _barras_habilidad: Dictionary = {}
@@ -192,7 +191,6 @@ func _armar() -> void:
 	_armar_vip()
 	_armar_bestiary()
 	_armar_skills()
-	_armar_conditions()
 	_armar_loot_analyzer()
 	_armar_minimapa()
 	_armar_vitales()
@@ -643,13 +641,30 @@ func _armar_skills() -> void:
 		_barras_habilidad[clave] = barra
 
 
-func _armar_conditions() -> void:
-	var panel = _ventana("Conditions", Control.PRESET_TOP_RIGHT,
-		10, 270, 210, 338)
-	_conditions_window = panel
-	_conditions_box = VBoxContainer.new()
-	_conditions_box.add_theme_constant_override("separation", 2)
-	panel.cuerpo.add_child(_conditions_box)
+## Nombre y color por bit de `iconos_estado` (0x92, condiciones confirmadas
+## por el servidor). Sin Tibia.pic no hay icono real que cargar -mismo caso
+## que la calavera y el escudo de party-, asi que cada condicion es un
+## cuadrado de color con su nombre real en el tooltip, nunca un texto largo
+## metido en la barra.
+const CONDICIONES_COLOR := [
+	[0, "Poison", Color(0.30, 0.62, 0.20)],
+	[1, "Burning", Color(0.80, 0.30, 0.10)],
+	[2, "Energy", Color(0.75, 0.65, 0.15)],
+	[3, "Drunk", Color(0.55, 0.35, 0.65)],
+	[4, "Mana Shield", Color(0.25, 0.45, 0.85)],
+	[5, "Paralyze", Color(0.55, 0.55, 0.55)],
+	[6, "Haste", Color(0.35, 0.75, 0.80)],
+	[7, "Combat", Color(0.75, 0.18, 0.16)],
+]
+
+
+func _armar_conditions(contenedor: Control) -> void:
+	"""Franja de iconos de condiciones, pegada abajo del todo del panel
+	Equipment (referencia Mythera), no una ventana propia."""
+	_conditions_box = HBoxContainer.new()
+	_conditions_box.add_theme_constant_override("separation", 3)
+	_conditions_box.custom_minimum_size.y = 14
+	contenedor.add_child(_conditions_box)
 	_actualizar_conditions()
 
 
@@ -658,24 +673,16 @@ func _actualizar_conditions() -> void:
 		return
 	for hijo in _conditions_box.get_children():
 		hijo.queue_free()
-	var nombres := [
-		[0, "Poison"], [1, "Burning"], [2, "Energy"], [3, "Drunk"],
-		[4, "Mana Shield"], [5, "Paralyze"], [6, "Haste"], [7, "Combat"],
-	]
 	var iconos := int(_estado.iconos_estado)
-	for dato in nombres:
+	for dato in CONDICIONES_COLOR:
 		var bit := int(dato[0])
 		if (iconos & (1 << bit)) == 0:
 			continue
-		var fila := Label.new()
-		fila.text = "● %s" % str(dato[1])
-		fila.tooltip_text = "Server condition icon bit %d" % bit
-		_conditions_box.add_child(fila)
-	if _conditions_box.get_child_count() == 0:
-		var vacio := Label.new()
-		vacio.text = "No active conditions"
-		vacio.modulate = Color(0.65, 0.65, 0.65)
-		_conditions_box.add_child(vacio)
+		var marca := ColorRect.new()
+		marca.custom_minimum_size = Vector2(12, 12)
+		marca.color = dato[2]
+		marca.tooltip_text = str(dato[1])
+		_conditions_box.add_child(marca)
 
 
 const RUTA_ICONOS_COMBATE := "res://assets/ui/combate/"
@@ -685,15 +692,15 @@ const LADO_ICONO_COMBATE := 20
 
 
 func _armar_combate(contenedor: Control) -> void:
-	"""Iconos de modos de combate, integrados en el panel Health como en el
-	cliente clasico (referencia Mythera): NO es una ventana aparte, es una
-	grilla chica pegada abajo de las barras de HP/MP. Manda el `0xA0`
-	completo (fight mode, chase mode, secure mode) en el mismo formato exacto
-	que `ProtocolGame::parseFightModes`, y no espera respuesta: este servidor
-	no contesta nada para este paquete, a diferencia de party o trade.
+	"""Iconos de modos de combate, integrados en el panel Equipment como en
+	el cliente clasico (referencia Mythera): al lado de los slots, NO en una
+	ventana aparte. Manda el `0xA0` completo (fight mode, chase mode, secure
+	mode) en el mismo formato exacto que `ProtocolGame::parseFightModes`, y
+	no espera respuesta: este servidor no contesta nada para este paquete, a
+	diferencia de party o trade.
 	"""
 	var grilla := GridContainer.new()
-	grilla.columns = 3
+	grilla.columns = 2
 	grilla.add_theme_constant_override("h_separation", 3)
 	grilla.add_theme_constant_override("v_separation", 3)
 	grilla.size_flags_horizontal = Control.SIZE_SHRINK_CENTER
@@ -949,6 +956,7 @@ func _armar_equipo() -> void:
 		else:
 			boton.pressed.connect(func(): _anotar(nombre + " is not connected yet."))
 		pie.add_child(boton)
+	_armar_conditions(panel.cuerpo)
 
 
 func _armar_vitales() -> void:
