@@ -5270,13 +5270,11 @@ func _casilla_visible_bajo_mouse(posicion_mouse: Vector2):
 	if _camara == null or _centro_escenario.x < -9000 or not _estado.adentro:
 		return null
 	var niveles: Array[int] = []
-	if _estado.mi_pos.z <= 7:
-		# La planta baja es el destino mas habitual para lanzar desde una cima.
-		niveles.append(7)
-		for nivel in range(6, -1, -1):
-			niveles.append(nivel)
-	else:
-		niveles.append(_estado.mi_pos.z)
+	# La interacción debe permanecer en el piso autoritativo del personaje.
+	# Explorar visualmente pisos superiores es válido para el render, pero usar
+	# su proyección para look/use hacía que una cama de Flat 01 resolviera la
+	# puerta o cama homóloga de Flat 11/21.
+	niveles.append(_estado.mi_pos.z)
 	var elegido = null
 	var mejor_distancia := INF
 	for nivel in niveles:
