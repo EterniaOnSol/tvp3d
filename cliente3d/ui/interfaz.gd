@@ -90,9 +90,9 @@ var _vip_window
 var _vip_box: VBoxContainer
 var _vip_input: LineEdit
 var _combate_window
-var _combate_botones_modo: Dictionary = {}   # 1/2/3 -> Button
-var _combate_boton_perseguir: Button
-var _combate_boton_marcados: Button
+var _combate_botones_modo: Dictionary = {}   # 1/2/3 -> TextureButton
+var _combate_boton_perseguir: TextureButton
+var _combate_boton_marcados: TextureButton
 ## Espejo local de lo ultimo que se mando por 0xA0. El servidor TVP no
 ## contesta nada para este paquete (a diferencia de party o trade), asi que
 ## no hay confirmacion que esperar: el panel solo puede reflejar su propio
@@ -682,6 +682,12 @@ func _actualizar_conditions() -> void:
 		_conditions_box.add_child(vacio)
 
 
+const RUTA_ICONOS_COMBATE := "res://assets/ui/combate/"
+## Cada PNG trae 20x40: el cuadro de arriba es el icono "arriba" (normal) y el
+## de abajo es "hundido" (activo), igual que los botones del cliente clasico.
+const LADO_ICONO_COMBATE := 20
+
+
 func _armar_combate() -> void:
 	"""Panel de modos de combate: ofensivo/equilibrado/defensivo, chase y
 	ataque a jugadores sin marcar. Manda el `0xA0` completo (fight mode,
@@ -693,46 +699,62 @@ func _armar_combate() -> void:
 		10, 340, 200, 432)
 	_combate_window = panel
 	var modos := VBoxContainer.new()
-	modos.add_theme_constant_override("separation", 2)
+	modos.add_theme_constant_override("separation", 4)
 	panel.cuerpo.add_child(modos)
+	var fila_modos := HBoxContainer.new()
+	fila_modos.add_theme_constant_override("separation", 4)
+	fila_modos.alignment = BoxContainer.ALIGNMENT_CENTER
+	modos.add_child(fila_modos)
 	var grupo := ButtonGroup.new()
 	var modo_datos := [
-		[1, "Full Attack", Color(0.62, 0.16, 0.14)],
-		[2, "Balanced", Color(0.58, 0.48, 0.10)],
-		[3, "Full Defense", Color(0.14, 0.42, 0.20)],
+		[1, "fightoffensive", "Full Attack"],
+		[2, "fightbalanced", "Balanced"],
+		[3, "fightdefensive", "Full Defense"],
 	]
 	for datos in modo_datos:
 		var modo: int = datos[0]
-		var boton := _hacer_boton(str(datos[1]))
-		boton.toggle_mode = true
+		var boton := _boton_icono_combate(str(datos[1]), str(datos[2]))
 		boton.button_group = grupo
 		boton.button_pressed = modo == _modo_ataque
-		boton.custom_minimum_size.y = 22
-		boton.add_theme_color_override("font_pressed_color", Color(1, 1, 1))
-		boton.add_theme_stylebox_override("pressed",
-			_estilo_boton_combate(datos[2]))
 		boton.pressed.connect(_al_elegir_modo_ataque.bind(modo))
-		modos.add_child(boton)
+		fila_modos.add_child(boton)
 		_combate_botones_modo[modo] = boton
 	modos.add_child(VENTANA.separador())
-	_combate_boton_perseguir = _hacer_boton("",
-		"Chase opponent: walk after your target. Off: stand your ground.")
-	_combate_boton_perseguir.toggle_mode = true
+	var fila_alternadores := HBoxContainer.new()
+	fila_alternadores.add_theme_constant_override("separation", 4)
+	fila_alternadores.alignment = BoxContainer.ALIGNMENT_CENTER
+	modos.add_child(fila_alternadores)
+	_combate_boton_perseguir = _boton_icono_combate("chasemode",
+		"Chase Opponent / Stand While Fighting")
 	_combate_boton_perseguir.pressed.connect(_al_alternar_perseguir)
-	modos.add_child(_combate_boton_perseguir)
-	_combate_boton_marcados = _hacer_boton("",
-		"Off: only fight back against players who attacked you first.")
-	_combate_boton_marcados.toggle_mode = true
+	fila_alternadores.add_child(_combate_boton_perseguir)
+	_combate_boton_marcados = _boton_icono_combate("safefight",
+		"Secure fighting: only attack players who attacked you first")
 	_combate_boton_marcados.pressed.connect(_al_alternar_marcados)
-	modos.add_child(_combate_boton_marcados)
+	fila_alternadores.add_child(_combate_boton_marcados)
 	_actualizar_botones_combate()
 
 
-func _estilo_boton_combate(color: Color) -> StyleBoxFlat:
-	var estilo := StyleBoxFlat.new()
-	estilo.bg_color = color
-	estilo.set_corner_radius_all(2)
-	return estilo
+func _boton_icono_combate(archivo: String, ayuda: String) -> TextureButton:
+	"""Icono real de 7.72 (`assets/ui/combate/`), no una forma por codigo:
+	a diferencia de la calavera/escudo de party, esta rama SI tiene estos
+	sprites extraidos, asi que no hay razon para inventar un reemplazo."""
+	var lamina: Texture2D = load(RUTA_ICONOS_COMBATE + archivo + ".png")
+	var boton := TextureButton.new()
+	boton.toggle_mode = true
+	boton.focus_mode = Control.FOCUS_NONE
+	boton.mouse_default_cursor_shape = Control.CURSOR_POINTING_HAND
+	boton.tooltip_text = ayuda
+	boton.texture_normal = AtlasTexture.new()
+	boton.texture_normal.atlas = lamina
+	boton.texture_normal.region = Rect2(0, 0,
+		LADO_ICONO_COMBATE, LADO_ICONO_COMBATE)
+	boton.texture_pressed = AtlasTexture.new()
+	boton.texture_pressed.atlas = lamina
+	boton.texture_pressed.region = Rect2(0, LADO_ICONO_COMBATE,
+		LADO_ICONO_COMBATE, LADO_ICONO_COMBATE)
+	boton.custom_minimum_size = Vector2(LADO_ICONO_COMBATE, LADO_ICONO_COMBATE)
+	return boton
 
 
 func _al_elegir_modo_ataque(modo: int) -> void:
@@ -754,19 +776,15 @@ func _al_alternar_marcados() -> void:
 
 
 func _actualizar_botones_combate() -> void:
-	"""Redibuja el estado local: icono y texto de standing/chase son el
-	mismo boton con dos caras, igual que el hand icon de atacar sin marcar."""
+	"""Redibuja el estado local: cada boton es su propio icono de 7.72 con dos
+	cuadros (arriba/abajo), asi que solo hace falta mover button_pressed."""
 	for modo in _combate_botones_modo:
-		var boton: Button = _combate_botones_modo[modo]
+		var boton: TextureButton = _combate_botones_modo[modo]
 		boton.button_pressed = int(modo) == _modo_ataque
 	if is_instance_valid(_combate_boton_perseguir):
 		_combate_boton_perseguir.button_pressed = _modo_perseguir
-		_combate_boton_perseguir.text = "⚔ Chase Opponent" \
-			if _modo_perseguir else "■ Stand While Fighting"
 	if is_instance_valid(_combate_boton_marcados):
 		_combate_boton_marcados.button_pressed = _modo_marcados
-		_combate_boton_marcados.text = "☠ Attack Unmarked Players" \
-			if _modo_marcados else "✓ Marked Players Only"
 
 
 func _enviar_modos_combate() -> void:

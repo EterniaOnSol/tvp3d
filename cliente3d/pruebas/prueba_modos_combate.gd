@@ -107,22 +107,34 @@ func _ready() -> void:
 	interfaz._combate_boton_perseguir.pressed.emit()
 	_comprobar(con.ordenes == [[2, 1, 0]],
 		"activar chase manda perseguir=1 conservando el modo actual (2)")
-	_comprobar(interfaz._combate_boton_perseguir.text.contains("Chase"),
-		"el texto del boton cambia a Chase Opponent")
+	_comprobar(interfaz._combate_boton_perseguir.button_pressed,
+		"el icono de chase queda en su cuadro 'hundido' (activo)")
 
 	con.ordenes.clear()
 	interfaz._combate_boton_marcados.pressed.emit()
 	_comprobar(con.ordenes == [[2, 1, 1]],
 		"activar marcados manda marcados=1 conservando modo y chase")
-	_comprobar(interfaz._combate_boton_marcados.text.contains("Unmarked"),
-		"el texto del boton cambia a Attack Unmarked Players")
+	_comprobar(interfaz._combate_boton_marcados.button_pressed,
+		"el icono de marcados queda en su cuadro 'hundido' (activo)")
 
 	con.ordenes.clear()
 	interfaz._combate_boton_perseguir.pressed.emit()
 	_comprobar(con.ordenes == [[2, 0, 1]],
 		"desactivar chase vuelve a mandar perseguir=0 sin tocar marcados")
-	_comprobar(interfaz._combate_boton_perseguir.text.contains("Stand"),
-		"el texto del boton vuelve a Stand While Fighting")
+	_comprobar(not interfaz._combate_boton_perseguir.button_pressed,
+		"el icono de chase vuelve a su cuadro normal")
+
+	print("Los iconos son los reales de 7.72 (assets/ui/combate), con sus dos cuadros de 20x20:")
+	for modo in [1, 2, 3]:
+		var boton: TextureButton = interfaz._combate_botones_modo[modo]
+		_comprobar(boton.texture_normal != null and boton.texture_pressed != null,
+			"el modo %d tiene cuadro normal y cuadro presionado" % modo)
+	_comprobar(interfaz._combate_boton_perseguir.texture_normal.atlas
+			== load("res://assets/ui/combate/chasemode.png"),
+		"chase usa el PNG real chasemode.png, no una forma por codigo")
+	_comprobar(interfaz._combate_boton_marcados.texture_normal.atlas
+			== load("res://assets/ui/combate/safefight.png"),
+		"marcados usa el PNG real safefight.png, no una forma por codigo")
 
 	if _fallas > 0:
 		printerr("FALLO: %d comprobaciones del panel de combate" % _fallas)
