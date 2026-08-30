@@ -1497,10 +1497,12 @@ func _al_cambiar() -> void:
 	elif (aqui.z != _centro_escenario.z
 			or absi(aqui.x - _centro_escenario.x) >= PASOS_PARA_REARMAR
 			or absi(aqui.y - _centro_escenario.y) >= PASOS_PARA_REARMAR):
-		# La reconstruccion puede quedar trabajando varios frames. Solo
-		# recolocamos al jugador si el escenario entro de verdad; mientras
-		# tanto conserva su interpolacion y no produce un salto de todo el mapa.
-		rearmado = _rearmar_escenario(aqui)
+		# Un salto grande puede venir de /gotohouse o de un comando de god sin
+		# mapa completo. Dejar el ancla vieja durante la reconstruccion hace que
+		# el clic se traduzca a las coordenadas de la ciudad anterior. En un
+		# teletransporte la realineacion debe ser inmediata para que render e
+		# interaccion compartan el mismo origen.
+		rearmado = _rearmar_escenario_teletransportado(aqui)
 	_actualizar_jugador_confirmado(aqui, rearmado)
 	_intentar_ataque_pendiente()
 	_intentar_hablar_npc_pendiente()

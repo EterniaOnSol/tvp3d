@@ -13,6 +13,11 @@ Contrato publicado: SI
 
 ## Le toca
 
+Correccion aplicada: el cliente vuelve al selector al cierre autoritativo del
+socket (incluido dormir en cama) y conserva los mensajes 0xB4 del servidor en
+el historial para que look y rechazos puedan leerse y copiarse. Verificado con
+Godot headless --editor --quit; falta probar visualmente con la cama real.
+
 Construir la experiencia jugable 3D y mostrar solo estado confirmado.
 
 ## Hecho
@@ -126,3 +131,6 @@ Construir la experiencia jugable 3D y mostrar solo estado confirmado.
 - Continuidad:
   `Godot_v4.7.2-stable_win64_console.exe --headless --path cliente3d pruebas/prueba_muerte_reentrada.tscn`
   y `... pruebas/prueba_estado_criatura_ui.tscn`.
+
+- Corrección pendiente de validación visual: los teletransportes grandes ahora
+  fuerzan realineación inmediata del ancla para evitar offsets de interacción.
