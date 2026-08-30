@@ -909,12 +909,15 @@ func _caminar_desde_minimapa(celda: Vector2i) -> void:
 func _armar_equipo() -> void:
 	var panel = _ventana("Equipment", Control.PRESET_TOP_RIGHT,
 		-200, 295, -10, 490)
+	var fila_superior := HBoxContainer.new()
+	fila_superior.add_theme_constant_override("separation", 8)
+	panel.cuerpo.add_child(fila_superior)
 	var grilla := GridContainer.new()
 	grilla.columns = 3
 	grilla.size_flags_horizontal = Control.SIZE_SHRINK_CENTER
 	grilla.add_theme_constant_override("h_separation", 2)
 	grilla.add_theme_constant_override("v_separation", 2)
-	panel.cuerpo.add_child(grilla)
+	fila_superior.add_child(grilla)
 	for fila in DISPOSICION_EQUIPO:
 		for slot in fila:
 			if slot == 0:
@@ -926,6 +929,9 @@ func _armar_equipo() -> void:
 			ranura.tooltip_text = NOMBRES_EQUIPO.get(slot, "Equipment")
 			_slots[slot] = ranura
 			grilla.add_child(ranura)
+	# Los iconos de combate van al lado del equipo, como en el layout clasico
+	# (Mythera), no pegados a las barras de HP/MP.
+	_armar_combate(fila_superior)
 	var pie := HBoxContainer.new()
 	pie.alignment = BoxContainer.ALIGNMENT_BEGIN
 	panel.cuerpo.add_child(pie)
@@ -963,7 +969,6 @@ func _armar_vitales() -> void:
 	pz.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
 	pz.visible = false
 	cuerpo.add_child(pz)
-	_armar_combate(cuerpo)
 
 
 func _armar_battle() -> void:
