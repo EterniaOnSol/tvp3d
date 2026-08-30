@@ -174,12 +174,9 @@ Construir la experiencia jugable 3D y mostrar solo estado confirmado.
   el jugador se duerme, el servidor lo expulsa (mismo orden removido->socket
   cerrado que la muerte) y el cliente vuelve al selector. Confirmado con la
   cuenta 123456 / Guillermo Knight y con GOD VALENTINO.
-- Falta confirmar visualmente el fix de `IDS_CAMA_PIE` (la tercera correccion
-  de esta sesion): el cliente se reinicio para tomarlo pero la sesion paso al
-  siguiente bloque antes de volver a dormir y mirar la cama. Volver a Mill
-  Avenue 1, dormir (o solo entrar, la cama de esa casa ya quedo ocupada por
-  una prueba anterior) y confirmar que se ve una sola figura durmiendo, no
-  dos cruzadas.
+- ATENDIDA en vivo: el fix de `IDS_CAMA_PIE` se confirmo visualmente contra
+  la cama real de Mill Avenue 1 despues de reiniciar el cliente; el usuario
+  confirmo que ya se ve una sola figura durmiendo, no dos cruzadas.
 - Wake-up y persistencia (reconectar con la cama ocupada, ver que se libera o
   se mantiene segun corresponda) no se probaron esta sesion.
 - Solicitud a `qa` (ruta suya, `cliente3d/pruebas/matriz_qa_local.gd`):
