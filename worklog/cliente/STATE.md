@@ -2,7 +2,7 @@
 
 Estado: LISTO_PARA_REVISION
 Ultimo agente: claude
-Ultima actualizacion: 2026-08-30T04:00:00-06:00
+Ultima actualizacion: 2026-08-30T05:00:00-06:00
 Contrato publicado: SI
 
 ## Depende de
@@ -153,9 +153,34 @@ Construir la experiencia jugable 3D y mostrar solo estado confirmado.
   de catalogo no es "bed"), y que el par vacio de Mill Avenue 1 (2493/2494)
   no haya cambiado. 3/3 bloques en verde, codigo de salida 0. Tampoco
   registrada en `matriz_qa_local.gd`.
+- Verificado que "cancelar objetivo" ya estaba resuelto antes de esta sesion:
+  Esc ya manda `0xBE` y ya limpia la ventana Target con el `0xA3` de
+  confirmacion. No hizo falta ningun cambio; el hueco de
+  `docs/qa/PARIDAD_772_2026-08-29.md` en ese punto esta desactualizado (ruta
+  de `qa`, no se toca aca).
+- Contrato 1.7.0: boton "Combat" en Actions abre un panel con los tres modos
+  de ataque, chase y ataque a jugadores sin marcar, mandando el `0xA0` exacto
+  de `parseFightModes`. Sin confirmacion posible (este servidor no contesta
+  nada para ese paquete), asi que el panel solo refleja su propio ultimo
+  envio, arrancando en el default real de `Player`
+  (`ofensivo=1, chase=false, marcados=false`).
+- `pruebas/prueba_modos_combate.tscn`: 14 comprobaciones en verde. Estado
+  inicial, que cada boton manda exactamente `[modo, chase, marcados]` sin
+  tocar los otros dos valores, que el grupo de botones de modo deja
+  presionado solo uno, y que el texto de chase/marcados cambia entre sus dos
+  caras. Tampoco registrada en `matriz_qa_local.gd`.
 
 ## Falta
 
+- Confirmacion visual real del panel de Combat: el cliente no se reinicio
+  todavia con este cambio en la sesion que lo escribio.
+- Pedido explicito del usuario, distinto de "combate basico" y sin dueño
+  todavia: hotkeys configurables (hoy `Hotkeys` en `interfaz.gd` es solo un
+  cartel informativo fijo, no hay UI para remapear teclas).
+- Solicitud a `qa` (ruta suya, `docs/qa/PARIDAD_772_2026-08-29.md`): la fila
+  "Combate basico" listaba "cancel target" como hueco; ya estaba resuelto
+  (ver "Hecho"). Falta certificar en vivo el panel de modos de combate y
+  actualizar esa fila.
 - Integrar la escena propia en el arranque general documentado por
   `integracion`.
 - Ejecutar revision visual cruzada y comprobar input de usuario en una ventana

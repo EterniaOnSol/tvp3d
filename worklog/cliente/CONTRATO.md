@@ -1,6 +1,6 @@
 # Contrato: cliente
 
-Version: 1.6.0
+Version: 1.7.0
 Estado: PUBLICADO
 Propietario: cliente
 Depende de: modelo-comun 1.0.0, protocolo-red 1.1.0, assets 1.3.0
@@ -210,6 +210,32 @@ El orden es el inverso al del cliente clasico, que empieza por el objeto. Se
 eligio asi porque el menu de criatura ya existe y el patron de dos pasos ya
 esta en el cliente; es reversible el dia que haya menu de objeto.
 
+### Panel de modos de combate
+
+Boton "Combat" en la barra de Actions abre un panel con tres modos de ataque
+(Full Attack / Balanced / Full Defense), Chase Opponent y ataque a jugadores
+sin marcar. Manda el `0xA0` exacto con el formato de
+`ProtocolGame::parseFightModes` (`servidor/src/protocolgame.cpp:1049-1064`):
+
+| Byte | 1 | 2 | 3 |
+|---|---|---|---|
+| Fight mode | ofensivo | equilibrado | defensivo |
+| Chase (byte 2) | 0 = standing | 1 = chase | - |
+| Marcados (byte 3) | 0 = solo marcados | 1 = puede atacar sin marcar | - |
+
+Este servidor **no contesta nada** para `0xA0` -a diferencia de party (`0x91`)
+o trade (`0x7E`/`0x7F`)-, asi que el panel no espera ni puede esperar una
+confirmacion: refleja unicamente su propio ultimo envio, igual que hace el
+cliente clasico con este mismo paquete. El estado inicial (`ofensivo=1`,
+`chase=false`, `marcados=false`) copia el default real de `Player` en
+`servidor/src/player.h:1065,1071-1072` (`fightMode=FIGHTMODE_ATTACK`,
+`chaseMode=false`, `secureMode=false`), no un valor inventado.
+
+Cancelar el objetivo actual (Esc) ya estaba resuelto antes de este contrato:
+`enviar_cancelar_accion()` manda `0xBE`
+(`Game::playerCancelAttackAndFollow`), que el servidor confirma con el `0xA3`
+que el cliente ya escuchaba (`objetivo_cancelado`). No se toco ese camino.
+
 ### Interaccion con camas reales (casas)
 
 Esta seccion aplica al cliente jugable de la rama TVP 7.72 (`mundo3d.gd`). Una
@@ -297,3 +323,12 @@ escrito; `Cancel` y `Esc` cierran sin mandar nada.
   cercania: cae al camino normal (puerta, luego rayo contra el piso).
 - La busqueda de cama nunca usa `_mapa_visible` ni el disco, solo
   `EstadoMundo.casillas`.
+- El panel de combate arranca con `ofensivo=1, chase=false, marcados=false`,
+  igual que el default de `Player` en el servidor.
+- Elegir un modo de ataque manda `[modo, chase actual, marcados actual]` sin
+  tocar chase ni marcados; el grupo de botones deja presionado solo el modo
+  elegido.
+- Alternar chase o marcados manda el byte correspondiente conservando el modo
+  de ataque y el otro alternador, y el texto del boton cambia entre sus dos
+  caras (Chase Opponent / Stand While Fighting, Attack Unmarked Players /
+  Marked Players Only).
