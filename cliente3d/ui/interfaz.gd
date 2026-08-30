@@ -641,20 +641,25 @@ func _armar_skills() -> void:
 		_barras_habilidad[clave] = barra
 
 
-## Nombre y color por bit de `iconos_estado` (0x92, condiciones confirmadas
-## por el servidor). Sin Tibia.pic no hay icono real que cargar -mismo caso
-## que la calavera y el escudo de party-, asi que cada condicion es un
-## cuadrado de color con su nombre real en el tooltip, nunca un texto largo
-## metido en la barra.
-const CONDICIONES_COLOR := [
-	[0, "Poison", Color(0.30, 0.62, 0.20)],
-	[1, "Burning", Color(0.80, 0.30, 0.10)],
-	[2, "Energy", Color(0.75, 0.65, 0.15)],
-	[3, "Drunk", Color(0.55, 0.35, 0.65)],
-	[4, "Mana Shield", Color(0.25, 0.45, 0.85)],
-	[5, "Paralyze", Color(0.55, 0.55, 0.55)],
-	[6, "Haste", Color(0.35, 0.75, 0.80)],
-	[7, "Combat", Color(0.75, 0.18, 0.16)],
+const RUTA_ICONOS_CONDICIONES := "res://assets/ui/conditions/player-state-flags.png"
+const LADO_ICONO_CONDICION := 9
+## Nombre y recorte (clip, 1-based, igual que `applyIconWidgetStyle` en
+## `gamelib/player.lua` del cliente OTClient de referencia) por bit de
+## `iconos_estado` (0x92, condiciones confirmadas por el servidor). Los
+## primeros ocho bits del enum moderno `PlayerStates` (`client/const.h`)
+## coinciden 1 a 1 en orden y significado con `Icons_t` de
+## `servidor/src/const.h`: el cliente moderno solo agrego bits nuevos
+## despues del bit 7, no reordeno los clasicos. Por eso el recorte de ese
+## sprite sheet es el icono real correcto, no una aproximacion.
+const CONDICIONES_ICONO := [
+	[0, "Poison", 1],
+	[1, "Burning", 2],
+	[2, "Energy", 3],
+	[3, "Drunk", 4],
+	[4, "Mana Shield", 5],
+	[5, "Paralyze", 6],
+	[6, "Haste", 7],
+	[7, "Combat", 8],
 ]
 
 
@@ -663,7 +668,7 @@ func _armar_conditions(contenedor: Control) -> void:
 	Equipment (referencia Mythera), no una ventana propia."""
 	_conditions_box = HBoxContainer.new()
 	_conditions_box.add_theme_constant_override("separation", 3)
-	_conditions_box.custom_minimum_size.y = 14
+	_conditions_box.custom_minimum_size.y = LADO_ICONO_CONDICION
 	contenedor.add_child(_conditions_box)
 	_actualizar_conditions()
 
@@ -673,14 +678,19 @@ func _actualizar_conditions() -> void:
 		return
 	for hijo in _conditions_box.get_children():
 		hijo.queue_free()
+	var lamina: Texture2D = load(RUTA_ICONOS_CONDICIONES)
 	var iconos := int(_estado.iconos_estado)
-	for dato in CONDICIONES_COLOR:
+	for dato in CONDICIONES_ICONO:
 		var bit := int(dato[0])
 		if (iconos & (1 << bit)) == 0:
 			continue
-		var marca := ColorRect.new()
-		marca.custom_minimum_size = Vector2(12, 12)
-		marca.color = dato[2]
+		var clip: int = dato[2]
+		var marca := TextureRect.new()
+		marca.custom_minimum_size = Vector2(LADO_ICONO_CONDICION, LADO_ICONO_CONDICION)
+		marca.texture = AtlasTexture.new()
+		marca.texture.atlas = lamina
+		marca.texture.region = Rect2((clip - 1) * LADO_ICONO_CONDICION, 0,
+			LADO_ICONO_CONDICION, LADO_ICONO_CONDICION)
 		marca.tooltip_text = str(dato[1])
 		_conditions_box.add_child(marca)
 
