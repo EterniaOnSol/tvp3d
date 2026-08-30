@@ -89,6 +89,17 @@ var _stash_window
 var _vip_window
 var _vip_box: VBoxContainer
 var _vip_input: LineEdit
+var _combate_window
+var _combate_botones_modo: Dictionary = {}   # 1/2/3 -> Button
+var _combate_boton_perseguir: Button
+var _combate_boton_marcados: Button
+## Espejo local de lo ultimo que se mando por 0xA0. El servidor TVP no
+## contesta nada para este paquete (a diferencia de party o trade), asi que
+## no hay confirmacion que esperar: el panel solo puede reflejar su propio
+## ultimo envio, igual que hace el cliente clasico.
+var _modo_ataque := 1        # 1 ofensivo, 2 equilibrado, 3 defensivo
+var _modo_perseguir := false # false = standing, true = chase opponent
+var _modo_marcados := false  # false = solo marcados, true = puede atacar sin marcar
 var _hotkeys_window
 var _spellbook_window
 var _spellbook_box: VBoxContainer
@@ -97,6 +108,8 @@ var _chat: RichTextLabel
 var _chat_input: LineEdit
 var _minimapa
 var _skills_box: VBoxContainer
+var _conditions_window
+var _conditions_box: VBoxContainer
 var _barra_nivel
 var _barra_magia
 var _barras_habilidad: Dictionary = {}
@@ -180,6 +193,8 @@ func _armar() -> void:
 	_armar_vip()
 	_armar_bestiary()
 	_armar_skills()
+	_armar_conditions()
+	_armar_combate()
 	_armar_loot_analyzer()
 	_armar_minimapa()
 	_armar_vitales()
@@ -261,7 +276,7 @@ func _ventana(texto: String, preset: int, left: float, top: float,
 
 
 func _columna_para_titulo(titulo: String) -> VBoxContainer:
-	if titulo in ["Skills", "VIP", "Bestiary Tracker", "Loot Analyzer"]:
+	if titulo in ["Skills", "VIP", "Bestiary Tracker", "Loot Analyzer", "Combat"]:
 		return _dock_izq
 	if titulo == "Battle":
 		# El Battle List tiene su propio dock interno, como en el cliente
@@ -380,7 +395,7 @@ func _armar_acciones() -> void:
 	grilla.add_theme_constant_override("h_separation", 0)
 	grilla.add_theme_constant_override("v_separation", 0)
 	panel.cuerpo.add_child(grilla)
-	for nombre in ["Store", "Skills", "Battle", "Vip", "Stash"]:
+	for nombre in ["Store", "Skills", "Battle", "Vip", "Stash", "Combat"]:
 		var boton := _hacer_boton(nombre, "Open " + nombre)
 		boton.custom_minimum_size.x = 44
 		if nombre == "Battle":
@@ -389,6 +404,8 @@ func _armar_acciones() -> void:
 			boton.pressed.connect(func(): _alternar_ventana(_vip_window))
 		elif nombre == "Stash":
 			boton.pressed.connect(func(): _alternar_ventana(_stash_window))
+		elif nombre == "Combat":
+			boton.pressed.connect(func(): _alternar_ventana(_combate_window))
 		else:
 			boton.pressed.connect(func(): _anotar("%s is not connected yet." % nombre))
 		grilla.add_child(boton)
@@ -628,6 +645,136 @@ func _armar_skills() -> void:
 		barra.name = clave
 		_skills_box.add_child(barra)
 		_barras_habilidad[clave] = barra
+
+
+func _armar_conditions() -> void:
+	var panel = _ventana("Conditions", Control.PRESET_TOP_RIGHT,
+		10, 270, 210, 338)
+	_conditions_window = panel
+	_conditions_box = VBoxContainer.new()
+	_conditions_box.add_theme_constant_override("separation", 2)
+	panel.cuerpo.add_child(_conditions_box)
+	_actualizar_conditions()
+
+
+func _actualizar_conditions() -> void:
+	if _conditions_box == null or _estado == null:
+		return
+	for hijo in _conditions_box.get_children():
+		hijo.queue_free()
+	var nombres := [
+		[0, "Poison"], [1, "Burning"], [2, "Energy"], [3, "Drunk"],
+		[4, "Mana Shield"], [5, "Paralyze"], [6, "Haste"], [7, "Combat"],
+	]
+	var iconos := int(_estado.iconos_estado)
+	for dato in nombres:
+		var bit := int(dato[0])
+		if (iconos & (1 << bit)) == 0:
+			continue
+		var fila := Label.new()
+		fila.text = "● %s" % str(dato[1])
+		fila.tooltip_text = "Server condition icon bit %d" % bit
+		_conditions_box.add_child(fila)
+	if _conditions_box.get_child_count() == 0:
+		var vacio := Label.new()
+		vacio.text = "No active conditions"
+		vacio.modulate = Color(0.65, 0.65, 0.65)
+		_conditions_box.add_child(vacio)
+
+
+func _armar_combate() -> void:
+	"""Panel de modos de combate: ofensivo/equilibrado/defensivo, chase y
+	ataque a jugadores sin marcar. Manda el `0xA0` completo (fight mode,
+	chase mode, secure mode) en el mismo formato exacto que
+	`ProtocolGame::parseFightModes`, y no espera respuesta: este servidor no
+	contesta nada para este paquete, a diferencia de party o trade.
+	"""
+	var panel = _ventana("Combat", Control.PRESET_TOP_LEFT,
+		10, 340, 200, 432)
+	_combate_window = panel
+	var modos := VBoxContainer.new()
+	modos.add_theme_constant_override("separation", 2)
+	panel.cuerpo.add_child(modos)
+	var grupo := ButtonGroup.new()
+	var modo_datos := [
+		[1, "Full Attack", Color(0.62, 0.16, 0.14)],
+		[2, "Balanced", Color(0.58, 0.48, 0.10)],
+		[3, "Full Defense", Color(0.14, 0.42, 0.20)],
+	]
+	for datos in modo_datos:
+		var modo: int = datos[0]
+		var boton := _hacer_boton(str(datos[1]))
+		boton.toggle_mode = true
+		boton.button_group = grupo
+		boton.button_pressed = modo == _modo_ataque
+		boton.custom_minimum_size.y = 22
+		boton.add_theme_color_override("font_pressed_color", Color(1, 1, 1))
+		boton.add_theme_stylebox_override("pressed",
+			_estilo_boton_combate(datos[2]))
+		boton.pressed.connect(_al_elegir_modo_ataque.bind(modo))
+		modos.add_child(boton)
+		_combate_botones_modo[modo] = boton
+	modos.add_child(VENTANA.separador())
+	_combate_boton_perseguir = _hacer_boton("",
+		"Chase opponent: walk after your target. Off: stand your ground.")
+	_combate_boton_perseguir.toggle_mode = true
+	_combate_boton_perseguir.pressed.connect(_al_alternar_perseguir)
+	modos.add_child(_combate_boton_perseguir)
+	_combate_boton_marcados = _hacer_boton("",
+		"Off: only fight back against players who attacked you first.")
+	_combate_boton_marcados.toggle_mode = true
+	_combate_boton_marcados.pressed.connect(_al_alternar_marcados)
+	modos.add_child(_combate_boton_marcados)
+	_actualizar_botones_combate()
+
+
+func _estilo_boton_combate(color: Color) -> StyleBoxFlat:
+	var estilo := StyleBoxFlat.new()
+	estilo.bg_color = color
+	estilo.set_corner_radius_all(2)
+	return estilo
+
+
+func _al_elegir_modo_ataque(modo: int) -> void:
+	_modo_ataque = modo
+	_actualizar_botones_combate()
+	_enviar_modos_combate()
+
+
+func _al_alternar_perseguir() -> void:
+	_modo_perseguir = not _modo_perseguir
+	_actualizar_botones_combate()
+	_enviar_modos_combate()
+
+
+func _al_alternar_marcados() -> void:
+	_modo_marcados = not _modo_marcados
+	_actualizar_botones_combate()
+	_enviar_modos_combate()
+
+
+func _actualizar_botones_combate() -> void:
+	"""Redibuja el estado local: icono y texto de standing/chase son el
+	mismo boton con dos caras, igual que el hand icon de atacar sin marcar."""
+	for modo in _combate_botones_modo:
+		var boton: Button = _combate_botones_modo[modo]
+		boton.button_pressed = int(modo) == _modo_ataque
+	if is_instance_valid(_combate_boton_perseguir):
+		_combate_boton_perseguir.button_pressed = _modo_perseguir
+		_combate_boton_perseguir.text = "⚔ Chase Opponent" \
+			if _modo_perseguir else "■ Stand While Fighting"
+	if is_instance_valid(_combate_boton_marcados):
+		_combate_boton_marcados.button_pressed = _modo_marcados
+		_combate_boton_marcados.text = "☠ Attack Unmarked Players" \
+			if _modo_marcados else "✓ Marked Players Only"
+
+
+func _enviar_modos_combate() -> void:
+	var con = _mundo._con if _mundo != null else null
+	if con == null:
+		return
+	con.enviar_modos_combate(_modo_ataque, 1 if _modo_perseguir else 0,
+		1 if _modo_marcados else 0)
 
 
 func _armar_vip() -> void:
@@ -1121,6 +1268,7 @@ func _refrescar() -> void:
 	if _capacidad_label != null:
 		_capacidad_label.text = "Cap: %d" % capacidad
 	_actualizar_skills(stats)
+	_actualizar_conditions()
 	_actualizar_vitales(vida, vida_max, mana, mana_max)
 	_actualizar_battle()
 	_actualizar_objetivo()
