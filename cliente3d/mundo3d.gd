@@ -64,7 +64,16 @@ const ARCHIVO_TEXTURA_CAMA := "res://assets/modelos/bed-texture.png"
 const ARCHIVO_TEXTURA_CAMA_PERSONA := "res://assets/modelos/bed-person-texture.png"
 const ARCHIVO_LAMPARA := "res://assets/modelos/street-lamp.obj"
 const ARCHIVO_TEXTURA_LAMPARA := "res://assets/modelos/street-lamp-texture.png"
-const IDS_CAMA_PIE := [2488, 2494]
+## "Pie" (que malla NO recibe, sea vacia u ocupada) y "dormida" (que textura
+## usar) son dos preguntas distintas sobre el mismo cid. La cabecera de cada
+## par ocupado (2495, 2497, 2499, 2501) sigue mostrando la malla grande de
+## authored: es la mitad que ya se ve caminando hasta la cama. El pie de cada
+## par ocupado (2496, 2498, 2500, 2502) tiene que seguir excluido igual que su
+## contraparte vacia, o la casilla vecina dibuja una segunda persona dormida
+## superpuesta con la de la cabecera -el bug real visto en Mill Avenue 1 (casa
+## 81): servidor 1765 (client 2498) es el pie ocupado de esa cama y le faltaba
+## esta exclusion.
+const IDS_CAMA_PIE := [2488, 2494, 2496, 2498, 2500, 2502]
 const IDS_CAMA_DORMIDA := [2495, 2496, 2497, 2498, 2499, 2500, 2501, 2502]
 ## Las piezas 4633-4644 son las transiciones de orilla que usa el mapa de
 ## Rookgaard. Su franja marron y su agua azul se conservan; las partes

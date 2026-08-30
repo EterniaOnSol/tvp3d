@@ -2,7 +2,7 @@
 
 Estado: LISTO_PARA_REVISION
 Ultimo agente: claude
-Ultima actualizacion: 2026-08-29T19:20:00-06:00
+Ultima actualizacion: 2026-08-30T04:00:00-06:00
 Contrato publicado: SI
 
 ## Depende de
@@ -29,9 +29,31 @@ recibido no coincidia con lo que habia en esa casilla
 (`Game::playerUseItem`, `item->getClientID() != spriteId`).
 
 Verificado con una prueba headless nueva, no con la cuenta real ni con Docker:
-el fix no toca servidor, asi que no hizo falta reconstruir nada. Falta la
-confirmacion visual con el cliente jugable real contra la cuenta 123456 /
-Guillermo Knight (ver "Notas para quien retome").
+el fix no toca servidor, asi que no hizo falta reconstruir nada. Confirmado en
+vivo despues: la mitad activa de Mill Avenue 1 se pudo usar sin el rechazo.
+
+Tercera correccion de esta sesion, encontrada al probar en vivo dormir de
+verdad (bloqueada hasta ese momento por una guarda de servidor no relacionada
+a este carril; ver `worklog/servidor/STATE.md`): al aceptar la cama, la
+captura del usuario mostro dos figuras durmiendo superpuestas sobre la unica
+cama real. Causa: `IDS_CAMA_PIE` (decide que mitad recibe la malla 3D grande
+authored) y `IDS_CAMA_DORMIDA` (decide que textura usar) son dos preguntas
+independientes sobre el mismo cid, pero un cambio anterior de esta misma
+sesion saco 2496 y 2498 de `IDS_CAMA_PIE` al agregarlos a `IDS_CAMA_DORMIDA`,
+sin darse cuenta de que ambas cosas pueden ser ciertas a la vez para un pie
+ocupado. Confirmado en vivo con `/tileinfo`: servidor 1764 (cabecera ocupada,
+Mill Avenue 1) -> client 2497, servidor 1765 (pie ocupado) -> client 2498;
+los dos calificaban para la malla grande y se dibujaban superpuestos. Se
+restauran 2496/2498 en `IDS_CAMA_PIE` (estaban ahi antes de esta sesion) y se
+agregan 2500/2502, sus equivalentes en la familia "cot", por la misma
+evidencia. `_es_cama_modelo` sigue devolviendo `false` para toda la familia
+"cot" porque su nombre de catalogo es "cot", no "bed": nunca usan la malla 3D
+authored, con o sin este fix.
+
+Verificado headless con una prueba nueva
+(`prueba_cama_pie_ocupada.gd`); **falta la confirmacion visual en el cliente
+jugable real** porque el cliente se reinicio para tomar el cambio pero la
+sesion no llego a probarlo antes de pasar al siguiente bloque.
 
 Construir la experiencia jugable 3D y mostrar solo estado confirmado.
 
@@ -120,6 +142,17 @@ Construir la experiencia jugable 3D y mostrar solo estado confirmado.
   cercania, y que 1281 ("framework wall") nunca se reconoce como pieza de
   cama. 5/5 comprobaciones en verde, codigo de salida 0. No registrada todavia
   en `matriz_qa_local.gd` (ruta de `qa`); ver "Falta".
+- `IDS_CAMA_PIE` vuelve a incluir 2496 y 2498 (restaurados) y suma 2500/2502
+  (equivalentes en la familia "cot", misma evidencia): son los pies ocupados
+  de cada pareja de cama, y deben quedar excluidos de la malla 3D grande
+  igual que sus pares vacios, sin importar que tambien esten en
+  `IDS_CAMA_DORMIDA` para la textura. `IDS_CAMA_DORMIDA` no cambio.
+- `pruebas/prueba_cama_pie_ocupada.gd`: verifica que cada cabecera ocupada
+  ("bed") siga calificando para la malla grande, que cada pie ocupado quede
+  excluido, que los cuatro cids de "cot" ocupado nunca califiquen (su nombre
+  de catalogo no es "bed"), y que el par vacio de Mill Avenue 1 (2493/2494)
+  no haya cambiado. 3/3 bloques en verde, codigo de salida 0. Tampoco
+  registrada en `matriz_qa_local.gd`.
 
 ## Falta
 
@@ -136,22 +169,27 @@ Construir la experiencia jugable 3D y mostrar solo estado confirmado.
   produccion, que hoy empieza en el menu de criatura y no en la prueba.
 - Ver el menu de party en una ventana real: hasta ahora solo se comprobo
   headless, que no dibuja el popup.
-- Confirmacion visual en Mill Avenue 1 (house 81) con la cuenta 123456 /
-  Guillermo Knight (GUID 4): entrar a la casa, hacer clic sobre cualquiera de
-  las dos mitades de la cama real (server 1760 -> client 2493 en
-  (32393,32176,7); server 1761 -> client 2494 en (32394,32176,7)) y confirmar
-  que el chat ya no repite "You cannot use this object" ni el diagnostico de
-  servidor "[BedDiag] sprite mismatch". Esta sesion no abrio esa conexion en
-  vivo: el servidor sigue autoritativo (no se cambio nada de `servidor/`) y
-  la prueba headless nueva ya prueba la causa raiz del lado del cliente, pero
-  falta el vistazo real con la cuenta.
+- ATENDIDA en vivo: la mitad activa de la cama de Mill Avenue 1 (house 81,
+  server 1760/client 2493) usa sin el rechazo "You cannot use this object";
+  el jugador se duerme, el servidor lo expulsa (mismo orden removido->socket
+  cerrado que la muerte) y el cliente vuelve al selector. Confirmado con la
+  cuenta 123456 / Guillermo Knight y con GOD VALENTINO.
+- Falta confirmar visualmente el fix de `IDS_CAMA_PIE` (la tercera correccion
+  de esta sesion): el cliente se reinicio para tomarlo pero la sesion paso al
+  siguiente bloque antes de volver a dormir y mirar la cama. Volver a Mill
+  Avenue 1, dormir (o solo entrar, la cama de esa casa ya quedo ocupada por
+  una prueba anterior) y confirmar que se ve una sola figura durmiendo, no
+  dos cruzadas.
+- Wake-up y persistencia (reconectar con la cama ocupada, ver que se libera o
+  se mantiene segun corresponda) no se probaron esta sesion.
 - Solicitud a `qa` (ruta suya, `cliente3d/pruebas/matriz_qa_local.gd`):
-  adoptar `prueba_cama_bajo_mouse.gd` en la matriz local, y retomar
-  `prueba_casa_cama_vivo.tscn` contra Mill Avenue 1 / house 81 ahora que la
-  causa raiz del lado cliente esta corregida. El bloqueo que dejo QA
-  (`RETURNVALUE_CANNOTUSETHISOBJECT` en casa 6) puede tener el mismo origen:
-  el cliente enviando el sprite/posicion de una casilla vecina en vez de la
-  cama real.
+  adoptar `prueba_cama_bajo_mouse.gd` y `prueba_cama_pie_ocupada.gd` en la
+  matriz local, y retomar `prueba_casa_cama_vivo.tscn` contra Mill Avenue 1 /
+  house 81 y contra la casa 6 (Sunset Homes) ahora que tanto la resolucion de
+  clic del cliente como la guarda de `Game::playerUseItem` en el servidor
+  estan corregidas. El bloqueo que dejo QA en casa 6
+  (`RETURNVALUE_CANNOTUSETHISOBJECT`) coincide exactamente con la guarda de
+  servidor que se corrigio en esta sesion (ver `worklog/servidor/STATE.md`).
 
 ## Bloqueos activos
 
@@ -177,6 +215,7 @@ Construir la experiencia jugable 3D y mostrar solo estado confirmado.
 | La cama se resuelve con rectangulo en pantalla, no con rayo contra el piso | `tiene_alto=true` hace que el rayo pase de largo por el respaldo; es el mismo mecanismo que ya usan las puertas simples, no uno nuevo | si |
 | La busqueda de cama solo mira `EstadoMundo.casillas`, nunca vecinos por cercania | El usuario pidio explicitamente no ocultar el problema con un offset ni con prediccion local; adivinar la casilla mas cercana podia mandar el uso a un objeto que el jugador no eligio | si |
 | Se elimino el parche de "vecindario" que un turno anterior dejo sin terminar en `_usar_en_casilla` | Era una heuristica de cercania (radio 3) sin causa raiz identificada; el fix de rectangulo la vuelve innecesaria y evita que un clic normal reciba un objeto adivinado | si |
+| "Pie de la malla 3D" y "textura dormida" son predicados independientes sobre el mismo cid, aunque compartan casi todos sus valores | Un pie ocupado necesita ser las dos cosas a la vez (dormida=true, modelo=false); fusionarlos en una sola lista fue justo el bug de esta sesion | si |
 
 ## Notas para quien retome
 

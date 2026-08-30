@@ -2,7 +2,7 @@
 
 Estado: LISTO_PARA_REVISION
 Ultimo agente: claude
-Ultima actualizacion: 2026-08-29T17:30:00-06:00
+Ultima actualizacion: 2026-08-29T20:35:00-06:00
 Contrato publicado: SI
 
 ## Depende de
@@ -16,6 +16,36 @@ Contrato publicado: SI
 Construir el servidor Godot headless autoritativo, sus reglas y persistencia.
 
 ## Hecho
+
+- La guarda generica de `Game::playerUseItem` (game.cpp:2568-2573) rechazaba
+  cualquier item de cama con `RETURNVALUE_CANNOTUSETHISOBJECT` antes de
+  llegar a `Actions::internalUseItem`, que es donde vive el manejo real de
+  `BedItem` (actions.cpp:198) y por lo tanto `BedItem::canUse`/`trySleep`/
+  `sleep` en bed.cpp. Una cama no es `isUseable()`, ni contenedor, ni puerta,
+  ni `canReadText`, ni tiene una `Action` registrada, asi que caia siempre en
+  este rechazo silencioso -sin ningun print `[BedDiag]`, porque esta guarda
+  especifica no tenia diagnostico propio. Localizado en vivo: tras corregir
+  la resolucion de clic del lado cliente (contrato cliente 1.6.0), el clic
+  seguia devolviendo "You cannot use this object" sin ningun log de servidor,
+  ni siquiera al desconectar (lo que descarta buffering de stdout, porque los
+  tres prints `[BedDiag]` existentes usan `std::endl`).
+- Se agrega `&& !item->getBed()` a esa guarda, mismo patron que la excepcion
+  ya existente para `canReadText`. Con este cambio la cama alcanza
+  `BedItem::canUse`, que ahora es codigo alcanzable de verdad.
+- Verificado en vivo contra la cuenta 123456: un clic sobre la mitad pasiva
+  de una cama (servidor 1761/1765) produce el rechazo correcto
+  `[BedDiag] mitad no activa item=1765 partnerDir=West` -la logica de
+  `BedItem::canUse`, no la guarda generica-, y un clic sobre la mitad activa
+  (servidor 1760, Mill Avenue 1/house 81) hizo dormir al personaje: el
+  servidor lo removio (`Guillermo Knight was removed from the game`) *antes*
+  de que el socket se cerrara (`client disconnected`), el mismo orden que ya
+  usa el flujo de expulsion documentado para la muerte, y el cliente mostro
+  la cama con alguien durmiendo.
+- Reconstruido con `docker compose build --no-cache server` (dos builds
+  completos por un error de redireccion propio en el primer intento, ambos
+  terminaron en `Image servidor-server Built`) y `docker compose up -d
+  --force-recreate server`. Arranque limpio verificado: `TVP3D Server
+  Online!` sin errores, TCP 7171 respondiendo.
 
 - Los items escribibles y legibles vuelven a poder usarse. La guarda de
   `game.cpp:2556-2560` los rechazaba antes de llegar a
@@ -51,6 +81,13 @@ Construir el servidor Godot headless autoritativo, sus reglas y persistencia.
 - Integrar el cliente 3D propio con este recorrido de autoridad.
 - Ejecutar revision cruzada del carril y decidir una persistencia duradera para
   jugadores cuando exista contrato de identidad/autenticacion.
+- Verificar en vivo el flujo de despertar (wake-up) y persistencia (dormir,
+  cerrar sesion o reconectar, y comprobar que la cama sigue ocupada o vuelve
+  a liberarse segun corresponda). Esta sesion solo confirmo dormir y la
+  expulsion; no se probo `wakeUp` explicitamente.
+- Los diagnosticos `[BedDiag]` (bed.cpp y game.cpp) siguen en el binario; son
+  utiles y no cambian reglas de juego, pero alguien deberia decidir si se
+  retiran cuando el bloque de casas/camas quede completo en QA.
 
 ## Bloqueos activos
 

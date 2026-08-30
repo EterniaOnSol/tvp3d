@@ -2541,6 +2541,8 @@ void Game::playerUseItem(uint32_t playerId, const Position pos, uint8_t stackPos
 
 	Thing* thing = internalGetThing(player, pos, stackPos, spriteId, STACKPOS_USEITEM);
 	if (!thing) {
+		std::cout << "[BedDiag] use sin objeto pos=" << pos.x << "," << pos.y << "," << pos.z
+			<< " stack=" << static_cast<int>(stackPos) << " sprite=" << spriteId << std::endl;
 		player->sendCancelMessage(RETURNVALUE_NOTPOSSIBLE);
 		return;
 	}
@@ -2550,6 +2552,9 @@ void Game::playerUseItem(uint32_t playerId, const Position pos, uint8_t stackPos
 	// their OTB flag is not `useable`. Doors must reach Actions so the existing
 	// key, level, quest and house-access rules remain authoritative.
 	if (!item || item->getClientID() != spriteId) {
+		std::cout << "[BedDiag] sprite mismatch pos=" << pos.x << "," << pos.y << "," << pos.z
+			<< " stack=" << static_cast<int>(stackPos) << " recibido=" << spriteId
+			<< " servidor=" << (item ? item->getClientID() : 0) << std::endl;
 		player->sendCancelMessage(RETURNVALUE_CANNOTUSETHISOBJECT);
 		return;
 	}
@@ -2560,9 +2565,13 @@ void Game::playerUseItem(uint32_t playerId, const Position pos, uint8_t stackPos
 	// behaviour lives in Actions::internalUseItem, which opens the text
 	// window from canReadText. Without this they never reach it and the mail
 	// service cannot work at all.
+	// Beds are the same story: their OTB entry is not marked useable and they
+	// have no registered Action, but Actions::internalUseItem handles them by
+	// dispatching on item->getBed() (actions.cpp:198). Without this exception
+	// every bed use was rejected right here, before BedItem::canUse ever ran.
 	const ItemType& useItemType = Item::items[item->getID()];
 	if (!item->isUseable() && !item->getContainer() && !item->getDoor()
-			&& !useItemType.canReadText && !g_actions->hasAction(item)) {
+			&& !useItemType.canReadText && !item->getBed() && !g_actions->hasAction(item)) {
 		player->sendCancelMessage(RETURNVALUE_CANNOTUSETHISOBJECT);
 		return;
 	}
