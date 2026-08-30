@@ -141,8 +141,14 @@ func _process(_delta: float) -> void:
 	var disponibles := _sock.get_available_bytes()
 	if disponibles > 0:
 		var leido: Array = _sock.get_data(disponibles)
-		if leido[0] == OK:
-			_buf.append_array(leido[1])
+		if leido[0] != OK:
+			# El servidor puede cerrar despues de expulsar al personaje sin
+			# enviar un paquete final. En Godot ese FIN/error aparece en
+			# get_data(), no necesariamente como STATUS_NONE en el mismo poll.
+			_sock = null
+			cerrada.emit()
+			return
+		_buf.append_array(leido[1])
 
 	_desarmar_paquetes()
 
