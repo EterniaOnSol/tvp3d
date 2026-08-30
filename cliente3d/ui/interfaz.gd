@@ -89,7 +89,6 @@ var _stash_window
 var _vip_window
 var _vip_box: VBoxContainer
 var _vip_input: LineEdit
-var _combate_window
 var _combate_botones_modo: Dictionary = {}   # 1/2/3 -> TextureButton
 var _combate_boton_perseguir: TextureButton
 var _combate_boton_marcados: TextureButton
@@ -194,7 +193,6 @@ func _armar() -> void:
 	_armar_bestiary()
 	_armar_skills()
 	_armar_conditions()
-	_armar_combate()
 	_armar_loot_analyzer()
 	_armar_minimapa()
 	_armar_vitales()
@@ -276,7 +274,7 @@ func _ventana(texto: String, preset: int, left: float, top: float,
 
 
 func _columna_para_titulo(titulo: String) -> VBoxContainer:
-	if titulo in ["Skills", "VIP", "Bestiary Tracker", "Loot Analyzer", "Combat"]:
+	if titulo in ["Skills", "VIP", "Bestiary Tracker", "Loot Analyzer"]:
 		return _dock_izq
 	if titulo == "Battle":
 		# El Battle List tiene su propio dock interno, como en el cliente
@@ -395,7 +393,7 @@ func _armar_acciones() -> void:
 	grilla.add_theme_constant_override("h_separation", 0)
 	grilla.add_theme_constant_override("v_separation", 0)
 	panel.cuerpo.add_child(grilla)
-	for nombre in ["Store", "Skills", "Battle", "Vip", "Stash", "Combat"]:
+	for nombre in ["Store", "Skills", "Battle", "Vip", "Stash"]:
 		var boton := _hacer_boton(nombre, "Open " + nombre)
 		boton.custom_minimum_size.x = 44
 		if nombre == "Battle":
@@ -404,8 +402,6 @@ func _armar_acciones() -> void:
 			boton.pressed.connect(func(): _alternar_ventana(_vip_window))
 		elif nombre == "Stash":
 			boton.pressed.connect(func(): _alternar_ventana(_stash_window))
-		elif nombre == "Combat":
-			boton.pressed.connect(func(): _alternar_ventana(_combate_window))
 		else:
 			boton.pressed.connect(func(): _anotar("%s is not connected yet." % nombre))
 		grilla.add_child(boton)
@@ -688,23 +684,20 @@ const RUTA_ICONOS_COMBATE := "res://assets/ui/combate/"
 const LADO_ICONO_COMBATE := 20
 
 
-func _armar_combate() -> void:
-	"""Panel de modos de combate: ofensivo/equilibrado/defensivo, chase y
-	ataque a jugadores sin marcar. Manda el `0xA0` completo (fight mode,
-	chase mode, secure mode) en el mismo formato exacto que
-	`ProtocolGame::parseFightModes`, y no espera respuesta: este servidor no
-	contesta nada para este paquete, a diferencia de party o trade.
+func _armar_combate(contenedor: Control) -> void:
+	"""Iconos de modos de combate, integrados en el panel Health como en el
+	cliente clasico (referencia Mythera): NO es una ventana aparte, es una
+	grilla chica pegada abajo de las barras de HP/MP. Manda el `0xA0`
+	completo (fight mode, chase mode, secure mode) en el mismo formato exacto
+	que `ProtocolGame::parseFightModes`, y no espera respuesta: este servidor
+	no contesta nada para este paquete, a diferencia de party o trade.
 	"""
-	var panel = _ventana("Combat", Control.PRESET_TOP_LEFT,
-		10, 340, 200, 432)
-	_combate_window = panel
-	var modos := VBoxContainer.new()
-	modos.add_theme_constant_override("separation", 4)
-	panel.cuerpo.add_child(modos)
-	var fila_modos := HBoxContainer.new()
-	fila_modos.add_theme_constant_override("separation", 4)
-	fila_modos.alignment = BoxContainer.ALIGNMENT_CENTER
-	modos.add_child(fila_modos)
+	var grilla := GridContainer.new()
+	grilla.columns = 3
+	grilla.add_theme_constant_override("h_separation", 3)
+	grilla.add_theme_constant_override("v_separation", 3)
+	grilla.size_flags_horizontal = Control.SIZE_SHRINK_CENTER
+	contenedor.add_child(grilla)
 	var grupo := ButtonGroup.new()
 	var modo_datos := [
 		[1, "fightoffensive", "Full Attack"],
@@ -717,21 +710,16 @@ func _armar_combate() -> void:
 		boton.button_group = grupo
 		boton.button_pressed = modo == _modo_ataque
 		boton.pressed.connect(_al_elegir_modo_ataque.bind(modo))
-		fila_modos.add_child(boton)
+		grilla.add_child(boton)
 		_combate_botones_modo[modo] = boton
-	modos.add_child(VENTANA.separador())
-	var fila_alternadores := HBoxContainer.new()
-	fila_alternadores.add_theme_constant_override("separation", 4)
-	fila_alternadores.alignment = BoxContainer.ALIGNMENT_CENTER
-	modos.add_child(fila_alternadores)
 	_combate_boton_perseguir = _boton_icono_combate("chasemode",
 		"Chase Opponent / Stand While Fighting")
 	_combate_boton_perseguir.pressed.connect(_al_alternar_perseguir)
-	fila_alternadores.add_child(_combate_boton_perseguir)
+	grilla.add_child(_combate_boton_perseguir)
 	_combate_boton_marcados = _boton_icono_combate("safefight",
 		"Secure fighting: only attack players who attacked you first")
 	_combate_boton_marcados.pressed.connect(_al_alternar_marcados)
-	fila_alternadores.add_child(_combate_boton_marcados)
+	grilla.add_child(_combate_boton_marcados)
 	_actualizar_botones_combate()
 
 
@@ -975,6 +963,7 @@ func _armar_vitales() -> void:
 	pz.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
 	pz.visible = false
 	cuerpo.add_child(pz)
+	_armar_combate(cuerpo)
 
 
 func _armar_battle() -> void:
