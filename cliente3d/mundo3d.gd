@@ -1063,8 +1063,6 @@ func _al_cerrarse() -> void:
 		return
 	if _rechazados:
 		return   # el motivo de verdad ya esta en pantalla
-	if _lista_personajes_recibida:
-		return   # el cierre del login despues de la lista es normal en 7.72
 	if _estado.adentro:
 		# Una expulsión autoritativa (por ejemplo, al dormir en una cama) cierra
 		# el socket sin enviar el flujo normal de logout. No dejamos el mundo
@@ -1080,7 +1078,10 @@ func _al_cerrarse() -> void:
 		_login.visible = true
 		_login.mostrar_estado("Disconnected by server.")
 		_avisar("Disconnected by server.")
-	elif _login != null:
+		return
+	if _lista_personajes_recibida:
+		return   # el cierre del login despues de la lista es normal en 7.72
+	if _login != null:
 		_login.mostrar_error("The server closed the connection before we got in.")
 		_avisar("The server closed the connection before we got in.\nIs it running?")
 	else:
