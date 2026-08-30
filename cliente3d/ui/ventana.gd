@@ -30,7 +30,8 @@ var reordenable := false
 signal pidio_reordenar(pos_global: Vector2)
 
 
-func _init(texto: String = "Window", con_cerrar: bool = false) -> void:
+func _init(texto: String = "Window", con_cerrar: bool = false,
+		redimensionable: bool = true) -> void:
 	custom_minimum_size = Vector2(190, 40)
 	mouse_filter = Control.MOUSE_FILTER_STOP
 	size_flags_horizontal = Control.SIZE_SHRINK_BEGIN
@@ -97,30 +98,31 @@ func _init(texto: String = "Window", con_cerrar: bool = false) -> void:
 	exterior.add_child(_cuerpo_contenedor)
 	cuerpo = _cuerpo_contenedor
 
-	# Todas las ventanas comparten este asa, incluidas las que viven dentro
-	# de los docks. El minimo sigue evitando que el contenido desaparezca,
-	# pero el jugador puede ampliar cada panel a su gusto.
-	var pie := HBoxContainer.new()
-	pie.alignment = BoxContainer.ALIGNMENT_END
-	pie.custom_minimum_size.y = 9
-	pie.mouse_filter = Control.MOUSE_FILTER_IGNORE
-	var asa := Control.new()
-	asa.name = "AsaRedimension"
-	asa.custom_minimum_size = Vector2(13, 9)
-	asa.mouse_filter = Control.MOUSE_FILTER_STOP
-	asa.mouse_default_cursor_shape = Control.CURSOR_FDIAGSIZE
-	asa.gui_input.connect(_al_input_de_asa)
-	# Tres puntos visibles hacen descubrible el resize y no dependen de un
-	# caracter Unicode que puede cambiar segun la fuente o la codificacion.
-	for punto in [Vector2(9, 0), Vector2(6, 3), Vector2(3, 6)]:
-		var marca := ColorRect.new()
-		marca.position = punto
-		marca.size = Vector2(2, 2)
-		marca.color = Color(0.45, 0.50, 0.55, 0.90)
-		marca.mouse_filter = Control.MOUSE_FILTER_IGNORE
-		asa.add_child(marca)
-	pie.add_child(asa)
-	exterior.add_child(pie)
+	# Equipment, Health y Actions no llevan asa: su tamano es fijo. El resto
+	# de las ventanas la conserva, pero solo estira hacia abajo -nunca a los
+	# lados-, asi que el cursor es vertical y no diagonal.
+	if redimensionable:
+		var pie := HBoxContainer.new()
+		pie.alignment = BoxContainer.ALIGNMENT_END
+		pie.custom_minimum_size.y = 9
+		pie.mouse_filter = Control.MOUSE_FILTER_IGNORE
+		var asa := Control.new()
+		asa.name = "AsaRedimension"
+		asa.custom_minimum_size = Vector2(13, 9)
+		asa.mouse_filter = Control.MOUSE_FILTER_STOP
+		asa.mouse_default_cursor_shape = Control.CURSOR_VSIZE
+		asa.gui_input.connect(_al_input_de_asa)
+		# Tres puntos visibles hacen descubrible el resize y no dependen de un
+		# caracter Unicode que puede cambiar segun la fuente o la codificacion.
+		for punto in [Vector2(9, 0), Vector2(6, 3), Vector2(3, 6)]:
+			var marca := ColorRect.new()
+			marca.position = punto
+			marca.size = Vector2(2, 2)
+			marca.color = Color(0.45, 0.50, 0.55, 0.90)
+			marca.mouse_filter = Control.MOUSE_FILTER_IGNORE
+			asa.add_child(marca)
+		pie.add_child(asa)
+		exterior.add_child(pie)
 
 
 func alternar_plegado() -> void:
@@ -158,9 +160,11 @@ func _al_input_de_asa(evento: InputEvent) -> void:
 			_marco.set_border_width_all(1)
 			accept_event()
 	elif evento is InputEventMouseMotion and _redimensionando:
+		# Solo el alto cambia: el ancho de cada ventana es fijo y nunca se
+		# estira a los lados.
 		var delta := get_global_mouse_position() - _mouse_redimension
 		var nuevo := Vector2(
-			clampf(_tamano_redimension.x + delta.x, 190.0, 360.0),
+			_tamano_redimension.x,
 			clampf(_tamano_redimension.y + delta.y, 40.0, 520.0))
 		custom_minimum_size = nuevo
 		size = nuevo

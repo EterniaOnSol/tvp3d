@@ -186,12 +186,8 @@ func _armar() -> void:
 	_zona_suelo = zona_suelo
 	_root.add_child(zona_suelo)
 	_armar_docks()
-	# El orden inicial sigue la referencia Mythera: VIP y Bestiary arriba,
-	# Skills en el centro de la columna y Loot Analyzer abajo.
 	_armar_vip()
-	_armar_bestiary()
 	_armar_skills()
-	_armar_loot_analyzer()
 	_armar_minimapa()
 	_armar_vitales()
 	_armar_acciones()
@@ -250,8 +246,9 @@ func _nueva_columna(ancho: int) -> VBoxContainer:
 
 
 func _ventana(texto: String, preset: int, left: float, top: float,
-		right: float, bottom: float, cerrar: bool = false):
-	var panel = VENTANA.new(texto, cerrar)
+		right: float, bottom: float, cerrar: bool = false,
+		redimensionable: bool = true):
+	var panel = VENTANA.new(texto, cerrar, redimensionable)
 	if _docks_listos and texto not in ["Chat", "Target"]:
 		var destino: VBoxContainer = _columna_para_titulo(texto)
 		panel.custom_minimum_size = Vector2(190,
@@ -272,7 +269,7 @@ func _ventana(texto: String, preset: int, left: float, top: float,
 
 
 func _columna_para_titulo(titulo: String) -> VBoxContainer:
-	if titulo in ["Skills", "VIP", "Bestiary Tracker", "Loot Analyzer"]:
+	if titulo in ["Skills", "VIP"]:
 		return _dock_izq
 	if titulo == "Battle":
 		# El Battle List tiene su propio dock interno, como en el cliente
@@ -350,42 +347,9 @@ func _ajustar_columnas() -> void:
 		columna.custom_minimum_size.x = ancho
 
 
-func _armar_bestiary() -> void:
-	var panel = _ventana("Bestiary Tracker", Control.PRESET_TOP_LEFT,
-		10, 340, 200, 424)
-	var estado := VENTANA.etiqueta("No tracked creatures", 10, VENTANA.TENUE)
-	estado.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
-	panel.cuerpo.add_child(estado)
-	var progreso := VENTANA.etiqueta("Track a creature to see progress", 9,
-		VENTANA.TENUE)
-	progreso.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
-	progreso.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
-	panel.cuerpo.add_child(progreso)
-
-
-func _armar_loot_analyzer() -> void:
-	var panel = _ventana("Loot Analyzer", Control.PRESET_TOP_LEFT,
-		10, 430, 200, 590)
-	var filas := [
-		["Supply", "0"], ["Loot", "0"], ["Loot / hour", "0"],
-		["Profit", "0"], ["Profit / hour", "0"],
-	]
-	for datos in filas:
-		var fila := HBoxContainer.new()
-		var nombre := VENTANA.etiqueta(datos[0], 9, VENTANA.TENUE)
-		nombre.size_flags_horizontal = Control.SIZE_EXPAND_FILL
-		fila.add_child(nombre)
-		var valor := VENTANA.etiqueta(datos[1], 9)
-		valor.horizontal_alignment = HORIZONTAL_ALIGNMENT_RIGHT
-		fila.add_child(valor)
-		panel.cuerpo.add_child(fila)
-	var pie := VENTANA.etiqueta("Session time: 0:00", 9, VENTANA.TENUE)
-	panel.cuerpo.add_child(pie)
-
-
 func _armar_acciones() -> void:
 	var panel = _ventana("Actions", Control.PRESET_TOP_RIGHT,
-		-200, 294, -10, 362)
+		-200, 294, -10, 362, false, false)
 	var grilla := GridContainer.new()
 	grilla.columns = 4
 	grilla.add_theme_constant_override("h_separation", 0)
@@ -925,7 +889,7 @@ func _caminar_desde_minimapa(celda: Vector2i) -> void:
 
 func _armar_equipo() -> void:
 	var panel = _ventana("Equipment", Control.PRESET_TOP_RIGHT,
-		-200, 295, -10, 490)
+		-200, 295, -10, 490, false, false)
 	var fila_superior := HBoxContainer.new()
 	fila_superior.add_theme_constant_override("separation", 8)
 	panel.cuerpo.add_child(fila_superior)
@@ -971,7 +935,7 @@ func _armar_equipo() -> void:
 
 func _armar_vitales() -> void:
 	var panel = _ventana("Health", Control.PRESET_TOP_RIGHT,
-		-200, 237, -10, 294)
+		-200, 237, -10, 294, false, false)
 	_vitales_window = panel
 	var cuerpo := VBoxContainer.new()
 	panel.cuerpo.add_child(cuerpo)
