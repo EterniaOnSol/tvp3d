@@ -42,6 +42,7 @@ extends Node3D
 const CONEXION := preload("res://red/conexion772.gd")
 const ESTADO := preload("res://red/estado_mundo.gd")
 const SPRITES := preload("res://red/sprites772.gd")
+const MONSTRUOS_3D := preload("res://propio/monstruos3d/catalogo.gd")
 const DISCO := preload("res://red/mapa_disco.gd")
 const CATALOGO := preload("res://red/mapa772.gd")
 const IR_TROZOS := preload("res://red/ir_trozos.gd")
@@ -309,6 +310,7 @@ var _animados: Array = []
 var _animaciones_palanca: Array = []
 var _animaciones_criaturas: Array = []
 var _nodos_criaturas := {}
+var _modelos_monstruos := MONSTRUOS_3D.new()
 var _efectos_visuales: Array = []
 var _desconocidos := 0
 var _mapa_visible := {}
@@ -3925,9 +3927,8 @@ func _dibujar_criaturas() -> void:
 		elif c["pos"].z != _estado.mi_pos.z:
 			continue
 		visibles[int(id)] = true
-		# Monsters y NPCs son laminas verticales, como en Doom: se conserva el
-		# recorte real del outfit y el material billboard gira la lamina hacia la
-		# camara. No se modifica ni se genera ningun sprite nuevo.
+		# El ID autoritativo distingue monsters de jugadores y NPCs que puedan
+		# compartir outfit. Las mallas se reutilizan por apariencia y fase.
 		var tipo: int = c["apariencia"]
 		var alto: float = clampf(_sprites.alto_de_outfit(tipo) * LADO * 0.72,
 			LADO * 0.55, ALTO_PISO * 2.4)
@@ -3943,19 +3944,33 @@ func _dibujar_criaturas() -> void:
 			m.set_meta("creature_id", int(id))
 			_piso_bichos.add_child(m)
 			_nodos_criaturas[int(id)] = m
-		var lamina := m.mesh as QuadMesh
-		if lamina == null or lamina.size != Vector2(ancho, alto):
-			lamina = QuadMesh.new()
-			lamina.size = Vector2(ancho, alto)
-			m.mesh = lamina
-		m.material_override = _material_de_criatura(cuadro) \
-			if not cuadro.is_empty() else _material_cubo_criatura(c, cuadro)
-		m.cast_shadow = GeometryInstance3D.SHADOW_CASTING_SETTING_OFF
+		var volumen: ArrayMesh = null
+		if _modelos_monstruos.es_monstruo(int(id), tipo):
+			volumen = _modelos_monstruos.malla(tipo,
+				int(_reloj_animacion * FOTOGRAMAS_POR_SEGUNDO))
+		m.set_meta("volumen_monstruo", volumen != null)
+		if volumen != null:
+			m.mesh = volumen
+			m.material_override = null
+			m.rotation.y = MONSTRUOS_3D.GIROS[posmod(direccion, 4)]
+			m.scale = Vector3.ONE * LADO
+			m.cast_shadow = GeometryInstance3D.SHADOW_CASTING_SETTING_ON
+		else:
+			var lamina := m.mesh as QuadMesh
+			if lamina == null or lamina.size != Vector2(ancho, alto):
+				lamina = QuadMesh.new()
+				lamina.size = Vector2(ancho, alto)
+				m.mesh = lamina
+			m.rotation = Vector3.ZERO
+			m.scale = Vector3.ONE
+			m.material_override = _material_de_criatura(cuadro) \
+				if not cuadro.is_empty() else _material_cubo_criatura(c, cuadro)
+			m.cast_shadow = GeometryInstance3D.SHADOW_CASTING_SETTING_OFF
 		m.set_meta("creature_id", int(id))
 		m.set_meta("server_name", str(c.get("nombre", "Creature")))
 		var p: Vector3i = c["pos"]
 		var posicion_3d := _posicion_visual_de_casilla(p, _centro_escenario)
-		m.position = Vector3(posicion_3d.x, posicion_3d.y + alto * 0.5 + 0.02,
+		m.position = Vector3(posicion_3d.x, posicion_3d.y + (0.0 if volumen != null else alto * 0.5) + 0.02,
 			posicion_3d.z)
 		var fases: int = _sprites.fases_de_outfit(tipo, direccion)
 		if fases > 1:
@@ -4051,6 +4066,12 @@ func _animar_criaturas() -> void:
 			continue
 		var tipo := int(criatura.get("apariencia", 0))
 		var direccion := int(criatura.get("direccion", 2))
+		if bool(nodo.get_meta("volumen_monstruo", false)):
+			var volumen := _modelos_monstruos.malla(tipo, fase)
+			if volumen != null and nodo.mesh != volumen:
+				nodo.mesh = volumen
+			nodo.rotation.y = MONSTRUOS_3D.GIROS[posmod(direccion, 4)]
+			continue
 		var cuadro: Dictionary = _sprites.cuadro_outfit(tipo, direccion, fase)
 		if not cuadro.is_empty():
 			nodo.material_override = _material_de_criatura(cuadro)
@@ -5148,6 +5169,19 @@ func _criatura_bajo_mouse(posicion_mouse: Vector2) -> int:
 		var criatura: Dictionary = _estado.criaturas[id]
 		var posicion: Vector3i = criatura.get("pos", Vector3i(-9999, -9999, -9999))
 		if not _nivel_visible_para_interaccion(posicion.z):
+			continue
+		var nodo: MeshInstance3D = _nodos_criaturas.get(int(id))
+		if is_instance_valid(nodo) and bool(nodo.get_meta("volumen_monstruo", false)):
+			var inversa := nodo.global_transform.affine_inverse()
+			var origen := inversa * _camara.project_ray_origin(posicion_mouse)
+			var rayo := inversa.basis * _camara.project_ray_normal(posicion_mouse)
+			var impacto = nodo.mesh.get_aabb().intersects_ray(origen, rayo)
+			if impacto != null:
+				var centro := _camara.unproject_position(nodo.global_position + Vector3.UP * nodo.mesh.get_aabb().size.y * .5)
+				var distancia_volumen := posicion_mouse.distance_to(centro)
+				if distancia_volumen < mejor_distancia:
+					mejor_distancia = distancia_volumen
+					elegido = int(id)
 			continue
 		var alto := clampf(_sprites.alto_de_outfit(int(criatura.get("apariencia", 0))) * LADO * 0.72,
 			LADO * 0.55, ALTO_PISO * 2.4)

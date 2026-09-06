@@ -1,9 +1,27 @@
 # Contrato: cliente
 
-Version: 1.7.0
+Version: 1.8.0
 Estado: PUBLICADO
 Propietario: cliente
 Depende de: modelo-comun 1.0.0, protocolo-red 1.1.0, assets 1.3.0
+
+## Monstruos con volumen (TVP 7.72)
+
+- El renderer consume cuatro facings y fases del atlas original sin editarlo.
+- Las apariencias 21/56/34/39 tienen modelos anatomicos iniciales,
+  colores muestreados del sprite, orientacion N/E/S/W y tres poses 3D.
+  Las demas 140 apariencias del catalogo quedan pendientes de modelado.
+  Las pruebas de interseccion de siluetas no se habilitan en produccion.
+- Recursos derivados y generador viven en `cliente3d/propio/monstruos3d/`.
+  No cambian formatos de assets ni red; son recursos del renderer.
+- Solo IDs de monstruo (0x40000000..0x7fffffff) usan estas mallas.
+  Jugadores, NPCs y apariencias ausentes conservan su representacion actual.
+- Posicion, piso, apariencia, seleccion y retirada siguen al servidor.
+  La malla no agrega colisiones ni cambia reglas de combate.
+- Se comparten mallas por apariencia/fase; la camara no gira el modelo.
+- La reconstruccion interpreta siluetas; no recupera anatomia oculta exacta.
+- Un visor local permite comparar sprites y volumen sin servidor.
+  Las pruebas del componente viven junto al renderer.
 
 ## Proposito
 

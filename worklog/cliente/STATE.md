@@ -1,8 +1,8 @@
 # Estado: cliente
 
 Estado: LISTO_PARA_REVISION
-Ultimo agente: claude
-Ultima actualizacion: 2026-08-30T05:00:00-06:00
+Ultimo agente: codex
+Ultima actualizacion: 2026-09-06
 Contrato publicado: SI
 
 ## Depende de
@@ -12,6 +12,25 @@ Contrato publicado: SI
 - `assets`: contrato publicado.
 
 ## Le toca
+
+Checkpoint solicitado por usuario el 2026-09-06 antes de agotar tokens.
+Implementado: cuatro prototipos anatomicos (21,56,34,39), cache de mallas,
+renderer y picking integrados, visor interactivo abierto con recarga de mallas.
+Catalogo: 144 outfits, 4 con modelo inicial y 140 pendientes; los experimentos
+25/27/30/35 no cuentan como terminados ni se habilitan en produccion.
+Pruebas: self_test.gd 61/61, test_controles y test_formas_render con 0 fallas,
+editor --headless --quit OK. Capturas graficas revisadas de rat y dragon.
+Falta: aprobacion artistica, refinamiento de forma/textura/poses, validacion
+en partida real y comprobar inclusion de .tvol en futuros exports. No se
+afirma que el sprite completo se proyecte pixel a pixel: se muestrean colores
+de las referencias sobre formas construidas por partes. No se uso Blender.
+Commit/push a origin/main solicitados por el usuario para guardar este avance.
+Los cambios previos ajenos en ranura.gd, players y worklog/qa se conservan.
+
+2026-09-06: monstruos volumetricos con pixeles originales, contrato 1.8.0.
+Dependencias publicadas y ultimo cierre del carril libre. Decision reversible:
+generador y recursos derivados junto al componente del cliente. Se conserva
+la propiedad legacy de mundo3d.gd establecida en contratos cliente 1.1..1.7.
 
 Correccion aplicada: el cliente vuelve al selector al cierre autoritativo del
 socket (incluido dormir en cama) y conserva los mensajes 0xB4 del servidor en

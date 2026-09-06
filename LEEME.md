@@ -6,6 +6,68 @@ hecho en Godot 4.
 
 Empezado el **24 de agosto de 2026**.
 
+## Checkpoint monsters 3D - 6 de septiembre de 2026
+
+**144 apariencias en el catalogo; 4 con modelo 3D inicial; 140 pendientes.**
+Se cuentan IDs de outfit de `cliente3d/assets/monster_names772.json`, no
+nombres individuales: varios bosses comparten una misma apariencia.
+
+| Outfit | Criatura | Avance |
+|---|---|---|
+| 21 | Rat | Modelo anatomico inicial, 3 poses, integrado al renderer |
+| 56 | Cave Rat | Misma familia con sus propios colores originales |
+| 34 | Dragon | Cuerpo, cabeza, patas, alas con membranas y cola, 3 poses |
+| 39 | Dragon Lord | Familia dragon con sus propios colores originales |
+
+**Son prototipos, no arte final aprobado.** El atlas 7.72 no se modifica.
+Los modelos usan colores/patrones muestreados de los sprites, con geometria
+construida por partes; no son una reproduccion pixel a pixel de la imagen 2D.
+Las tres poses de movimiento son poses 3D creadas para estas familias, no un
+rig de huesos recuperado del sprite. Falta refinar proporciones, superficies,
+texturizado y caminata comparandolos visualmente con las referencias.
+
+Se conservaron tambien pruebas automaticas por siluetas de Minotaur (25),
+Wolf (27), Spider (30) y Demon (35). **No cuentan como terminados:** no estan
+habilitadas en el juego ni en el selector del visor. La reconstruccion de
+alas por interseccion generaba volumen excesivo; no usarla como calidad final.
+
+Codigo y recursos: `cliente3d/propio/monstruos3d/`.
+
+- `anatomia.py`: formas de rat/dragon y muestreo de los colores originales.
+- `generar.py`: generador reproducible; requiere Python, numpy, scipy, Pillow.
+- `mallas/`: catalogo y mallas `.tvol` ya generadas; el juego no usa Python.
+- `catalogo.gd`: lectura validada y cache compartida de mallas por fase.
+- `visor.gd`: visor con sprite de referencia, selector, orbitacion, zoom y
+  animacion. Recarga la malla seleccionada cuando cambia el archivo.
+- `self_test.gd`: 61 comprobaciones del componente y su integracion.
+- `cliente3d/mundo3d.gd`: representacion, giro N/E/S/W, animacion y picking
+  volumetrico de los cuatro monsters. Jugadores y NPCs mantienen sus sprites.
+
+Abrir el visor (quedo abierto al guardar este checkpoint):
+
+```powershell
+& 'C:/Users/dell/3DTIBIA/herramientas/godot/Godot_v4.7.2-stable_win64.exe' --path C:/Users/dell/TVP3D/cliente3d --script res://propio/monstruos3d/visor.gd -- --tipo 34
+```
+
+Arrastrar gira la camara; la rueda cambia zoom. Los controles Animation y
+Orbit activan animacion y giro automatico. Para regenerar solo los cuatro:
+
+```powershell
+python cliente3d/propio/monstruos3d/generar.py --ids 21 34 56 39
+```
+
+Verificado: self-test 61/61; controles y formas de render sin fallas; carga
+headless del editor correcta. Rat y dragon se revisaron en capturas con
+renderer real. Falta validar dentro de una sesion de juego real, confirmar
+seleccion con mouse sobre las alas y verificar que un futuro paquete exportado
+incluya los archivos `.tvol` (esta sesion no genero un ejecutable distribuible).
+Las capturas del worklog son intermedias, no una aprobacion artistica final.
+
+Para retomar: revisar primero rat/dragon en el visor con el usuario, mejorar
+fidelidad al sprite y despues extender familias al resto de los 140 outfits.
+Blender MCP no respondia en 127.0.0.1:9876; en este avance se genero la
+geometria por codigo y se visualizo en Godot, sin modificar escenas Blender.
+
 ---
 
 ## Continuidad rápida — leer esto al retomar
@@ -46,6 +108,28 @@ Set-Location C:/Users/dell/TVP3D
 & 'C:/Users/dell/3DTIBIA/herramientas/godot/Godot_v4.7.2-stable_win64.exe' --path cliente3d main.tscn
 ```
 
+### Continuidad Codex + Blender MCP
+
+El MCP oficial de Blender ya esta instalado y verificado para continuar el
+trabajo 3D de TVP3D:
+
+- servidor MCP registrado en Codex con el nombre `blender`;
+- add-on oficial instalado en Blender 5.2;
+- puente local activo en `127.0.0.1:9876`;
+- servidor MCP local: `C:/Users/dell/blender-mcp-official`;
+- entorno Python: `C:/Users/dell/blender-mcp-official/.venv`;
+- script de verificacion: `C:/Users/dell/blender-mcp-setup/verify_connection.py`.
+
+Al reiniciar Codex, abrir Blender 5.2 con el add-on habilitado y mantener
+activo el puente MCP. Si Codex no muestra las herramientas de Blender,
+reiniciar Codex otra vez y comprobar que Blender tenga activado `Allow Online
+Access` en Preferences > System. La verificacion debe mostrar `TOOLS 26`.
+
+Ultimo estado verificado: Blender tenia abierto
+`C:/Users/dell/Desktop/monsters3DISH/refs/outfit_0008/outfit_0008_artist.blend`,
+con el objeto activo `RIG_goblin_hacha`. El archivo estaba guardado pero con
+cambios pendientes (`is_dirty: true`); guardar esos cambios solo despues de
+revisarlos.
 Para revisar el mundo sin servidor:
 
 ```powershell
