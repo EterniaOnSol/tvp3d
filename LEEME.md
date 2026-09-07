@@ -6,7 +6,34 @@ hecho en Godot 4.
 
 Empezado el **24 de agosto de 2026**.
 
-## Checkpoint actual: familia de aranas 3D - 6 de septiembre de 2026
+## Checkpoint actual: lobos 3D - 6 de septiembre de 2026
+
+**12 apariencias con modelo de 144; 132 pendientes.** Se incorporan Wolf (27),
+Winter Wolf (52) y War Wolf (3). Son modelos estilizados, con torso continuo,
+hocico, orejas, cola espesa, patas articuladas y tres poses con apoyo diagonal.
+Wolf tiene lomo oscuro, Winter Wolf pelaje blanco y War Wolf es mas robusto,
+con marcas grises y ojos amarillos. La escala sale de los sprites originales;
+los colores RGB se conservan entre poses sin editar el atlas.
+
+Codigo: `cliente3d/propio/monstruos3d/lobos.py`. El visor y el renderer ya
+incluyen las tres apariencias. La reconstruccion experimental de 27 fue
+reemplazada; solo los experimentos 25/35 siguen deshabilitados.
+
+```powershell
+python cliente3d/propio/monstruos3d/generar.py --ids 27 52 3
+python cliente3d/propio/monstruos3d/self_test_anatomia.py
+& 'C:/Users/dell/3DTIBIA/herramientas/godot/Godot_v4.7.2-stable_win64_console.exe' --headless --path cliente3d --script res://propio/monstruos3d/self_test.gd
+& 'C:/Users/dell/3DTIBIA/herramientas/godot/Godot_v4.7.2-stable_win64.exe' --path cliente3d --script res://propio/monstruos3d/visor.gd -- --tipo 3
+```
+
+Verificado: **190 comprobaciones Godot, 0 fallas; 5 pruebas Python OK**.
+Capturas revisadas `lobo_27.png` (pose 0), `lobo_52.png` (pose 1 de perfil),
+`lobo_3.png` (pose 2), y `lobos_referencia.png`, dentro del componente.
+Pendiente: aprobacion artistica, partida real, rendimiento con grupos y exports.
+Son tres poses discretas, no un rig esqueletico. Los checkpoints siguientes
+son historial; la continuidad actual esta en `worklog/cliente/STATE.md`.
+
+## Checkpoint anterior: familia de aranas 3D - 6 de septiembre de 2026
 
 **9 apariencias con modelo 3D de 144; 135 pendientes.** Se suman Spider (30),
 Poison Spider (36), Giant Spider (38), The Old Widow (208) y Tarantula (219)

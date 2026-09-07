@@ -13,6 +13,26 @@ Contrato publicado: SI
 
 ## Le toca
 
+2026-09-06: Wolf/Winter Wolf/War Wolf integrados, contrato 1.10.0.
+- IDs 27/52/3, cuatro patas con apoyo diagonal, hocico, orejas y cola espesa.
+  Torso continuo para reducir uniones; perfiles gris oscuro, blanco y War Wolf
+  robusto con marcas grises/ojos amarillos. RGB del atlas estables por pose.
+- Doce apariencias modeladas de 144; 132 pendientes. El experimento 27 se
+  reemplaza por anatomia. Solo 25/35 siguen deshabilitados.
+- Verificado: Godot self_test.gd 190/190; self_test_anatomia.py 5/5,
+  incluidos apoyos diagonales, escala relativa y validacion binaria de todos
+  los modelos con paleta fija. Capturas finales de las tres poses revisadas.
+- Cada lobo tiene 12934 triangulos por pose. Misma cache y formato TVPVOL01.
+  No se regeneraron ni editaron los modelos anteriores.
+- Referencias/capturas: lobos_referencia.png, lobo_27.png, lobo_52.png y
+  lobo_3.png dentro del componente. LEEME actualizado; visor con War Wolf.
+- Limites: modelos estilizados y tres poses discretas; pendientes valoracion
+  artistica del usuario, partida real, benchmark de multitud y exportacion.
+- Decision reversible: perfiles en lobos.py y geometria suave compartida.
+- Commit local del lote; push pendiente sin instruccion de publicarlo.
+- Siguiente familia sugerida: Bear/Polar Bear/Panda, previa revision de sprites.
+
+Historial de aranas:
 2026-09-06: familia de aranas integrada, contrato 1.9.0.
 - Nuevos IDs 30/36/38/208/219: Spider, Poison Spider, Giant Spider,
   The Old Widow y Tarantula. Nueve apariencias con modelo y 135 pendientes.

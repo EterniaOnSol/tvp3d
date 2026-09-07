@@ -332,3 +332,7 @@ PALETTE_FRAME = {34: 0, 39: 0}
 from aranas import make_generators, PROFILES as SPIDER_PROFILES
 AUTHORED.update(make_generators(DragonSculpt))
 PALETTE_FRAME.update({oid: 0 for oid in SPIDER_PROFILES})
+
+from lobos import make_generators as make_wolves, PROFILES as WOLF_PROFILES
+AUTHORED.update(make_wolves(DragonSculpt))
+PALETTE_FRAME.update({oid: 0 for oid in WOLF_PROFILES})

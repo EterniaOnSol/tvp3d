@@ -88,12 +88,32 @@ class DragonTests(unittest.TestCase):
     def test_spider_sizes_and_enabled_count(self):
         manifest = json.loads((OUT/'catalogo.json').read_text())['monstruos']
         enabled = {int(k) for k,v in manifest.items() if v.get('anatomia')}
-        self.assertEqual(enabled,{21,56,34,39,30,36,38,208,219})
+        self.assertEqual(enabled,{21,56,34,39,30,36,38,208,219,27,52,3})
         small = np.array(manifest['30']['max'])-manifest['30']['min']
         giant = np.array(manifest['38']['max'])-manifest['38']['min']
         self.assertGreater(giant[0],small[0]*1.4)
         # The Old Widow reuses the same reference appearance as Giant Spider.
         self.assertTrue(np.allclose(manifest['208']['max'],manifest['38']['max']))
+    def test_wolf_diagonal_support_and_relative_size(self):
+        from lobos import leg_joints
+        for step in (0.,1.,-1.):
+            contacts = []
+            for side in (-1,1):
+                for front in (True,False):
+                    joints = leg_joints(side,front,step)
+                    self.assertTrue(np.isfinite(joints).all())
+                    self.assertGreaterEqual(joints[-1,1],.024)
+                    if np.isclose(joints[-1,1],.024):
+                        contacts.append((side,front))
+            self.assertEqual(len(contacts),4 if step==0 else 2)
+            if step:
+                self.assertNotEqual(contacts[0][0],contacts[1][0])
+                self.assertNotEqual(contacts[0][1],contacts[1][1])
+        manifest = json.loads((OUT/'catalogo.json').read_text())['monstruos']
+        normal = np.array(manifest['27']['max'])-manifest['27']['min']
+        war = np.array(manifest['3']['max'])-manifest['3']['min']
+        self.assertGreater(war[0],normal[0])
+        self.assertGreater(war[2],normal[2])
 
 if __name__ == '__main__':
     unittest.main(verbosity=2)

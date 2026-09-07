@@ -1,6 +1,6 @@
 # Contrato: cliente
 
-Version: 1.9.0
+Version: 1.10.0
 Estado: PUBLICADO
 Propietario: cliente
 Depende de: modelo-comun 1.0.0, protocolo-red 1.1.0, assets 1.3.0
@@ -14,7 +14,9 @@ Depende de: modelo-comun 1.0.0, protocolo-red 1.1.0, assets 1.3.0
   38 Giant Spider, 208 The Old Widow y 219 Tarantula, con ocho patas,
   abdomen, cefalotorax y poses segun las fases disponibles en el atlas.
   La paleta original de fase cero se conserva durante la animacion.
-  Nueve apariencias tienen modelo; las otras 135 quedan pendientes.
+  Se incorporan 27 Wolf, 52 Winter Wolf y 3 War Wolf con cuatro patas,
+  hocico, orejas y cola; tres poses y RGB originales estables por variante.
+  Doce apariencias tienen modelo; las otras 132 quedan pendientes.
   Las pruebas de interseccion de siluetas no se habilitan en produccion.
 - Recursos derivados y generador viven en `cliente3d/propio/monstruos3d/`.
   No cambian formatos de assets ni red; son recursos del renderer.
