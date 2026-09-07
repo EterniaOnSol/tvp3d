@@ -1,0 +1,70 @@
+{
+  "version": 1,
+  "unidad": "casilla",
+  "criterio": "Mayor extension X/Z de todas las poses, incluyendo apendices. Objetivos artisticos, no medidas oficiales ni colisiones.",
+  "monstruos": {
+    "3": {
+      "longitud_casillas": 1.7
+    },
+    "16": {
+      "longitud_casillas": 1.65
+    },
+    "21": {
+      "longitud_casillas": 0.48
+    },
+    "26": {
+      "longitud_casillas": 0.8
+    },
+    "27": {
+      "longitud_casillas": 1.12
+    },
+    "28": {
+      "longitud_casillas": 0.78
+    },
+    "30": {
+      "longitud_casillas": 0.55
+    },
+    "34": {
+      "longitud_casillas": 2.65
+    },
+    "36": {
+      "longitud_casillas": 0.65
+    },
+    "38": {
+      "longitud_casillas": 1.85
+    },
+    "39": {
+      "longitud_casillas": 2.85
+    },
+    "42": {
+      "longitud_casillas": 1.85
+    },
+    "52": {
+      "longitud_casillas": 1.12
+    },
+    "56": {
+      "longitud_casillas": 0.52
+    },
+    "79": {
+      "longitud_casillas": 1.75
+    },
+    "81": {
+      "longitud_casillas": 0.95
+    },
+    "82": {
+      "longitud_casillas": 0.65
+    },
+    "83": {
+      "longitud_casillas": 0.85
+    },
+    "123": {
+      "longitud_casillas": 1.45
+    },
+    "208": {
+      "longitud_casillas": 1.85
+    },
+    "219": {
+      "longitud_casillas": 1.35
+    }
+  }
+}

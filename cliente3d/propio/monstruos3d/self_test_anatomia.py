@@ -130,6 +130,7 @@ class DragonTests(unittest.TestCase):
         rgb = np.frombuffer(blob,dtype='u1',count=count*3,offset=16+count*24).reshape(-1,3)
         views = views_for(self.index['outfits']['123'],0,self.sheets)
         scale = max(v['bounds'][2]-v['bounds'][0]+1 for v in views)/32*.90/(1.10+PROFILES[123]['neck'])
+        scale *= entry['escala']['factor']
         shoulder = (xyz[:,2]>.10*scale)&(xyz[:,2]<.19*scale)&(xyz[:,1]>.5*scale)
         rump = (xyz[:,2]<-.1*scale)&(xyz[:,1]>.5*scale)
         self.assertTrue(shoulder.any() and rump.any())
@@ -170,6 +171,39 @@ class DragonTests(unittest.TestCase):
         normal = np.array(entries['83']['max'])-entries['83']['min']
         ancient = np.array(entries['79']['max'])-entries['79']['min']
         self.assertGreater(ancient[2],normal[2])
+
+    def test_all_authored_scales_and_size_hierarchy(self):
+        from generar import SCALES
+        targets = json.loads(SCALES.read_text())['monstruos']
+        entries = json.loads((OUT/'catalogo.json').read_text())['monstruos']
+        enabled = {k:v for k,v in entries.items() if v.get('anatomia')}
+        self.assertEqual(set(targets),set(enabled))
+        spans = {}
+        for oid,entry in enabled.items():
+            bounds = np.array(entry['max'])-entry['min']
+            spans[oid] = max(bounds[0],bounds[2])
+            self.assertAlmostEqual(spans[oid],targets[oid]['longitud_casillas'],places=5)
+            self.assertGreater(entry['escala']['factor'],0)
+        self.assertGreater(spans['79']/spans['83'],2.)
+        self.assertGreater(spans['38']/spans['21'],3.5)
+        self.assertGreater(spans['27']/spans['21'],2.)
+        self.assertGreater(spans['34'],spans['38'])
+        self.assertGreater(spans['42'],spans['16'])
+        self.assertEqual(spans['38'],spans['208'])
+
+    def test_scarab_split_cases_and_real_grooves(self):
+        from reptadores import elytron_point
+        for ancient in (False,True):
+            for theta in np.linspace(.1,np.pi-.1,12):
+                left = elytron_point(-1,theta,0,ancient)
+                right = elytron_point(1,theta,0,ancient)
+                self.assertGreater(right[0]-left[0],.004)
+                self.assertTrue(np.allclose(left[1:],right[1:]))
+            # Ribs change actual height, not only color on a smooth ellipsoid.
+            phi = np.linspace(.15,1.35,100)
+            xyz = np.array([elytron_point(1,np.pi/2,p,ancient) for p in phi])
+            residual = xyz[:,1]-(.142+.127*np.cos(phi))
+            self.assertGreater(np.ptp(residual),.004)
 
 if __name__ == '__main__':
     unittest.main(verbosity=2)

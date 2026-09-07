@@ -13,6 +13,32 @@ Contrato publicado: SI
 
 ## Le toca
 
+2026-09-06: refinamiento Scarab/Ancient Scarab y escala comun completados,
+contrato 1.14.0. Usuario autoriza commit y push cuando se estime oportuno;
+esta autorizacion persiste para proximas tandas, sin pedir confirmacion otra vez.
+- Dos elitros separados con relieve, patas articuladas, espinas y garras;
+  Ancient Scarab con grandes mandibulas aplanadas y dentadas.
+- Regeneradas las 21 apariencias con escalas.json. Un unico factor por modelo
+  y todas sus poses; regla artistica reversible, no modifica colisiones.
+- Comparador con rejilla de una casilla, rueda y arrastre, nombres y medidas.
+  Comparacion predeterminada de seis familias; --grupo 83,79 muestra el par.
+- Tamano horizontal: Rat .48, Scarab .85, Ancient Scarab 1.75, Giant Spider 1.85.
+  Auditoria completa y valores anteriores en ESCALAS.md junto al componente.
+- Verificado: Godot 364/364, Python 10/10; comandos en LEEME.md.
+  Capturas finales revisadas: scarab_refinada.png (pose 1), ancient_refinada.png
+  (pose 0), comparacion_escarabajos.png (pose 2), comparacion_escalas.png.
+- Triangulos/pose: Scarab 22680, Ancient Scarab 24072; tres poses cada uno.
+  Aumenta detalle respecto al lote anterior: benchmark de grupos pendiente.
+- Faltan aprobacion artistica, partida real y exportacion. No son modelos finales.
+- Cierre con commit y push autorizados a origin/main; verificar resultado de Git.
+  Cambios ajenos en ranura.gd, jugadores y worklog/qa quedan fuera del commit.
+
+Apertura conservada:
+2026-09-06: revision Scarab/Ancient Scarab y escalas en curso, contrato 1.14.0.
+Decision reversible: tabla artistica de longitud en casillas, escala uniforme
+y comparador comun. Usuario solicita mejor anatomia y diferencias de porte.
+
+
 2026-09-06: Rotworm/Larva/Scarab/Ancient Scarab integrados, contrato 1.13.0.
 - IDs 26/82/83/79; 21 apariencias modeladas de 144, 123 pendientes.
 - Verificado: Godot 343/343, Python 8/8; comandos en LEEME.md.

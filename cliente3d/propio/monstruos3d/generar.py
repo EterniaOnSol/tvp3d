@@ -18,6 +18,7 @@ from anatomia import AUTHORED, PALETTE_FRAME
 ROOT = Path(__file__).resolve().parents[2]
 ATLAS = ROOT / 'assets' / 'sprites772'
 OUT = Path(__file__).resolve().parent / 'mallas'
+SCALES = Path(__file__).resolve().parent / 'escalas.json'
 ELEVATION = math.radians(55)
 SIN, COS = math.sin(ELEVATION), math.cos(ELEVATION)
 # N/E/S/W: horizontal screen-right and camera-facing world axes (Y is up).
@@ -139,6 +140,7 @@ def main():
     manifest_path = args.output / 'catalogo.json'
     manifest = json.loads(manifest_path.read_text()) if manifest_path.exists() else {'version':1, 'monstruos':{}}
     ids = args.ids or sorted(map(int, catalog))
+    scales = json.loads(SCALES.read_text(encoding='utf-8'))['monstruos']
     failures = []
     for oid in ids:
         if str(oid) not in index['outfits']:
@@ -161,12 +163,23 @@ def main():
             for vertices, _, _ in frames:
                 vertices[:,1] -= bottom
                 vertices *= pixel_scale
+            scale_info = None
+            if oid in AUTHORED:
+                target = float(scales[str(oid)]['longitud_casillas'])
+                if not math.isfinite(target) or target <= 0:
+                    raise ValueError('Invalid authored scale target')
+                positions = np.concatenate([f[0] for f in frames])
+                span = np.ptp(positions,axis=0)[[0,2]].max()
+                factor = target / float(span)
+                for vertices, _, _ in frames:
+                    vertices *= factor
+                scale_info = dict(longitud_casillas=target,factor=factor)
             path = args.output / ('outfit_%04d.tvol' % oid)
             save_mesh(path, frames)
             all_positions = np.concatenate([f[0] for f in frames])
             manifest['monstruos'][str(oid)] = {
                 'nombre': catalog.get(str(oid), str(oid)), 'archivo':path.name,
-                'anatomia': oid in AUTHORED,
+                'anatomia': oid in AUTHORED, 'escala':scale_info,
                 'fases':len(frames), 'vertices':[len(f[0]) for f in frames],
                 'min':all_positions.min(axis=0).tolist(), 'max':all_positions.max(axis=0).tolist(),
                 'sha256':hashlib.sha256(path.read_bytes()).hexdigest(),

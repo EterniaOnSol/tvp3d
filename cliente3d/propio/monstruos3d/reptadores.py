@@ -8,10 +8,10 @@ PROFILES = {
              dark=(22,10,3), accent=(101,13,8), limb=(108,49,12), ivory=(206,177,133)),
     82: dict(shape='larva', phases=3, body=(75,106,57), light=(181,187,112),
              dark=(23,39,20), accent=(115,139,70), limb=(69,48,91), ivory=(194,189,119)),
-    83: dict(shape='scarab', phases=3, body=(60,83,46), light=(124,145,96),
+    83: dict(shape='scarab', phases=3, body=(38,86,33), light=(65,150,57),
              dark=(21,28,21), accent=(49,67,36), limb=(33,41,32), ivory=(111,122,99)),
-    79: dict(shape='ancient', phases=3, body=(73,58,85), light=(140,128,153),
-             dark=(22,25,24), accent=(206,124,24), limb=(44,62,39), ivory=(122,136,130)),
+    79: dict(shape='ancient', phases=3, body=(84,82,101), light=(120,107,145),
+             dark=(22,25,24), accent=(206,124,24), limb=(31,40,27), ivory=(122,136,130)),
 }
 
 
@@ -65,7 +65,7 @@ def make_generators(base):
                 elif y<.14:
                     self.colors[i] = self.materials['limb'] if seam else self.materials['body']
                 else:
-                    self.colors[i] = self.blend('body','light',max(0,y)*(.50 if seam else .80))
+                    self.colors[i] = self.blend('body','light',max(0,y)*(.16 if self.profile['shape'] in ('scarab','ancient') else (.50 if seam else .80)))
 
         def ring(self,y,radius,thickness,height,kind='body'):
             def point(u,v):
@@ -120,32 +120,115 @@ def larva(s,phase):
     return .75
 
 
+def elytron_point(side, theta, phi, ancient):
+    """Separate wing cases: inset suture, broad shoulders and engraved ribs."""
+    envelope = max(0., math.sin(theta))
+    width = .185 if ancient else .157
+    x = side*(.0025 + width*envelope**.72*math.sin(phi))
+    z = -.128-.237*math.cos(theta)
+    ribs = .0032*math.cos(phi*24)*math.sin(phi)**.5 if phi < math.pi/2 else 0.
+    y = .142 + (.127*math.cos(phi)+ribs)*envelope**.65
+    return np.array([x,y,z])
+
+
+def wing_case(s,side,ancient):
+    # Analytic geometry gives the suture a real gap, not a painted zigzag.
+    for j in range(28):
+        for k in range(40):
+            theta = (j+.5)*math.pi/28
+            phi = (k+.5)*math.pi/40
+            points = [elytron_point(side,t,v,ancient) for t,v in
+                      ((j*math.pi/28,k*math.pi/40),((j+1)*math.pi/28,k*math.pi/40),
+                       ((j+1)*math.pi/28,(k+1)*math.pi/40),(j*math.pi/28,(k+1)*math.pi/40))]
+            start = len(s.vertices)
+            for indices in ((0,1,2),(0,2,3)):
+                tri = np.array([points[n] for n in indices])
+                mid = tri.mean(axis=0)
+                outward = (mid-[side*.0025,.142,-.128])/np.array([.18,.127,.237])**2
+                if np.dot(np.cross(tri[1]-tri[0],tri[2]-tri[0]),outward)<0:
+                    tri = tri[[0,2,1]]
+                s.face(tri,(0,0),'body')
+            if phi>1.5 or phi<.075:
+                color = s.materials['dark']
+            else:
+                ridge = (.5+.5*math.cos(phi*24))
+                color = s.blend('body','light',.06+.12*ridge+.18*math.sin(theta))
+            for n in range(start,len(s.vertices)):
+                s.colors[n] = color
+    # Roll around the outer lip, with small chitin notches.
+    rim = [elytron_point(side,t,1.48,ancient) for t in np.linspace(.13,math.pi-.13,25)]
+    s.tube(rim,[.008]*len(rim),'limb',8)
+    # Close the flat inner face below the visible dorsal suture.
+    for j in range(28):
+        a,b = j*math.pi/28,(j+1)*math.pi/28
+        points = [elytron_point(side,a,0,ancient),elytron_point(side,b,0,ancient),
+                  elytron_point(side,b,math.pi,ancient),elytron_point(side,a,math.pi,ancient)]
+        for indices in ((0,1,2),(0,2,3)):
+            tri = np.array([points[n] for n in indices])
+            if np.cross(tri[1]-tri[0],tri[2]-tri[0])[0]*side>0:
+                tri = tri[[0,2,1]]
+            s.face(tri,(0,0),'dark')
+
+
 def scarab(s,phase,ancient):
     step = (0.,1.,-1.)[phase%3]
-    width = .171 if ancient else .145
-    s.ellipsoid((0,.095,-.07),(width,.074,.249),'dark',28,14)
-    s.shell(np.array([0,.147,-.115]),np.array([width,.119,.218]),True)
-    s.shell(np.array([0,.164,.123]),np.array([width*.81,.067,.080]))
-    s.ellipsoid((0,.139,.228),(width*.55,.046,.068),'body',24,14)
+    width = .185 if ancient else .157
+    s.ellipsoid((0,.113,-.095),(width*.90,.069,.240),'dark',28,14)
+    for z in (-.28,-.22,-.16,-.10,-.04):
+        s.ellipsoid((0,.090,z),(width*.87,.040,.039),'limb',20,8)
+    for side in (-1,1):
+        wing_case(s,side,ancient)
+    # Broad shield nested under the front of the wing cases, narrow armored head.
+    s.shell(np.array([0,.156,.103]),np.array([width*.93,.078,.096]))
+    # Paired rows of small chitin pits follow the shield surface.
+    for side in (-1,1):
+        for z in (.070,.092,.114,.136):
+            x = side*width*.61
+            y = .156+.078*math.sqrt(1-(x/(width*.93))**2-((z-.103)/.096)**2)
+            s.ellipsoid((x,y,z),(.0035,.0018,.005),'dark',8,6)
+    s.ellipsoid((0,.136,.225),(.076,.044,.068),'dark',24,12)
+    s.shell(np.array([0,.158,.220]),np.array([.068,.035,.055]))
+    # Frontal clypeus is a flattened digging shield.
+    s.ellipsoid((0,.123,.274),(.070,.020,.030),'limb',22,10)
     for side in (-1,1):
         for pair in range(3):
             joints = leg_joints(side,pair,step)
-            s.tube(joints,[.022,.017,.010,.002],'limb',12)
-            s.ellipsoid(joints[1],(.019,.017,.019),'limb',12,8)
-        eye = [side*width*.43,.174,.258]
-        s.ellipsoid(eye,(.012,.014,.012),'accent' if ancient else 'dark',14,8)
-        s.tube([(side*.066,.151,.261),(side*.127,.20,.285),(side*.16,.235,.265)],
-               [.008,.006,.002],'limb',8)
+            # Separate rigid segments preserve a visible knee and ankle.
+            hip,knee,ankle,foot = joints
+            s.tube([hip,(hip+knee)/2,knee],[.016,.027,.015],'limb',12)
+            s.ellipsoid(knee,(.019,.019,.019),'dark',12,8)
+            s.tube([knee,(knee+ankle)/2,ankle],[.014,.018,.007],'limb',10)
+            s.tube([ankle,foot],[.007,.003],'dark',8)
+            for tooth in (.35,.58,.78):
+                root = knee*(1-tooth)+ankle*tooth
+                s.tube([root,root+[side*.022,.002,.013]],[.006,.0007],'limb',6)
+            for claw in (-1,1):
+                s.tube([foot,foot+[claw*.009,0,.017]],[.003,.0006],'dark',6)
+        eye = [side*.065,.165,.253]
+        s.ellipsoid(eye,(.010,.008,.010),'accent' if ancient else 'dark',14,8)
+        antenna = [(side*.06,.139,.258),(side*.102,.16,.29),(side*.143,.187,.287)]
+        s.tube(antenna,[.005,.004,.003],'limb',8)
+        s.ellipsoid(antenna[-1],(.009,.006,.012),'limb',12,8)
         if ancient:
-            # Long opposing mandibles and inward teeth follow the source silhouette.
-            s.tube([(side*.061,.12,.257),(side*.145,.16,.34),
-                    (side*.163,.186,.47),(side*.108,.19,.563)],
-                   [.031,.031,.023,.001],'limb',14)
-            s.tube([(side*.151,.185,.439),(side*.096,.185,.425)], [.015,.001],'ivory',8)
-            s.tube([(side*.122,.161,.328),(side*.077,.158,.350)], [.014,.001],'ivory',8)
+            # Serrated, flattened stag-like pincers curve inward at their tips.
+            points = [(side*.047,.115,.263),(side*.114,.122,.310),
+                      (side*.168,.133,.401),(side*.159,.149,.489),(side*.074,.161,.565)]
+            start = len(s.vertices)
+            s.tube(points,[.026,.039,.034,.023,.001],'limb',16)
+            for n in range(start,len(s.vertices)):
+                s.vertices[n][1] = .135+(s.vertices[n][1]-.135)*.60
+            # Recompute normals after flattening the whole pincer surface.
+            for n in range(start,len(s.vertices),3):
+                tri = np.array(s.vertices[n:n+3])
+                normal = np.cross(tri[1]-tri[0],tri[2]-tri[0])
+                normal /= np.linalg.norm(normal)
+                s.normals[n:n+3] = [normal]*3
+            for x,z in ((.131,.346),(.164,.403),(.155,.46)):
+                s.tube([(side*x,.132,z),(side*(x-.047),.133,z+.021)],
+                       [.014,.001],'limb',8)
         else:
-            s.tube([(side*.041,.112,.28),(side*.075,.121,.334),(side*.027,.129,.357)],
-                   [.018,.014,.001],'limb',10)
+            s.tube([(side*.041,.112,.28),(side*.068,.115,.327),(side*.022,.12,.35)],
+                   [.017,.015,.001],'limb',12)
     return .95 if ancient else .76
 
 

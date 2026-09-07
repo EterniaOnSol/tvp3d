@@ -21,6 +21,11 @@ var tipo := 34
 var capturar := false
 var frames := 0
 var salida := ""
+var comparar := CheckButton.new()
+var zoom_comparacion := 1.0
+var grupo := Node3D.new()
+var comparados: Array[MeshInstance3D] = []
+var ids_comparados := [21,83,79,38,27,34]
 var _revision := 0
 var _ultima_revision := 0.0
 
@@ -61,6 +66,8 @@ func _crear() -> void:
 	piso.position.y = -.025
 	escena.add_child(piso)
 	escena.add_child(modelo)
+	escena.add_child(grupo)
+	grupo.visible = false
 	camara.projection = Camera3D.PROJECTION_ORTHOGONAL
 	escena.add_child(camara)
 	camara.current = true
@@ -90,6 +97,22 @@ func _crear() -> void:
 	orientacion.select(2)
 	toolbar.add_child(orientacion)
 	orientacion.item_selected.connect(func(_i): _actualizar_modelo())
+	comparar.text = "Comparar tamanos"
+	toolbar.add_child(comparar)
+	comparar.toggled.connect(func(activo):
+		modelo.visible = not activo
+		grupo.visible = activo
+		imagen.visible = not activo
+		selector.disabled = activo
+		orientacion.disabled = activo
+		girar.button_pressed = false
+		info.position = Vector2(20,65) if activo else Vector2(20,270)
+		if activo:
+			angulo = .12
+			elevacion = .86
+		else:
+			_elegir(tipo)
+	)
 	imagen.position = Vector2(20,80)
 	imagen.size = Vector2(176,176)
 	imagen.expand_mode = TextureRect.EXPAND_IGNORE_SIZE
@@ -111,7 +134,54 @@ func _crear() -> void:
 			reloj = float(args[i+1]) / 6.0
 		if args[i] == "--elevacion" and i+1 < args.size():
 			elevacion = float(args[i+1])
+		if args[i] == "--grupo" and i+1 < args.size():
+			ids_comparados.clear()
+			for id in args[i+1].split(","):
+				if modelos.es_monstruo(0x40000001,int(id)):
+					ids_comparados.append(int(id))
+	_crear_comparacion()
 	_elegir(tipo)
+	comparar.button_pressed = "--comparar" in args
+
+
+func _crear_comparacion() -> void:
+	if ids_comparados.is_empty():
+		ids_comparados = [21,83,79,38,27,34]
+	var columnas := mini(3, ids_comparados.size())
+	var filas := ceili(float(ids_comparados.size()) / columnas)
+	for i in range(ids_comparados.size()):
+		var id: int = ids_comparados[i]
+		var nodo := MeshInstance3D.new()
+		nodo.mesh = modelos.malla(id)
+		nodo.position = Vector3((i % columnas - (columnas-1)*.5)*3.2,0,(floori(float(i)/columnas)-(filas-1)*.5)*3.1)
+		grupo.add_child(nodo)
+		comparados.append(nodo)
+		var etiqueta := Label3D.new()
+
+		etiqueta.text = "%s\n%.2f casillas" % [str(modelos.fichas[str(id)]["nombre"]).split(" / ")[0],float(modelos.fichas[str(id)]["escala"]["longitud_casillas"])]
+		etiqueta.font_size = 36
+		etiqueta.pixel_size = .0028
+		etiqueta.outline_size = 8
+		etiqueta.no_depth_test = true
+		etiqueta.billboard = BaseMaterial3D.BILLBOARD_ENABLED
+		etiqueta.position = nodo.position + Vector3(0,.12,1.28)
+		grupo.add_child(etiqueta)
+	var lineas := ImmediateMesh.new()
+	lineas.surface_begin(Mesh.PRIMITIVE_LINES)
+	for x in range(-6,7):
+		lineas.surface_add_vertex(Vector3(x,-.012,-5))
+		lineas.surface_add_vertex(Vector3(x,-.012,5))
+	for z in range(-5,6):
+		lineas.surface_add_vertex(Vector3(-6,-.012,z))
+		lineas.surface_add_vertex(Vector3(6,-.012,z))
+	lineas.surface_end()
+	var rejilla := MeshInstance3D.new()
+	rejilla.mesh = lineas
+	var material := StandardMaterial3D.new()
+	material.shading_mode = BaseMaterial3D.SHADING_MODE_UNSHADED
+	material.albedo_color = Color("52616a")
+	rejilla.material_override = material
+	grupo.add_child(rejilla)
 
 
 func _elegir(id: int) -> void:
@@ -136,7 +206,12 @@ func _actualizar_modelo() -> void:
 		tex.region = Rect2(Vector2(cuadro["corrimiento"].x, cuadro["corrimiento"].y) * tamano,
 			Vector2(cuadro["escala"].x, cuadro["escala"].y) * tamano)
 		imagen.texture = tex
-	info.text = "Sprite 7.72\nOutfit %d\nFrame %d / %d" % [tipo, posmod(fase, modelos.fases(tipo))+1, modelos.fases(tipo)]
+	var medidas := modelo.mesh.get_aabb().size
+	info.text = "Detalle (zoom ajustado)\nOutfit %d | Pose %d / %d\nAncho %.2f | Alto %.2f | Largo %.2f casillas" % [tipo, posmod(fase, modelos.fases(tipo))+1, modelos.fases(tipo),medidas.x,medidas.y,medidas.z]
+	if comparar.button_pressed:
+		info.text = "Escala comun | Cuadricula: 1 casilla | Tamano incluye patas, cola y mandibulas"
+		for i in range(comparados.size()):
+			comparados[i].mesh = modelos.malla(ids_comparados[i],fase)
 
 
 func _process(delta: float) -> bool:
@@ -158,6 +233,9 @@ func _process(delta: float) -> bool:
 	var alto := modelo.mesh.get_aabb().size.y if modelo.mesh != null else 1.0
 	var foco := Vector3(-distancia*.10, alto*.45, 0)
 	camara.size = distancia
+	if comparar.button_pressed:
+		foco = Vector3(0,.16,0)
+		camara.size = maxf(3.5,ceili(ids_comparados.size()/3.0)*3.1)*zoom_comparacion
 	camara.position = foco + Vector3(sin(angulo)*cos(elevacion), sin(elevacion), cos(angulo)*cos(elevacion)) * 8
 	camara.look_at(foco)
 	frames += 1
@@ -172,6 +250,12 @@ func _input(event: InputEvent) -> void:
 		elevacion = clampf(elevacion + event.relative.y * .006, .12, 1.45)
 		girar.button_pressed = false
 	if event is InputEventMouseButton and event.pressed:
+		if comparar.button_pressed:
+			if event.button_index == MOUSE_BUTTON_WHEEL_UP:
+				zoom_comparacion = maxf(.5,zoom_comparacion*.9)
+			elif event.button_index == MOUSE_BUTTON_WHEEL_DOWN:
+				zoom_comparacion = minf(2.,zoom_comparacion*1.1)
+			return
 		if event.button_index == MOUSE_BUTTON_WHEEL_UP:
 			distancia = maxf(.5, distancia * .9)
 		elif event.button_index == MOUSE_BUTTON_WHEEL_DOWN:

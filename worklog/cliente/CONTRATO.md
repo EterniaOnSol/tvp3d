@@ -1,9 +1,24 @@
 # Contrato: cliente
 
-Version: 1.13.0
+Version: 1.14.0
 Estado: PUBLICADO
 Propietario: cliente
 Depende de: modelo-comun 1.0.0, protocolo-red 1.1.0, assets 1.3.0
+
+## Refinamiento y escala relativa
+
+- Scarab 83 y Ancient Scarab 79 se refinan con elitros separados, surcos,
+  bordes de quitina, patas articuladas y mandibulas diferenciadas.
+- `escalas.json` define por outfit `longitud_casillas` positiva: mayor extension
+  horizontal de todas las poses (incluye cola/patas/mandibulas). Es criterio
+  artistico editable, no una medida fisica oficial ni una caja de colision.
+- El generador aplica un solo factor uniforme por apariencia y todas sus poses.
+  Registra objetivo y factor en el catalogo; conserva TVPVOL01 y RGB originales.
+- Rat debe quedar claramente menor que Giant Spider; Ancient Scarab debe
+  superar claramente a Scarab. Se auditan las 21 apariencias habilitadas.
+- El visor ofrece comparacion simultanea sin normalizar modelos, cuadricula
+  de una casilla y dimensiones; el zoom individual se identifica como detalle.
+- No cambia autoridad, alcance de ataque, posicion ni colisiones del servidor.
 
 ## Monstruos con volumen (TVP 7.72)
 

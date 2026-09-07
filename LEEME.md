@@ -6,7 +6,41 @@ hecho en Godot 4.
 
 Empezado el **24 de agosto de 2026**.
 
-## Checkpoint actual: Rotworm y escarabajos 3D - 6 de septiembre de 2026
+## Checkpoint actual: escarabajos refinados y escala comun - 6 de septiembre de 2026
+
+Scarab (83) y Ancient Scarab (79) se rehacen con elitros separados, surcos
+geometricos, bordes de quitina, seis patas articuladas, espinas y pequenas
+garras. Ancient Scarab conserva las mandibulas grandes, aplanadas y dentadas;
+Scarab es compacto y verde. Capturas finales en el componente:
+`scarab_refinada.png`, `ancient_refinada.png`, `comparacion_escarabajos.png`.
+
+**Se corrigio la escala de las 21 apariencias habilitadas.** La nueva tabla
+`cliente3d/propio/monstruos3d/escalas.json` fija el mayor alcance horizontal de
+TODAS las poses, incluyendo apendices. El factor es uniforme y compartido
+entre poses; estos objetivos son artisticos editables, no medidas oficiales
+ni cajas de colision. Rat pasa de 1.17 a 0.48 casillas; Scarab mide 0.85,
+Ancient Scarab 1.75 y Giant Spider 1.85. Detalle de las 21 apariencias en
+`cliente3d/propio/monstruos3d/ESCALAS.md`.
+
+El visor ofrece **Comparar tamanos**, con cuadricula de una casilla, nombres,
+medidas y zoom comun. El modo individual dice `Detalle (zoom ajustado)`.
+Abrir con el comando del visor de abajo y `--comparar`, o comparar solo ambos
+escarabajos con `--comparar --grupo 83,79`. Tambien funciona el boton del visor.
+`comparacion_escalas.png` muestra Rat, Scarab, Ancient Scarab, Giant Spider,
+Wolf y Dragon simultaneamente. Arrastrar gira la camara y la rueda acerca/aleja.
+
+Validacion final: **364 comprobaciones Godot, 0 fallas; 10 pruebas Python OK**.
+Comandos: `python cliente3d/propio/monstruos3d/self_test_anatomia.py` y
+`Godot --headless --path cliente3d --script res://propio/monstruos3d/self_test.gd`.
+Se verifica el tamano real de todas las poses cargadas, jerarquia entre especies,
+RGB originales, normales, hashes, separacion y relieve de elitros e integracion.
+
+Siguen siendo 21 apariencias de 144; quedan 123 pendientes. Pendientes:
+aprobacion artistica, partida real, benchmark de grupos y exportacion.
+El usuario autoriza commit y push cuando el trabajo este verificado.
+El visor queda abierto con la comparacion de familias; historial a continuacion.
+
+## Checkpoint anterior: Rotworm y escarabajos 3D - 6 de septiembre de 2026
 
 **21 apariencias con modelo de 144; 123 pendientes.** Se suman Rotworm (26),
 Larva (82), Scarab (83) y Ancient Scarab (79). Rotworm conserva seis poses de
