@@ -88,7 +88,7 @@ class DragonTests(unittest.TestCase):
     def test_spider_sizes_and_enabled_count(self):
         manifest = json.loads((OUT/'catalogo.json').read_text())['monstruos']
         enabled = {int(k) for k,v in manifest.items() if v.get('anatomia')}
-        self.assertEqual(enabled,{21,56,34,39,30,36,38,208,219,27,52,3})
+        self.assertEqual(enabled,{21,56,34,39,30,36,38,208,219,27,52,3,16,42,123})
         small = np.array(manifest['30']['max'])-manifest['30']['min']
         giant = np.array(manifest['38']['max'])-manifest['38']['min']
         self.assertGreater(giant[0],small[0]*1.4)
@@ -114,6 +114,25 @@ class DragonTests(unittest.TestCase):
         war = np.array(manifest['3']['max'])-manifest['3']['min']
         self.assertGreater(war[0],normal[0])
         self.assertGreater(war[2],normal[2])
+    def test_bear_contacts_and_panda_markings(self):
+        from osos import leg_joints, make_generators, PROFILES
+        for step in (0.,1.,-1.):
+            feet = np.array([leg_joints(side,front,step)[-1] for side in (-1,1) for front in (True,False)])
+            self.assertEqual(len(np.unique(feet,axis=0)),4)
+            self.assertEqual(np.isclose(feet[:,1],.026).sum(),4 if step==0 else 2)
+            self.assertTrue(np.all(feet[:,1]>=.026))
+        # Check the visible saddle against the generated panda surface.
+        entry = json.loads((OUT/'catalogo.json').read_text())['monstruos']['123']
+        blob = (OUT/entry['archivo']).read_bytes()
+        count = struct.unpack_from('<I',blob,12)[0]
+        xyz = np.frombuffer(blob,dtype='<f4',count=count*3,offset=16).reshape(-1,3)
+        rgb = np.frombuffer(blob,dtype='u1',count=count*3,offset=16+count*24).reshape(-1,3)
+        views = views_for(self.index['outfits']['123'],0,self.sheets)
+        scale = max(v['bounds'][2]-v['bounds'][0]+1 for v in views)/32*.90/(1.10+PROFILES[123]['neck'])
+        shoulder = (xyz[:,2]>.10*scale)&(xyz[:,2]<.19*scale)&(xyz[:,1]>.5*scale)
+        rump = (xyz[:,2]<-.1*scale)&(xyz[:,1]>.5*scale)
+        self.assertTrue(shoulder.any() and rump.any())
+        self.assertLess(float(rgb[shoulder].mean()),float(rgb[rump].mean())*.5)
 
 if __name__ == '__main__':
     unittest.main(verbosity=2)

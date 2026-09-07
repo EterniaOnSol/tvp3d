@@ -13,6 +13,25 @@ Contrato publicado: SI
 
 ## Le toca
 
+2026-09-06: Bear/Polar Bear/Panda integrados, contrato 1.11.0.
+- IDs 16/42/123: cuerpo robusto continuo, patas con cinco dedos, orejas redondas,
+  hocico y cola corta. Polar Bear alarga cuello/hocico; Panda tiene mascara,
+  orejas, patas y banda de hombros oscuras como el sprite.
+- Quince apariencias modeladas de 144; 129 pendientes. Tres poses por modelo,
+  escala por ancho del sprite y RGB originales estables entre poses.
+- Verificado: Godot 238/238; Python 6/6, incluyendo contactos de patas y contraste
+  real de la banda negra sobre la malla Panda. Capturas finales revisadas:
+  oso_16.png pose 0, oso_42.png pose 1 perfil, oso_123.png pose 2; referencia
+  osos_referencia.png. Todas dentro del componente.
+- Bear/Polar Bear 15400 triangulos por pose; Panda 16648. Misma cache/formato.
+- LEEME actualizado y visor con Panda. No se regeneraron familias anteriores.
+- Limites: arte estilizado pendiente de valoracion del usuario y partida real;
+  tres poses discretas, sin benchmark de multitud ni exportacion distribuible.
+- Decision reversible: perfiles en osos.py sobre el constructor suave existente.
+- Commit local del lote; push pendiente sin instruccion de publicarlo.
+- Siguiente familia sugerida: Snake/Cobra, o animales de granja, previa referencia.
+
+Historial de lobos:
 2026-09-06: Wolf/Winter Wolf/War Wolf integrados, contrato 1.10.0.
 - IDs 27/52/3, cuatro patas con apoyo diagonal, hocico, orejas y cola espesa.
   Torso continuo para reducir uniones; perfiles gris oscuro, blanco y War Wolf

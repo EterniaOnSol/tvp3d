@@ -336,3 +336,7 @@ PALETTE_FRAME.update({oid: 0 for oid in SPIDER_PROFILES})
 from lobos import make_generators as make_wolves, PROFILES as WOLF_PROFILES
 AUTHORED.update(make_wolves(DragonSculpt))
 PALETTE_FRAME.update({oid: 0 for oid in WOLF_PROFILES})
+
+from osos import make_generators as make_bears, PROFILES as BEAR_PROFILES
+AUTHORED.update(make_bears(DragonSculpt))
+PALETTE_FRAME.update({oid: 0 for oid in BEAR_PROFILES})

@@ -6,7 +6,28 @@ hecho en Godot 4.
 
 Empezado el **24 de agosto de 2026**.
 
-## Checkpoint actual: lobos 3D - 6 de septiembre de 2026
+## Checkpoint actual: osos 3D - 6 de septiembre de 2026
+
+**15 apariencias con modelo de 144; 129 pendientes.** Se suman Bear (16),
+Polar Bear (42) y Panda (123) a los doce modelos anteriores. Cuerpo robusto,
+cuatro patas con cinco dedos, orejas redondas y tres poses. Polar Bear tiene
+cuello/hocico mas largos; Panda conserva ojos, orejas, patas y banda negros.
+Colores y escala derivados de los sprites originales, sin modificar el atlas.
+
+Codigo: `cliente3d/propio/monstruos3d/osos.py`. Regenerar con
+`python cliente3d/propio/monstruos3d/generar.py --ids 16 42 123`.
+El visor se abre como abajo, cambiando el argumento final a `--tipo 123`.
+
+Verificado: **238 comprobaciones Godot, 0 fallas; 6 pruebas Python OK**.
+Mismos comandos de prueba del checkpoint siguiente. Capturas finales revisadas
+`oso_16.png`, `oso_42.png`, `oso_123.png` y referencias `osos_referencia.png`
+en el componente; muestran las tres poses desde distintos angulos.
+
+Son modelos estilizados pendientes de aprobacion artistica y partida real.
+Tambien faltan benchmark con grupos y exportacion distribuible. Visor abierto
+con Panda; detalles en `worklog/cliente/STATE.md`. El historial sigue debajo.
+
+## Checkpoint anterior: lobos 3D - 6 de septiembre de 2026
 
 **12 apariencias con modelo de 144; 132 pendientes.** Se incorporan Wolf (27),
 Winter Wolf (52) y War Wolf (3). Son modelos estilizados, con torso continuo,
