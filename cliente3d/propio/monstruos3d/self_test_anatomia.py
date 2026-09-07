@@ -3,11 +3,11 @@ import hashlib
 import json
 import struct
 import unittest
-from pathlib import Path
+
 
 import numpy as np
 from PIL import Image
-from anatomia import DragonSculpt
+from anatomia import DragonSculpt, PALETTE_FRAME
 from generar import ATLAS, OUT, views_for
 
 
@@ -34,7 +34,7 @@ class DragonTests(unittest.TestCase):
 
     def test_baked_meshes_palette_normals_bounds_and_hash(self):
         manifest = json.loads((OUT/'catalogo.json').read_text())['monstruos']
-        for outfit in (34,39):
+        for outfit in sorted(PALETTE_FRAME):
             with self.subTest(outfit=outfit):
                 entry = manifest[str(outfit)]
                 blob = (OUT/entry['archivo']).read_bytes()
@@ -68,6 +68,32 @@ class DragonTests(unittest.TestCase):
                 self.assertTrue(np.allclose(all_vertices.min(axis=0),entry['min']))
                 self.assertTrue(np.allclose(all_vertices.max(axis=0),entry['max']))
 
+    def test_spider_eight_legs_alternating_contacts(self):
+        from aranas import leg_joints
+        for step in (0.,1.,-1.):
+            legs = [leg_joints(side,pair,step) for side in (-1,1) for pair in range(4)]
+            self.assertEqual(len(legs),8)
+            feet = np.array([j[-1] for j in legs])
+            self.assertEqual(len(np.unique(feet,axis=0)),8)
+            self.assertEqual(int(np.isclose(feet[:,1],.012).sum()),8 if step==0 else 4)
+            self.assertTrue(np.all(feet[:,1]>=.012))
+            self.assertTrue(all(np.isfinite(j).all() for j in legs))
+        for side in (-1,1):
+            for pair in range(4):
+                rest = leg_joints(side,pair,0)[-1]
+                left = leg_joints(side,pair,1)[-1]
+                right = leg_joints(side,pair,-1)[-1]
+                self.assertAlmostEqual(float((left[2]+right[2])/2),float(rest[2]))
+
+    def test_spider_sizes_and_enabled_count(self):
+        manifest = json.loads((OUT/'catalogo.json').read_text())['monstruos']
+        enabled = {int(k) for k,v in manifest.items() if v.get('anatomia')}
+        self.assertEqual(enabled,{21,56,34,39,30,36,38,208,219})
+        small = np.array(manifest['30']['max'])-manifest['30']['min']
+        giant = np.array(manifest['38']['max'])-manifest['38']['min']
+        self.assertGreater(giant[0],small[0]*1.4)
+        # The Old Widow reuses the same reference appearance as Giant Spider.
+        self.assertTrue(np.allclose(manifest['208']['max'],manifest['38']['max']))
 
 if __name__ == '__main__':
     unittest.main(verbosity=2)

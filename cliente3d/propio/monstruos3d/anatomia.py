@@ -327,3 +327,8 @@ AUTHORED = {21:rat,56:rat,34:dragon,39:dragon}
 
 # Keep authored materials stable while poses change; source frame zero is original.
 PALETTE_FRAME = {34: 0, 39: 0}
+
+# Authored arachnids share the smooth geometry builder, with their own materials.
+from aranas import make_generators, PROFILES as SPIDER_PROFILES
+AUTHORED.update(make_generators(DragonSculpt))
+PALETTE_FRAME.update({oid: 0 for oid in SPIDER_PROFILES})

@@ -6,7 +6,43 @@ hecho en Godot 4.
 
 Empezado el **24 de agosto de 2026**.
 
-## Checkpoint monsters 3D - 6 de septiembre de 2026
+## Checkpoint actual: familia de aranas 3D - 6 de septiembre de 2026
+
+**9 apariencias con modelo 3D de 144; 135 pendientes.** Se suman Spider (30),
+Poison Spider (36), Giant Spider (38), The Old Widow (208) y Tarantula (219)
+a Rat, Cave Rat, Dragon y Dragon Lord. Son modelos estilizados revisados en
+visor, no arte final aprobado por el usuario ni validacion en partida real.
+
+Las aranas tienen ocho patas con apoyo alternado, cefalotorax, abdomen,
+ojos y colmillos. Cada variante usa RGB del sprite original: verde/rojo,
+cyan/naranja, negro con marcas rojas o marron con bandas claras y pelos cortos.
+Giant Spider y The Old Widow comparten aspecto, como sus referencias originales.
+Los tamanos salen del ancho del sprite y las tres poses conservan la paleta.
+
+Dragon y Dragon Lord tambien recibieron refinamiento posterior al checkpoint
+antiguo: alas curvas, cabeza y cuernos definidos, patas apoyadas, normales
+exteriores suaves y colores estables al animarse.
+
+Codigo nuevo: `cliente3d/propio/monstruos3d/aranas.py`; registro y generador en
+la misma carpeta. Las nueve apariencias estan habilitadas en el visor y el
+renderer. Los experimentos 25/27/35 siguen deshabilitados; 30 fue reemplazado
+por su modelo anatomico. El atlas y las reglas del servidor no cambian.
+
+```powershell
+python cliente3d/propio/monstruos3d/generar.py --ids 30 36 38 208 219
+python cliente3d/propio/monstruos3d/self_test_anatomia.py
+& 'C:/Users/dell/3DTIBIA/herramientas/godot/Godot_v4.7.2-stable_win64_console.exe' --headless --path cliente3d --script res://propio/monstruos3d/self_test.gd
+& 'C:/Users/dell/3DTIBIA/herramientas/godot/Godot_v4.7.2-stable_win64.exe' --path cliente3d --script res://propio/monstruos3d/visor.gd -- --tipo 38
+```
+
+Verificado: **142 comprobaciones Godot, 0 fallas; 4 pruebas Python OK**.
+Capturas reales: `cliente3d/propio/monstruos3d/arana_30.png`, `arana_36.png`,
+`arana_38.png`, `arana_208.png` y `arana_219.png`; referencias en
+`aranas_referencia.png`. Se revisaron las tres poses entre las cinco capturas.
+Pendiente: partida real, rendimiento con muchos monsters, exportacion de `.tvol`
+y las otras familias. Continuidad detallada en `worklog/cliente/STATE.md`.
+
+## Checkpoint anterior de monsters 3D - 6 de septiembre de 2026
 
 **144 apariencias en el catalogo; 4 con modelo 3D inicial; 140 pendientes.**
 Se cuentan IDs de outfit de `cliente3d/assets/monster_names772.json`, no

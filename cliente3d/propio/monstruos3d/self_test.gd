@@ -25,8 +25,8 @@ func _ok(etiqueta: String, condicion: bool) -> void:
 
 func _probar() -> void:
 	var catalogo := MODELOS.new()
-	for tipo in [21,34,39,56]:
-		_ok("catalogo y fases %d" % tipo, catalogo.tiene(tipo) and catalogo.fases(tipo) == 3)
+	for tipo in [21,34,39,56,30,36,38,208,219]:
+		_ok("catalogo y fases %d" % tipo, catalogo.es_monstruo(0x40000001, tipo) and catalogo.fases(tipo) == 3)
 		var primera := catalogo.malla(tipo)
 		_ok("malla compartida %d" % tipo, primera == catalogo.malla(tipo, 3))
 		for fase in range(3):
@@ -37,6 +37,7 @@ func _probar() -> void:
 			var material := malla.surface_get_material(0) as StandardMaterial3D
 			_ok("sin billboard %d/%d" % [tipo,fase], material.billboard_mode == BaseMaterial3D.BILLBOARD_DISABLED and material.vertex_color_use_as_albedo)
 		_ok("animacion geometrica %d" % tipo, primera != catalogo.malla(tipo,1))
+	_ok("experimentos no habilitados", not catalogo.es_monstruo(0x40000001, 25) and not catalogo.es_monstruo(0x40000001, 27) and not catalogo.es_monstruo(0x40000001, 35))
 	_ok("tipo desconocido", catalogo.malla(999999) == null)
 	_ok("ID jugador", not catalogo.es_monstruo(123,21))
 	_ok("ID NPC", not catalogo.es_monstruo(0x80000001,21))
@@ -72,6 +73,12 @@ func _probar() -> void:
 	mundo._estado.criaturas[id]["apariencia"] = 34
 	mundo._dibujar_criaturas()
 	_ok("cambio outfit", nodo.mesh == mundo._modelos_monstruos.malla(34,1))
+	for tipo_arana in [30,36,38,208,219]:
+		mundo._estado.criaturas[id]["apariencia"] = tipo_arana
+		for direccion in range(4):
+			mundo._estado.criaturas[id]["direccion"] = direccion
+			mundo._dibujar_criaturas()
+			_ok("arana integrada %d/%d" % [tipo_arana,direccion], nodo.mesh == mundo._modelos_monstruos.malla(tipo_arana,1) and is_equal_approx(nodo.rotation.y, MODELOS.GIROS[direccion]))
 	mundo._estado.criaturas[id]["apariencia"] = 128
 	mundo._dibujar_criaturas()
 	_ok("vuelve a sprite", nodo.mesh is QuadMesh and nodo.rotation == Vector3.ZERO and nodo.material_override != null)

@@ -1,6 +1,6 @@
 # Contrato: cliente
 
-Version: 1.8.0
+Version: 1.9.0
 Estado: PUBLICADO
 Propietario: cliente
 Depende de: modelo-comun 1.0.0, protocolo-red 1.1.0, assets 1.3.0
@@ -10,7 +10,11 @@ Depende de: modelo-comun 1.0.0, protocolo-red 1.1.0, assets 1.3.0
 - El renderer consume cuatro facings y fases del atlas original sin editarlo.
 - Las apariencias 21/56/34/39 tienen modelos anatomicos iniciales,
   colores muestreados del sprite, orientacion N/E/S/W y tres poses 3D.
-  Las demas 140 apariencias del catalogo quedan pendientes de modelado.
+  Se incorpora la familia de aranas: 30 Spider, 36 Poison Spider,
+  38 Giant Spider, 208 The Old Widow y 219 Tarantula, con ocho patas,
+  abdomen, cefalotorax y poses segun las fases disponibles en el atlas.
+  La paleta original de fase cero se conserva durante la animacion.
+  Nueve apariencias tienen modelo; las otras 135 quedan pendientes.
   Las pruebas de interseccion de siluetas no se habilitan en produccion.
 - Recursos derivados y generador viven en `cliente3d/propio/monstruos3d/`.
   No cambian formatos de assets ni red; son recursos del renderer.

@@ -13,6 +13,30 @@ Contrato publicado: SI
 
 ## Le toca
 
+2026-09-06: familia de aranas integrada, contrato 1.9.0.
+- Nuevos IDs 30/36/38/208/219: Spider, Poison Spider, Giant Spider,
+  The Old Widow y Tarantula. Nueve apariencias con modelo y 135 pendientes.
+- Ocho patas, cuatro apoyos alternos por pose, abdomen/cefalotorax, palpos,
+  ojos y colmillos. Tarantula tiene bandas claras y bristles cortos.
+- Paletas originales por variante, marcas dorsales con colores por vertice,
+  escala derivada del sprite. The Old Widow conserva aspecto de Giant Spider.
+- Tres poses por apariencia, TVPVOL01 compatible, misma cache y orientaciones.
+- Verificado: self_test.gd 142/142; self_test_anatomia.py 4/4. Se validan
+  integracion y giro de los cinco IDs, ocho patas/apoyos, normals, RGB del atlas,
+  estabilidad de paleta, bounds, hashes y diferencia de tamanos.
+- Capturas finales arana_30/36/38/208/219.png en el componente; todas revisadas.
+  La captura 36 muestra pose 1 de perfil y 208 pose 2 por detras; resto pose 0.
+- LEEME actualizado conservando checkpoint anterior. Visor abierto con Giant Spider.
+- Modelos estilizados: falta aprobacion artistica y partida real. Las aranas
+  usan 12016 triangulos por pose; Tarantula 12586. No hay benchmark de multitud
+  ni exportacion distribuible. Rat y dragones se mantienen sin regenerar.
+- Decision reversible: perfiles de familia en aranas.py; constructor suave
+  existente compartido, materiales propios. El experimento antiguo 30 se
+  sustituye; 25/27/35 siguen deshabilitados y conservados en Git.
+- Se guarda commit local; push pendiente, sin instruccion de publicar este lote.
+- Proxima familia sugerida: Wolf/Winter Wolf/War Wolf, revisando sus sprites.
+
+Historial del refinamiento anterior:
 2026-09-06: Dragon y Dragon Lord refinados y revisados con renderer real.
 - Cabeza alargada, cejas, cuernos curvos, cuatro patas apoyadas y cola curva.
 - Alas concavas con dedos desde la muneca; placas de pecho y lomo adheridas.
