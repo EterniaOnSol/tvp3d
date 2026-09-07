@@ -356,3 +356,7 @@ PALETTE_FRAME.update({oid: 0 for oid in ARTHROPOD_PROFILES})
 from granja import make_generators as make_farm, PROFILES as FARM_PROFILES
 AUTHORED.update(make_farm(DragonSculpt))
 PALETTE_FRAME.update({oid: 0 for oid in FARM_PROFILES})
+
+from bosque import make_generators as make_forest, PROFILES as FOREST_PROFILES
+AUTHORED.update(make_forest(DragonSculpt))
+PALETTE_FRAME.update({oid: 0 for oid in FOREST_PROFILES})

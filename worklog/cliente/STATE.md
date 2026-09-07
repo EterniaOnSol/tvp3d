@@ -1,8 +1,8 @@
 # Estado: cliente
 
-Estado: LISTO_PARA_REVISION
+Estado: EN_CURSO
 Ultimo agente: codex
-Ultima actualizacion: 2026-09-06
+Ultima actualizacion: 2026-09-07
 Contrato publicado: SI
 
 ## Depende de
@@ -12,6 +12,16 @@ Contrato publicado: SI
 - `assets`: contrato publicado.
 
 ## Le toca
+
+2026-09-07: Deer/Rabbit verificados: 29/144; Godot 500, Python 13 OK.
+Escalas 1.50/.55. Cuatro capturas finales revisadas; cornamenta corregida,
+cola clara y orejas cerradas. Partida real, benchmark y exportacion pendientes.
+Se guarda esta familia y se continua con la siguiente dentro del carril.
+
+
+2026-09-06: Deer/Rabbit en curso, contrato 1.17.0.
+Decision reversible: bosque.py y escalas artisticas 1.50/.55 casillas.
+
 
 2026-09-06: Black Sheep 13, Sheep 14 y Pig 60 integrados, contrato 1.16.0.
 - Catalogo 27/144, 117 pendientes. Tres poses, RGB originales, cuatro patas

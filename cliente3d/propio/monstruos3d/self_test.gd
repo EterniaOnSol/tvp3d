@@ -25,7 +25,7 @@ func _ok(etiqueta: String, condicion: bool) -> void:
 
 func _probar() -> void:
 	var catalogo := MODELOS.new()
-	for tipo in [21,34,39,56,30,36,38,208,219,27,52,3,16,42,123,28,81,26,82,83,79,43,45,124,13,14,60]:
+	for tipo in [21,34,39,56,30,36,38,208,219,27,52,3,16,42,123,28,81,26,82,83,79,43,45,124,13,14,60,31,74]:
 		_ok("catalogo y fases %d" % tipo, catalogo.es_monstruo(0x40000001, tipo) and catalogo.fases(tipo) == (6 if tipo == 26 else 3))
 		var primera := catalogo.malla(tipo)
 		_ok("malla compartida %d" % tipo, primera == catalogo.malla(tipo, catalogo.fases(tipo)))
@@ -77,7 +77,7 @@ func _probar() -> void:
 	mundo._estado.criaturas[id]["apariencia"] = 34
 	mundo._dibujar_criaturas()
 	_ok("cambio outfit", nodo.mesh == mundo._modelos_monstruos.malla(34,1))
-	for tipo_arana in [30,36,38,208,219,27,52,3,16,42,123,28,81,26,82,83,79,43,45,124,13,14,60]:
+	for tipo_arana in [30,36,38,208,219,27,52,3,16,42,123,28,81,26,82,83,79,43,45,124,13,14,60,31,74]:
 		mundo._estado.criaturas[id]["apariencia"] = tipo_arana
 		for direccion in range(4):
 			mundo._estado.criaturas[id]["direccion"] = direccion

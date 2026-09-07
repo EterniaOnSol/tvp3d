@@ -89,7 +89,7 @@ class DragonTests(unittest.TestCase):
     def test_spider_sizes_and_enabled_count(self):
         manifest = json.loads((OUT/'catalogo.json').read_text())['monstruos']
         enabled = {int(k) for k,v in manifest.items() if v.get('anatomia')}
-        self.assertEqual(enabled,{21,56,34,39,30,36,38,208,219,27,52,3,16,42,123,28,81,26,82,83,79,43,45,124,13,14,60})
+        self.assertEqual(enabled,{21,56,34,39,30,36,38,208,219,27,52,3,16,42,123,28,81,26,82,83,79,43,45,124,13,14,60,31,74})
         small = np.array(manifest['30']['max'])-manifest['30']['min']
         giant = np.array(manifest['38']['max'])-manifest['38']['min']
         self.assertGreater(giant[0],small[0]*1.4)
@@ -256,6 +256,28 @@ class DragonTests(unittest.TestCase):
             n=struct.unpack_from('<I',blob,12)[0]
             return np.frombuffer(blob,dtype='u1',count=n*3,offset=16+n*24).mean()
         self.assertGreater(brightness('14'),brightness('13')*1.5)
+
+    def test_forest_support_antlers_and_sizes(self):
+        from bosque import leg_joints,antler_branches
+        for rabbit in (False,True):
+            ground=.018 if rabbit else .025
+            for phase in range(3):
+                feet=np.array([leg_joints(side,front,phase,rabbit)[-1]
+                               for side in (-1,1) for front in (True,False)])
+                self.assertTrue(np.isfinite(feet).all())
+                self.assertTrue(np.all(feet[:,1]>=ground))
+                self.assertEqual(np.isclose(feet[:,1],ground).sum(),4 if phase==0 else 2)
+                self.assertEqual(len(np.unique(feet,axis=0)),4)
+        for side in (-1,1):
+            branches=antler_branches(side)
+            self.assertLess(np.sum(((branches[0][0]-[0,.879,.389])/[.076,.08,.13])**2),1)
+            self.assertTrue(np.array_equal(branches[1][0],branches[0][1]))
+            self.assertTrue(np.array_equal(branches[2][0],branches[0][2]))
+            self.assertTrue(all(np.all(branch[:,0]*side>0) for branch in branches))
+        entries=json.loads((OUT/'catalogo.json').read_text())['monstruos']
+        self.assertGreater(entries['31']['max'][1],entries['14']['max'][1]*1.5)
+        self.assertGreater(entries['31']['escala']['longitud_casillas'],entries['74']['escala']['longitud_casillas']*2.5)
+        self.assertLess(entries['74']['max'][1],entries['14']['max'][1])
 
 if __name__ == '__main__':
     unittest.main(verbosity=2)

@@ -6,7 +6,22 @@ hecho en Godot 4.
 
 Empezado el **24 de agosto de 2026**.
 
-## Checkpoint actual: Sheep, Black Sheep y Pig - 6 de septiembre de 2026
+## Checkpoint actual: Deer y Rabbit - 7 de septiembre de 2026
+
+29 apariencias modeladas de 144; 115 pendientes. Deer (31) tiene cornamenta
+ramificada unida a la cabeza, cuatro patas con pezunas y cola clara. Rabbit
+(74, apariencia compartida con The Halloween Hare) tiene orejas largas y patas
+traseras robustas. Tres poses, RGB originales; escalas 1.50 y .55 casillas.
+
+Codigo: `cliente3d/propio/monstruos3d/bosque.py`; regenerar con
+`python cliente3d/propio/monstruos3d/generar.py --ids 31 74`.
+Verificado: Godot 500 sin fallas y Python 13 OK. Comandos de pruebas debajo.
+Capturas revisadas: bosque_31.png, bosque_74.png, deer_dorso.png y
+comparacion_bosque.png; referencias bosque_referencia.png junto al componente.
+Visor: `--comparar --grupo 21,74,14,27,31,16 --tipo 31`.
+Pendientes valoracion artistica, partida real, benchmark y exportacion.
+
+## Checkpoint anterior: Sheep, Black Sheep y Pig - 6 de septiembre de 2026
 
 **27 apariencias modeladas de 144; 117 pendientes.** Se incorporan Black Sheep
 (13), Sheep (14) y Pig (60), con tres poses y RGB del atlas original.
