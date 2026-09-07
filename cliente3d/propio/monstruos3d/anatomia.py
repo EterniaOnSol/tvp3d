@@ -138,58 +138,192 @@ def rat(views, phase):
     return s.result()
 
 
+class DragonSculpt(Sculpt):
+    """Continuous surfaces and restrained, source-only regional palettes."""
+    def __init__(self, views):
+        super().__init__(views)
+        rgb = self.palette.astype(float)
+        r, g, b = rgb.T
+        green = (g > r * 1.35) & (g > b * 2.0)
+        red = (r > g * 2.5) & (r > b * 1.6) & (r > 30)
+        dominant = green if green.sum() > red.sum() else red
+        self.skin = np.unique(rgb[dominant], axis=0)
+        if not len(self.skin):
+            self.skin = np.unique(rgb, axis=0)
+        self.skin = self.skin[np.argsort(self.skin.mean(axis=1))]
+        bone = rgb[(r >= g * .95) & (g > r * .60) & (g > b * 1.4)]
+        self.bone = np.unique(bone if len(bone) else rgb, axis=0)
+        self.bone = self.bone[np.argsort(self.bone.mean(axis=1))]
+        self.dark = rgb[np.argmin(rgb.mean(axis=1))].astype('u1')
+
+    def pixel(self, uv, kind='body', direction=2):
+        # No directional sprite reprojection: that produced stripes at every
+        # ring/normal boundary. Every output RGB still belongs to the source.
+        if kind == 'eye':
+            return self.dark
+        bank = self.bone if kind in ('claw', 'iris') else self.skin
+        level = {'body': .68, 'wing': .72, 'light': .83, 'ridge': .48,
+                 'claw': .84, 'iris': .67}.get(kind, .62)
+        variation = 0.0  # Regional color; lighting describes the volume without ring stripes.
+        return bank[int(np.clip(level + variation, 0, 1) * (len(bank)-1))].astype('u1')
+
+    def ellipsoid(self, *args, **kwargs):
+        start = len(self.vertices)
+        super().ellipsoid(*args, **kwargs)
+        # The legacy ellipsoid uses clockwise winding but inward cross normals.
+        # Work in outward-cross convention here; result converts winding to Godot.
+        for i in range(start,len(self.vertices),3):
+            self.vertices[i+1],self.vertices[i+2] = self.vertices[i+2],self.vertices[i+1]
+            for k in range(i,i+3):
+                self.normals[k] = -self.normals[k]
+
+    @staticmethod
+    def curve(points, values, subdivisions=5):
+        points = np.asarray(points, float)
+        values = np.asarray(values, float)
+        result, radii = [], []
+        for j in range(len(points)-1):
+            a,b,c,d = points[max(0,j-1)],points[j],points[j+1],points[min(len(points)-1,j+2)]
+            for i in range(subdivisions):
+                t = i / subdivisions
+                result.append(.5*((2*b)+(-a+c)*t+(2*a-5*b+4*c-d)*t*t+(-a+3*b-3*c+d)*t*t*t))
+                radii.append(values[j]*(1-t)+values[j+1]*t)
+        result.append(points[-1])
+        radii.append(values[-1])
+        return np.array(result), np.array(radii)
+
+    def tube(self, points, radii, kind='body', sides=16):
+        points, radii = self.curve(points, radii)
+        rings = []
+        previous = None
+        for j, point in enumerate(points):
+            tangent = points[min(j+1,len(points)-1)] - points[max(0,j-1)]
+            tangent /= np.linalg.norm(tangent)
+            if previous is None:
+                axis = np.array([0.,1.,0.]) if abs(tangent[1]) < .9 else np.array([1.,0.,0.])
+                a = np.cross(tangent, axis)
+            else:
+                a = previous - tangent * np.dot(previous,tangent)
+            a /= np.linalg.norm(a)
+            previous = a
+            b = np.cross(tangent,a)
+            rings.append([point+radii[j]*(math.cos(i/sides*math.tau)*a+math.sin(i/sides*math.tau)*b) for i in range(sides)])
+        for j in range(len(rings)-1):
+            for i in range(sides):
+                k = (i+1)%sides
+                uv = (i/sides,j/(len(rings)-1))
+                self.face([rings[j][i],rings[j][k],rings[j+1][k]],uv,kind)
+                self.face([rings[j][i],rings[j+1][k],rings[j+1][i]],uv,kind)
+        for i in range(sides):
+            k = (i+1)%sides
+            self.face([points[0],rings[0][k],rings[0][i]],(0,0),kind)
+            self.face([points[-1],rings[-1][i],rings[-1][k]],(0,1),kind)
+
+    def web(self, wrist, first, last, side):
+        # Ruled bat-wing panel: concave trailing edge and a gently inflated web.
+        wrist, first, last = map(lambda p: np.array(p,float), (wrist,first,last))
+        def point(u,v):
+            edge = first*(1-v)+last*v
+            edge += (wrist-edge)*(.24*math.sin(math.pi*v))
+            p = wrist*(1-u)+edge*u
+            p += np.array([side*.018,.055,.035])*math.sin(math.pi*u)*math.sin(math.pi*v)
+            return p
+        steps = 18
+        for i in range(steps):
+            for j in range(steps):
+                u,v = i/steps,j/steps
+                p,q,r,t = point(u,v),point(u+1/steps,v),point(u+1/steps,v+1/steps),point(u,v+1/steps)
+                self.face([p,q,r],(u,v),'wing')
+                self.face([p,r,t],(u,v),'wing')
+        edge = []
+        for v in np.linspace(0,1,9):
+            edge.append(point(1,v))
+        self.tube(edge,[.008]*len(edge),'ridge',6)
+
+    def result(self):
+        vertices, normals, colors = super().result()
+        # Average shared vertices per continuous surface; no format/runtime change.
+        _, inverse = np.unique(np.round(vertices,6),axis=0,return_inverse=True)
+        smooth = np.zeros((inverse.max()+1,3),float)
+        np.add.at(smooth,inverse,normals)
+        lengths = np.linalg.norm(smooth,axis=1)
+        smooth /= np.maximum(lengths[:,None],1e-9)
+        # Godot front faces are clockwise; normals remain outward.
+        order = np.arange(len(vertices)).reshape(-1,3)[:,[0,2,1]].ravel()
+        return vertices[order],smooth[inverse][order].astype('<f4'),colors[order]
+
+
 def dragon(views, phase):
-    s = Sculpt(views)
+    s = DragonSculpt(views)
     step = [0.,1.,-1.][phase%3]
-    s.ellipsoid((0,.55,-.1),(.28,.34,.40))
-    s.ellipsoid((0,.57,.16),(.24,.28,.24))
-    s.ellipsoid((0,.50,.30),(.17,.22,.055),'light',28,16)
-    s.tube([(0,.62,.18),(0,.80,.35),(0,1.02,.45),(0,1.17,.54)],[.19,.15,.12,.14],sides=24)
-    s.ellipsoid((0,1.17,.59),(.18,.145,.23))
-    s.ellipsoid((0,1.12,.78),(.14,.085,.16))
-    s.ellipsoid((0,1.055,.77),(.127,.035,.16),'light',24,10)
-    s.ellipsoid((0,1.10,.80),(.13,.017,.135),'eye',24,8)
+    # Low, long rib cage, strong hips, and a continuous forward-curving neck.
+    s.ellipsoid((0,.49,-.13),(.265,.29,.43))
+    s.ellipsoid((0,.55,.13),(.235,.27,.26))
+    s.tube([(0,.53,.15),(0,.69,.32),(0,.87,.41),(0,1.04,.53)], [.205,.158,.117,.125],sides=24)
+    # Overlapping ventral scutes rather than a single bright oval on the chest.
+    for y,z,width in [(.33,.275,.12),(.41,.337,.16),(.49,.375,.16),
+                      (.57,.401,.15),(.65,.45,.13),(.73,.495,.108),
+                      (.81,.52,.095),(.89,.55,.09),(.97,.60,.085)]:
+        s.ellipsoid((0,y,z),(width,.047,.029),'light',24,10)
+    # Wedge-shaped skull, tapered muzzle, dark mouth seam and separate jaw.
+    s.ellipsoid((0,1.035,.61),(.151,.12,.195))
+    s.ellipsoid((0,.985,.785),(.105,.056,.185),'ridge',28,12)
+    s.ellipsoid((0,.976,.81),(.103,.017,.149),'eye',24,8)
+    s.ellipsoid((0,.953,.797),(.102,.027,.161),'light',24,10)
     for side in [-1,1]:
-        s.ellipsoid((side*.145,1.215,.68),(.04,.044,.055),'claw',16,10)
-        s.ellipsoid((side*.170,1.216,.698),(.011,.028,.02),'eye',12,8)
-        s.ellipsoid((side*.071,1.172,.86),(.017,.011,.022),'eye',12,8)
-        s.tube([(side*.125,1.28,.52),(side*.20,1.39,.42),(side*.23,1.47,.31)],[.054,.033,.002],'claw',12)
-        for z in [.74,.83]:
-            s.tube([(side*.109,1.105,z),(side*.105,1.048,z+.014)],[.021,.002],'claw',10)
-        # Powerful rear legs and small forelegs stay separately articulated.
-        move = side*step*.065
-        s.ellipsoid((side*.25,.38,-.23),(.18,.24,.20))
-        s.tube([(side*.29,.35,-.19),(side*.33,.14,-.04+move),(side*.32,.065,.14+move)],[.12,.074,.066],sides=18)
-        s.ellipsoid((side*.32,.06,.17+move),(.12,.055,.16),segments=24,rings=12)
-        s.tube([(side*.18,.62,.20),(side*.30,.39,.33),(side*.27,.26,.50-move)],[.075,.049,.04],sides=14)
+        # Recessed amber eye beneath a strong swept brow.
+        s.ellipsoid((side*.126,1.075,.687),(.025,.028,.048),'ridge',16,10)
+        s.ellipsoid((side*.144,1.077,.694),(.012,.019,.032),'iris',16,10)
+        s.ellipsoid((side*.153,1.079,.704),(.004,.015,.007),'eye',12,8)
+        s.tube([(side*.099,1.105,.752),(side*.14,1.12,.672),(side*.148,1.093,.595)], [.023,.03,.014],'body',12)
+        s.ellipsoid((side*.065,1.027,.899),(.013,.009,.021),'eye',12,8)
+        # Horns sweep backwards along the skull, with smaller cheek spurs.
+        s.tube([(side*.105,1.11,.52),(side*.17,1.205,.425),(side*.20,1.24,.30),(side*.21,1.27,.225)], [.042,.031,.015,.001],'claw',14)
+        s.tube([(side*.127,1.012,.528),(side*.205,1.012,.45),(side*.229,1.052,.37)], [.039,.022,.001],'ridge',12)
+        for z in [.79,.866]:
+            s.tube([(side*.094,.985,z),(side*.092,.951,z+.012)],[.012,.001],'claw',10)
+        move = side*step*.048
+        lift = max(0,side*step)*.026
+        s.ellipsoid((side*.235,.325,-.30),(.165,.21,.21))
+        s.tube([(side*.25,.32,-.30),(side*.31,.17,-.16+move),(side*.30,.07,.055+move)], [.113,.078,.056],sides=20)
+        s.ellipsoid((side*.30,.055+lift,.105+move),(.097,.05,.13),segments=24,rings=12)
+        # Front feet now support the body: a dragon's planted four-legged stance.
+        s.tube([(side*.18,.55,.18),(side*.255,.30,.28-move),(side*.235,.067+lift,.425-move)], [.087,.053,.04],sides=18)
+        s.ellipsoid((side*.235,.046+lift,.462-move),(.073,.04,.095),segments=20,rings=10)
         for toe in [-1,0,1]:
-            s.tube([(side*.32+toe*.07,.075,.26+move),(side*.32+toe*.082,.03,.38+move)],[.03,.001],'claw',10)
-            s.tube([(side*.27+toe*.031,.27,.49-move),(side*.27+toe*.04,.19,.55-move)],[.019,.001],'claw',8)
-        # A thin, scalloped web between individually shaped wing fingers.
-        flap = step*.08
-        root = np.array([side*.16,.81,-.02])
-        elbow = np.array([side*.49,1.09+flap,-.13])
-        wrist = np.array([side*.83,1.28+flap,-.03])
-        rim = [wrist,
-               [side*1.18,1.05+flap,-.27],
-               [side*.86,.82+flap,-.27],
-               [side*1.02,.67+flap,-.59],
-               [side*.68,.66+flap,-.45],
-               [side*.66,.43+flap,-.79],
-               [side*.39,.50,-.53], [side*.23,.42,-.38]]
-        s.membrane(elbow,rim)
-        s.membrane(root,[elbow,rim[-1]])
-        s.tube([root,elbow,wrist],[.08,.055,.026],sides=14)
-        for end in [rim[1],rim[3],rim[5],rim[7]]:
-            s.tube([elbow,(elbow+np.array(end))*.5,end],[.031,.018,.004],sides=10)
-        s.tube([wrist,wrist+np.array([side*.045,.10,.04])],[.022,.001],'claw',10)
-    tail = [(0,.52,-.40),(.025,.36,-.63),(.10+step*.018,.20,-.84),(.20+step*.04,.16,-1.06),(.32+step*.06,.26,-1.22),(.30+step*.09,.43,-1.32),(.20+step*.10,.51,-1.28)]
-    s.tube(tail,[.16,.12,.085,.057,.033,.019,.001],sides=20)
-    for j in range(7):
-        z = .36-j*.13
-        y = .88 if j>2 else 1.04-j*.055
-        s.tube([(0,y,z),(0,y+.12,z-.04)],[.053,.001],'light',8)
+            for x,z,w in [(side*.30+toe*.054,.19+move,.023),(side*.235+toe*.043,.51-move,.018)]:
+                s.tube([(x,.055+lift,z),(x+toe*.007,.039+lift,z+.052),(x+toe*.01,.022+lift,z+.09)], [w,w*.65,.001],'claw',10)
+        flap = step*.035
+        root = np.array([side*.17,.69,-.02])
+        elbow = np.array([side*.40,.91+flap,-.13])
+        wrist = np.array([side*.69,1.22+flap,.015])
+        tips = [np.array(p) for p in [
+            [side*1.15,1.29+flap,-.19],
+            [side*1.075,.89+flap,-.48],
+            [side*.80,.64+flap,-.75],
+            [side*.45,.48,-.70],
+            [side*.19,.46,-.42]]]
+        # All membranes meet at the wrist, matching the visible finger anatomy.
+        for a,b in zip(tips,tips[1:]):
+            s.web(wrist,a,b,side)
+        s.web(wrist,root,tips[-1],side)
+        s.tube([root,elbow,wrist,tips[0]], [.067,.045,.031,.001],sides=16)
+        for tip in tips[1:-1]:
+            mid = wrist*.45+tip*.55+np.array([side*.035,.055,0])
+            s.tube([wrist,mid,tip],[.018,.011,.001],'body',10)
+        s.tube([wrist,wrist+np.array([side*.023,.065,.055]),wrist+np.array([side*.037,.098,.04])],[.023,.014,.001],'claw',10)
+    tail = [(0,.43,-.45),(.035,.31,-.66),(.13+step*.012,.18,-.87),(.27+step*.025,.14,-1.07),(.40+step*.04,.22,-1.21),(.42+step*.05,.36,-1.23),(.33+step*.06,.42,-1.16)]
+    s.tube(tail,[.146,.11,.076,.047,.027,.013,.001],sides=22)
+    # Dorsal plates are embedded in the back/neck instead of floating above it.
+    for x,y,z,h,r in [(0,.99,.405,.075,.028),(0,.86,.285,.09,.035),
+                      (0,.79,.13,.105,.041),(0,.78,-.03,.12,.044),
+                      (0,.745,-.20,.115,.043),(0,.65,-.37,.10,.039),
+                      (.025,.49,-.57,.085,.032),(.08,.335,-.76,.068,.026),
+                      (.18+step*.018,.22,-.94,.05,.020)]:
+        s.tube([(x,y,z),(x,y+h*.66,z-.026),(x,y+h,z-.07)], [r,r*.6,.001],'ridge',10)
     return s.result()
 
-
 AUTHORED = {21:rat,56:rat,34:dragon,39:dragon}
+
+# Keep authored materials stable while poses change; source frame zero is original.
+PALETTE_FRAME = {34: 0, 39: 0}

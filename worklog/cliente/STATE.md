@@ -13,6 +13,29 @@ Contrato publicado: SI
 
 ## Le toca
 
+2026-09-06: Dragon y Dragon Lord refinados y revisados con renderer real.
+- Cabeza alargada, cejas, cuernos curvos, cuatro patas apoyadas y cola curva.
+- Alas concavas con dedos desde la muneca; placas de pecho y lomo adheridas.
+- Normales exteriores suaves y winding horario Godot; se corrige sombreado
+  invertido del generador anterior. Paleta por region, sin franjas por anillo.
+- RGB tomados del sprite original; fase cero fija el material de las tres poses
+  para evitar parpadeo de color. Dragon Lord conserva tonos rojos.
+- Contrato 1.8.0 y TVPVOL01 intactos. Rat/Cave Rat no se regeneraron.
+- Visor con luz de relleno, encuadre mayor y captura --fase / --elevacion.
+- Verificado: self_test.gd 61/61; self_test_anatomia.py 2/2 (normales exteriores,
+  winding, finitud, normalizacion, RGB originales, paletas iguales entre poses,
+  bounds y hashes del catalogo). Capturas antes.png/despues.png/lord.png junto
+  al componente; perfil.png es una captura intermedia de la segunda pose.
+- Limites: siguen siendo modelos estilizados y tres poses discretas, sin rig
+  esqueletico; pendiente valoracion artistica del usuario y partida real.
+  Cada dragon tiene 39172 triangulos por pose y archivo de 9518820 bytes;
+  no se ha medido el rendimiento con muchos dragones simultaneos ni exportado.
+- Decision reversible: materiales regionales y curvas dentro de DragonSculpt.
+- Se guarda commit local del carril. Push pendiente: no hay instruccion de
+  publicar esta nueva pasada al remoto en el turno actual; no se pide permiso
+  para continuar el trabajo visual ya autorizado.
+
+Checkpoint anterior conservado como historial:
 Checkpoint solicitado por usuario el 2026-09-06 antes de agotar tokens.
 Implementado: cuatro prototipos anatomicos (21,56,34,39), cache de mallas,
 renderer y picking integrados, visor interactivo abierto con recarga de mallas.

@@ -35,22 +35,27 @@ func _crear() -> void:
 	var entorno := WorldEnvironment.new()
 	entorno.environment = Environment.new()
 	entorno.environment.background_mode = Environment.BG_COLOR
-	entorno.environment.background_color = Color("20282b")
+	entorno.environment.background_color = Color("171e25")
 	entorno.environment.ambient_light_source = Environment.AMBIENT_SOURCE_COLOR
 	entorno.environment.ambient_light_color = Color.WHITE
-	entorno.environment.ambient_light_energy = .8
+	entorno.environment.ambient_light_energy = .55
 	escena.add_child(entorno)
 	var luz := DirectionalLight3D.new()
 	luz.rotation_degrees = Vector3(-55, -30, 0)
-	luz.light_energy = .65
+	luz.light_energy = 1.15
 	luz.shadow_enabled = true
 	escena.add_child(luz)
+	var relleno := DirectionalLight3D.new()
+	relleno.rotation_degrees = Vector3(-30, 135, 0)
+	relleno.light_color = Color(0.70, 0.83, 1.0)
+	relleno.light_energy = .45
+	escena.add_child(relleno)
 	var piso := MeshInstance3D.new()
 	var plano := PlaneMesh.new()
 	plano.size = Vector2(200,200)
 	piso.mesh = plano
 	var mat := StandardMaterial3D.new()
-	mat.albedo_color = Color("424b4c")
+	mat.albedo_color = Color("202a30")
 	mat.roughness = 1.0
 	piso.material_override = mat
 	piso.position.y = -.025
@@ -102,6 +107,10 @@ func _crear() -> void:
 			salida = args[i+1]
 		if args[i] == "--angulo" and i+1 < args.size():
 			angulo = float(args[i+1])
+		if args[i] == "--fase" and i+1 < args.size():
+			reloj = float(args[i+1]) / 6.0
+		if args[i] == "--elevacion" and i+1 < args.size():
+			elevacion = float(args[i+1])
 	_elegir(tipo)
 
 
@@ -111,7 +120,7 @@ func _elegir(id: int) -> void:
 	var ficha: Dictionary = modelos.fichas.get(str(tipo), {})
 	var maximo: Array = ficha.get("max", [1,1,1])
 	var minimo: Array = ficha.get("min", [-1,0,-1])
-	distancia = maxf(.70, maxf(float(maximo[0])-float(minimo[0]), maxf(float(maximo[1]), float(maximo[2])-float(minimo[2])))) * 1.45
+	distancia = maxf(.70, maxf(float(maximo[0])-float(minimo[0]), maxf(float(maximo[1]), float(maximo[2])-float(minimo[2])))) * 1.18
 	_actualizar_modelo()
 
 

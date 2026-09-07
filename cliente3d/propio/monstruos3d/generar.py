@@ -13,7 +13,7 @@ import struct
 import numpy as np
 from PIL import Image
 from scipy import ndimage
-from anatomia import AUTHORED
+from anatomia import AUTHORED, PALETTE_FRAME
 
 ROOT = Path(__file__).resolve().parents[2]
 ATLAS = ROOT / 'assets' / 'sprites772'
@@ -153,7 +153,7 @@ def main():
             depth = float(widths[:, [1,3]].max())
             inferred = (heights.max(axis=0) - np.array([depth,width,depth,width])*SIN)/COS
             height = max(6., float(inferred.max()), heights.max()*.28)
-            frames = ([AUTHORED[oid](v, p) for p, v in enumerate(views)] if oid in AUTHORED
+            frames = ([AUTHORED[oid](views[PALETTE_FRAME.get(oid, p)], p) for p, v in enumerate(views)] if oid in AUTHORED
                       else [reconstruct(v, (width,height,depth)) for v in views])
             # One shared transform for ALL animation frames, so feet do not jump.
             bottom = min(float(f[0][:,1].min()) for f in frames)
