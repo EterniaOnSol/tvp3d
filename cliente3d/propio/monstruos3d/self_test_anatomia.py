@@ -89,7 +89,7 @@ class DragonTests(unittest.TestCase):
     def test_spider_sizes_and_enabled_count(self):
         manifest = json.loads((OUT/'catalogo.json').read_text())['monstruos']
         enabled = {int(k) for k,v in manifest.items() if v.get('anatomia')}
-        self.assertEqual(enabled,{21,56,34,39,30,36,38,208,219,27,52,3,16,42,123,28,81,26,82,83,79,43,45,124})
+        self.assertEqual(enabled,{21,56,34,39,30,36,38,208,219,27,52,3,16,42,123,28,81,26,82,83,79,43,45,124,13,14,60})
         small = np.array(manifest['30']['max'])-manifest['30']['min']
         giant = np.array(manifest['38']['max'])-manifest['38']['min']
         self.assertGreater(giant[0],small[0]*1.4)
@@ -228,6 +228,34 @@ class DragonTests(unittest.TestCase):
         self.assertLess(size(45),size(21))
         self.assertLess(size(45)*2,size(83))
         self.assertGreater(size(124),size(43))
+
+    def test_farm_hooves_coat_and_relative_height(self):
+        from granja import leg_joints,hoof_centers,fleece_point,pig_tail
+        for pig in (False,True):
+            for phase in range(3):
+                feet=np.array([leg_joints(side,front,phase,pig)[-1]
+                               for side in (-1,1) for front in (True,False)])
+                self.assertEqual(np.isclose(feet[:,1],.030).sum(),4 if phase==0 else 2)
+                self.assertTrue(np.all(feet[:,1]>=.030))
+                for foot in feet:
+                    toes=hoof_centers(foot)
+                    self.assertGreater(toes[1,0]-toes[0,0],.024)
+        for phase in range(3):
+            self.assertTrue(np.isfinite(pig_tail(phase)).all())
+            self.assertTrue(np.all(pig_tail(phase)[:,1]>.30))
+        # The wool silhouette has real relief above the underlying ellipsoid.
+        theta=np.linspace(.1,np.pi-.1,100)
+        points=np.array([fleece_point(t,.3) for t in theta])
+        self.assertGreater(np.ptp(np.linalg.norm((points-[0,.395,-.05])/[.205,.218,.338],axis=1)),.02)
+        entries=json.loads((OUT/'catalogo.json').read_text())['monstruos']
+        self.assertTrue(np.allclose(entries['13']['max'],entries['14']['max']))
+        self.assertTrue(np.allclose(entries['13']['min'],entries['14']['min']))
+        self.assertGreater(entries['14']['max'][1],entries['60']['max'][1]*1.2)
+        def brightness(oid):
+            blob=(OUT/entries[oid]['archivo']).read_bytes()
+            n=struct.unpack_from('<I',blob,12)[0]
+            return np.frombuffer(blob,dtype='u1',count=n*3,offset=16+n*24).mean()
+        self.assertGreater(brightness('14'),brightness('13')*1.5)
 
 if __name__ == '__main__':
     unittest.main(verbosity=2)

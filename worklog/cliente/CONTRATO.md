@@ -1,9 +1,16 @@
 # Contrato: cliente
 
-Version: 1.15.0
+Version: 1.16.0
 Estado: PUBLICADO
 Propietario: cliente
 Depende de: modelo-comun 1.0.0, protocolo-red 1.1.0, assets 1.3.0
+
+## Animales de granja
+
+- 13 Black Sheep y 14 Sheep: lana con relieve, cuatro patas y pezunas partidas.
+- 60 Pig: torso bajo, hocico con narinas, orejas y cola rizada.
+- Tres poses, RGB originales, escala comun: ovejas .95 y Pig 1.00 casillas.
+- Catalogo: 27/144 apariencias, 117 pendientes. No cambia red ni colisiones.
 
 ## Artropodos adicionales
 
@@ -11,7 +18,7 @@ Depende de: modelo-comun 1.0.0, protocolo-red 1.1.0, assets 1.3.0
 - 45 Bug: seis patas, antenas y cuerpo compacto con elitros.
 - 124 Centipede: cuerpo segmentado, un par de patas por segmento y antenas.
 - Tres poses y RGB del atlas original; escalas artisticas uniformes en casillas:
-  Scorpion 1.10, Bug 0.42 y Centipede 1.30. Catalogo: 24/144, 120 pendientes.
+  Scorpion 1.10, Bug 0.42 y Centipede 1.30. Se suman al catalogo de apariencias habilitadas.
 - Misma cache, giros y TVPVOL01; no cambia autoridad ni colisiones.
 
 ## Refinamiento y escala relativa
@@ -24,7 +31,7 @@ Depende de: modelo-comun 1.0.0, protocolo-red 1.1.0, assets 1.3.0
 - El generador aplica un solo factor uniforme por apariencia y todas sus poses.
   Registra objetivo y factor en el catalogo; conserva TVPVOL01 y RGB originales.
 - Rat debe quedar claramente menor que Giant Spider; Ancient Scarab debe
-  superar claramente a Scarab. Se auditan las 24 apariencias habilitadas.
+  superar claramente a Scarab. Se auditan las 27 apariencias habilitadas.
 - El visor ofrece comparacion simultanea sin normalizar modelos, cuadricula
   de una casilla y dimensiones; el zoom individual se identifica como detalle.
 - No cambia autoridad, alcance de ataque, posicion ni colisiones del servidor.
@@ -46,7 +53,7 @@ Depende de: modelo-comun 1.0.0, protocolo-red 1.1.0, assets 1.3.0
   capucha volumetrica para Cobra. Snake conserva un perfil bajo sobre suelo.
   Se incorporan 26 Rotworm (seis poses de apertura de boca), 82 Larva,
   83 Scarab y 79 Ancient Scarab (tres poses), con anatomia y RGB originales.
-  Veinticuatro apariencias tienen modelo; las otras 120 quedan pendientes.
+  Veintisiete apariencias tienen modelo; las otras 117 quedan pendientes.
   Las pruebas de interseccion de siluetas no se habilitan en produccion.
 - Recursos derivados y generador viven en `cliente3d/propio/monstruos3d/`.
   No cambian formatos de assets ni red; son recursos del renderer.

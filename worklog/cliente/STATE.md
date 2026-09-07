@@ -13,6 +13,28 @@ Contrato publicado: SI
 
 ## Le toca
 
+2026-09-06: Black Sheep 13, Sheep 14 y Pig 60 integrados, contrato 1.16.0.
+- Catalogo 27/144, 117 pendientes. Tres poses, RGB originales, cuatro patas
+  con apoyo diagonal y pezunas partidas; ovejas con lana geometrica continua,
+  Pig mas bajo con hocico, narinas, orejas y cola rizada.
+- Escalas: ovejas .95 y Pig 1.00 casillas; comparadas con Rat, Wolf y Bear.
+  Modelos previos no regenerados. Decision reversible: granja.py y escalas.json.
+- Verificado: Godot 466/466, Python 12/12; comandos en LEEME.md.
+  Pezunas partidas y apoyos, lana con relieve, contraste de colores entre las
+  dos ovejas, altura relativa, normales, RGB, hashes y todas las escalas.
+- Capturas finales revisadas: granja_14.png pose 0, granja_13.png pose 1,
+  granja_60.png pose 2, comparacion_granja.png. Fuente: granja_referencia.png.
+- Triangulos por pose: Sheep/Black Sheep 10594, Pig 8382.
+- Pendientes arte final, partida real, benchmark de grupos y exportacion.
+  Seguir otra familia pendiente, conservando siempre escala y comparacion.
+- Commit y push a origin/main autorizados; comprobar resultado Git al cierre.
+  Visor con Rat/Black Sheep/Sheep/Pig/Wolf/Bear y Pig seleccionado en detalle.
+
+Apertura conservada:
+2026-09-06: Sheep/Black Sheep/Pig en curso, contrato 1.16.0.
+Decision reversible: granja.py, tres poses y objetivos en escalas.json.
+
+
 2026-09-06: Scorpion 43, Bug 45 y Centipede 124 integrados, contrato 1.15.0.
 - 24/144 apariencias modeladas, 120 pendientes. Tres poses y RGB originales.
 - Scorpion: ocho patas, dos pinzas, cola segmentada elevada y aguijon curvo.

@@ -6,7 +6,36 @@ hecho en Godot 4.
 
 Empezado el **24 de agosto de 2026**.
 
-## Checkpoint actual: Scorpion, Bug y Centipede - 6 de septiembre de 2026
+## Checkpoint actual: Sheep, Black Sheep y Pig - 6 de septiembre de 2026
+
+**27 apariencias modeladas de 144; 117 pendientes.** Se incorporan Black Sheep
+(13), Sheep (14) y Pig (60), con tres poses y RGB del atlas original.
+Las ovejas comparten forma y escala, lana con relieve continuo, orejas laterales,
+cuatro patas y pezunas partidas. Pig tiene cuerpo mas bajo, hocico con dos
+narinas, orejas y cola rizada. Se corrigieron las uniones de patas y orejas.
+
+Escalas comunes: ovejas 0.95 y Pig 1.00 casillas de extension horizontal maxima.
+Son objetivos artisticos editables, incluyen apendices y no alteran colisiones.
+Se compararon con Rat .48, Wolf 1.12 y Bear 1.65. Tabla completa en ESCALAS.md.
+
+Codigo: `cliente3d/propio/monstruos3d/granja.py`; regenerar con
+`python cliente3d/propio/monstruos3d/generar.py --ids 13 14 60`.
+Visor: agregar `--comparar --grupo 21,13,14,60,27,16 --tipo 60` al comando
+indicado abajo. Desactivar Comparar tamanos permite revisar Pig en detalle.
+Capturas revisadas: `granja_13.png`, `granja_14.png`, `granja_60.png` y
+`comparacion_granja.png`; fuente original `granja_referencia.png`, junto al componente.
+
+Verificado: **466 comprobaciones Godot, 0 fallas; 12 pruebas Python OK**.
+Comandos: `python cliente3d/propio/monstruos3d/self_test_anatomia.py` y
+`Godot --headless --path cliente3d --script res://propio/monstruos3d/self_test.gd`.
+Se verifican apoyos diagonales, pezunas partidas, lana geometrica, contraste
+Sheep/Black Sheep, altura relativa Pig, giros, cache, RGB, hashes y 27 escalas.
+Modelos anteriores conservados sin regeneracion.
+
+Pendientes: valoracion artistica, partida real, benchmark de grupos y exportacion.
+Cierre con commit y push autorizados; visor con comparacion de esta tanda.
+
+## Checkpoint anterior: Scorpion, Bug y Centipede - 6 de septiembre de 2026
 
 **24 apariencias modeladas de 144; 120 pendientes.** Se incorporan Scorpion
 (43), Bug (45) y Centipede (124), con RGB del atlas original y tres poses.
