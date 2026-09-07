@@ -6,7 +6,29 @@ hecho en Godot 4.
 
 Empezado el **24 de agosto de 2026**.
 
-## Checkpoint actual: osos 3D - 6 de septiembre de 2026
+## Checkpoint actual: serpientes 3D - 6 de septiembre de 2026
+
+**17 apariencias con modelo de 144; 127 pendientes.** Se incorporan Snake (28)
+y Cobra (81), con cuerpo ondulante y tres poses. Snake conserva perfil bajo,
+color verde y ojos rojos; Cobra tiene cuello levantado, capucha con volumen,
+vientre claro y marca dorsal. RGB originales y escala por sprite.
+
+Codigo: `cliente3d/propio/monstruos3d/serpientes.py`. Regenerar con
+`python cliente3d/propio/monstruos3d/generar.py --ids 28 81`.
+Abrir visor con el comando de abajo y `--tipo 81`.
+
+Verificado: **270 comprobaciones Godot, 0 fallas; 7 pruebas Python OK**.
+Se valida ondulacion con extremos estables, suelo, perfil bajo, cuatro giros,
+cache, RGB y hashes. Capturas finales revisadas: `serpiente_28.png`,
+`serpiente_81.png` y `cobra_dorso.png` en el componente, con las tres poses.
+`serpientes_referencia.png` incluye tambien Serpent Spawn como referencia:
+**220 no esta modelado ni habilitado**.
+
+Son modelos estilizados pendientes de aprobacion artistica y partida real.
+Tambien faltan benchmark con grupos y exportacion distribuible. Visor con Cobra;
+continuidad en `worklog/cliente/STATE.md`. Los checkpoints siguientes son historial.
+
+## Checkpoint anterior: osos 3D - 6 de septiembre de 2026
 
 **15 apariencias con modelo de 144; 129 pendientes.** Se suman Bear (16),
 Polar Bear (42) y Panda (123) a los doce modelos anteriores. Cuerpo robusto,

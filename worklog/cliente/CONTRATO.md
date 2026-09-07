@@ -1,6 +1,6 @@
 # Contrato: cliente
 
-Version: 1.11.0
+Version: 1.12.0
 Estado: PUBLICADO
 Propietario: cliente
 Depende de: modelo-comun 1.0.0, protocolo-red 1.1.0, assets 1.3.0
@@ -18,7 +18,9 @@ Depende de: modelo-comun 1.0.0, protocolo-red 1.1.0, assets 1.3.0
   hocico, orejas y cola; tres poses y RGB originales estables por variante.
   Se incorporan 16 Bear, 42 Polar Bear y 123 Panda: cuerpo robusto,
   cuatro patas, orejas redondas y patrones originales por variante.
-  Quince apariencias tienen modelo; las otras 129 quedan pendientes.
+  Se incorporan 28 Snake y 81 Cobra con cuerpo ondulante, tres poses y
+  capucha volumetrica para Cobra. Snake conserva un perfil bajo sobre suelo.
+  Diecisiete apariencias tienen modelo; las otras 127 quedan pendientes.
   Las pruebas de interseccion de siluetas no se habilitan en produccion.
 - Recursos derivados y generador viven en `cliente3d/propio/monstruos3d/`.
   No cambian formatos de assets ni red; son recursos del renderer.

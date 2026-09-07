@@ -25,14 +25,14 @@ func _ok(etiqueta: String, condicion: bool) -> void:
 
 func _probar() -> void:
 	var catalogo := MODELOS.new()
-	for tipo in [21,34,39,56,30,36,38,208,219,27,52,3,16,42,123]:
+	for tipo in [21,34,39,56,30,36,38,208,219,27,52,3,16,42,123,28,81]:
 		_ok("catalogo y fases %d" % tipo, catalogo.es_monstruo(0x40000001, tipo) and catalogo.fases(tipo) == 3)
 		var primera := catalogo.malla(tipo)
 		_ok("malla compartida %d" % tipo, primera == catalogo.malla(tipo, 3))
 		for fase in range(3):
 			var malla := catalogo.malla(tipo,fase)
 			var aabb := malla.get_aabb()
-			_ok("volumen en tres ejes %d/%d" % [tipo,fase], aabb.size.x > .1 and aabb.size.y > .1 and aabb.size.z > .1)
+			_ok("volumen en tres ejes %d/%d" % [tipo,fase], aabb.size.x > .1 and aabb.size.y > .025 and aabb.size.z > .1)
 			_ok("pies sobre suelo %d/%d" % [tipo,fase], aabb.position.y >= -.001 and aabb.position.y < .08)
 			var material := malla.surface_get_material(0) as StandardMaterial3D
 			_ok("sin billboard %d/%d" % [tipo,fase], material.billboard_mode == BaseMaterial3D.BILLBOARD_DISABLED and material.vertex_color_use_as_albedo)
@@ -73,7 +73,7 @@ func _probar() -> void:
 	mundo._estado.criaturas[id]["apariencia"] = 34
 	mundo._dibujar_criaturas()
 	_ok("cambio outfit", nodo.mesh == mundo._modelos_monstruos.malla(34,1))
-	for tipo_arana in [30,36,38,208,219,27,52,3,16,42,123]:
+	for tipo_arana in [30,36,38,208,219,27,52,3,16,42,123,28,81]:
 		mundo._estado.criaturas[id]["apariencia"] = tipo_arana
 		for direccion in range(4):
 			mundo._estado.criaturas[id]["direccion"] = direccion

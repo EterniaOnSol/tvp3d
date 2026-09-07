@@ -13,6 +13,25 @@ Contrato publicado: SI
 
 ## Le toca
 
+2026-09-06: Snake/Cobra integradas, contrato 1.12.0.
+- IDs 28/81; cuerpo ondulante con extremos fijos entre poses, perfil bajo de
+  Snake y capucha volumetrica Cobra con vientre y marca dorsal originales.
+- Diecisiete apariencias modeladas de 144; 127 pendientes. Serpent Spawn 220
+  solo se inspecciono como referencia; no esta modelado ni habilitado.
+- Verificado: Godot 270/270, Python 7/7. Prueba nueva de centrolinea estable,
+  radios constantes y suelo, altura relativa Snake/Cobra; integracion y giros.
+  El umbral de altura de volumen baja a .025 para admitir la anatomia Snake.
+- Capturas finales revisadas: serpiente_28.png pose 0, serpiente_81.png pose 1,
+  cobra_dorso.png pose 2. Fuente: serpientes_referencia.png, en el componente.
+- Snake 4776 triangulos por pose; Cobra 7256. Tres poses, RGB y escala por sprite.
+- LEEME actualizado y visor con Cobra. Otras familias no se regeneraron.
+- Limites: arte estilizado pendiente de valoracion y partida real; benchmark
+  con grupos y exportacion no realizados. Animacion discreta de tres poses.
+- Decision reversible: perfiles y centrolineas en serpientes.py.
+- Commit local; push pendiente sin instruccion de publicar este lote.
+- Siguiente familia sugerida: Rotworm/Larva, previa revision de sprites.
+
+Historial de osos:
 2026-09-06: Bear/Polar Bear/Panda integrados, contrato 1.11.0.
 - IDs 16/42/123: cuerpo robusto continuo, patas con cinco dedos, orejas redondas,
   hocico y cola corta. Polar Bear alarga cuello/hocico; Panda tiene mascara,

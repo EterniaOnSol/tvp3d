@@ -88,7 +88,7 @@ class DragonTests(unittest.TestCase):
     def test_spider_sizes_and_enabled_count(self):
         manifest = json.loads((OUT/'catalogo.json').read_text())['monstruos']
         enabled = {int(k) for k,v in manifest.items() if v.get('anatomia')}
-        self.assertEqual(enabled,{21,56,34,39,30,36,38,208,219,27,52,3,16,42,123})
+        self.assertEqual(enabled,{21,56,34,39,30,36,38,208,219,27,52,3,16,42,123,28,81})
         small = np.array(manifest['30']['max'])-manifest['30']['min']
         giant = np.array(manifest['38']['max'])-manifest['38']['min']
         self.assertGreater(giant[0],small[0]*1.4)
@@ -133,6 +133,22 @@ class DragonTests(unittest.TestCase):
         rump = (xyz[:,2]<-.1*scale)&(xyz[:,1]>.5*scale)
         self.assertTrue(shoulder.any() and rump.any())
         self.assertLess(float(rgb[shoulder].mean()),float(rgb[rump].mean())*.5)
+    def test_snake_wave_endpoints_and_low_profile(self):
+        from serpientes import centerline
+        for hood in (False,True):
+            rest,radii = centerline(0,hood)
+            for phase in (1,2):
+                points,other_radii = centerline(phase,hood)
+                self.assertTrue(np.isfinite(points).all())
+                self.assertTrue(np.allclose(points[[0,-1]],rest[[0,-1]]))
+                self.assertTrue(np.array_equal(radii,other_radii))
+                self.assertFalse(np.allclose(points,rest))
+                self.assertTrue(np.all(points[:,1]-other_radii>=.0079))
+        entries = json.loads((OUT/'catalogo.json').read_text())['monstruos']
+        snake = np.array(entries['28']['max'])-entries['28']['min']
+        cobra = np.array(entries['81']['max'])-entries['81']['min']
+        self.assertLess(snake[1],snake[2]*.12)
+        self.assertGreater(cobra[1],snake[1]*3)
 
 if __name__ == '__main__':
     unittest.main(verbosity=2)
