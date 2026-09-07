@@ -6,7 +6,32 @@ hecho en Godot 4.
 
 Empezado el **24 de agosto de 2026**.
 
-## Checkpoint actual: serpientes 3D - 6 de septiembre de 2026
+## Checkpoint actual: Rotworm y escarabajos 3D - 6 de septiembre de 2026
+
+**21 apariencias con modelo de 144; 123 pendientes.** Se suman Rotworm (26),
+Larva (82), Scarab (83) y Ancient Scarab (79). Rotworm conserva seis poses de
+apertura/cierre de boca radial; Larva tiene segmentos y seis patas violetas.
+Scarab y Ancient Scarab tienen seis patas, caparazon dividido y mandibulas;
+Ancient Scarab conserva tonos violetas y pinzas grandes. RGB del atlas original.
+
+Codigo: `cliente3d/propio/monstruos3d/reptadores.py`. Regenerar con
+`python cliente3d/propio/monstruos3d/generar.py --ids 26 82 83 79`.
+Abrir el visor con el comando de abajo y `--tipo 79`.
+
+Verificado: **343 comprobaciones Godot, 0 fallas; 8 pruebas Python OK**.
+Comandos: `python cliente3d/propio/monstruos3d/self_test_anatomia.py` y
+`Godot --headless --path cliente3d --script res://propio/monstruos3d/self_test.gd`.
+Se comprobaron fases originales, cache, suelo, normales, RGB, hashes, seis patas,
+apoyos alternados y cuatro giros. Capturas revisadas en el componente:
+`reptador_26.png`, `reptador_82.png`, `reptador_83.png`, `reptador_79.png`
+y `rotworm_cerrado.png`. Referencias: `reptadores_referencia.png` y
+`rotworm_fases.png` (generadas con `referencias.py --animation`).
+
+Modelos estilizados pendientes de aprobacion artistica, partida real,
+benchmark de grupos y exportacion. Visor con Ancient Scarab.
+Continuidad en `worklog/cliente/STATE.md`; checkpoints siguientes son historial.
+
+## Checkpoint anterior: serpientes 3D - 6 de septiembre de 2026
 
 **17 apariencias con modelo de 144; 127 pendientes.** Se incorporan Snake (28)
 y Cobra (81), con cuerpo ondulante y tres poses. Snake conserva perfil bajo,

@@ -40,12 +40,13 @@ class DragonTests(unittest.TestCase):
                 blob = (OUT/entry['archivo']).read_bytes()
                 self.assertEqual(hashlib.sha256(blob).hexdigest(),entry['sha256'])
                 self.assertEqual(blob[:8],b'TVPVOL01')
-                self.assertEqual(struct.unpack_from('<I',blob,8)[0],3)
+                phases = len(self.index['outfits'][str(outfit)]['c'][2])
+                self.assertEqual(struct.unpack_from('<I',blob,8)[0],phases)
                 views = views_for(self.index['outfits'][str(outfit)],0,self.sheets)
                 rgba = views[2]['rgba']
                 source = set(map(tuple,rgba[rgba[:,:,3]>=128,:3].tolist()))
                 offset, poses, palettes = 12, [], []
-                for phase in range(3):
+                for phase in range(phases):
                     count = struct.unpack_from('<I',blob,offset)[0]
                     offset += 4
                     vertices = np.frombuffer(blob,dtype='<f4',count=count*3,offset=offset).reshape(-1,3)
@@ -62,7 +63,7 @@ class DragonTests(unittest.TestCase):
                     poses.append(vertices)
                 self.assertEqual(offset,len(blob))
                 self.assertEqual(palettes[0],palettes[1])
-                self.assertEqual(palettes[0],palettes[2])
+                self.assertTrue(all(p == palettes[0] for p in palettes))
                 self.assertFalse(np.array_equal(poses[0],poses[1]))
                 all_vertices = np.concatenate(poses)
                 self.assertTrue(np.allclose(all_vertices.min(axis=0),entry['min']))
@@ -88,7 +89,7 @@ class DragonTests(unittest.TestCase):
     def test_spider_sizes_and_enabled_count(self):
         manifest = json.loads((OUT/'catalogo.json').read_text())['monstruos']
         enabled = {int(k) for k,v in manifest.items() if v.get('anatomia')}
-        self.assertEqual(enabled,{21,56,34,39,30,36,38,208,219,27,52,3,16,42,123,28,81})
+        self.assertEqual(enabled,{21,56,34,39,30,36,38,208,219,27,52,3,16,42,123,28,81,26,82,83,79})
         small = np.array(manifest['30']['max'])-manifest['30']['min']
         giant = np.array(manifest['38']['max'])-manifest['38']['min']
         self.assertGreater(giant[0],small[0]*1.4)
@@ -149,6 +150,26 @@ class DragonTests(unittest.TestCase):
         cobra = np.array(entries['81']['max'])-entries['81']['min']
         self.assertLess(snake[1],snake[2]*.12)
         self.assertGreater(cobra[1],snake[1]*3)
+
+    def test_crawler_contacts_mouth_cycle_and_sizes(self):
+        from reptadores import leg_joints, mouth_opening
+        aperture = [mouth_opening(p) for p in range(6)]
+        self.assertTrue(all(aperture[p] > aperture[p+1] for p in range(3)))
+        self.assertEqual(aperture[1],aperture[5])
+        self.assertEqual(aperture[2],aperture[4])
+        for larva in (False,True):
+            ground = .010 if larva else .009
+            for step in (0.,1.,-1.):
+                feet = np.array([leg_joints(side,pair,step,larva)[-1]
+                                 for side in (-1,1) for pair in range(3)])
+                self.assertEqual(len(np.unique(feet,axis=0)),6)
+                self.assertTrue(np.isfinite(feet).all())
+                self.assertTrue(np.all(feet[:,1]>=ground))
+                self.assertEqual(np.isclose(feet[:,1],ground).sum(),6 if step==0 else 3)
+        entries = json.loads((OUT/'catalogo.json').read_text())['monstruos']
+        normal = np.array(entries['83']['max'])-entries['83']['min']
+        ancient = np.array(entries['79']['max'])-entries['79']['min']
+        self.assertGreater(ancient[2],normal[2])
 
 if __name__ == '__main__':
     unittest.main(verbosity=2)

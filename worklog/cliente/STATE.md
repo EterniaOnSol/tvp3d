@@ -13,6 +13,26 @@ Contrato publicado: SI
 
 ## Le toca
 
+2026-09-06: Rotworm/Larva/Scarab/Ancient Scarab integrados, contrato 1.13.0.
+- IDs 26/82/83/79; 21 apariencias modeladas de 144, 123 pendientes.
+- Verificado: Godot 343/343, Python 8/8; comandos en LEEME.md.
+  Soporte de seis fases originales, cache ciclica, suelo, normales, RGB y hashes;
+  seis patas con apoyos alternados y cuatro direcciones en el renderer real.
+- Capturas revisadas: reptador_26/82/83/79.png y rotworm_cerrado.png.
+  Referencias originales: reptadores_referencia.png y rotworm_fases.png.
+- Triangulos por pose: Rotworm 6772 (6), Larva 11624 (3), Scarab 8280 (3),
+  Ancient Scarab 9120 (3). Poses discretas, sin rig esqueletico.
+- Decision reversible: perfiles propios en reptadores.py y paleta fija de fase 0.
+- Falta: aprobacion artistica, partida real, benchmark de grupos y exportacion.
+  Seguir con otra familia pendiente; no habilitar experimentos 25/35.
+- Git: cierre con commit local; push pendiente, sin instruccion de publicar
+  esta tanda. No se declara push realizado. Visor abierto con Ancient Scarab.
+
+Registro de apertura conservado:
+2026-09-06: Rotworm/Larva/Scarab/Ancient Scarab en curso, contrato 1.13.0.
+Decision reversible: perfiles en reptadores.py; Rotworm conserva seis fases.
+
+
 2026-09-06: Snake/Cobra integradas, contrato 1.12.0.
 - IDs 28/81; cuerpo ondulante con extremos fijos entre poses, perfil bajo de
   Snake y capucha volumetrica Cobra con vientre y marca dorsal originales.
