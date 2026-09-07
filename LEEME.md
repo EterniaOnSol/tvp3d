@@ -6,7 +6,36 @@ hecho en Godot 4.
 
 Empezado el **24 de agosto de 2026**.
 
-## Checkpoint actual: Dog y Hyaena - 7 de septiembre de 2026
+## Checkpoint actual: Skeleton y Demon Skeleton - 7 de septiembre de 2026
+
+**33 apariencias modeladas de 144; 111 pendientes.** Skeleton (33) y Demon
+Skeleton (37) tienen craneo con orbitas, mandibula y dientes, costillas y pelvis
+abiertas, columna, huesos separados, manos con dedos y pies oseos. Tres poses
+con balanceo de brazos y paso alternado. RGB originales marfil y rojo, sin
+armas ni cuernos que no aparecen en las referencias.
+
+Escalas uniformes: Skeleton .70 y Demon Skeleton .82 casillas de extension
+horizontal maxima; alturas aproximadas 1.58 y 1.85. Objetivos artisticos,
+no colisiones. Comparacion junto a Rat, Wolf, Deer y Bear. Lion, Tiger,
+Badger y Skunk quedan pendientes por preferencia explicita del usuario.
+
+Codigo: `cliente3d/propio/monstruos3d/esqueletos.py`; regenerar con
+`python cliente3d/propio/monstruos3d/generar.py --ids 33 37`.
+Visor: `--comparar --grupo 21,33,37,27,31,16 --tipo 37` con el comando de abajo.
+Capturas revisadas: esqueleto_33.png, esqueleto_37.png, skeleton_dorso.png y
+comparacion_esqueletos.png; fuente esqueletos_referencia.png junto al componente.
+
+Verificado: **568 comprobaciones Godot, 0 fallas; 15 pruebas Python OK**.
+Comandos: `python cliente3d/propio/monstruos3d/self_test_anatomia.py` y
+`Godot --headless --path cliente3d --script res://propio/monstruos3d/self_test.gd`.
+Se validan apoyos, costillas, hueco del torso sobre vertices reales, escala
+relativa, giros, cache, fases, suelo, normales, RGB y hashes.
+
+Cada variante tiene 32261 triangulos por pose (reducidos desde 47049 durante
+la revision). Pendientes: valoracion artistica, partida real, benchmark de
+grupos y exportacion. Commit y push autorizados; visor con los esqueletos.
+
+## Checkpoint anterior: Dog y Hyaena - 7 de septiembre de 2026
 
 **31 apariencias modeladas de 144; 113 pendientes.** Se completaron Deer (31)
 y Rabbit (74, compartido con The Halloween Hare) y se agregaron Dog (32) y

@@ -89,7 +89,7 @@ class DragonTests(unittest.TestCase):
     def test_spider_sizes_and_enabled_count(self):
         manifest = json.loads((OUT/'catalogo.json').read_text())['monstruos']
         enabled = {int(k) for k,v in manifest.items() if v.get('anatomia')}
-        self.assertEqual(enabled,{21,56,34,39,30,36,38,208,219,27,52,3,16,42,123,28,81,26,82,83,79,43,45,124,13,14,60,31,74,32,94})
+        self.assertEqual(enabled,{21,56,34,39,30,36,38,208,219,27,52,3,16,42,123,28,81,26,82,83,79,43,45,124,13,14,60,31,74,32,94,33,37})
         small = np.array(manifest['30']['max'])-manifest['30']['min']
         giant = np.array(manifest['38']['max'])-manifest['38']['min']
         self.assertGreater(giant[0],small[0]*1.4)
@@ -299,6 +299,32 @@ class DragonTests(unittest.TestCase):
         entries=json.loads((OUT/'catalogo.json').read_text())['monstruos']
         self.assertLess(entries['32']['escala']['longitud_casillas'],entries['27']['escala']['longitud_casillas'])
         self.assertGreater(entries['94']['escala']['longitud_casillas'],entries['32']['escala']['longitud_casillas']*1.3)
+
+    def test_skeleton_gait_open_ribs_and_variant_size(self):
+        from esqueletos import leg_joints,arm_joints,ribs
+        for phase in range(3):
+            feet=np.array([leg_joints(side,phase)[-1] for side in (-1,1)])
+            self.assertTrue(np.all(feet[:,1]>=.019))
+            self.assertEqual(np.isclose(feet[:,1],.019).sum(),2 if phase==0 else 1)
+            for side in (-1,1):
+                self.assertTrue(np.isfinite(arm_joints(side,phase)).all())
+        for side in (-1,1):
+            for pair in range(6):
+                arc=ribs(side,pair)
+                self.assertTrue(np.all(arc[:,0]*side>0))
+                self.assertLess(arc[0,2],-.03)
+                self.assertGreater(arc[-1,2],.07)
+                self.assertGreater(abs(arc[2,0]),.10)
+        entries=json.loads((OUT/'catalogo.json').read_text())['monstruos']
+        for oid in ('33','37'):
+            entry=entries[oid]
+            blob=(OUT/entry['archivo']).read_bytes()
+            n=struct.unpack_from('<I',blob,12)[0]
+            xyz=np.frombuffer(blob,dtype='<f4',count=n*3,offset=16).reshape(-1,3)/entry['escala']['factor']
+            # Core of the thorax stays empty; only the spine/sternum close its edges.
+            core=(abs(xyz[:,0])<.035)&(xyz[:,1]>.78)&(xyz[:,1]<.88)&(xyz[:,2]>-.010)&(xyz[:,2]<.035)
+            self.assertFalse(core.any())
+        self.assertGreater(entries['37']['max'][1],entries['33']['max'][1]*1.1)
 
 if __name__ == '__main__':
     unittest.main(verbosity=2)

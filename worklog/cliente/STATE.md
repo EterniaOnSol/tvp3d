@@ -13,6 +13,29 @@ Contrato publicado: SI
 
 ## Le toca
 
+2026-09-07: Skeleton 33 y Demon Skeleton 37 integrados, contrato 1.19.0.
+- Catalogo 33/144, 111 pendientes. Lion/Tiger/Badger/Skunk siguen pendientes
+  por eleccion del usuario: no retomarlos por defecto en la siguiente tanda.
+- Craneos con orbitas, mandibula, dientes, caja toracica y pelvis abiertas,
+  vertebras, huesos separados y dedos. Tres poses, sin armas/cuernos inventados.
+- Escalas artisticas .70/.82 horizontal; alturas aprox. 1.58/1.85 casillas.
+- Verificado: Godot 568/568, Python 15/15. Apoyos alternos, hueco del torso,
+  costillas, giros, cache, RGB originales marfil/rojo, hashes y 33 escalas.
+- Capturas finales revisadas: esqueleto_33.png pose 0, esqueleto_37.png pose 1,
+  skeleton_dorso.png pose 2, comparacion_esqueletos.png. Fuente original:
+  esqueletos_referencia.png, junto al componente. Comandos en LEEME.md.
+- 32261 triangulos por pose, reducidos de 47049 al aligerar huesos pequenos.
+- Decision reversible: esqueletos.py y objetivos de escala; formato intacto.
+- Pendientes arte final, partida real, benchmark de grupos y exportacion.
+- Commit y push a origin/main autorizados; confirmar resultado Git al cierre.
+  Visor con Rat/Skeleton/Demon Skeleton/Wolf/Deer/Bear y Demon Skeleton elegido.
+
+Apertura conservada:
+2026-09-07: Skeleton/Demon Skeleton en curso, contrato 1.19.0.
+Usuario mantiene Lion/Tiger/Badger/Skunk pendientes. Decision reversible:
+esqueletos.py y escalas .70/.82; tres poses, sin armas/cuernos ajenos al sprite.
+
+
 2026-09-07: Deer/Rabbit y Dog/Hyaena completados. Catalogo 31/144; 113 pendientes.
 - Contrato 1.18.0. Deer/Rabbit publicados en 7d16f3c; se cierra Dog/Hyaena.
 - Dog 32: castano, orejas caidas, cola delgada, cuatro patas con apoyo diagonal.

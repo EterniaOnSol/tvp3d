@@ -37,10 +37,12 @@ editables en escalas.json; no representan medidas oficiales ni colisiones.
 | Rabbit / The Halloween Hare | 74 | nuevo | 0.55 | 0.46 |
 | Dog | 32 | nuevo | 0.85 | 0.44 |
 | Hyaena | 94 | nuevo | 1.20 | 0.69 |
+| Skeleton | 33 | nuevo | 0.70 | 1.58 |
+| Demon Skeleton | 37 | nuevo | 0.82 | 1.85 |
 
 Regenerar las apariencias modificadas con `python generar.py --ids ID ...`.
 Un factor uniforme preserva las proporciones y se aplica a todas las poses.
-La prueba Python audita los 31 objetivos y Godot mide las mallas cargadas.
+La prueba Python audita los 33 objetivos y Godot mide las mallas cargadas.
 
 Comparar en el visor: `--comparar`; solo escarabajos: `--comparar --grupo 83,79`.
 El modo Detalle ajusta el zoom por modelo, por lo que no sirve para comparar

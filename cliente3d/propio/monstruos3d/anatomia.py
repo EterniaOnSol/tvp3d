@@ -364,3 +364,7 @@ PALETTE_FRAME.update({oid: 0 for oid in FOREST_PROFILES})
 from caninos import make_generators as make_companions, PROFILES as COMPANION_PROFILES
 AUTHORED.update(make_companions(DragonSculpt))
 PALETTE_FRAME.update({oid: 0 for oid in COMPANION_PROFILES})
+
+from esqueletos import make_generators as make_skeletons, PROFILES as SKELETON_PROFILES
+AUTHORED.update(make_skeletons(DragonSculpt))
+PALETTE_FRAME.update({oid: 0 for oid in SKELETON_PROFILES})
