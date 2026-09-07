@@ -6,7 +6,35 @@ hecho en Godot 4.
 
 Empezado el **24 de agosto de 2026**.
 
-## Checkpoint actual: escarabajos refinados y escala comun - 6 de septiembre de 2026
+## Checkpoint actual: Scorpion, Bug y Centipede - 6 de septiembre de 2026
+
+**24 apariencias modeladas de 144; 120 pendientes.** Se incorporan Scorpion
+(43), Bug (45) y Centipede (124), con RGB del atlas original y tres poses.
+Scorpion tiene ocho patas, pinzas separadas y cola segmentada con aguijon;
+Bug tiene seis patas, elitros rojizos y antenas verdes; Centipede tiene doce
+pares de patas, placas dorsales y una onda que recorre el cuerpo.
+
+Escalas comunes: Bug 0.42, Scorpion 1.10 y Centipede 1.30 casillas de extension
+horizontal maxima entre poses. Incluyen apendices y son objetivos artisticos,
+no colisiones. Se compararon junto a Rat, Scarab y Ancient Scarab.
+
+Codigo: `cliente3d/propio/monstruos3d/artropodos.py`; regenerar con
+`python cliente3d/propio/monstruos3d/generar.py --ids 43 45 124`.
+Visor: agregar `--comparar --grupo 21,45,83,43,124,79 --tipo 43` al comando
+indicado abajo. Desactivar Comparar tamanos permite ver Scorpion en detalle.
+Capturas revisadas: `artropodo_43.png`, `artropodo_45.png`, `artropodo_124.png`
+y `comparacion_artropodos.png`; referencia original `artropodos_referencia.png`.
+
+Verificado: **415 comprobaciones Godot, 0 fallas; 11 pruebas Python OK**.
+Comandos: `python cliente3d/propio/monstruos3d/self_test_anatomia.py` y
+`Godot --headless --path cliente3d --script res://propio/monstruos3d/self_test.gd`.
+Se comprueban patas y apoyos, cola, giros, cache, fases, suelo, normales, RGB,
+hashes y las 24 escalas. Los modelos anteriores no se regeneraron.
+
+Pendientes: valoracion artistica, partida real, benchmark de grupos y exportacion.
+Commit y push autorizados por el usuario; visor con la comparacion de artropodos.
+
+## Checkpoint anterior: escarabajos refinados y escala comun - 6 de septiembre de 2026
 
 Scarab (83) y Ancient Scarab (79) se rehacen con elitros separados, surcos
 geometricos, bordes de quitina, seis patas articuladas, espinas y pequenas

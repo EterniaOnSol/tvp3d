@@ -89,7 +89,7 @@ class DragonTests(unittest.TestCase):
     def test_spider_sizes_and_enabled_count(self):
         manifest = json.loads((OUT/'catalogo.json').read_text())['monstruos']
         enabled = {int(k) for k,v in manifest.items() if v.get('anatomia')}
-        self.assertEqual(enabled,{21,56,34,39,30,36,38,208,219,27,52,3,16,42,123,28,81,26,82,83,79})
+        self.assertEqual(enabled,{21,56,34,39,30,36,38,208,219,27,52,3,16,42,123,28,81,26,82,83,79,43,45,124})
         small = np.array(manifest['30']['max'])-manifest['30']['min']
         giant = np.array(manifest['38']['max'])-manifest['38']['min']
         self.assertGreater(giant[0],small[0]*1.4)
@@ -204,6 +204,30 @@ class DragonTests(unittest.TestCase):
             xyz = np.array([elytron_point(1,np.pi/2,p,ancient) for p in phi])
             residual = xyz[:,1]-(.142+.127*np.cos(phi))
             self.assertGreater(np.ptp(residual),.004)
+
+    def test_arthropod_contacts_tail_and_size(self):
+        from artropodos import PROFILES,leg_joints,tail_points
+        for profile in PROFILES.values():
+            for phase in range(3):
+                feet=np.array([leg_joints(side,pair,phase,profile['shape'])[-1]
+                               for side in (-1,1) for pair in range(profile['pairs'])])
+                self.assertEqual(len(np.unique(feet,axis=0)),profile['pairs']*2)
+                self.assertTrue(np.isfinite(feet).all())
+                self.assertTrue(np.all(feet[:,1]>=.008))
+                contacts=profile['pairs'] if phase or profile['shape']=='centipede' else profile['pairs']*2
+                # The first centipede pair has both feet down at the wave zero crossing.
+                if profile['shape']=='centipede' and phase==0:
+                    contacts+=1
+                self.assertEqual(np.isclose(feet[:,1],.008).sum(),contacts)
+        for phase in range(3):
+            tail=tail_points(phase)
+            self.assertGreater(tail[:,1].max(),.5)
+            self.assertTrue(np.all(np.linalg.norm(np.diff(tail,axis=0),axis=1)>.05))
+        entries=json.loads((OUT/'catalogo.json').read_text())['monstruos']
+        size=lambda oid:entries[str(oid)]['escala']['longitud_casillas']
+        self.assertLess(size(45),size(21))
+        self.assertLess(size(45)*2,size(83))
+        self.assertGreater(size(124),size(43))
 
 if __name__ == '__main__':
     unittest.main(verbosity=2)

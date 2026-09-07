@@ -13,6 +13,30 @@ Contrato publicado: SI
 
 ## Le toca
 
+2026-09-06: Scorpion 43, Bug 45 y Centipede 124 integrados, contrato 1.15.0.
+- 24/144 apariencias modeladas, 120 pendientes. Tres poses y RGB originales.
+- Scorpion: ocho patas, dos pinzas, cola segmentada elevada y aguijon curvo.
+  Bug: seis patas, elitros rojizos, antenas verdes. Centipede: doce pares,
+  placas dorsales, antenas y onda corporal con apoyos alternados.
+- Escalas artisticas: Bug .42, Scorpion 1.10, Centipede 1.30 casillas.
+  Misma tabla uniforme. Modelos previos conservados sin regeneracion.
+- Verificado: Godot 415/415 y Python 11/11; comandos en LEEME.md.
+  La prueba admite apoyo doble al cruzar cero la onda de Centipede (fase 0).
+- Capturas finales revisadas: artropodo_43.png pose 0, artropodo_45.png pose 1,
+  artropodo_124.png pose 2, comparacion_artropodos.png. Referencias originales
+  artropodos_referencia.png. Todos junto al componente de monstruos3d.
+- Triangulos por pose: Scorpion 12852, Bug 5336, Centipede 15736.
+- Decision reversible: artropodos.py y objetivos en escalas.json.
+- Falta valoracion artistica, partida real, benchmark de grupos y exportacion.
+  Continuar otra familia pendiente, manteniendo siempre escalas y comparacion.
+- Cierre con commit y push autorizados a origin/main; comprobar resultado Git.
+  Visor con comparacion Rat/Bug/Scarab/Scorpion/Centipede/Ancient Scarab.
+
+Apertura conservada:
+2026-09-06: Scorpion/Bug/Centipede en curso, contrato 1.15.0.
+Decision reversible: anatomia en artropodos.py, escalas comunes y tres poses.
+
+
 2026-09-06: refinamiento Scarab/Ancient Scarab y escala comun completados,
 contrato 1.14.0. Usuario autoriza commit y push cuando se estime oportuno;
 esta autorizacion persiste para proximas tandas, sin pedir confirmacion otra vez.

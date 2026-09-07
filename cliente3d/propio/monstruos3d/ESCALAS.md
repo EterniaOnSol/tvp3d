@@ -27,10 +27,13 @@ editables en escalas.json; no representan medidas oficiales ni colisiones.
 | Cobra | 81 | 0.85 | 0.95 | 0.50 |
 | Larva | 82 | 0.83 | 0.65 | 0.19 |
 | Scarab | 83 | 0.83 | 0.85 | 0.29 |
+| Scorpion | 43 | nuevo | 1.10 | 0.62 |
+| Bug | 45 | nuevo | 0.42 | 0.21 |
+| Centipede | 124 | nuevo | 1.30 | 0.14 |
 
 Regenerar las apariencias modificadas con `python generar.py --ids ID ...`.
 Un factor uniforme preserva las proporciones y se aplica a todas las poses.
-La prueba Python audita los 21 objetivos y Godot mide las mallas cargadas.
+La prueba Python audita los 24 objetivos y Godot mide las mallas cargadas.
 
 Comparar en el visor: `--comparar`; solo escarabajos: `--comparar --grupo 83,79`.
 El modo Detalle ajusta el zoom por modelo, por lo que no sirve para comparar

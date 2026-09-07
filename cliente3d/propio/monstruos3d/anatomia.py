@@ -348,3 +348,7 @@ PALETTE_FRAME.update({oid: 0 for oid in SNAKE_PROFILES})
 from reptadores import make_generators as make_crawlers, PROFILES as CRAWLER_PROFILES
 AUTHORED.update(make_crawlers(DragonSculpt))
 PALETTE_FRAME.update({oid: 0 for oid in CRAWLER_PROFILES})
+
+from artropodos import make_generators as make_arthropods, PROFILES as ARTHROPOD_PROFILES
+AUTHORED.update(make_arthropods(DragonSculpt))
+PALETTE_FRAME.update({oid: 0 for oid in ARTHROPOD_PROFILES})
