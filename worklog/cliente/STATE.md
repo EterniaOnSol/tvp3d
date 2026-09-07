@@ -13,6 +13,23 @@ Contrato publicado: SI
 
 ## Le toca
 
+2026-09-07: Troll 15, Frost Troll 53 y Swamp Troll 76 verificados, contrato 1.20.0.
+- Catalogo 36/144, 108 pendientes. Lion/Tiger/Badger/Skunk siguen aplazados.
+- Tres poses, manos con dedos, postura encorvada, RGB originales y escalas
+  .90/1.00/.94; alturas 1.35/1.57/1.26. 20624 triangulos por pose.
+- Corregida lectura del catalogo en la prueba de trolls (OUT y monstruos).
+- Uniones de hombros, munecas y tobillos cubiertas; decision artistica reversible.
+- Python 16/16 y Godot 619/619. Comandos y capturas en monstruos3d/TROLLS.md.
+- Revisadas troll_15.png pose 0, troll_53.png pose 1, troll_76.png pose 2
+  y comparacion_trolls.png con Rat/Skeleton/Bear en escala comun.
+- Prototipos estilizados: siguen pendientes arte final, partida real,
+  benchmark de grupos y exportacion. Las masas del cuerpo aun son distinguibles.
+- Commit/push autorizados; resultado Git se confirma al cierre de la respuesta.
+
+Apertura anterior conservada:
+2026-09-07: EN_CURSO Troll 15, Frost Troll 53 y Swamp Troll 76, contrato 1.20.0.
+Escalas artisticas editables .90/1.00/.94; los cuatro animales aplazados siguen pendientes.
+
 2026-09-07: Skeleton 33 y Demon Skeleton 37 integrados, contrato 1.19.0.
 - Catalogo 33/144, 111 pendientes. Lion/Tiger/Badger/Skunk siguen pendientes
   por eleccion del usuario: no retomarlos por defecto en la siguiente tanda.

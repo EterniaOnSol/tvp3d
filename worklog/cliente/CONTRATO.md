@@ -1,9 +1,17 @@
 # Contrato: cliente
 
-Version: 1.19.0
+Version: 1.20.0
 Estado: PUBLICADO
 Propietario: cliente
 Depende de: modelo-comun 1.0.0, protocolo-red 1.1.0, assets 1.3.0
+
+## Trolls
+
+- 15 Troll, 53 Frost Troll y 76 Swamp Troll: cuerpo encorvado, brazos pesados,
+  rostro, manos y pies articulados; tres poses y RGB del atlas original.
+- Extension horizontal maxima artistica: .90, 1.00 y .94 casillas respectivamente.
+- Catalogo previsto 36/144, 108 pendientes. Lion, Tiger, Badger y Skunk siguen pendientes.
+- Mismo formato, cache, autoridad y colisiones; prototipos sujetos a revision visual.
 
 ## Skeleton y Demon Skeleton
 

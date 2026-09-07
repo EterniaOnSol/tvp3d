@@ -368,3 +368,7 @@ PALETTE_FRAME.update({oid: 0 for oid in COMPANION_PROFILES})
 from esqueletos import make_generators as make_skeletons, PROFILES as SKELETON_PROFILES
 AUTHORED.update(make_skeletons(DragonSculpt))
 PALETTE_FRAME.update({oid: 0 for oid in SKELETON_PROFILES})
+
+from trolls import make_generators as make_trolls, PROFILES as TROLL_PROFILES
+AUTHORED.update(make_trolls(DragonSculpt))
+PALETTE_FRAME.update({oid: 0 for oid in TROLL_PROFILES})

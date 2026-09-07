@@ -101,6 +101,15 @@
     },
     "37": {
       "longitud_casillas": 0.82
+    },
+    "15": {
+      "longitud_casillas": 0.9
+    },
+    "53": {
+      "longitud_casillas": 1.0
+    },
+    "76": {
+      "longitud_casillas": 0.94
     }
   }
 }

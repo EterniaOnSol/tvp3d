@@ -89,7 +89,7 @@ class DragonTests(unittest.TestCase):
     def test_spider_sizes_and_enabled_count(self):
         manifest = json.loads((OUT/'catalogo.json').read_text())['monstruos']
         enabled = {int(k) for k,v in manifest.items() if v.get('anatomia')}
-        self.assertEqual(enabled,{21,56,34,39,30,36,38,208,219,27,52,3,16,42,123,28,81,26,82,83,79,43,45,124,13,14,60,31,74,32,94,33,37})
+        self.assertEqual(enabled,{21,56,34,39,30,36,38,208,219,27,52,3,16,42,123,28,81,26,82,83,79,43,45,124,13,14,60,31,74,32,94,33,37,15,53,76})
         small = np.array(manifest['30']['max'])-manifest['30']['min']
         giant = np.array(manifest['38']['max'])-manifest['38']['min']
         self.assertGreater(giant[0],small[0]*1.4)
@@ -299,6 +299,20 @@ class DragonTests(unittest.TestCase):
         entries=json.loads((OUT/'catalogo.json').read_text())['monstruos']
         self.assertLess(entries['32']['escala']['longitud_casillas'],entries['27']['escala']['longitud_casillas'])
         self.assertGreater(entries['94']['escala']['longitud_casillas'],entries['32']['escala']['longitud_casillas']*1.3)
+
+    def test_troll_support_and_relative_height(self):
+        from trolls import leg_joints, arm_joints
+        for phase in range(3):
+            feet=[leg_joints(side,phase)[-1] for side in (-1,1)]
+            self.assertEqual(sum(abs(p[1]-.045)<1e-8 for p in feet),2 if phase==0 else 1)
+            for side in (-1,1):
+                arm=arm_joints(side,phase)
+                self.assertTrue(np.isfinite(arm).all())
+                self.assertGreater(arm[0,1],arm[-1,1])
+        manifest=json.loads((OUT/'catalogo.json').read_text())['monstruos']
+        height=lambda oid: manifest[str(oid)]['max'][1]-manifest[str(oid)]['min'][1]
+        self.assertGreater(height(53),height(15))
+        self.assertLess(height(76),height(15))
 
     def test_skeleton_gait_open_ribs_and_variant_size(self):
         from esqueletos import leg_joints,arm_joints,ribs
