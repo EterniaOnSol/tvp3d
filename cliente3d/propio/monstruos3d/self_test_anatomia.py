@@ -89,7 +89,7 @@ class DragonTests(unittest.TestCase):
     def test_spider_sizes_and_enabled_count(self):
         manifest = json.loads((OUT/'catalogo.json').read_text())['monstruos']
         enabled = {int(k) for k,v in manifest.items() if v.get('anatomia')}
-        self.assertEqual(enabled,{21,56,34,39,30,36,38,208,219,27,52,3,16,42,123,28,81,26,82,83,79,43,45,124,13,14,60,31,74})
+        self.assertEqual(enabled,{21,56,34,39,30,36,38,208,219,27,52,3,16,42,123,28,81,26,82,83,79,43,45,124,13,14,60,31,74,32,94})
         small = np.array(manifest['30']['max'])-manifest['30']['min']
         giant = np.array(manifest['38']['max'])-manifest['38']['min']
         self.assertGreater(giant[0],small[0]*1.4)
@@ -278,6 +278,27 @@ class DragonTests(unittest.TestCase):
         self.assertGreater(entries['31']['max'][1],entries['14']['max'][1]*1.5)
         self.assertGreater(entries['31']['escala']['longitud_casillas'],entries['74']['escala']['longitud_casillas']*2.5)
         self.assertLess(entries['74']['max'][1],entries['14']['max'][1])
+
+    def test_dog_hyaena_gait_slope_and_size(self):
+        from caninos import leg_joints,torso_path
+        for hyena in (False,True):
+            for phase in range(3):
+                contacts=[]
+                for side in (-1,1):
+                    for front in (True,False):
+                        foot=leg_joints(side,front,phase,hyena)[-1]
+                        self.assertTrue(np.isfinite(foot).all())
+                        self.assertGreaterEqual(foot[1],.023)
+                        if np.isclose(foot[1],.023): contacts.append((side,front))
+                self.assertEqual(len(contacts),4 if phase==0 else 2)
+                if phase:
+                    self.assertNotEqual(contacts[0][0],contacts[1][0])
+                    self.assertNotEqual(contacts[0][1],contacts[1][1])
+        path,radii=torso_path(True)
+        self.assertGreater(path[3,1]+radii[3]-(path[1,1]+radii[1]),.14)
+        entries=json.loads((OUT/'catalogo.json').read_text())['monstruos']
+        self.assertLess(entries['32']['escala']['longitud_casillas'],entries['27']['escala']['longitud_casillas'])
+        self.assertGreater(entries['94']['escala']['longitud_casillas'],entries['32']['escala']['longitud_casillas']*1.3)
 
 if __name__ == '__main__':
     unittest.main(verbosity=2)

@@ -1,6 +1,6 @@
 # Estado: cliente
 
-Estado: EN_CURSO
+Estado: LISTO_PARA_REVISION
 Ultimo agente: codex
 Ultima actualizacion: 2026-09-07
 Contrato publicado: SI
@@ -12,6 +12,30 @@ Contrato publicado: SI
 - `assets`: contrato publicado.
 
 ## Le toca
+
+2026-09-07: Deer/Rabbit y Dog/Hyaena completados. Catalogo 31/144; 113 pendientes.
+- Contrato 1.18.0. Deer/Rabbit publicados en 7d16f3c; se cierra Dog/Hyaena.
+- Dog 32: castano, orejas caidas, cola delgada, cuatro patas con apoyo diagonal.
+  Hyaena 94: hombros altos, lomo descendente, orejas redondas y crin corta,
+  pelaje moteado del atlas. Tres poses, misma cache y formato TVPVOL01.
+- Escalas: Dog .85, Hyaena 1.20, Deer 1.50, Rabbit .55 casillas; objetivos
+  artisticos reversibles en escalas.json. Tabla ESCALAS.md completa para 31.
+- Verificado: Godot 534/534, Python 14/14; comandos en LEEME.md. Pruebas de
+  apoyos diagonales, inclinacion del lomo, escala, cache, RGB y geometria.
+- Capturas finales revisadas: canino_32.png pose 0, canino_94.png pose 1,
+  hyaena_perfil.png pose 2 y comparacion_caninos.png; fuente caninos_referencia.png.
+  Deer/Rabbit: bosque_31.png, bosque_74.png, deer_dorso.png, comparacion_bosque.png.
+- Triangulos por pose: Dog 9196, Hyaena 11436, Deer 13172, Rabbit 10160.
+- Decision reversible: familias en bosque.py y caninos.py, materiales y escalas.
+- Pendientes valoracion artistica, partida real, benchmark de grupos y exportacion.
+  Siguiente familia posible: Lion/Tiger, revisando referencias y escalas primero.
+- Commit y push autorizados a origin/main; confirmar el resultado de Git.
+  Visor con Rat/Dog/Wolf/Hyaena/Deer/Bear, Hyaena seleccionada en detalle.
+
+Historial de esta continuacion:
+2026-09-07: Dog/Hyaena en curso, contrato 1.18.0. Deer/Rabbit subidos en 7d16f3c.
+Decision reversible: perfiles en caninos.py y escalas .85/1.20.
+
 
 2026-09-07: Deer/Rabbit verificados: 29/144; Godot 500, Python 13 OK.
 Escalas 1.50/.55. Cuatro capturas finales revisadas; cornamenta corregida,

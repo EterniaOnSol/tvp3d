@@ -1,9 +1,16 @@
 # Contrato: cliente
 
-Version: 1.17.0
+Version: 1.18.0
 Estado: PUBLICADO
 Propietario: cliente
 Depende de: modelo-comun 1.0.0, protocolo-red 1.1.0, assets 1.3.0
+
+## Dog y Hyaena
+
+- 32 Dog: perro castano, orejas cortas caidas, cola fina y cuatro patas.
+- 94 Hyaena: hombros elevados, grupa baja, orejas redondeadas y pelaje moteado.
+- Tres poses, RGB originales y escala uniforme: Dog .85, Hyaena 1.20 casillas.
+- Catalogo actual 31/144 apariencias, 113 pendientes; formatos y autoridad intactos.
 
 ## Fauna de bosque
 
@@ -39,7 +46,7 @@ Depende de: modelo-comun 1.0.0, protocolo-red 1.1.0, assets 1.3.0
 - El generador aplica un solo factor uniforme por apariencia y todas sus poses.
   Registra objetivo y factor en el catalogo; conserva TVPVOL01 y RGB originales.
 - Rat debe quedar claramente menor que Giant Spider; Ancient Scarab debe
-  superar claramente a Scarab. Se auditan las 29 apariencias habilitadas.
+  superar claramente a Scarab. Se auditan las 31 apariencias habilitadas.
 - El visor ofrece comparacion simultanea sin normalizar modelos, cuadricula
   de una casilla y dimensiones; el zoom individual se identifica como detalle.
 - No cambia autoridad, alcance de ataque, posicion ni colisiones del servidor.
@@ -61,7 +68,7 @@ Depende de: modelo-comun 1.0.0, protocolo-red 1.1.0, assets 1.3.0
   capucha volumetrica para Cobra. Snake conserva un perfil bajo sobre suelo.
   Se incorporan 26 Rotworm (seis poses de apertura de boca), 82 Larva,
   83 Scarab y 79 Ancient Scarab (tres poses), con anatomia y RGB originales.
-  Veintinueve apariencias tienen modelo; las otras 115 quedan pendientes.
+  Treinta y una apariencias tienen modelo; las otras 113 quedan pendientes.
   Las pruebas de interseccion de siluetas no se habilitan en produccion.
 - Recursos derivados y generador viven en `cliente3d/propio/monstruos3d/`.
   No cambian formatos de assets ni red; son recursos del renderer.

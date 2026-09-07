@@ -6,7 +6,34 @@ hecho en Godot 4.
 
 Empezado el **24 de agosto de 2026**.
 
-## Checkpoint actual: Deer y Rabbit - 7 de septiembre de 2026
+## Checkpoint actual: Dog y Hyaena - 7 de septiembre de 2026
+
+**31 apariencias modeladas de 144; 113 pendientes.** Se completaron Deer (31)
+y Rabbit (74, compartido con The Halloween Hare) y se agregaron Dog (32) y
+Hyaena (94). Dog es castano, de orejas caidas y cola fina. Hyaena tiene hombros
+altos, grupa baja, orejas redondas, crin corta y pelaje moteado. Tres poses y
+RGB del atlas original. Deer/Rabbit ya se publicaron en el commit 7d16f3c.
+
+Escalas uniformes: Dog .85, Hyaena 1.20, Deer 1.50 y Rabbit .55 casillas de
+extension maxima horizontal entre poses. Son objetivos artisticos editables,
+no colisiones. Tabla completa de las 31 apariencias en ESCALAS.md.
+
+Codigo: `cliente3d/propio/monstruos3d/caninos.py`; regenerar con
+`python cliente3d/propio/monstruos3d/generar.py --ids 32 94`.
+Visor: `--comparar --grupo 21,32,27,94,31,16 --tipo 94` con el comando de abajo.
+Capturas finales revisadas: canino_32.png, canino_94.png, hyaena_perfil.png y
+comparacion_caninos.png. Fuente: caninos_referencia.png, junto al componente.
+
+Verificado: **534 comprobaciones Godot, 0 fallas; 14 pruebas Python OK**.
+Comandos: `python cliente3d/propio/monstruos3d/self_test_anatomia.py` y
+`Godot --headless --path cliente3d --script res://propio/monstruos3d/self_test.gd`.
+Se validan apoyos diagonales, inclinacion del lomo, escala relativa, giros,
+cache, fases, suelo, normales, RGB y hashes de las apariencias habilitadas.
+
+Pendientes: valoracion artistica, partida real, benchmark de grupos y exportacion.
+Commit y push autorizados; visor con comparacion de los nuevos cuadrupedos.
+
+## Checkpoint anterior: Deer y Rabbit - 7 de septiembre de 2026
 
 29 apariencias modeladas de 144; 115 pendientes. Deer (31) tiene cornamenta
 ramificada unida a la cabeza, cuatro patas con pezunas y cola clara. Rabbit

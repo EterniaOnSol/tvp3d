@@ -360,3 +360,7 @@ PALETTE_FRAME.update({oid: 0 for oid in FARM_PROFILES})
 from bosque import make_generators as make_forest, PROFILES as FOREST_PROFILES
 AUTHORED.update(make_forest(DragonSculpt))
 PALETTE_FRAME.update({oid: 0 for oid in FOREST_PROFILES})
+
+from caninos import make_generators as make_companions, PROFILES as COMPANION_PROFILES
+AUTHORED.update(make_companions(DragonSculpt))
+PALETTE_FRAME.update({oid: 0 for oid in COMPANION_PROFILES})
