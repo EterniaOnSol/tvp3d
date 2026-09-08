@@ -1,9 +1,23 @@
 # Contrato: servidor
 
-Version: 1.0.0
+Version: 1.1.0
 Estado: PUBLICADO
 Propietario: servidor
 Depende de: modelo-comun 1.0.0, protocolo-red 1.0.0, assets 1.3.0
+
+## Sala del pergamino de Demon
+
+- La sala de Edron usa la posicion Tibia [33063,31623,15] como spawn
+  inicial determinista: monstername=Demon, amount=1, radius=0.
+- El item con AID 3121 es el unico disparador de la emboscada. Al retirarlo,
+  si GlobalStorageKeys.edronDemonScroll != 1, crea exactamente cuatro
+  Demons en [33060,31623,15], [33066,31623,15], [33066,31627,15] y
+  [33060,31627,15], y luego fija la storage a 1.
+- Retirar el pergamino otra vez es idempotente: no crea duplicados ni mueve
+  el Demon inicial. La autoridad permanece en el servidor y el cliente solo
+  representa el STATE recibido.
+- El cambio de radio no altera otros spawns de Demon ni el comportamiento de
+  la emboscada; se limita a esta entrada exacta del mapa.
 
 ## Proposito
 

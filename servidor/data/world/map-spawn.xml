@@ -9503,7 +9503,7 @@
 	<tvpspawn centerx="32475" centery="31612" centerz="15" monstername="Dragon" spawntime="600" amount="3" radius="30" />
 	<tvpspawn centerx="32485" centery="31612" centerz="15" monstername="Dragon" spawntime="600" amount="3" radius="30" />
 	<tvpspawn centerx="32480" centery="31613" centerz="15" monstername="Warlock" spawntime="900" amount="3" radius="30" />
-	<tvpspawn centerx="33063" centery="31623" centerz="15" monstername="Demon" spawntime="6000" amount="1" radius="30" />
+	<tvpspawn centerx="33063" centery="31623" centerz="15" monstername="Demon" spawntime="6000" amount="1" radius="0" />
 	<tvpspawn centerx="33155" centery="31623" centerz="15" monstername="Hero" spawntime="750" amount="3" radius="30" />
 	<tvpspawn centerx="33091" centery="31625" centerz="15" monstername="Fire Elemental" spawntime="600" amount="4" radius="30" />
 	<tvpspawn centerx="33134" centery="31629" centerz="15" monstername="Priestess" spawntime="600" amount="2" radius="30" />

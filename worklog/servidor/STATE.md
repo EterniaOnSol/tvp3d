@@ -1,6 +1,6 @@
 # Estado: servidor
 
-Estado: LISTO_PARA_REVISION
+Estado: BLOQUEADO
 Ultimo agente: claude
 Ultima actualizacion: 2026-08-30T06:25:00-06:00
 Contrato publicado: SI
@@ -12,6 +12,14 @@ Contrato publicado: SI
 - `assets`: contrato publicado.
 
 ## Le toca
+
+2026-09-08: sala del pergamino de Demon, contrato 1.1.0.
+- El contenedor activo monta C:\Users\dell\TVP3D\servidor en /srv.
+- La entrada inicial ya era amount=1 pero usaba radius=30; se hará
+  determinista con radius=0 para impedir que el spawn caiga fuera de la sala.
+- El script AID 3121 ya es idempotente y crea cuatro posiciones solo al
+  retirar el pergamino; se conserva sin agregar modelos ni autoridad cliente.
+- Falta reconstruir/recrear el servidor y comprobar el arranque y el XML.
 
 Construir el servidor Godot headless autoritativo, sus reglas y persistencia.
 
@@ -91,7 +99,9 @@ Construir el servidor Godot headless autoritativo, sus reglas y persistencia.
 
 ## Bloqueos activos
 
-- Ninguno.
+- Docker Desktop deja bloqueadas las consultas de contenedores durante la
+  recreacion; XML y contrato pasan, pero no se pudo confirmar el arranque vivo.
+  Reintentar cuando el daemon responda y comprobar el spawn en el mundo cargado.
 
 ## Decisiones
 
