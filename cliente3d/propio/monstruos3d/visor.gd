@@ -568,7 +568,7 @@ func _probar_visor() -> void:
 		comparados.size()==esperados,
 		etiquetas.size()==esperados,
 		ids_comparados.size()==esperados,
-		esperados_monstruos==40,
+		esperados_monstruos==41,
 		ids_comparados.has(ID_REFERENCIA_JUGADOR),
 		ids_comparados.count(ID_REFERENCIA_JUGADOR)==1,
 		PERSONAJES.TIPOS.all(func(outfit): return ids_comparados.has(-int(outfit))),

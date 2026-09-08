@@ -2,7 +2,7 @@
 
 Estado: LISTO_PARA_REVISION
 Ultimo agente: codex
-Ultima actualizacion: 2026-09-07
+Ultima actualizacion: 2026-09-08
 Contrato publicado: SI
 
 ## Depende de
@@ -12,6 +12,19 @@ Contrato publicado: SI
 - `assets`: contrato publicado.
 
 ## Le toca
+2026-09-08: Demon 35 autorizado expresamente, contrato 1.28.0.
+- Se retoma cliente con referencias originales NESW; fidelidad al sprite.
+- Completado: Demon anatomico con tres poses, RGB originales, cuernos curvos,
+  garras, boca verde/amarilla, torso inclinado y cola. Catalogo 41/144.
+- Verificado: Python 18/18, renderer Godot 708/708, visor 18/18 (55 modelos).
+  Cuatro capturas de Godot revisadas: frente, dorso y ambos perfiles.
+- AABB: altura 2.043 casillas, huella maxima 1.85, 35376 triangulos/pose.
+- Falta revision artistica del usuario y partida viva: Docker esta detenido.
+  La integracion en mundo3d se comprobo con estado sintetico y transicion
+  billboard -> Demon volumetrico. Sin benchmark masivo ni exportacion.
+- Guardado y push al remoto configurado se ejecutan al cerrar este turno.
+- Decision reversible: huella artistica 1.85 casillas.
+
 2026-09-08: no regresion de modelos ya convertidos, contrato 1.27.0.
 - Alcance corregido por el usuario: no modelar Demon ni monsters nuevos.
 - La captura viva muestra a Son Goku con outfit 128 volumetrico; Demon 35

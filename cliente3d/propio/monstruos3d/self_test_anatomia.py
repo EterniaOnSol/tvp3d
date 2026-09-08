@@ -69,6 +69,23 @@ class DragonTests(unittest.TestCase):
                 self.assertTrue(np.allclose(all_vertices.min(axis=0),entry['min']))
                 self.assertTrue(np.allclose(all_vertices.max(axis=0),entry['max']))
 
+    def test_demon_support_and_large_silhouette(self):
+        from demon import leg_joints
+        for phase in range(3):
+            feet = np.array([leg_joints(side,phase)[-1] for side in (-1,1)])
+            self.assertEqual(np.isclose(feet[:,1],.065).sum(),2 if phase==0 else 1)
+            self.assertTrue(np.all(feet[:,1]>=.065))
+        entries=json.loads((OUT/'catalogo.json').read_text())['monstruos']
+        demon=entries['35']
+        self.assertGreater(demon['max'][1],entries['53']['max'][1])
+        self.assertLess(demon['max'][1],2.5)
+        blob=(OUT/demon['archivo']).read_bytes()
+        n=struct.unpack_from('<I',blob,12)[0]
+        rgb=np.frombuffer(blob,dtype='u1',count=n*3,offset=16+n*24).reshape(-1,3).astype(float)
+        # The original green/yellow mouth is a defining detail, alongside red skin.
+        self.assertTrue(np.any((rgb[:,1]>rgb[:,0]*1.4)&(rgb[:,1]>rgb[:,2]*3)))
+        self.assertGreater(np.mean(rgb[:,0]>rgb[:,1]*2),.6)
+
     def test_spider_eight_legs_alternating_contacts(self):
         from aranas import leg_joints
         for step in (0.,1.,-1.):
@@ -89,7 +106,7 @@ class DragonTests(unittest.TestCase):
     def test_spider_sizes_and_enabled_count(self):
         manifest = json.loads((OUT/'catalogo.json').read_text())['monstruos']
         enabled = {int(k) for k,v in manifest.items() if v.get('anatomia')}
-        self.assertEqual(enabled,{21,56,34,39,30,36,38,208,219,27,52,3,16,42,123,28,81,26,82,83,79,43,45,124,13,14,60,31,74,32,94,33,37,15,53,76,111,212,217,218})
+        self.assertEqual(enabled,{21,56,34,39,30,36,38,208,219,27,52,3,16,42,123,28,81,26,82,83,79,43,45,124,13,14,60,31,74,32,94,33,37,15,53,76,111,212,217,218,35})
         small = np.array(manifest['30']['max'])-manifest['30']['min']
         giant = np.array(manifest['38']['max'])-manifest['38']['min']
         self.assertGreater(giant[0],small[0]*1.4)

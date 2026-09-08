@@ -25,7 +25,7 @@ func _ok(etiqueta: String, condicion: bool) -> void:
 
 func _probar() -> void:
 	var catalogo := MODELOS.new()
-	for tipo in [21,34,39,56,30,36,38,208,219,27,52,3,16,42,123,28,81,26,82,83,79,43,45,124,13,14,60,31,74,32,94,33,37,15,53,76,111,212,217,218]:
+	for tipo in [21,34,39,56,30,36,38,208,219,27,52,3,16,42,123,28,81,26,82,83,79,43,45,124,13,14,60,31,74,32,94,33,37,15,53,76,111,212,217,218,35]:
 		_ok("catalogo y fases %d" % tipo, catalogo.es_monstruo(0x40000001, tipo) and catalogo.fases(tipo) == (6 if tipo == 26 else (4 if tipo == 217 else 3)))
 		var primera := catalogo.malla(tipo)
 		_ok("malla compartida %d" % tipo, primera == catalogo.malla(tipo, catalogo.fases(tipo)))
@@ -41,7 +41,7 @@ func _probar() -> void:
 		_ok("animacion geometrica %d" % tipo, primera != catalogo.malla(tipo,1))
 		var objetivo := float(catalogo.fichas[str(tipo)]["escala"]["longitud_casillas"])
 		_ok("escala real de todas las poses %d" % tipo, is_equal_approx(maxf(total_bounds.size.x,total_bounds.size.z),objetivo))
-	_ok("experimentos no habilitados", not catalogo.es_monstruo(0x40000001, 25) and not catalogo.es_monstruo(0x40000001, 35))
+	_ok("experimentos no habilitados", not catalogo.es_monstruo(0x40000001, 25))
 	_ok("tipo desconocido", catalogo.malla(999999) == null)
 	_ok("ID jugador", not catalogo.es_monstruo(123,21))
 	_ok("ID NPC", not catalogo.es_monstruo(0x80000001,21))
@@ -77,7 +77,7 @@ func _probar() -> void:
 	mundo._estado.criaturas[id]["apariencia"] = 34
 	mundo._dibujar_criaturas()
 	_ok("cambio outfit", nodo.mesh == mundo._modelos_monstruos.malla(34,1))
-	for tipo_arana in [30,36,38,208,219,27,52,3,16,42,123,28,81,26,82,83,79,43,45,124,13,14,60,31,74,32,94,33,37,15,53,76,111,212,217,218]:
+	for tipo_arana in [30,36,38,208,219,27,52,3,16,42,123,28,81,26,82,83,79,43,45,124,13,14,60,31,74,32,94,33,37,15,53,76,111,212,217,218,35]:
 		mundo._estado.criaturas[id]["apariencia"] = tipo_arana
 		for direccion in range(4):
 			mundo._estado.criaturas[id]["direccion"] = direccion
@@ -86,7 +86,7 @@ func _probar() -> void:
 	mundo._estado.criaturas[id]["apariencia"] = 128
 	mundo._dibujar_criaturas()
 	_ok("vuelve a sprite", nodo.mesh is QuadMesh and nodo.rotation == Vector3.ZERO and nodo.material_override != null)
-	mundo._estado.criaturas[id]["apariencia"] = 21
+	mundo._estado.criaturas[id]["apariencia"] = 35
 	mundo._dibujar_criaturas()
 	_ok("regresa de sprite a volumen sin lamina",
 		nodo.mesh is ArrayMesh and nodo.material_override == null

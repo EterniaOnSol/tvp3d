@@ -1,9 +1,22 @@
 # Contrato: cliente
 
-Version: 1.27.0
+Version: 1.28.0
 Estado: PUBLICADO
 Propietario: cliente
 Depende de: modelo-comun 1.0.0, protocolo-red 1.1.0, assets 1.3.0
+
+## Demon 35 anatomico
+
+- Autorizacion expresa 2026-09-08: crear ahora Demon lo mas fiel posible a
+  sus cuatro sprites originales. Sustituye la exclusion anterior de Demon.
+- Cuerpo rojo corpulento e inclinado, hombros y antebrazos grandes, cuernos
+  curvos marfil, garras, cola puntiaguda y relieves dorsales segun referencia.
+- Tres poses originales, cuatro direcciones por rotacion y RGB del atlas.
+- Huella artistica 1.85 casillas, altura mayor que Frost Troll; una sola
+  transformacion compartida mantiene el apoyo al animar. Escala reversible.
+- TVPVOL01 y anatomia=true integran Demon en runtime y visor existentes.
+  Apariencias que comparten outfit 35 comparten este modelo, como el sprite.
+- Catalogo pasa a 41/144. Sin cambios de colision, combate ni autoridad.
 
 ## No regresion de volumen a billboard
 
@@ -13,9 +26,8 @@ Depende de: modelo-comun 1.0.0, protocolo-red 1.1.0, assets 1.3.0
   anterior.
 - Todo jugador con outfit 128-134 o 136-142 conserva su jerarquia humana 3D
   durante creacion, cambio de direccion, pose y reconstruccion por colores.
-- Las apariencias todavia no convertidas, incluido Demon 35, mantienen por
-  ahora su sprite 2D. Este contrato no crea modelos nuevos ni presenta esas
-  fichas como anatomia terminada.
+- Las apariencias todavia no convertidas mantienen su sprite 2D. Demon 35
+  se publica como anatomia en esta version.
 - Las transiciones limpian mesh, material_override, rotacion, escala y
   metadatos incompatibles antes de aplicar el renderer correspondiente.
 - Las pruebas recorren todas las fichas 3D publicadas y exigen tambien la
@@ -52,9 +64,9 @@ Depende de: modelo-comun 1.0.0, protocolo-red 1.1.0, assets 1.3.0
 - La base humana mide aproximadamente 0.95 casillas hasta la cabeza; sombreros,
   cascos y accesorios pueden llegar a 1.15. El outfit 128 sustituye la antigua
   referencia de 0.67 casillas dentro del visor.
-- Los outfits humanos se listan como referencias separadas de los 40 monsters;
+- Los outfits humanos se listan como referencias separadas de los 41 monsters;
   no pasan por es_monstruo, no entran en mallas/catalogo.json y no alteran el
-  conteo anatomico 40/144.
+  conteo anatomico 41/144.
 - Este turno publica componente y visor en rutas propias de cliente. Conectar
   personajes3d al runtime legacy mundo3d.gd queda para un turno de integracion
   porque esa ruta no pertenece al carril cliente publicado en CARRILES.md.
