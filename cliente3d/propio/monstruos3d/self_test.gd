@@ -86,6 +86,12 @@ func _probar() -> void:
 	mundo._estado.criaturas[id]["apariencia"] = 128
 	mundo._dibujar_criaturas()
 	_ok("vuelve a sprite", nodo.mesh is QuadMesh and nodo.rotation == Vector3.ZERO and nodo.material_override != null)
+	mundo._estado.criaturas[id]["apariencia"] = 21
+	mundo._dibujar_criaturas()
+	_ok("regresa de sprite a volumen sin lamina",
+		nodo.mesh is ArrayMesh and nodo.material_override == null
+		and nodo.scale == Vector3.ONE
+		and bool(nodo.get_meta("volumen_monstruo",false)))
 	mundo._estado.criaturas[id]["pos"].z = 8
 	mundo._dibujar_criaturas()
 	_ok("piso oculto elimina nodo", not mundo._nodos_criaturas.has(id))

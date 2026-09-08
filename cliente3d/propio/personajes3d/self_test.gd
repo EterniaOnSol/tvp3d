@@ -91,5 +91,20 @@ func _probar_runtime() -> void:
 	mundo._estado.criaturas[2]["apariencia"] = 135
 	mundo._dibujar_criaturas()
 	_ok(remoto.mesh is QuadMesh and remoto.get_node_or_null("OutfitHumano3D")==null)
+	mundo._estado.criaturas[2]["apariencia"] = 139
+	mundo._dibujar_criaturas()
+	visual_remoto = remoto.get_node_or_null("OutfitHumano3D") as Node3D
+	_ok(remoto.mesh==null and remoto.material_override==null
+		and visual_remoto!=null
+		and bool(remoto.get_meta("volumen_personaje",false)))
+	var local_2d: Dictionary = mundo._estado.criaturas[1].duplicate(true)
+	local_2d["apariencia"] = 135
+	mundo._sincronizar_outfit_jugador(local_2d)
+	_ok(mundo._jugador_visual is MeshInstance3D
+		and mundo._jugador_visual.name=="OutfitJugadorFallback2D")
+	mundo._sincronizar_outfit_jugador(mundo._estado.criaturas[1])
+	_ok(mundo._jugador_visual is Node3D
+		and not (mundo._jugador_visual is MeshInstance3D)
+		and mundo._jugador_visual.name=="OutfitJugador3D")
 	_ok(confirmado[1]==mundo._estado.criaturas[1])
 	mundo.free()

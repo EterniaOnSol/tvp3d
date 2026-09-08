@@ -12,6 +12,22 @@ Contrato publicado: SI
 - `assets`: contrato publicado.
 
 ## Le toca
+2026-09-08: no regresion de modelos ya convertidos, contrato 1.27.0.
+- Alcance corregido por el usuario: no modelar Demon ni monsters nuevos.
+- La captura viva muestra a Son Goku con outfit 128 volumetrico; Demon 35
+  sigue en 2D porque nunca fue convertido y no forma parte de esta correccion.
+- Objetivo: demostrar que los 40 monsters anatomicos y 14 outfits humanos no
+  heredan ni recuperan un QuadMesh rojo al animar, girar o reutilizar nodos.
+- Se descarto antes de commit el prototipo de Demon 35 y se conserva su ficha
+  original sin anatomia.
+- La sala mantiene un Demon fijo; los cuatro adicionales siguen siendo
+  autoridad del script del pergamino y se atenderan en carril servidor.
+- Completado: se agregaron regresiones explicitas 2D -> 3D para monster,
+  jugador remoto y jugador local. Al recuperar una apariencia convertida se
+  eliminan QuadMesh/material y se restaura la jerarquia o ArrayMesh 3D.
+- Verificado: personajes3d 89/89, monstruos3d 691/691 y anatomia Python
+  17/17, todos con cero fallas. Demon 35 permanece sin anatomia y sin cambios.
+
 2026-09-08: correccion de lamina roja en jugador 3D, contrato 1.26.1.
 - Reporte visual del usuario: al entrar, el personaje parece una lamina roja.
 - Causa localizada: aplicar no_depth_test a cada submalla rompe la oclusion

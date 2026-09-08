@@ -1,9 +1,25 @@
 # Contrato: cliente
 
-Version: 1.26.1
+Version: 1.27.0
 Estado: PUBLICADO
 Propietario: cliente
 Depende de: modelo-comun 1.0.0, protocolo-red 1.1.0, assets 1.3.0
+
+## No regresion de volumen a billboard
+
+- Todo monster publicado con anatomia=true conserva ArrayMesh durante
+  creacion, animacion, giro, reutilizacion de nodo y regreso desde una
+  apariencia 2D. Nunca hereda QuadMesh ni material billboard de un estado
+  anterior.
+- Todo jugador con outfit 128-134 o 136-142 conserva su jerarquia humana 3D
+  durante creacion, cambio de direccion, pose y reconstruccion por colores.
+- Las apariencias todavia no convertidas, incluido Demon 35, mantienen por
+  ahora su sprite 2D. Este contrato no crea modelos nuevos ni presenta esas
+  fichas como anatomia terminada.
+- Las transiciones limpian mesh, material_override, rotacion, escala y
+  metadatos incompatibles antes de aplicar el renderer correspondiente.
+- Las pruebas recorren todas las fichas 3D publicadas y exigen tambien la
+  transicion explicita billboard -> volumen para impedir la lamina roja.
 
 ## Visor de catalogo 3D
 
