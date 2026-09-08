@@ -2,9 +2,11 @@ extends SceneTree
 
 const CATALOGO := preload("res://propio/monstruos3d/catalogo.gd")
 const SPRITES := preload("res://red/sprites772.gd")
+const ENTRADA_VISOR := preload("res://propio/monstruos3d/entrada_visor.gd")
 var modelos = CATALOGO.new()
 var sprites = SPRITES.new()
 var escena := Node3D.new()
+var receptor_entrada = ENTRADA_VISOR.new()
 var camara := Camera3D.new()
 var modelo := MeshInstance3D.new()
 var selector := OptionButton.new()
@@ -43,6 +45,8 @@ func _initialize() -> void:
 
 func _crear() -> void:
 	root.title = "TVP3D - Monsters 3D"
+	receptor_entrada.destino = Callable(self, "_procesar_entrada")
+	root.add_child(receptor_entrada)
 	root.add_child(escena)
 	var entorno := WorldEnvironment.new()
 	entorno.environment = Environment.new()
@@ -396,7 +400,7 @@ func _process(delta: float) -> bool:
 	return false
 
 
-func _input(event: InputEvent) -> void:
+func _procesar_entrada(event: InputEvent) -> void:
 	if event is InputEventMouseButton:
 		if event.button_index == MOUSE_BUTTON_LEFT:
 			if event.pressed and comparar.button_pressed and event.position.y > 115:
@@ -464,6 +468,8 @@ func _probar_visor() -> void:
 		etiquetas.size()==esperados,
 		ids_comparados.size()==esperados,
 		esperados==40,
+		receptor_entrada.is_inside_tree(),
+		receptor_entrada.destino.is_valid(),
 	]
 	for condicion in condiciones:
 		comprobaciones += 1
@@ -481,10 +487,32 @@ func _probar_visor() -> void:
 		if comparados[0].position!=_posicion_ordenada(0,ceili(sqrt(float(comparados.size()))),
 				ceili(float(comparados.size())/ceili(sqrt(float(comparados.size()))))):
 			fallas += 1
+		var zoom_antes := zoom_comparacion
+		var rueda := InputEventMouseButton.new()
+		rueda.button_index = MOUSE_BUTTON_WHEEL_UP
+		rueda.pressed = true
+		receptor_entrada._input(rueda)
+		comprobaciones += 1
+		if is_equal_approx(zoom_comparacion,zoom_antes):
+			print("MONSTERS_VIEWER_FAIL: rueda no cambio zoom")
+			fallas += 1
+		var angulo_antes := angulo
+		var orbita := InputEventMouseMotion.new()
+		orbita.button_mask = MOUSE_BUTTON_MASK_RIGHT
+		orbita.relative = Vector2(12,8)
+		receptor_entrada._input(orbita)
+		comprobaciones += 1
+		if is_equal_approx(angulo,angulo_antes):
+			print("MONSTERS_VIEWER_FAIL: arrastre derecho no cambio orbita")
+			fallas += 1
 		var foco := foco_comparacion
-		_panear_camara(Vector2(40,20))
+		var paneo := InputEventMouseMotion.new()
+		paneo.button_mask = MOUSE_BUTTON_MASK_MIDDLE
+		paneo.relative = Vector2(40,20)
+		receptor_entrada._input(paneo)
 		comprobaciones += 1
 		if foco_comparacion==foco:
+			print("MONSTERS_VIEWER_FAIL: arrastre central no cambio foco")
 			fallas += 1
 	print("MONSTERS_VIEWER: %d comprobaciones, %d fallas, %d modelos" % [
 		comprobaciones,fallas,comparados.size()])

@@ -12,6 +12,24 @@ Contrato publicado: SI
 - `assets`: contrato publicado.
 
 ## Le toca
+2026-09-07: entrada de mouse del visor corregida.
+- Se agrego entrada_visor.gd como Node receptor; reenvia los InputEvent al
+  SceneTree del visor, que por si solo no recibia _input.
+- Rueda, orbita con derecho y paneo con centro quedan cubiertos por el receptor.
+- Verificado: visor 11/11 y renderer 690/690, ambos con codigo 0.
+- La prueba headless entrega mouse directamente al receptor porque la
+  reinyeccion de eventos de Windows no es determinista sin ventana activa.
+- Pendiente solo confirmacion manual del usuario en la ventana GUI relanzada.
+- Decision reversible: receptor local sin persistencia, gameplay, red,
+  colisiones ni cambios de contrato.
+
+2026-09-07: correccion de entrada del visor 1.22.0.
+- Reporte reproducible: la rueda y los arrastres de camara no responden.
+- Causa localizada: visor.gd extiende SceneTree, cuyo metodo `_input` no recibe
+  el despacho destinado a los Node del arbol.
+- Alcance reversible: enrutar eventos mediante un Node local al visor y cubrir
+  rueda/orbita con una prueba de entrada sintetica; sin tocar gameplay ni red.
+
 2026-09-07: cierre retomado del visor 1.22.0.
 - Diff completo releido y limitado a visor.gd, VISOR.md, captura y worklog cliente.
 - Restaurada la recarga automatica de la malla seleccionada en modo detalle;

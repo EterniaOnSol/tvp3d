@@ -49,3 +49,10 @@ Opciones compatibles para capturas o grupos concretos:
 El movimiento existe solo en este visor local. No cambia posiciones de juego,
 colisiones ni estado autoritativo del servidor.
 
+El visor se ejecuta como SceneTree, por lo que delega los eventos a
+entrada_visor.gd, un Node dentro del arbol que si recibe _input. El self-test
+inyecta rueda, arrastre derecho y arrastre central para comprobar el recorrido
+del receptor hasta zoom, orbita y paneo. En headless los eventos se entregan
+directamente al receptor porque la reinyeccion de mouse de Windows no es
+determinista sin una ventana activa.
+
