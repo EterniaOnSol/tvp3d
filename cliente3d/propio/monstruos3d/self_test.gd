@@ -26,7 +26,7 @@ func _ok(etiqueta: String, condicion: bool) -> void:
 func _probar() -> void:
 	var catalogo := MODELOS.new()
 	for tipo in [21,34,39,56,30,36,38,208,219,27,52,3,16,42,123,28,81,26,82,83,79,43,45,124,13,14,60,31,74,32,94,33,37,15,53,76,111,212,217,218,35]:
-		_ok("catalogo y fases %d" % tipo, catalogo.es_monstruo(0x40000001, tipo) and catalogo.fases(tipo) == (6 if tipo == 26 else (4 if tipo == 217 else 3)))
+		_ok("catalogo y fases %d" % tipo, catalogo.es_monstruo(0x40000001, tipo) and catalogo.fases(tipo) == (12 if catalogo.tiene_clips(tipo) else (6 if tipo == 26 else (4 if tipo == 217 else 3))))
 		var primera := catalogo.malla(tipo)
 		_ok("malla compartida %d" % tipo, primera == catalogo.malla(tipo, catalogo.fases(tipo)))
 		var total_bounds := AABB()
@@ -37,7 +37,7 @@ func _probar() -> void:
 			_ok("volumen en tres ejes %d/%d" % [tipo,fase], aabb.size.x > .1 and aabb.size.y > .025 and aabb.size.z > .1)
 			_ok("pies sobre suelo %d/%d" % [tipo,fase], aabb.position.y >= -.001 and aabb.position.y < .08)
 			var material := malla.surface_get_material(0) as StandardMaterial3D
-			_ok("sin billboard %d/%d" % [tipo,fase], material.billboard_mode == BaseMaterial3D.BILLBOARD_DISABLED and material.vertex_color_use_as_albedo)
+			_ok("sin billboard %d/%d" % [tipo,fase], material.billboard_mode == BaseMaterial3D.BILLBOARD_DISABLED and (material.albedo_texture != null if catalogo.tiene_clips(tipo) else material.vertex_color_use_as_albedo))
 		_ok("animacion geometrica %d" % tipo, primera != catalogo.malla(tipo,1))
 		var objetivo := float(catalogo.fichas[str(tipo)]["escala"]["longitud_casillas"])
 		_ok("escala real de todas las poses %d" % tipo, is_equal_approx(maxf(total_bounds.size.x,total_bounds.size.z),objetivo))
@@ -82,7 +82,7 @@ func _probar() -> void:
 		for direccion in range(4):
 			mundo._estado.criaturas[id]["direccion"] = direccion
 			mundo._dibujar_criaturas()
-			_ok("familia integrada %d/%d" % [tipo_arana,direccion], nodo.scale == Vector3.ONE and nodo.mesh == mundo._modelos_monstruos.malla(tipo_arana,1) and is_equal_approx(nodo.rotation.y, MODELOS.GIROS[direccion]))
+			_ok("familia integrada %d/%d" % [tipo_arana,direccion], nodo.scale == Vector3.ONE and (nodo.mesh.get_blend_shape_count() == 24 if catalogo.tiene_clips(tipo_arana) else nodo.mesh == mundo._modelos_monstruos.malla(tipo_arana,1)) and is_equal_approx(nodo.rotation.y, MODELOS.GIROS[direccion]))
 	mundo._estado.criaturas[id]["apariencia"] = 128
 	mundo._dibujar_criaturas()
 	_ok("vuelve a sprite", nodo.mesh is QuadMesh and nodo.rotation == Vector3.ZERO and nodo.material_override != null)

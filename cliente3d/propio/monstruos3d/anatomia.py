@@ -377,6 +377,4 @@ from aves import make_generators as make_birds, PROFILES as BIRD_PROFILES
 AUTHORED.update(make_birds(DragonSculpt))
 PALETTE_FRAME.update({oid: 0 for oid in BIRD_PROFILES})
 
-from demon import make_generator as make_demon
-AUTHORED[35] = make_demon(DragonSculpt)
-PALETTE_FRAME[35] = 0
+# Demon 35 now reuses the textured 3DTIBIA mesh; see preparar_demon.py.

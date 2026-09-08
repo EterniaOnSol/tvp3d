@@ -1,0 +1,35 @@
+{
+  "source_sha256": "92229db4258e0a50e5c0510893fc0f7d43e4be03242528bed6363f234ea0108b",
+  "texture_sha256": "41044b04d2d62cfbb6cc1f148180f9677b3b3c33674aed530647de0b98cb1331",
+  "removed_vertices": 419,
+  "components_before": 6,
+  "triangles": 24544,
+  "vertices": 27592,
+  "bones": 22,
+  "clips": {
+    "reposo": {
+      "inicio": 1,
+      "fases": 12,
+      "duracion": 2.0
+    },
+    "caminar": {
+      "inicio": 13,
+      "fases": 12,
+      "duracion": 1.0
+    }
+  },
+  "bounds": [
+    [
+      -1.0006191303405476,
+      0.0,
+      -1.048051493995442
+    ],
+    [
+      0.9993808696594526,
+      1.3436194999609739,
+      0.9253515748216888
+    ]
+  ],
+  "pose_bytes": 17070484,
+  "scale": 1.0822341587329438
+}

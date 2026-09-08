@@ -1,22 +1,31 @@
 # Contrato: cliente
 
-Version: 1.28.0
+Version: 1.29.0
 Estado: PUBLICADO
 Propietario: cliente
 Depende de: modelo-comun 1.0.0, protocolo-red 1.1.0, assets 1.3.0
 
-## Demon 35 anatomico
+## Demon 35 reutilizado y animado
 
-- Autorizacion expresa 2026-09-08: crear ahora Demon lo mas fiel posible a
-  sus cuatro sprites originales. Sustituye la exclusion anterior de Demon.
-- Cuerpo rojo corpulento e inclinado, hombros y antebrazos grandes, cuernos
-  curvos marfil, garras, cola puntiaguda y relieves dorsales segun referencia.
-- Tres poses originales, cuatro direcciones por rotacion y RGB del atlas.
-- Huella artistica 1.85 casillas, altura mayor que Frost Troll; una sola
-  transformacion compartida mantiene el apoyo al animar. Escala reversible.
-- TVPVOL01 y anatomia=true integran Demon en runtime y visor existentes.
-  Apariencias que comparten outfit 35 comparten este modelo, como el sprite.
-- Catalogo pasa a 41/144. Sin cambios de colision, combate ni autoridad.
+- Pedido expreso: reutilizar el Demon de 3DTIBIA con su textura y animaciones.
+  Sustituye el prototipo procedural 1.28.0 rechazado por el usuario.
+- Fuente inmutable: motor3d/assets/modelos/monstruos/35_demon/modelo.glb de
+  3DTIBIA; copiar y limpiar restos de pedestal preservando anatomia y UV.
+- Fuente editable Blender con esqueleto y clips Reposo/Caminar; GLB animado
+  exportable. Reposo respira; caminar alterna piernas, brazos y cola.
+- Cliente conserva ArrayMesh y picking volumetrico. Poses horneadas con UV
+  y textura original, interpoladas por blend shapes compartidos en GPU.
+- Extension TVPVOL02 solo para mallas texturadas: header 8 bytes, uint32
+  frames/vertices/indices, UV float32x2 y indices uint32, luego posiciones
+  y normales float32x3 por frame. TVPVOL01 sigue compatible.
+- Ficha declara formato, textura, clips y fps; escala uniforme por huella
+  maxima 2.0 casillas, origen apoyado y transformacion comun a todas poses.
+  Se conserva proporcion agachada original, sin exigir altura del prototipo.
+- Reposo/caminar se seleccionan por cambios de posicion confirmada; sin
+  root motion, autoridad, da?o, colision ni movimiento inventado.
+- Visor ofrece los dos clips y pausa; runtime limpia blend shapes al cambiar
+  apariencia. Integracion local de mundo3d incluida en pedido del usuario.
+- Catalogo conserva 41/144; outfit 35 sigue compartido con sus variantes.
 
 ## No regresion de volumen a billboard
 

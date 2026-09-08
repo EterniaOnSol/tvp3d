@@ -3994,6 +3994,9 @@ func _dibujar_criaturas() -> void:
 			m.set_meta("creature_id", int(id))
 			_piso_bichos.add_child(m)
 			_nodos_criaturas[int(id)] = m
+		if not es_monstruo or not _modelos_monstruos.tiene_clips(tipo):
+			m.remove_meta("paso_demon")
+			m.remove_meta("mezcla_demon")
 		var volumen: ArrayMesh = null
 		if es_monstruo:
 			volumen = _modelos_monstruos.malla(tipo,
@@ -4002,7 +4005,10 @@ func _dibujar_criaturas() -> void:
 		m.set_meta("volumen_personaje",es_personaje_3d)
 		if volumen != null:
 			_vaciar_outfit_humano(m)
-			m.mesh = volumen
+			if _modelos_monstruos.tiene_clips(tipo):
+				_modelos_monstruos.animar_confirmado(m,tipo,_reloj_animacion,c["pos"])
+			else:
+				m.mesh = volumen
 			m.material_override = null
 			m.rotation.y = MONSTRUOS_3D.GIROS[posmod(direccion, 4)]
 			m.scale = Vector3.ONE * LADO
@@ -4155,6 +4161,10 @@ func _animar_criaturas() -> void:
 			nodo.rotation.y = PERSONAJES_3D.GIROS[posmod(direccion,4)]
 			continue
 		if bool(nodo.get_meta("volumen_monstruo", false)):
+			if _modelos_monstruos.tiene_clips(tipo):
+				_modelos_monstruos.animar_confirmado(nodo,tipo,_reloj_animacion,criatura["pos"])
+				nodo.rotation.y = MONSTRUOS_3D.GIROS[posmod(direccion,4)]
+				continue
 			var volumen := _modelos_monstruos.malla(tipo, fase)
 			if volumen != null and nodo.mesh != volumen:
 				nodo.mesh = volumen

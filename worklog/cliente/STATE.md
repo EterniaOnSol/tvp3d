@@ -12,6 +12,13 @@ Contrato publicado: SI
 - `assets`: contrato publicado.
 
 ## Le toca
+2026-09-08: reutilizar Demon de 3DTIBIA y animarlo (contrato 1.29.0).
+- Usuario rechaza acabado del prototipo y autoriza modelo/textura originales.
+- Rig editable, reposo/caminata, limpieza conservadora y poses texturadas GPU.
+- Decision reversible: huella 2.0, proporcion original; blend shapes horneados
+  para mantener API ArrayMesh/picking/cache y no introducir runtime nuevo.
+- Completado: copia exacta del GLB y JPEG de 3DTIBIA, cinco islas de roca retiradas conservadoramente, rig Blender de 22 huesos, clips Reposo/Caminar, bake TVPVOL02 con 24 poses texturadas y mezcla GPU por criatura.`r`n- Verificado: Python 18/18, Demon runtime 20/20, renderer Godot 735/735, visor 18/18 y personajes3d 89/89. Ciclo de caminata y reposo revisados en capturas; cuatro fases de apoyo sin deformaciones críticas.`r`n- Pendiente: revisión artística final del usuario, partida viva con servidor, benchmark masivo y exportación empaquetada. El cliente no cambia autoridad, colisiones, combate ni persistencia.
+
 2026-09-08: Demon 35 autorizado expresamente, contrato 1.28.0.
 - Se retoma cliente con referencias originales NESW; fidelidad al sprite.
 - Completado: Demon anatomico con tres poses, RGB originales, cuernos curvos,
@@ -566,8 +573,8 @@ Construir la experiencia jugable 3D y mostrar solo estado confirmado.
 - `mundo3d.gd` consume `EstadoMundo.jugador_muerto`: bloquea intenciones,
   cancela uso-con, arrastre y objetivo, oculta la interfaz, muestra la
   pantalla de reentrada y envia un unico logout `0x14`.
-- `cliente3d/ui/muerte.gd` presenta `You are dead.` —el mismo texto que manda
-  el servidor por `0xB4`— y una sola accion para volver al selector.
+- `cliente3d/ui/muerte.gd` presenta `You are dead.` â€”el mismo texto que manda
+  el servidor por `0xB4`â€” y una sola accion para volver al selector.
 - El cierre del socket despues de morir ya no salta solo al formulario de
   cuenta: deja la pantalla de reentrada esperando la decision del jugador.
 - Un `0xB4` con la palabra logout ya no cancela una muerte; solo cancela una
@@ -665,7 +672,7 @@ Construir la experiencia jugable 3D y mostrar solo estado confirmado.
 
 - Confirmacion visual real del panel de Combat: el cliente no se reinicio
   todavia con este cambio en la sesion que lo escribio.
-- Pedido explicito del usuario, distinto de "combate basico" y sin dueño
+- Pedido explicito del usuario, distinto de "combate basico" y sin dueÃ±o
   todavia: hotkeys configurables (hoy `Hotkeys` en `interfaz.gd` es solo un
   cartel informativo fijo, no hay UI para remapear teclas).
 - Solicitud a `qa` (ruta suya, `docs/qa/PARIDAD_772_2026-08-29.md`): la fila
@@ -732,7 +739,7 @@ Construir la experiencia jugable 3D y mostrar solo estado confirmado.
 
 ## Notas para quien retome
 
-- El cliente TVP 7.72 existente es referencia y compatibilidad, no dueño del
+- El cliente TVP 7.72 existente es referencia y compatibilidad, no dueÃ±o del
   cliente propio.
 - La muerte NO tiene opcode propio en esta rama. La unica fuente valida es
   `EstadoMundo.jugador_muerto`; no volver a deducirla del `0x6C` suelto, de la
@@ -743,8 +750,8 @@ Construir la experiencia jugable 3D y mostrar solo estado confirmado.
   `Godot_v4.7.2-stable_win64_console.exe --headless --path cliente3d pruebas/prueba_muerte_reentrada.tscn`
   y `... pruebas/prueba_estado_criatura_ui.tscn`.
 
-- Corrección pendiente de validación visual: los teletransportes grandes ahora
-  fuerzan realineación inmediata del ancla para evitar offsets de interacción.
+- CorrecciÃ³n pendiente de validaciÃ³n visual: los teletransportes grandes ahora
+  fuerzan realineaciÃ³n inmediata del ancla para evitar offsets de interacciÃ³n.
 
 - Causa raiz del bloqueo de camas reales (esta sesion): NO era un problema de
   mapeo servidor<->cliente (1760/1761 <-> 2493/2494 ya era correcto) ni de

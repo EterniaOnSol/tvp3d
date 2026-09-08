@@ -599,28 +599,64 @@
     },
     "35": {
       "anatomia": true,
-      "archivo": "outfit_0035.tvol",
-      "escala": {
-        "factor": 1.2240237615878202,
-        "longitud_casillas": 1.85
+      "archivo": "outfit_0035_texturado.tvol",
+      "clips": {
+        "caminar": {
+          "duracion": 1.0,
+          "fases": 12,
+          "inicio": 13
+        },
+        "reposo": {
+          "duracion": 2.0,
+          "fases": 12,
+          "inicio": 1
+        }
       },
-      "fases": 3,
+      "escala": {
+        "factor": 1.0822341587329438,
+        "longitud_casillas": 2.0
+      },
+      "fases": 12,
+      "formato": "TVPVOL02",
       "max": [
-        1.011543869972229,
-        2.043088912963867,
-        0.6124975085258484
+        0.9993808696594526,
+        1.3436194999609739,
+        0.9253515748216888
       ],
       "min": [
-        -0.8384563326835632,
+        -1.0006191303405476,
         0.0,
-        -0.8128252625465393
+        -1.048051493995442
       ],
       "nombre": "Demon / Apocalypse / Morgaroth / Infernatil / Bazir",
-      "sha256": "a76be1aea9776593eeb8437cfe50a53b21bee9144ee7274bf0171e39b276cc35",
+      "sha256": "b638a8623c8eccbc833a43054a8a10226bd48ca30a91c7e05bda366f6af37644",
+      "textura": "../demon_3dtibia/color.jpg",
       "vertices": [
-        106128,
-        106128,
-        106128
+        27592,
+        27592,
+        27592,
+        27592,
+        27592,
+        27592,
+        27592,
+        27592,
+        27592,
+        27592,
+        27592,
+        27592,
+        27592,
+        27592,
+        27592,
+        27592,
+        27592,
+        27592,
+        27592,
+        27592,
+        27592,
+        27592,
+        27592,
+        27592,
+        27592
       ]
     },
     "36": {

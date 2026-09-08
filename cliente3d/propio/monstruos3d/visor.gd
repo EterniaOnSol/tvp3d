@@ -15,6 +15,8 @@ var modelo := MeshInstance3D.new()
 var selector := OptionButton.new()
 var imagen := TextureRect.new()
 var reproducir := CheckButton.new()
+var selector_clip := OptionButton.new()
+var clip_actual := "caminar"
 var girar := CheckButton.new()
 var orientacion := OptionButton.new()
 var info := Label.new()
@@ -108,6 +110,10 @@ func _crear() -> void:
 	reproducir.text = "Animacion"
 	reproducir.button_pressed = true
 	toolbar.add_child(reproducir)
+	selector_clip.add_item("Caminar",0)
+	selector_clip.add_item("Reposo",1)
+	selector_clip.item_selected.connect(func(i): clip_actual = "reposo" if i==1 else "caminar")
+	toolbar.add_child(selector_clip)
 	girar.text = "Orbita"
 	girar.button_pressed = true
 	toolbar.add_child(girar)
@@ -168,6 +174,9 @@ func _crear() -> void:
 			salida = args[i+1]
 		if args[i] == "--angulo" and i+1 < args.size():
 			angulo = float(args[i+1])
+		if args[i] == "--clip" and i+1 < args.size():
+			clip_actual = args[i+1]
+			selector_clip.select(1 if clip_actual == "reposo" else 0)
 		if args[i] == "--fase" and i+1 < args.size():
 			reloj = float(args[i+1]) / 6.0
 		if args[i] == "--elevacion" and i+1 < args.size():
@@ -442,7 +451,10 @@ func _elegir(id: int) -> void:
 func _actualizar_modelo() -> void:
 	var fase := int(reloj * 6.0)
 	if not _es_referencia_jugador(tipo):
-		modelo.mesh = modelos.malla(tipo, fase)
+		modelo.mesh = modelos.malla(tipo, fase) if not modelos.tiene_clips(tipo) else modelo.mesh
+		selector_clip.visible = modelos.tiene_clips(tipo)
+		if modelos.tiene_clips(tipo):
+			modelos.aplicar_clip(modelo,tipo,reloj,clip_actual)
 		modelo.rotation.y = CATALOGO.GIROS[orientacion.selected]
 		var cuadro: Dictionary = sprites.cuadro_outfit(tipo, orientacion.selected, fase)
 		if not cuadro.is_empty():
@@ -452,8 +464,12 @@ func _actualizar_modelo() -> void:
 			tex.region = Rect2(Vector2(cuadro["corrimiento"].x, cuadro["corrimiento"].y) * tamano,
 				Vector2(cuadro["escala"].x, cuadro["escala"].y) * tamano)
 			imagen.texture = tex
+		var fase_rotulada := fase
+		if modelos.tiene_clips(tipo):
+			var clip_info: Dictionary = modelos.fichas[str(tipo)]["clips"][clip_actual]
+			fase_rotulada = int(fposmod(reloj,float(clip_info["duracion"]))/float(clip_info["duracion"])*int(clip_info["fases"]))
 		var medidas := modelo.mesh.get_aabb().size
-		info.text = "Detalle (zoom ajustado)\nOutfit %d | Pose %d / %d\nAncho %.2f | Alto %.2f | Largo %.2f casillas" % [tipo, posmod(fase, modelos.fases(tipo))+1, modelos.fases(tipo),medidas.x,medidas.y,medidas.z]
+		info.text = "Detalle (zoom ajustado)\nOutfit %d | Pose %d / %d\nAncho %.2f | Alto %.2f | Largo %.2f casillas" % [tipo, posmod(fase_rotulada, modelos.fases(tipo))+1, modelos.fases(tipo),medidas.x,medidas.y,medidas.z]
 	if comparar.button_pressed:
 		_actualizar_info_seleccion()
 		for i in range(comparados.size()):
@@ -461,7 +477,10 @@ func _actualizar_modelo() -> void:
 				personajes.aplicar_pose(comparados[i],fase)
 				continue
 			var volumen := comparados[i] as MeshInstance3D
-			volumen.mesh = modelos.malla(ids_comparados[i],fase)
+			if modelos.tiene_clips(ids_comparados[i]):
+				modelos.aplicar_clip(volumen,ids_comparados[i],reloj,clip_actual)
+			else:
+				volumen.mesh = modelos.malla(ids_comparados[i],fase)
 			etiquetas[i].position.y = volumen.mesh.get_aabb().end.y+.18
 
 
@@ -479,7 +498,7 @@ func _process(delta: float) -> bool:
 		var revision := FileAccess.get_modified_time(ruta)
 		if _revision != revision:
 			_revision = revision
-			modelos._cache.erase(tipo)
+			modelos.invalidar(tipo)
 	_actualizar_modelo()
 	var alto := modelo.mesh.get_aabb().size.y if modelo.mesh != null else 1.0
 	var foco := Vector3(-distancia*.10,alto*.45,0)

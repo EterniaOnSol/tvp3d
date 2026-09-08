@@ -1,5 +1,8 @@
 extends RefCounted
 
+const TEXTURADA := preload("res://propio/monstruos3d/animacion_texturada.gd")
+var _texturadas: Dictionary = {}
+
 const CARPETA := "res://propio/monstruos3d/mallas/"
 const GIROS := [PI, PI * .5, 0.0, -PI * .5]
 var fichas: Dictionary = {}
@@ -33,6 +36,9 @@ func fases(tipo: int) -> int:
 
 
 func malla(tipo: int, fase: int = 0) -> ArrayMesh:
+	if tiene_clips(tipo):
+		var banco = _banco_texturado(tipo)
+		return banco.pose(fase) if banco != null else null
 	if not tiene(tipo):
 		return null
 	if not _cache.has(tipo):
@@ -78,3 +84,43 @@ func _cargar(tipo: int) -> Array:
 		mesh.surface_set_material(0, _material)
 		resultado.append(mesh)
 	return resultado
+
+
+func tiene_clips(tipo: int) -> bool:
+	return fichas.get(str(tipo),{}).get("formato","") == "TVPVOL02"
+
+func _banco_texturado(tipo: int):
+	if not _texturadas.has(tipo):
+		var ficha: Dictionary = fichas[str(tipo)]
+		var banco = TEXTURADA.new()
+		if not banco.cargar(CARPETA+str(ficha["archivo"]),ficha,CARPETA+str(ficha["textura"])):
+			push_warning("Demon texturado invalido: %d"%tipo)
+			return null
+		_texturadas[tipo] = banco
+	return _texturadas[tipo]
+
+func aplicar_clip(nodo: MeshInstance3D, tipo: int, tiempo: float, clip: String = "caminar") -> void:
+	if not tiene_clips(tipo):
+		return
+	var banco = _banco_texturado(tipo)
+	if banco != null:
+		banco.aplicar(nodo,clip,tiempo)
+
+func animar_confirmado(nodo: MeshInstance3D, tipo: int, tiempo: float, posicion: Vector3i) -> void:
+	if not tiene_clips(tipo):
+		return
+	var estado: Dictionary = nodo.get_meta("paso_demon",{})
+	if int(estado.get("tipo",-1)) != tipo:
+		estado = {"tipo":tipo,"pos":posicion,"hasta":-1.0}
+	elif estado["pos"] != posicion:
+		var anterior: Vector3i = estado["pos"]
+		# A teleport is a new placement, not an invented walking sequence.
+		var distancia := absi(anterior.x-posicion.x)+absi(anterior.y-posicion.y)
+		estado["hasta"] = tiempo+.45 if anterior.z==posicion.z and distancia<=2 else -1.0
+		estado["pos"] = posicion
+	nodo.set_meta("paso_demon",estado)
+	aplicar_clip(nodo,tipo,tiempo,"caminar" if tiempo<float(estado["hasta"]) else "reposo")
+
+func invalidar(tipo: int) -> void:
+	_cache.erase(tipo)
+	_texturadas.erase(tipo)

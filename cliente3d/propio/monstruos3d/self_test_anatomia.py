@@ -69,22 +69,50 @@ class DragonTests(unittest.TestCase):
                 self.assertTrue(np.allclose(all_vertices.min(axis=0),entry['min']))
                 self.assertTrue(np.allclose(all_vertices.max(axis=0),entry['max']))
 
-    def test_demon_support_and_large_silhouette(self):
-        from demon import leg_joints
-        for phase in range(3):
-            feet = np.array([leg_joints(side,phase)[-1] for side in (-1,1)])
-            self.assertEqual(np.isclose(feet[:,1],.065).sum(),2 if phase==0 else 1)
-            self.assertTrue(np.all(feet[:,1]>=.065))
-        entries=json.loads((OUT/'catalogo.json').read_text())['monstruos']
-        demon=entries['35']
-        self.assertGreater(demon['max'][1],entries['53']['max'][1])
-        self.assertLess(demon['max'][1],2.5)
-        blob=(OUT/demon['archivo']).read_bytes()
-        n=struct.unpack_from('<I',blob,12)[0]
-        rgb=np.frombuffer(blob,dtype='u1',count=n*3,offset=16+n*24).reshape(-1,3).astype(float)
-        # The original green/yellow mouth is a defining detail, alongside red skin.
-        self.assertTrue(np.any((rgb[:,1]>rgb[:,0]*1.4)&(rgb[:,1]>rgb[:,2]*3)))
-        self.assertGreater(np.mean(rgb[:,0]>rgb[:,1]*2),.6)
+    def test_reused_demon_texture_rig_and_pose_integrity(self):
+        from pathlib import Path
+        folder=Path(__file__).parent/'demon_3dtibia'
+        report=json.loads((folder/'informe.json').read_text())
+        source=(folder/'editable/original.glb').read_bytes()
+        self.assertEqual(hashlib.sha256(source).hexdigest(),report['source_sha256'])
+        size=struct.unpack_from('<I',source,12)[0]
+        gltf=json.loads(source[20:20+size]); binary=source[28+size:]
+        view=gltf['bufferViews'][gltf['images'][0]['bufferView']]
+        image=binary[view.get('byteOffset',0):view.get('byteOffset',0)+view['byteLength']]
+        self.assertEqual(image,(folder/'color.jpg').read_bytes())
+        self.assertEqual(hashlib.sha256(image).hexdigest(),report['texture_sha256'])
+        rig=(folder/'editable/demon_animado.glb').read_bytes()
+        size=struct.unpack_from('<I',rig,12)[0]; gltf=json.loads(rig[20:20+size])
+        self.assertEqual({a['name'] for a in gltf['animations']},{'Reposo','Caminar'})
+        self.assertTrue(gltf['skins'] and len(gltf['skins'][0]['joints'])>=18)
+        entry=json.loads((OUT/'catalogo.json').read_text())['monstruos']['35']
+        blob=(OUT/entry['archivo']).read_bytes()
+        self.assertEqual(hashlib.sha256(blob).hexdigest(),entry['sha256'])
+        self.assertEqual(blob[:8],b'TVPVOL02')
+        nf,n,ni=struct.unpack_from('<III',blob,8)
+        self.assertEqual((nf,ni//3),(25,report['triangles']))
+        self.assertLess(report['triangles'],24804)
+        uv=np.frombuffer(blob,dtype='<f4',count=n*2,offset=20).reshape(n,2)
+        self.assertTrue(np.isfinite(uv).all() and (uv>=0).all() and (uv<=1).all())
+        idx=np.frombuffer(blob,dtype='<u4',count=ni,offset=20+n*8)
+        self.assertLess(int(idx.max()),n)
+        data=np.frombuffer(blob,dtype='<f4',offset=20+n*8+ni*4).reshape(nf,2,n,3)
+        self.assertTrue(np.isfinite(data).all())
+        self.assertTrue(np.allclose(np.linalg.norm(data[:,1],axis=2),1,atol=.002))
+        self.assertGreaterEqual(float(data[:,0,:,1].min()),-.00001)
+        self.assertTrue(np.all(data[1:,0,:,1].min(axis=1)<.025))
+        idle=np.linalg.norm(data[1:13,0]-data[0,0],axis=2)
+        walk=np.linalg.norm(data[13:,0]-data[0,0],axis=2)
+        self.assertLess(float(idle.max()),.05)
+        self.assertGreater(float(walk.max()),.08)
+        self.assertLess(float(walk.max()),.25)
+        for start in (1,13):
+            poses=data[start:start+12,0]
+            delta=np.linalg.norm(np.roll(poses,-1,axis=0)-poses,axis=2)
+            self.assertLess(float(delta[-1].max()),float(delta.max())*1.05)
+        xyz=data[:,0].reshape(-1,3)
+        self.assertTrue(np.allclose(xyz.min(0),entry['min']))
+        self.assertTrue(np.allclose(xyz.max(0),entry['max']))
 
     def test_spider_eight_legs_alternating_contacts(self):
         from aranas import leg_joints

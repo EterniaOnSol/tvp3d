@@ -143,6 +143,13 @@ def main():
     scales = json.loads(SCALES.read_text(encoding='utf-8'))['monstruos']
     failures = []
     for oid in ids:
+        if oid == 35:
+            entry = manifest['monstruos'].get('35', {})
+            if entry.get('formato') != 'TVPVOL02' or not (args.output / entry.get('archivo', '')).is_file():
+                failures.append([35, 'Bake the reused Demon with Blender preparar_demon.py first'])
+            else:
+                print('35: preserved textured rig bake (preparar_demon.py)', flush=True)
+            continue
         if str(oid) not in index['outfits']:
             failures.append([oid, 'No outfit in original atlas'])
             continue
