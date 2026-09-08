@@ -3,12 +3,13 @@
 El visor descubre automaticamente todas las entradas de
 `mallas/catalogo.json` con `anatomia=true`. Al agregar y generar otro
 monster, aparece en la vista `Todos` sin editar una segunda lista.
-La misma vista agrega Personaje principal [outfit 128] como referencia de
-escala usando el modelo authored del jugador del cliente (0.5 de escala).
-No cuenta como monster: la galeria contiene 40 monsters y una referencia.
-La captura visor_personaje.png registra esa vista de 41 elementos. Cada
-etiqueta muestra ancho x alto x largo en casillas para comparar el volumen,
-incluyendo criaturas bajas y extendidas como Giant Spider.
+La misma vista agrega los 14 outfits humanos clasicos 128-134 y 136-142 como
+referencias de escala. Son modelos 3D procedurales diferenciados por ropa y
+equipo, con colores de cabeza/cuerpo/piernas/pies y tres poses de paso. El
+personaje base mide cerca de una casilla, frente a las 0.67 de la referencia
+anterior. No cuentan como monsters: la galeria completa contiene 40 monsters
+y 14 outfits. La captura visor_outfits.png registra la vista exclusiva de
+personajes. Cada etiqueta muestra ancho x alto x largo en casillas.
 La cuadricula calcula su separacion desde la mayor huella del grupo para que
 Dragon y Dragon Lord no se solapen con sus vecinos.
 
@@ -33,14 +34,14 @@ Desde la raiz de TVP3D:
 
 | Entrada | Accion |
 |---|---|
-| Clic izquierdo | Seleccionar un monster |
+| Clic izquierdo | Seleccionar un modelo |
 | Arrastrar con izquierdo | Mover el seleccionado sobre el suelo |
 | Boton derecho + arrastre | Orbitar la camara |
 | Boton central + arrastre | Desplazar la camara |
 | WASD | Desplazar la camara |
 | Rueda | Acercar o alejar |
-| Flechas | Mover con precision el monster seleccionado |
-| Q / E | Girar el monster seleccionado |
+| Flechas | Mover con precision el modelo seleccionado |
+| Q / E | Girar el modelo seleccionado |
 | F / boton Enfocar | Centrar y acercar la camara al seleccionado |
 | R / boton Ordenar | Restaurar la cuadricula alfabetica |
 | Todos | Alternar galeria completa y detalle individual |
@@ -49,7 +50,7 @@ Desde la raiz de TVP3D:
 
 El selector permanece activo en ambos modos. En `Todos`, elegir un nombre
 selecciona y enfoca ese monster. En detalle muestra ademas el sprite original.
-Elegir Personaje principal fuerza Todos, porque su funcion es comparar tamano
+Elegir cualquier character fuerza Todos, porque su funcion es comparar tamano
 y no pertenece al catalogo anatomico de monsters.
 El modo detalle conserva la recarga automatica de la malla modificada; la
 galeria no sondea los 40 archivos para mantener estable el costo por frame.
@@ -62,6 +63,9 @@ Opciones compatibles para capturas o grupos concretos:
 
 # Grupo elegido en la cuadricula interactiva
 ... visor.gd -- --todos --grupo 21,111,212,217,218
+
+# Solo los 14 outfits humanos
+... visor.gd -- --outfits
 
 # Verificacion automatica
 ... visor.gd -- --self-test --todos

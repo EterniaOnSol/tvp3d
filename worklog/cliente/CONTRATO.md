@@ -1,12 +1,29 @@
 # Contrato: cliente
 
-Version: 1.24.0
+Version: 1.25.0
 Estado: PUBLICADO
 Propietario: cliente
 Depende de: modelo-comun 1.0.0, protocolo-red 1.1.0, assets 1.3.0
 
 ## Visor de catalogo 3D
 
+- El componente local personajes3d modela los 14 outfits humanos clasicos:
+  128-134 masculinos y 136-142 femeninos, nombres Citizen, Hunter, Mage,
+  Knight, Noble, Summoner y Warrior. Cada uno expone cuatro facings y tres
+  fases de paso, con silueta diferenciada por ropa/equipo.
+- crear(tipo, colores, direccion, fase) acepta colores [head, body, legs,
+  feet], cada indice entero 0..132 confirmado por el servidor. La conversion
+  usa la paleta HSI del cliente de 3DTIBIA/OTClient; valores ausentes o fuera
+  de rango usan cero de forma local sin mutar el estado recibido.
+- La base humana mide aproximadamente 0.95 casillas hasta la cabeza; sombreros,
+  cascos y accesorios pueden llegar a 1.15. El outfit 128 sustituye la antigua
+  referencia de 0.67 casillas dentro del visor.
+- Los outfits humanos se listan como referencias separadas de los 40 monsters;
+  no pasan por es_monstruo, no entran en mallas/catalogo.json y no alteran el
+  conteo anatomico 40/144.
+- Este turno publica componente y visor en rutas propias de cliente. Conectar
+  personajes3d al runtime legacy mundo3d.gd queda para un turno de integracion
+  porque esa ruta no pertenece al carril cliente publicado en CARRILES.md.
 - La jerarquia de escala usa maxima extension horizontal y altura del AABB:
   Giant Spider 2.55 casillas, The Old Widow 2.80, Dragon 3.20 y Dragon Lord
   3.55 de extension horizontal objetivo. Dragon y Dragon Lord deben superar
@@ -14,10 +31,9 @@ Depende de: modelo-comun 1.0.0, protocolo-red 1.1.0, assets 1.3.0
   bajo, pero superan ampliamente su huella y aumentan masa vertical.
 - Las etiquetas de Todos muestran ancho x alto x largo del AABB para comparar
   volumen completo sin confundir altura con tamano general.
-- La vista Todos incluye una referencia Personaje principal [outfit 128]
-  construida con el mismo modelo authored del cliente: cuerpo capsula, cabeza,
-  marcador frontal y escala uniforme 0.5. No se registra como monster ni
-  altera el conteo de fichas anatomicas.
+- La vista Todos incluye los 14 outfits humanos 128-134 y 136-142. El 128
+  sustituye la referencia antigua de capsula a escala 0.5. Ninguno se registra
+  como monster ni altera el conteo de fichas anatomicas.
 - El visor local descubre todas las fichas con `anatomia=true`; una nueva
   apariencia generada aparece sin mantener otra lista manual.
 - Modo `Todos`: cuadricula comun, animacion por fases, etiqueta de nombre/id,

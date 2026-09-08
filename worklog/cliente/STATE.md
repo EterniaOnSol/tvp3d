@@ -12,6 +12,31 @@ Contrato publicado: SI
 - `assets`: contrato publicado.
 
 ## Le toca
+2026-09-08: outfits humanos 3D, contrato 1.25.0.
+- Se toma cliente para crear un componente modular en propio/personajes3d y
+  mostrar los 14 outfits clasicos 128-134/136-142 en el visor.
+- Base humana objetivo 0.95 casillas, mayor que la referencia anterior 0.67;
+  cuatro direcciones, tres fases y colores HSI 0..132 del servidor.
+- 3DTIBIA aporta geometria/proporciones del personaje actual y la formula de
+  paleta MIT de OTClient; no contiene GLB humanos reutilizables.
+- Decision reversible: primer pase estilizado por primitivas y perfiles de
+  equipo; runtime legacy queda fuera por propiedad de carril.
+- Futuro solicitado: servicio premium para subir un modelo 3D propio o comprar
+  packs de outfits. Requiere pipeline GLB controlado, limites tecnicos,
+  normalizacion, moderacion/derechos, preview/aprobacion, almacenamiento y
+  reglas de cobro. Sera solo cosmetico: jamas modifica hitbox ni gameplay.
+- Completado: 14 perfiles humanos 3D con piezas diferenciadas, paleta HSI
+  head/body/legs/feet, cuatro orientaciones y tres poses. La altura base sube
+  de la referencia antigua 0.67 a aproximadamente 0.95 casillas.
+- El visor muestra 40 monsters + 14 outfits, permite moverlos, girarlos,
+  enfocarlos y compararlos; --outfits abre solo los personajes.
+- Verificado: personajes 74/74, visor 18/18 con 54 modelos y renderer de
+  monsters 690/690, todos con codigo 0. visor_outfits.png (159213 bytes) fue
+  renderizada correctamente. Inspeccion automatica bloqueada por DACL del
+  helper de Windows; se abre la GUI para revision directa.
+- Integrar estos modelos en mundo3d.gd sigue como siguiente bloque: la ruta
+  legacy no pertenece al carril cliente publicado y no se modifica a escondidas.
+
 2026-09-08: jerarquia Giant Spider/Dragon corregida, contrato 1.24.0.
 - AABB final: Frost Troll 1.00x1.57x0.67; Giant Spider
   2.19x1.03x2.55; Old Widow 2.41x1.22x2.80; Dragon
