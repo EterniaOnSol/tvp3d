@@ -12,6 +12,14 @@ Contrato publicado: SI
 - `assets`: contrato publicado.
 
 ## Le toca
+2026-09-08: torso erguido, brazos naturales y correccion de cola.
+- Usuario detecta deformacion de cola al caminar; revisar pesos y clips.
+- Contrato 1.30.0. Ajustes de postura y pesos reversibles.
+- Completado: torso erguido, brazos bajos y cola con pesos hasta la punta y oscilacion desde su raiz.
+- Correccion solicitada: descartado el afinado de muslos; se conservan las proporciones originales de piernas. Decision reversible.
+- Verificado: anatomia Python 18/18, renderer 735/735, Demon 20/20; 48 capturas de reposo/caminata regeneradas.
+- Pendiente: aprobacion visual del usuario; partida viva, benchmark y exportacion empaquetada siguen pendientes.
+
 2026-09-08: reutilizar Demon de 3DTIBIA y animarlo (contrato 1.29.0).
 - Usuario rechaza acabado del prototipo y autoriza modelo/textura originales.
 - Rig editable, reposo/caminata, limpieza conservadora y poses texturadas GPU.

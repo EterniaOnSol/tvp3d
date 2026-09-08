@@ -7,7 +7,7 @@ import hashlib, json, math, shutil, struct
 import bpy
 import bmesh
 import numpy as np
-from mathutils import Vector
+from mathutils import Vector, Matrix
 
 HERE=Path(__file__).resolve().parent
 OUT=HERE/'demon_3dtibia'
@@ -91,7 +91,8 @@ def distance_segment(p,a,b):
     return np.linalg.norm(p-a-t[:,None]*(b-a),axis=1)
 weights={name:np.zeros(len(v)) for name in bones if arm_data.bones[name].use_deform}
 x,y,z=v.T
-w_tail=smooth(.27,.46,y)*(1-smooth(.40,.62,z))
+# Keep the raised tip in the tail chain instead of assigning it to the torso.
+w_tail=smooth(.27,.46,y)*(1-smooth(.40,.62,z)*(1-smooth(.42,.60,y)))
 w_arm=smooth(.34,.53,abs(x))*smooth(.13,.35,z)*(1-w_tail)
 w_leg=(1-smooth(.16,.36,z))*(1-w_tail)*(1-w_arm)
 w_body=np.maximum(0,1-w_tail-w_arm-w_leg)
@@ -116,6 +117,26 @@ for col,name in enumerate(wnames):
     for idx in np.nonzero(matrix[:,col]>1e-6)[0]:group.add([int(idx)],float(matrix[idx,col]),'REPLACE')
 mod=obj.modifiers.new('Demon_skin','ARMATURE');mod.object=arm
 obj.parent=arm
+# Rebind the requested posture before creating either animation.
+def rotate_world(name, axis, degrees):
+    basis=arm_data.bones[name].matrix_local.to_3x3()
+    delta=basis.inverted() @ Matrix.Rotation(math.radians(degrees),3,axis) @ basis
+    arm.pose.bones[name].rotation_mode='QUATERNION'
+    arm.pose.bones[name].rotation_quaternion=delta.to_quaternion()
+rotate_world('spine','X',-25)
+rotate_world('chest','X',-10)
+for side,suffix in [(-1,'L'),(1,'R')]:
+    rotate_world('upper_arm.'+suffix,'Y',side*60)
+    rotate_world('forearm.'+suffix,'X',-12)
+bpy.context.view_layer.update()
+bpy.context.view_layer.objects.active=obj
+obj.select_set(True)
+bpy.ops.object.modifier_apply(modifier=mod.name)
+bpy.context.view_layer.objects.active=arm
+bpy.ops.object.mode_set(mode='POSE')
+bpy.ops.pose.armature_apply(selected=False)
+bpy.ops.object.mode_set(mode='OBJECT')
+mod=obj.modifiers.new('Demon_skin','ARMATURE');mod.object=arm
 for suffix in ['L','R']:
     ik=arm.pose.bones['shin.'+suffix].constraints.new('IK');ik.target=arm;ik.subtarget='foot_ik.'+suffix;ik.chain_count=2;ik.use_stretch=False
     # Foot keeps its original orientation while the leg bends toward the target.
@@ -148,8 +169,8 @@ for name,config in clips.items():
                 target.location=arm_data.bones[target.name].matrix_local.to_3x3().inverted()@desired
                 arm.pose.bones['upper_arm.'+suffix].rotation_euler.x=-swing*.075
                 arm.pose.bones['forearm.'+suffix].rotation_euler.z=swing*.060
-        for i in range(1,4):
-            arm.pose.bones['tail_%02d'%i].rotation_euler.y=math.sin(t-i*.45)*(.018 if name=='Reposo' else .035)
+        # Move the chain as one piece, preserving the thin tip cross-section.
+        arm.pose.bones['tail_01'].rotation_euler.y=math.sin(t-.45)*(.012 if name=='Reposo' else .022)
         for p in arm.pose.bones:
             p.keyframe_insert(data_path='location',frame=frame+1)
             p.keyframe_insert(data_path='rotation_euler',frame=frame+1)
@@ -219,6 +240,8 @@ scales_path=HERE/'escalas.json';scales=json.loads(scales_path.read_text());scale
 report=dict(source_sha256=hashlib.sha256(blob).hexdigest(),texture_sha256=hashlib.sha256(texture).hexdigest(),
             removed_vertices=len(remove),components_before=len(components),triangles=len(indices)//3,
             vertices=len(unique),bones=len(arm_data.bones),clips=clip_data,bounds=[entry['min'],entry['max']],
-            pose_bytes=dest.stat().st_size,scale=factor)
+            pose_bytes=dest.stat().st_size,scale=factor,
+            posture=dict(spine_degrees=-25,chest_degrees=-10,arms_down_degrees=60,
+                         thigh_radial_reduction=0,tail_sway_degrees=math.degrees(.022)))
 (OUT/'informe.json').write_text(json.dumps(report,indent=2)+'\n')
 print('DEMON_BAKE',json.dumps(report),flush=True)

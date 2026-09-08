@@ -106,6 +106,17 @@ class DragonTests(unittest.TestCase):
         self.assertLess(float(idle.max()),.05)
         self.assertGreater(float(walk.max()),.08)
         self.assertLess(float(walk.max()),.25)
+        # The raised tail tip must move rigidly with its chain, not stretch
+        # toward the torso as it did when high tail vertices got body weights.
+        base=data[0,0]
+        tris=idx.reshape(-1,3)
+        tip=tris[np.all(base[tris,2]<-.78,axis=1)]
+        self.assertGreater(len(tip),20)
+        edges=tip[:,[0,1]]
+        original=np.linalg.norm(base[edges[:,0]]-base[edges[:,1]],axis=1)
+        edges=edges[original>1e-5];original=original[original>1e-5]
+        lengths=np.linalg.norm(data[1:,0,edges[:,0]]-data[1:,0,edges[:,1]],axis=2)
+        self.assertLess(float(np.max(np.abs(lengths/original-1))),.005)
         for start in (1,13):
             poses=data[start:start+12,0]
             delta=np.linalg.norm(np.roll(poses,-1,axis=0)-poses,axis=2)

@@ -1,11 +1,15 @@
 # Contrato: cliente
 
-Version: 1.29.0
+Version: 1.30.0
 Estado: PUBLICADO
 Propietario: cliente
 Depende de: modelo-comun 1.0.0, protocolo-red 1.1.0, assets 1.3.0
 
 ## Demon 35 reutilizado y animado
+
+- Postura solicitada: torso mas erguido y brazos relajados a los costados.
+- Cola: pesos propios hasta la punta y balanceo suave desde la raiz.
+- Proporciones originales: conservar muslos y piernas sin remodelado; solo ajustar torso y brazos por solicitud final del usuario.
 
 - Pedido expreso: reutilizar el Demon de 3DTIBIA con su textura y animaciones.
   Sustituye el prototipo procedural 1.28.0 rechazado por el usuario.
@@ -20,7 +24,7 @@ Depende de: modelo-comun 1.0.0, protocolo-red 1.1.0, assets 1.3.0
   y normales float32x3 por frame. TVPVOL01 sigue compatible.
 - Ficha declara formato, textura, clips y fps; escala uniforme por huella
   maxima 2.0 casillas, origen apoyado y transformacion comun a todas poses.
-  Se conserva proporcion agachada original, sin exigir altura del prototipo.
+  Se conserva anatomia original con postura mas erguida solicitada.
 - Reposo/caminar se seleccionan por cambios de posicion confirmada; sin
   root motion, autoridad, da?o, colision ni movimiento inventado.
 - Visor ofrece los dos clips y pausa; runtime limpia blend shapes al cambiar

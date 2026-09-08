@@ -39,6 +39,11 @@ func _probar() -> void:
 			var material := malla.surface_get_material(0) as StandardMaterial3D
 			_ok("sin billboard %d/%d" % [tipo,fase], material.billboard_mode == BaseMaterial3D.BILLBOARD_DISABLED and (material.albedo_texture != null if catalogo.tiene_clips(tipo) else material.vertex_color_use_as_albedo))
 		_ok("animacion geometrica %d" % tipo, primera != catalogo.malla(tipo,1))
+		if catalogo.tiene_clips(tipo):
+			var banco = catalogo._banco_texturado(tipo)
+			for clip in banco.clips:
+				for fase_clip in range(int(banco.clips[clip]["fases"])):
+					total_bounds = total_bounds.merge(banco.pose(fase_clip,clip).get_aabb())
 		var objetivo := float(catalogo.fichas[str(tipo)]["escala"]["longitud_casillas"])
 		_ok("escala real de todas las poses %d" % tipo, is_equal_approx(maxf(total_bounds.size.x,total_bounds.size.z),objetivo))
 	_ok("experimentos no habilitados", not catalogo.es_monstruo(0x40000001, 25))

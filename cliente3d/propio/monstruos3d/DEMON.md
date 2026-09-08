@@ -42,7 +42,9 @@ Se retiraron cinco islas de roca (419 vertices, 260 triangulos). El componente
 principal se conserva, incluidos sus detalles y pequenas imperfecciones
 originales junto a las garras; no se recortaron pies por altura/color.
 Quedan 24544 triangulos y 27592 vertices UV. La huella artistica maxima es
-2.0 casillas; altura 1.344, conservando la postura agachada del original.
+2.0 casillas; altura 1.790 con torso erguido y brazos relajados.
+Se conservan los muslos y piernas originales: el usuario descarto afinarlos.
+La cola conserva pesos hasta la punta y oscila desde su raiz sin retorcerse.
 El banco ocupa 17070484 bytes y se carga una vez por catalogo.
 
 Validado en renderer real y mediante estado sintetico; falta partida viva
