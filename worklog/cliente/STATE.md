@@ -12,6 +12,31 @@ Contrato publicado: SI
 - `assets`: contrato publicado.
 
 ## Le toca
+2026-09-08: jerarquia Giant Spider/Dragon corregida, contrato 1.24.0.
+- AABB final: Frost Troll 1.00x1.57x0.67; Giant Spider
+  2.19x1.03x2.55; Old Widow 2.41x1.22x2.80; Dragon
+  3.20x1.87x3.08; Dragon Lord 3.55x2.07x3.41 casillas.
+- Giant Spider y Old Widow ganaron huella y masa vertical; normales
+  renormalizadas despues de la escala vertical no uniforme.
+- Dragon y Dragon Lord ahora superan al Frost Troll tambien en altura.
+- Visor muestra ancho x alto x largo y separa la cuadricula segun la mayor
+  huella, evitando solapamientos de los modelos gigantes.
+- Regenerados solo outfits 34, 38, 39 y 208 y sus entradas de catalogo.
+- Verificado: Python 17/17, renderer Godot 690/690 y visor 16/16.
+  El primer intento Python desde la raiz fallo por import local; repetido desde
+  monstruos3d con codigo 0. comparacion_gigantes.png se genero correctamente;
+  inspeccion automatica no disponible por fallo DACL del helper.
+- Decision reversible: objetivos artisticos en escalas.json y height_scale
+  solo para 38/208; gameplay, ocupacion, red y autoridad intactos.
+
+2026-09-08: jerarquia de escala gigante, contrato 1.24.0.
+- Se toma cliente para corregir la lectura relativa Troll/Giant Spider/Dragon.
+- Objetivos reversibles: Giant Spider 2.55, Old Widow 2.80, Dragon 3.20 y
+  Dragon Lord 3.55 casillas de extension horizontal; las aranas ganan ademas
+  masa vertical sin perder la postura baja.
+- Las etiquetas pasaran a ancho x alto x largo para comparar volumen real.
+- No cambia ocupacion, colisiones, combate, red ni autoridad del servidor.
+
 2026-09-08: personaje principal incorporado al visor 1.23.0.
 - La lista y la cuadricula muestran 40 monsters + Personaje principal outfit
   128 como referencia de escala; no altera el catalogo anatomico 40/144.

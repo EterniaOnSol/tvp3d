@@ -6,7 +6,22 @@ monster, aparece en la vista `Todos` sin editar una segunda lista.
 La misma vista agrega Personaje principal [outfit 128] como referencia de
 escala usando el modelo authored del jugador del cliente (0.5 de escala).
 No cuenta como monster: la galeria contiene 40 monsters y una referencia.
-La captura visor_personaje.png registra esa vista de 41 elementos.
+La captura visor_personaje.png registra esa vista de 41 elementos. Cada
+etiqueta muestra ancho x alto x largo en casillas para comparar el volumen,
+incluyendo criaturas bajas y extendidas como Giant Spider.
+La cuadricula calcula su separacion desde la mayor huella del grupo para que
+Dragon y Dragon Lord no se solapen con sus vecinos.
+
+Jerarquia gigante vigente (ancho x alto x largo, en casillas):
+
+- Frost Troll: 1.00 x 1.57 x 0.67.
+- Giant Spider: 2.19 x 1.03 x 2.55.
+- The Old Widow: 2.41 x 1.22 x 2.80.
+- Dragon: 3.20 x 1.87 x 3.08.
+- Dragon Lord: 3.55 x 2.07 x 3.41.
+
+comparacion_gigantes.png registra jugador, los tres trolls, ambas aranas
+gigantes y ambos dragones en una cuadricula comun.
 
 Desde la raiz de TVP3D:
 

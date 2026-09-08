@@ -37,6 +37,7 @@ var arrastrando := false
 var offset_arrastre := Vector3.ZERO
 var foco_comparacion := Vector3.ZERO
 var tamano_comparacion := 8.0
+var separacion_comparacion := 2.4
 var _revision := 0
 var _ultima_revision := 0.0
 
@@ -195,7 +196,11 @@ func _crear_comparacion() -> void:
 		ids_comparados.push_front(ID_REFERENCIA_JUGADOR)
 	var columnas := ceili(sqrt(float(ids_comparados.size())))
 	var filas := ceili(float(ids_comparados.size())/columnas)
-	tamano_comparacion = maxf(7.0,maxf(columnas,filas)*2.65)
+	for id in ids_comparados:
+		separacion_comparacion = maxf(separacion_comparacion,
+			_extension_horizontal(int(id))+.65)
+	tamano_comparacion = maxf(7.0,
+		maxf(columnas,filas)*separacion_comparacion*1.1)
 	for i in range(ids_comparados.size()):
 		var id: int = ids_comparados[i]
 		var nodo: Node3D
@@ -211,8 +216,8 @@ func _crear_comparacion() -> void:
 		comparados.append(nodo)
 		var etiqueta := Label3D.new()
 		var caja := _aabb_comparado(nodo)
-		etiqueta.text = "%s\n%.2f casillas de alto" % [
-			_nombre_comparado(id),caja.size.y]
+		etiqueta.text = "%s\n%.2f x %.2f x %.2f casillas" % [
+			_nombre_comparado(id),caja.size.x,caja.size.y,caja.size.z]
 		etiqueta.font_size = 32
 		etiqueta.pixel_size = .0026
 		etiqueta.outline_size = 8
@@ -298,9 +303,19 @@ func _primer_id_monstruo() -> int:
 	return 34
 
 
+func _extension_horizontal(id: int) -> float:
+	if id == ID_REFERENCIA_JUGADOR:
+		return .29
+	var ficha: Dictionary = modelos.fichas[str(id)]
+	var maximo: Array = ficha["max"]
+	var minimo: Array = ficha["min"]
+	return maxf(float(maximo[0])-float(minimo[0]),
+		float(maximo[2])-float(minimo[2]))
+
+
 func _posicion_ordenada(indice: int,columnas: int,filas: int) -> Vector3:
-	return Vector3((indice%columnas-(columnas-1)*.5)*2.4,0,
-		(floori(float(indice)/columnas)-(filas-1)*.5)*2.4)
+	return Vector3((indice%columnas-(columnas-1)*.5)*separacion_comparacion,0,
+		(floori(float(indice)/columnas)-(filas-1)*.5)*separacion_comparacion)
 
 
 func _ordenar_comparados() -> void:
@@ -312,7 +327,8 @@ func _ordenar_comparados() -> void:
 		comparados[i].position = _posicion_ordenada(i,columnas,filas)
 		comparados[i].rotation.y = 0
 	foco_comparacion = Vector3.ZERO
-	tamano_comparacion = maxf(7.0,maxf(columnas,filas)*2.65)
+	tamano_comparacion = maxf(7.0,
+		maxf(columnas,filas)*separacion_comparacion*1.1)
 	_actualizar_info_seleccion()
 
 

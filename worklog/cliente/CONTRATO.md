@@ -1,12 +1,19 @@
 # Contrato: cliente
 
-Version: 1.23.0
+Version: 1.24.0
 Estado: PUBLICADO
 Propietario: cliente
 Depende de: modelo-comun 1.0.0, protocolo-red 1.1.0, assets 1.3.0
 
 ## Visor de catalogo 3D
 
+- La jerarquia de escala usa maxima extension horizontal y altura del AABB:
+  Giant Spider 2.55 casillas, The Old Widow 2.80, Dragon 3.20 y Dragon Lord
+  3.55 de extension horizontal objetivo. Dragon y Dragon Lord deben superar
+  los 1.57 de altura del Frost Troll; las aranas gigantes conservan perfil
+  bajo, pero superan ampliamente su huella y aumentan masa vertical.
+- Las etiquetas de Todos muestran ancho x alto x largo del AABB para comparar
+  volumen completo sin confundir altura con tamano general.
 - La vista Todos incluye una referencia Personaje principal [outfit 128]
   construida con el mismo modelo authored del cliente: cuerpo capsula, cabeza,
   marcador frontal y escala uniforme 0.5. No se registra como monster ni

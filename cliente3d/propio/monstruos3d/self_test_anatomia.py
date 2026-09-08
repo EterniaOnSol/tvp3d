@@ -93,8 +93,9 @@ class DragonTests(unittest.TestCase):
         small = np.array(manifest['30']['max'])-manifest['30']['min']
         giant = np.array(manifest['38']['max'])-manifest['38']['min']
         self.assertGreater(giant[0],small[0]*1.4)
-        # The Old Widow reuses the same reference appearance as Giant Spider.
-        self.assertTrue(np.allclose(manifest['208']['max'],manifest['38']['max']))
+        widow = np.array(manifest['208']['max'])-manifest['208']['min']
+        self.assertGreater(widow[0],giant[0])
+        self.assertGreater(widow[1],giant[1])
     def test_wolf_diagonal_support_and_relative_size(self):
         from lobos import leg_joints
         for step in (0.,1.,-1.):
@@ -189,7 +190,12 @@ class DragonTests(unittest.TestCase):
         self.assertGreater(spans['27']/spans['21'],2.)
         self.assertGreater(spans['34'],spans['38'])
         self.assertGreater(spans['42'],spans['16'])
-        self.assertEqual(spans['38'],spans['208'])
+        self.assertGreater(spans['208'],spans['38'])
+        frost_height = entries['53']['max'][1]-entries['53']['min'][1]
+        dragon_height = entries['34']['max'][1]-entries['34']['min'][1]
+        lord_height = entries['39']['max'][1]-entries['39']['min'][1]
+        self.assertGreater(dragon_height,frost_height)
+        self.assertGreater(lord_height,dragon_height)
 
     def test_scarab_split_cases_and_real_grooves(self):
         from reptadores import elytron_point

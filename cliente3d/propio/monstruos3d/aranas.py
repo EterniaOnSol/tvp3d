@@ -12,10 +12,12 @@ PROFILES = {
              radius=.025, abdomen_width=.15, abdomen_length=.215, pattern='cyan', hair=False),
     38: dict(body=(81,50,20), abdomen=(35,31,31), light=(61,57,55),
              leg=(186,74,17), joint=(251,182,45), eye=(88,146,48), fang=(133,81,21),
-             radius=.027, abdomen_width=.175, abdomen_length=.245, pattern='red', hair=False),
+             radius=.027, abdomen_width=.175, abdomen_length=.245, pattern='red',
+             hair=False, height_scale=1.25),
     208: dict(body=(81,50,20), abdomen=(35,31,31), light=(61,57,55),
               leg=(186,74,17), joint=(251,182,45), eye=(88,146,48), fang=(133,81,21),
-              radius=.027, abdomen_width=.175, abdomen_length=.245, pattern='red', hair=False),
+              radius=.027, abdomen_width=.175, abdomen_length=.245, pattern='red',
+              hair=False, height_scale=1.35),
     219: dict(body=(67,37,18), abdomen=(85,49,26), light=(96,60,34),
               leg=(53,31,17), joint=(169,143,104), eye=(16,12,8), fang=(82,50,28),
               radius=.037, abdomen_width=.19, abdomen_length=.23, pattern='brown', hair=True),
@@ -151,6 +153,10 @@ def spider(views, phase, *, sculpt_type, profile):
                 point = center+radius*normal
                 s.hair(point,normal,.016+.009*((i+j)%3)/2)
     vertices,normals,colors = s.result()
+    height_scale = profile.get('height_scale',1.)
+    vertices[:,1] *= height_scale
+    normals[:,1] /= height_scale
+    normals /= np.linalg.norm(normals,axis=1,keepdims=True)
     # Match source footprint once, independent of gait pose (no pumping scale).
     source_width = max(v['bounds'][2]-v['bounds'][0]+1 for v in views)
     vertices *= (source_width/32*.90)/1.12
