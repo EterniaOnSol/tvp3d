@@ -1,12 +1,16 @@
 # Contrato: cliente
 
-Version: 1.22.0
+Version: 1.23.0
 Estado: PUBLICADO
 Propietario: cliente
 Depende de: modelo-comun 1.0.0, protocolo-red 1.1.0, assets 1.3.0
 
 ## Visor de catalogo 3D
 
+- La vista Todos incluye una referencia Personaje principal [outfit 128]
+  construida con el mismo modelo authored del cliente: cuerpo capsula, cabeza,
+  marcador frontal y escala uniforme 0.5. No se registra como monster ni
+  altera el conteo de fichas anatomicas.
 - El visor local descubre todas las fichas con `anatomia=true`; una nueva
   apariencia generada aparece sin mantener otra lista manual.
 - Modo `Todos`: cuadricula comun, animacion por fases, etiqueta de nombre/id,
@@ -17,6 +21,9 @@ Depende de: modelo-comun 1.0.0, protocolo-red 1.1.0, assets 1.3.0
   cuadricula sin alterar mallas, catalogo ni estado del juego.
 - El visor es una herramienta local: no envia acciones, no cambia colisiones
   y no participa en la autoridad del servidor.
+- La referencia del jugador se puede seleccionar, mover, girar y enfocar como
+  los elementos de comparacion; el modo detalle sigue reservado a monsters
+  con ficha y sprite del catalogo.
 
 ## Aves
 

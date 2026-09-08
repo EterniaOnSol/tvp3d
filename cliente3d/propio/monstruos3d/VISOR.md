@@ -3,6 +3,10 @@
 El visor descubre automaticamente todas las entradas de
 `mallas/catalogo.json` con `anatomia=true`. Al agregar y generar otro
 monster, aparece en la vista `Todos` sin editar una segunda lista.
+La misma vista agrega Personaje principal [outfit 128] como referencia de
+escala usando el modelo authored del jugador del cliente (0.5 de escala).
+No cuenta como monster: la galeria contiene 40 monsters y una referencia.
+La captura visor_personaje.png registra esa vista de 41 elementos.
 
 Desde la raiz de TVP3D:
 
@@ -30,6 +34,8 @@ Desde la raiz de TVP3D:
 
 El selector permanece activo en ambos modos. En `Todos`, elegir un nombre
 selecciona y enfoca ese monster. En detalle muestra ademas el sprite original.
+Elegir Personaje principal fuerza Todos, porque su funcion es comparar tamano
+y no pertenece al catalogo anatomico de monsters.
 El modo detalle conserva la recarga automatica de la malla modificada; la
 galeria no sondea los 40 archivos para mantener estable el costo por frame.
 

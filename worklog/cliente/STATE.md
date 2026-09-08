@@ -12,6 +12,28 @@ Contrato publicado: SI
 - `assets`: contrato publicado.
 
 ## Le toca
+2026-09-08: personaje principal incorporado al visor 1.23.0.
+- La lista y la cuadricula muestran 40 monsters + Personaje principal outfit
+  128 como referencia de escala; no altera el catalogo anatomico 40/144.
+- Reproduce la geometria vigente del runtime: capsula, cabeza, nariz, colores
+  y escala final 0.5; altura de comparacion aproximada 0.67 casillas.
+- Todos los elementos ahora rotulan su altura para comparar tamanos.
+- El personaje admite seleccionar, arrastrar, flechas, Q/E y enfoque; elegirlo
+  desde detalle vuelve de forma segura a Todos.
+- Verificado: visor 16/16, renderer 690/690 y captura PNG generada (224973
+  bytes). La inspeccion automatica de la imagen no estuvo disponible por el
+  fallo DACL del helper; queda confirmacion visual en la GUI relanzada.
+- Decision reversible: referencia local con ID interno negativo, separada del
+  outfit 128 y de los IDs autoritativos de criaturas.
+
+2026-09-07: personaje principal en visor, contrato 1.23.0.
+- Se toma el carril cliente para agregar el modelo authored del jugador como
+  referencia fija de escala en la lista y la cuadricula Todos.
+- Outfit 128 identifica la referencia visual; una clave interna separada evita
+  confundirla con IDs de monsters o sumarla al catalogo anatomico 40/144.
+- Decision reversible: misma geometria y escala 0.5 del runtime actual; solo
+  vive en el visor y no toca autoridad, red, colisiones ni persistencia.
+
 2026-09-07: entrada de mouse del visor corregida.
 - Se agrego entrada_visor.gd como Node receptor; reenvia los InputEvent al
   SceneTree del visor, que por si solo no recibia _input.

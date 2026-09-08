@@ -3,6 +3,8 @@ extends SceneTree
 const CATALOGO := preload("res://propio/monstruos3d/catalogo.gd")
 const SPRITES := preload("res://red/sprites772.gd")
 const ENTRADA_VISOR := preload("res://propio/monstruos3d/entrada_visor.gd")
+const ID_REFERENCIA_JUGADOR := -128
+const OUTFIT_JUGADOR := 128
 var modelos = CATALOGO.new()
 var sprites = SPRITES.new()
 var escena := Node3D.new()
@@ -27,7 +29,7 @@ var salida := ""
 var comparar := CheckButton.new()
 var zoom_comparacion := 1.0
 var grupo := Node3D.new()
-var comparados: Array[MeshInstance3D] = []
+var comparados: Array[Node3D] = []
 var etiquetas: Array[Label3D] = []
 var ids_comparados: Array[int] = []
 var seleccionado := -1
@@ -89,6 +91,7 @@ func _crear() -> void:
 	toolbar.add_theme_constant_override("separation", 18)
 	canvas.add_child(toolbar)
 	selector.custom_minimum_size.x = 200
+	selector.add_item("Personaje principal", ID_REFERENCIA_JUGADOR)
 	var ids: Array = modelos.fichas.keys()
 	ids.sort_custom(func(a,b): return str(modelos.fichas[a]["nombre"]) < str(modelos.fichas[b]["nombre"]))
 	for id in ids:
@@ -124,8 +127,11 @@ func _crear() -> void:
 			if seleccionado < 0 and not comparados.is_empty():
 				_seleccionar_indice(0)
 			else:
+				tipo = ids_comparados[seleccionado]
 				_actualizar_info_seleccion()
 		else:
+			if tipo == ID_REFERENCIA_JUGADOR:
+				tipo = _primer_id_monstruo()
 			_elegir(tipo)
 	)
 	var enfocar := Button.new()
@@ -185,27 +191,34 @@ func _crear_comparacion() -> void:
 			var id := int(clave)
 			if modelos.es_monstruo(0x40000001,id):
 				ids_comparados.append(id)
+	if not ids_comparados.has(ID_REFERENCIA_JUGADOR):
+		ids_comparados.push_front(ID_REFERENCIA_JUGADOR)
 	var columnas := ceili(sqrt(float(ids_comparados.size())))
 	var filas := ceili(float(ids_comparados.size())/columnas)
 	tamano_comparacion = maxf(7.0,maxf(columnas,filas)*2.65)
 	for i in range(ids_comparados.size()):
 		var id: int = ids_comparados[i]
-		var nodo := MeshInstance3D.new()
-		nodo.mesh = modelos.malla(id)
+		var nodo: Node3D
+		if id == ID_REFERENCIA_JUGADOR:
+			nodo = _crear_referencia_jugador()
+		else:
+			var volumen := MeshInstance3D.new()
+			volumen.mesh = modelos.malla(id)
+			nodo = volumen
 		nodo.position = _posicion_ordenada(i,columnas,filas)
 		nodo.set_meta("outfit_id",id)
 		grupo.add_child(nodo)
 		comparados.append(nodo)
 		var etiqueta := Label3D.new()
-		etiqueta.text = "%s [%d]\n%.2f casillas" % [
-			str(modelos.fichas[str(id)]["nombre"]).split(" / ")[0],id,
-			float(modelos.fichas[str(id)]["escala"]["longitud_casillas"])]
+		var caja := _aabb_comparado(nodo)
+		etiqueta.text = "%s\n%.2f casillas de alto" % [
+			_nombre_comparado(id),caja.size.y]
 		etiqueta.font_size = 32
 		etiqueta.pixel_size = .0026
 		etiqueta.outline_size = 8
 		etiqueta.no_depth_test = true
 		etiqueta.billboard = BaseMaterial3D.BILLBOARD_ENABLED
-		etiqueta.position = Vector3(0,nodo.mesh.get_aabb().end.y+.18,0)
+		etiqueta.position = Vector3(0,caja.end.y+.18,0)
 		nodo.add_child(etiqueta)
 		etiquetas.append(etiqueta)
 	var lineas := ImmediateMesh.new()
@@ -223,6 +236,66 @@ func _crear_comparacion() -> void:
 	material.albedo_color = Color("52616a")
 	rejilla.material_override = material
 	grupo.add_child(rejilla)
+
+
+func _crear_referencia_jugador() -> Node3D:
+	var jugador := Node3D.new()
+	jugador.name = "PersonajePrincipalOutfit128"
+	var cuerpo := MeshInstance3D.new()
+	var capsula := CapsuleMesh.new()
+	capsula.radius = .13
+	capsula.height = .5
+	cuerpo.mesh = capsula
+	cuerpo.position = Vector3(0,.3,0)
+	cuerpo.material_override = _material_jugador(Color(.72,.24,.22),.7)
+	jugador.add_child(cuerpo)
+	var cabeza := MeshInstance3D.new()
+	var esfera := SphereMesh.new()
+	esfera.radius = .095
+	esfera.height = .19
+	cabeza.mesh = esfera
+	cabeza.position = Vector3(0,.625,0)
+	cabeza.material_override = _material_jugador(Color(.88,.73,.58),.8)
+	jugador.add_child(cabeza)
+	var nariz := MeshInstance3D.new()
+	var caja := BoxMesh.new()
+	caja.size = Vector3(.05,.05,.09)
+	nariz.mesh = caja
+	nariz.position = Vector3(0,.625,-.10)
+	nariz.material_override = _material_jugador(Color(.2,.2,.22),.8)
+	jugador.add_child(nariz)
+	jugador.set_meta("aabb_comparacion",
+		AABB(Vector3(-.13,.05,-.145),Vector3(.26,.67,.29)))
+	return jugador
+
+
+func _material_jugador(color: Color,rugosidad: float) -> StandardMaterial3D:
+	var material := StandardMaterial3D.new()
+	material.albedo_color = color
+	material.roughness = rugosidad
+	material.shading_mode = BaseMaterial3D.SHADING_MODE_UNSHADED
+	return material
+
+
+func _aabb_comparado(nodo: Node3D) -> AABB:
+	if nodo.has_meta("aabb_comparacion"):
+		return nodo.get_meta("aabb_comparacion")
+	var volumen := nodo as MeshInstance3D
+	return volumen.mesh.get_aabb()
+
+
+func _nombre_comparado(id: int) -> String:
+	if id == ID_REFERENCIA_JUGADOR:
+		return "Personaje principal [outfit %d]" % OUTFIT_JUGADOR
+	return "%s [%d]" % [
+		str(modelos.fichas[str(id)]["nombre"]).split(" / ")[0],id]
+
+
+func _primer_id_monstruo() -> int:
+	for id in ids_comparados:
+		if int(id) != ID_REFERENCIA_JUGADOR:
+			return int(id)
+	return 34
 
 
 func _posicion_ordenada(indice: int,columnas: int,filas: int) -> Vector3:
@@ -245,7 +318,10 @@ func _ordenar_comparados() -> void:
 
 func _seleccionar_desde_lista(id: int) -> void:
 	if not comparar.button_pressed:
-		_elegir(id)
+		if id == ID_REFERENCIA_JUGADOR:
+			comparar.button_pressed = true
+		else:
+			_elegir(id)
 		return
 	var indice := ids_comparados.find(id)
 	if indice >= 0:
@@ -271,12 +347,11 @@ func _actualizar_info_seleccion() -> void:
 	if not comparar.button_pressed:
 		return
 	if seleccionado < 0:
-		info.text = "Todos: %d monsters creados | selecciona uno para moverlo" % comparados.size()
+		info.text = "Todos: 40 monsters + personaje | selecciona uno para moverlo"
 		return
 	var nodo := comparados[seleccionado]
-	info.text = "Todos: %d | Seleccion: %s [%d] | X %.2f Z %.2f" % [
-		comparados.size(),str(modelos.fichas[str(tipo)]["nombre"]).split(" / ")[0],
-		tipo,nodo.position.x,nodo.position.z]
+	info.text = "Todos: 40 monsters + personaje | Seleccion: %s | X %.2f Z %.2f" % [
+		_nombre_comparado(tipo),nodo.position.x,nodo.position.z]
 
 
 func _seleccionar_en_pantalla(posicion: Vector2) -> bool:
@@ -285,11 +360,12 @@ func _seleccionar_en_pantalla(posicion: Vector2) -> bool:
 	var pixels_por_unidad := root.get_visible_rect().size.y/maxf(camara.size,.01)
 	for i in range(comparados.size()):
 		var nodo := comparados[i]
-		var centro := nodo.to_global(nodo.mesh.get_aabb().get_center())
+		var caja := _aabb_comparado(nodo)
+		var centro := nodo.to_global(caja.get_center())
 		if camara.is_position_behind(centro):
 			continue
 		var pantalla := camara.unproject_position(centro)
-		var extension := nodo.mesh.get_aabb().size
+		var extension := caja.size
 		var radio := maxf(20.0,maxf(extension.x,maxf(extension.y,extension.z))*pixels_por_unidad*.62)
 		var distancia_click := posicion.distance_to(pantalla)
 		if distancia_click <= radio and distancia_click < mejor_distancia:
@@ -323,7 +399,7 @@ func _enfocar_seleccion() -> void:
 		return
 	var nodo := comparados[seleccionado]
 	foco_comparacion = nodo.position
-	var medidas := nodo.mesh.get_aabb().size
+	var medidas := _aabb_comparado(nodo).size
 	tamano_comparacion = maxf(1.2,maxf(medidas.x,maxf(medidas.y,medidas.z))*2.1)
 
 
@@ -335,6 +411,13 @@ func _panear_camara(delta_pantalla: Vector2) -> void:
 
 
 func _elegir(id: int) -> void:
+	if id == ID_REFERENCIA_JUGADOR:
+		if not comparar.button_pressed:
+			comparar.button_pressed = true
+		var indice := ids_comparados.find(ID_REFERENCIA_JUGADOR)
+		if indice >= 0:
+			_seleccionar_indice(indice)
+		return
 	tipo = id
 	selector.select(selector.get_item_index(tipo))
 	var ficha: Dictionary = modelos.fichas.get(str(tipo), {})
@@ -346,23 +429,27 @@ func _elegir(id: int) -> void:
 
 func _actualizar_modelo() -> void:
 	var fase := int(reloj * 6.0)
-	modelo.mesh = modelos.malla(tipo, fase)
-	modelo.rotation.y = CATALOGO.GIROS[orientacion.selected]
-	var cuadro: Dictionary = sprites.cuadro_outfit(tipo, orientacion.selected, fase)
-	if not cuadro.is_empty():
-		var tex := AtlasTexture.new()
-		tex.atlas = cuadro["lamina"]
-		var tamano := tex.atlas.get_size()
-		tex.region = Rect2(Vector2(cuadro["corrimiento"].x, cuadro["corrimiento"].y) * tamano,
-			Vector2(cuadro["escala"].x, cuadro["escala"].y) * tamano)
-		imagen.texture = tex
-	var medidas := modelo.mesh.get_aabb().size
-	info.text = "Detalle (zoom ajustado)\nOutfit %d | Pose %d / %d\nAncho %.2f | Alto %.2f | Largo %.2f casillas" % [tipo, posmod(fase, modelos.fases(tipo))+1, modelos.fases(tipo),medidas.x,medidas.y,medidas.z]
+	if tipo != ID_REFERENCIA_JUGADOR:
+		modelo.mesh = modelos.malla(tipo, fase)
+		modelo.rotation.y = CATALOGO.GIROS[orientacion.selected]
+		var cuadro: Dictionary = sprites.cuadro_outfit(tipo, orientacion.selected, fase)
+		if not cuadro.is_empty():
+			var tex := AtlasTexture.new()
+			tex.atlas = cuadro["lamina"]
+			var tamano := tex.atlas.get_size()
+			tex.region = Rect2(Vector2(cuadro["corrimiento"].x, cuadro["corrimiento"].y) * tamano,
+				Vector2(cuadro["escala"].x, cuadro["escala"].y) * tamano)
+			imagen.texture = tex
+		var medidas := modelo.mesh.get_aabb().size
+		info.text = "Detalle (zoom ajustado)\nOutfit %d | Pose %d / %d\nAncho %.2f | Alto %.2f | Largo %.2f casillas" % [tipo, posmod(fase, modelos.fases(tipo))+1, modelos.fases(tipo),medidas.x,medidas.y,medidas.z]
 	if comparar.button_pressed:
 		_actualizar_info_seleccion()
 		for i in range(comparados.size()):
-			comparados[i].mesh = modelos.malla(ids_comparados[i],fase)
-			etiquetas[i].position.y = comparados[i].mesh.get_aabb().end.y+.18
+			if ids_comparados[i] == ID_REFERENCIA_JUGADOR:
+				continue
+			var volumen := comparados[i] as MeshInstance3D
+			volumen.mesh = modelos.malla(ids_comparados[i],fase)
+			etiquetas[i].position.y = volumen.mesh.get_aabb().end.y+.18
 
 
 func _process(delta: float) -> bool:
@@ -459,15 +546,19 @@ func _procesar_entrada(event: InputEvent) -> void:
 func _probar_visor() -> void:
 	var comprobaciones := 0
 	var fallas := 0
-	var esperados := 0
+	var esperados_monstruos := 0
 	for clave in modelos.fichas:
 		if modelos.es_monstruo(0x40000001,int(clave)):
-			esperados += 1
+			esperados_monstruos += 1
+	var esperados := esperados_monstruos+1
 	var condiciones := [
 		comparados.size()==esperados,
 		etiquetas.size()==esperados,
 		ids_comparados.size()==esperados,
-		esperados==40,
+		esperados_monstruos==40,
+		ids_comparados.has(ID_REFERENCIA_JUGADOR),
+		selector.get_item_index(ID_REFERENCIA_JUGADOR) >= 0,
+		_aabb_comparado(comparados[ids_comparados.find(ID_REFERENCIA_JUGADOR)]).size.y > .65,
 		receptor_entrada.is_inside_tree(),
 		receptor_entrada.destino.is_valid(),
 	]
@@ -476,7 +567,16 @@ func _probar_visor() -> void:
 		if not condicion:
 			fallas += 1
 	if not comparados.is_empty():
-		_seleccionar_indice(0)
+		var indice_jugador := ids_comparados.find(ID_REFERENCIA_JUGADOR)
+		_seleccionar_indice(indice_jugador)
+		comparar.button_pressed = false
+		comprobaciones += 1
+		if tipo == ID_REFERENCIA_JUGADOR or modelo.mesh == null:
+			fallas += 1
+		comparar.button_pressed = true
+		comprobaciones += 1
+		if tipo != ID_REFERENCIA_JUGADOR or seleccionado != indice_jugador:
+			fallas += 1
 		var posicion := comparados[0].position
 		_mover_seleccionado(Vector3(.25,0,.5))
 		comprobaciones += 1
