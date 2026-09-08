@@ -1,6 +1,6 @@
 # Estado: servidor
 
-Estado: BLOQUEADO
+Estado: LISTO_PARA_REVISION
 Ultimo agente: claude
 Ultima actualizacion: 2026-08-30T06:25:00-06:00
 Contrato publicado: SI
@@ -99,9 +99,9 @@ Construir el servidor Godot headless autoritativo, sus reglas y persistencia.
 
 ## Bloqueos activos
 
-- Docker Desktop deja bloqueadas las consultas de contenedores durante la
-  recreacion; XML y contrato pasan, pero no se pudo confirmar el arranque vivo.
-  Reintentar cuando el daemon responda y comprobar el spawn en el mundo cargado.
+- Resuelto: tras reiniciar Docker Desktop, MariaDB quedo healthy y
+  servidor-server-1 quedo Up. El contenedor monta el XML con radius=0, el
+  puerto 7171 responde y el cliente 3D se abrio para revision visual.
 
 ## Decisiones
 
