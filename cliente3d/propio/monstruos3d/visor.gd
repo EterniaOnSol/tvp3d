@@ -19,13 +19,20 @@ var elevacion := .55
 var distancia := 3.0
 var tipo := 34
 var capturar := false
+var modo_prueba := false
 var frames := 0
 var salida := ""
 var comparar := CheckButton.new()
 var zoom_comparacion := 1.0
 var grupo := Node3D.new()
 var comparados: Array[MeshInstance3D] = []
-var ids_comparados := [21,83,79,38,27,34]
+var etiquetas: Array[Label3D] = []
+var ids_comparados: Array[int] = []
+var seleccionado := -1
+var arrastrando := false
+var offset_arrastre := Vector3.ZERO
+var foco_comparacion := Vector3.ZERO
+var tamano_comparacion := 8.0
 var _revision := 0
 var _ultima_revision := 0.0
 
@@ -85,11 +92,11 @@ func _crear() -> void:
 			continue
 		selector.add_item(str(modelos.fichas[id]["nombre"]).split(" / ")[0], int(id))
 	toolbar.add_child(selector)
-	selector.item_selected.connect(func(i): _elegir(selector.get_item_id(i)))
-	reproducir.text = "Animation"
+	selector.item_selected.connect(func(i): _seleccionar_desde_lista(selector.get_item_id(i)))
+	reproducir.text = "Animacion"
 	reproducir.button_pressed = true
 	toolbar.add_child(reproducir)
-	girar.text = "Orbit"
+	girar.text = "Orbita"
 	girar.button_pressed = true
 	toolbar.add_child(girar)
 	for nombre in ["North", "East", "South", "West"]:
@@ -97,22 +104,38 @@ func _crear() -> void:
 	orientacion.select(2)
 	toolbar.add_child(orientacion)
 	orientacion.item_selected.connect(func(_i): _actualizar_modelo())
-	comparar.text = "Comparar tamanos"
+	comparar.text = "Todos"
 	toolbar.add_child(comparar)
 	comparar.toggled.connect(func(activo):
 		modelo.visible = not activo
 		grupo.visible = activo
 		imagen.visible = not activo
-		selector.disabled = activo
+		selector.disabled = false
 		orientacion.disabled = activo
 		girar.button_pressed = false
 		info.position = Vector2(20,65) if activo else Vector2(20,270)
 		if activo:
 			angulo = .12
 			elevacion = .86
+			if seleccionado < 0 and not comparados.is_empty():
+				_seleccionar_indice(0)
+			else:
+				_actualizar_info_seleccion()
 		else:
 			_elegir(tipo)
 	)
+	var enfocar := Button.new()
+	enfocar.text = "Enfocar"
+	enfocar.pressed.connect(_enfocar_seleccion)
+	toolbar.add_child(enfocar)
+	var ordenar := Button.new()
+	ordenar.text = "Ordenar"
+	ordenar.pressed.connect(_ordenar_comparados)
+	toolbar.add_child(ordenar)
+	var ayuda := Label.new()
+	ayuda.position = Vector2(20,92)
+	ayuda.text = "Izq: seleccionar/arrastrar | Der: orbitar | Centro/WASD: mover camara | Rueda: zoom | Flechas: mover monster | Q/E: girar | F: enfocar | R: ordenar"
+	canvas.add_child(ayuda)
 	imagen.position = Vector2(20,80)
 	imagen.size = Vector2(176,176)
 	imagen.expand_mode = TextureRect.EXPAND_IGNORE_SIZE
@@ -139,41 +162,55 @@ func _crear() -> void:
 			for id in args[i+1].split(","):
 				if modelos.es_monstruo(0x40000001,int(id)):
 					ids_comparados.append(int(id))
+		if args[i] == "--self-test":
+			modo_prueba = true
 	_crear_comparacion()
 	_elegir(tipo)
-	comparar.button_pressed = "--comparar" in args
+	comparar.button_pressed = "--tipo" not in args or "--comparar" in args or "--todos" in args
+	if modo_prueba:
+		_probar_visor.call_deferred()
 
 
 func _crear_comparacion() -> void:
 	if ids_comparados.is_empty():
-		ids_comparados = [21,83,79,38,27,34]
-	var columnas := mini(3, ids_comparados.size())
-	var filas := ceili(float(ids_comparados.size()) / columnas)
+		var claves: Array = modelos.fichas.keys()
+		claves.sort_custom(func(a,b):
+			return str(modelos.fichas[a]["nombre"]).naturalnocasecmp_to(
+				str(modelos.fichas[b]["nombre"])) < 0)
+		for clave in claves:
+			var id := int(clave)
+			if modelos.es_monstruo(0x40000001,id):
+				ids_comparados.append(id)
+	var columnas := ceili(sqrt(float(ids_comparados.size())))
+	var filas := ceili(float(ids_comparados.size())/columnas)
+	tamano_comparacion = maxf(7.0,maxf(columnas,filas)*2.65)
 	for i in range(ids_comparados.size()):
 		var id: int = ids_comparados[i]
 		var nodo := MeshInstance3D.new()
 		nodo.mesh = modelos.malla(id)
-		nodo.position = Vector3((i % columnas - (columnas-1)*.5)*3.2,0,(floori(float(i)/columnas)-(filas-1)*.5)*3.1)
+		nodo.position = _posicion_ordenada(i,columnas,filas)
+		nodo.set_meta("outfit_id",id)
 		grupo.add_child(nodo)
 		comparados.append(nodo)
 		var etiqueta := Label3D.new()
-
-		etiqueta.text = "%s\n%.2f casillas" % [str(modelos.fichas[str(id)]["nombre"]).split(" / ")[0],float(modelos.fichas[str(id)]["escala"]["longitud_casillas"])]
-		etiqueta.font_size = 36
-		etiqueta.pixel_size = .0028
+		etiqueta.text = "%s [%d]\n%.2f casillas" % [
+			str(modelos.fichas[str(id)]["nombre"]).split(" / ")[0],id,
+			float(modelos.fichas[str(id)]["escala"]["longitud_casillas"])]
+		etiqueta.font_size = 32
+		etiqueta.pixel_size = .0026
 		etiqueta.outline_size = 8
 		etiqueta.no_depth_test = true
 		etiqueta.billboard = BaseMaterial3D.BILLBOARD_ENABLED
-		etiqueta.position = nodo.position + Vector3(0,.12,1.28)
-		grupo.add_child(etiqueta)
+		etiqueta.position = Vector3(0,nodo.mesh.get_aabb().end.y+.18,0)
+		nodo.add_child(etiqueta)
+		etiquetas.append(etiqueta)
 	var lineas := ImmediateMesh.new()
 	lineas.surface_begin(Mesh.PRIMITIVE_LINES)
-	for x in range(-6,7):
-		lineas.surface_add_vertex(Vector3(x,-.012,-5))
-		lineas.surface_add_vertex(Vector3(x,-.012,5))
-	for z in range(-5,6):
-		lineas.surface_add_vertex(Vector3(-6,-.012,z))
-		lineas.surface_add_vertex(Vector3(6,-.012,z))
+	for n in range(-30,31):
+		lineas.surface_add_vertex(Vector3(n,-.012,-30))
+		lineas.surface_add_vertex(Vector3(n,-.012,30))
+		lineas.surface_add_vertex(Vector3(-30,-.012,n))
+		lineas.surface_add_vertex(Vector3(30,-.012,n))
 	lineas.surface_end()
 	var rejilla := MeshInstance3D.new()
 	rejilla.mesh = lineas
@@ -182,6 +219,115 @@ func _crear_comparacion() -> void:
 	material.albedo_color = Color("52616a")
 	rejilla.material_override = material
 	grupo.add_child(rejilla)
+
+
+func _posicion_ordenada(indice: int,columnas: int,filas: int) -> Vector3:
+	return Vector3((indice%columnas-(columnas-1)*.5)*2.4,0,
+		(floori(float(indice)/columnas)-(filas-1)*.5)*2.4)
+
+
+func _ordenar_comparados() -> void:
+	if comparados.is_empty():
+		return
+	var columnas := ceili(sqrt(float(comparados.size())))
+	var filas := ceili(float(comparados.size())/columnas)
+	for i in range(comparados.size()):
+		comparados[i].position = _posicion_ordenada(i,columnas,filas)
+		comparados[i].rotation.y = 0
+	foco_comparacion = Vector3.ZERO
+	tamano_comparacion = maxf(7.0,maxf(columnas,filas)*2.65)
+	_actualizar_info_seleccion()
+
+
+func _seleccionar_desde_lista(id: int) -> void:
+	if not comparar.button_pressed:
+		_elegir(id)
+		return
+	var indice := ids_comparados.find(id)
+	if indice >= 0:
+		_seleccionar_indice(indice)
+		_enfocar_seleccion()
+
+
+func _seleccionar_indice(indice: int) -> void:
+	if indice < 0 or indice >= comparados.size():
+		return
+	if seleccionado >= 0:
+		etiquetas[seleccionado].modulate = Color.WHITE
+	seleccionado = indice
+	etiquetas[seleccionado].modulate = Color("ffd866")
+	tipo = ids_comparados[seleccionado]
+	var item := selector.get_item_index(tipo)
+	if item >= 0:
+		selector.select(item)
+	_actualizar_info_seleccion()
+
+
+func _actualizar_info_seleccion() -> void:
+	if not comparar.button_pressed:
+		return
+	if seleccionado < 0:
+		info.text = "Todos: %d monsters creados | selecciona uno para moverlo" % comparados.size()
+		return
+	var nodo := comparados[seleccionado]
+	info.text = "Todos: %d | Seleccion: %s [%d] | X %.2f Z %.2f" % [
+		comparados.size(),str(modelos.fichas[str(tipo)]["nombre"]).split(" / ")[0],
+		tipo,nodo.position.x,nodo.position.z]
+
+
+func _seleccionar_en_pantalla(posicion: Vector2) -> bool:
+	var mejor := -1
+	var mejor_distancia := INF
+	var pixels_por_unidad := root.get_visible_rect().size.y/maxf(camara.size,.01)
+	for i in range(comparados.size()):
+		var nodo := comparados[i]
+		var centro := nodo.to_global(nodo.mesh.get_aabb().get_center())
+		if camara.is_position_behind(centro):
+			continue
+		var pantalla := camara.unproject_position(centro)
+		var extension := nodo.mesh.get_aabb().size
+		var radio := maxf(20.0,maxf(extension.x,maxf(extension.y,extension.z))*pixels_por_unidad*.62)
+		var distancia_click := posicion.distance_to(pantalla)
+		if distancia_click <= radio and distancia_click < mejor_distancia:
+			mejor = i
+			mejor_distancia = distancia_click
+	if mejor < 0:
+		return false
+	_seleccionar_indice(mejor)
+	return true
+
+
+func _punto_en_suelo(posicion: Vector2) -> Variant:
+	var origen := camara.project_ray_origin(posicion)
+	var direccion := camara.project_ray_normal(posicion)
+	if absf(direccion.y) < .00001:
+		return null
+	var avance := -origen.y/direccion.y
+	return origen+direccion*avance if avance >= 0 else null
+
+
+func _mover_seleccionado(delta: Vector3) -> void:
+	if seleccionado < 0:
+		return
+	comparados[seleccionado].position += delta
+	comparados[seleccionado].position.y = 0
+	_actualizar_info_seleccion()
+
+
+func _enfocar_seleccion() -> void:
+	if seleccionado < 0:
+		return
+	var nodo := comparados[seleccionado]
+	foco_comparacion = nodo.position
+	var medidas := nodo.mesh.get_aabb().size
+	tamano_comparacion = maxf(1.2,maxf(medidas.x,maxf(medidas.y,medidas.z))*2.1)
+
+
+func _panear_camara(delta_pantalla: Vector2) -> void:
+	var escala := camara.size/maxf(root.get_visible_rect().size.y,1.0)
+	var derecha := Vector3(cos(angulo),0,-sin(angulo))
+	var adelante := Vector3(-sin(angulo),0,-cos(angulo))
+	foco_comparacion += derecha*(-delta_pantalla.x*escala)+adelante*(delta_pantalla.y*escala)
 
 
 func _elegir(id: int) -> void:
@@ -209,9 +355,10 @@ func _actualizar_modelo() -> void:
 	var medidas := modelo.mesh.get_aabb().size
 	info.text = "Detalle (zoom ajustado)\nOutfit %d | Pose %d / %d\nAncho %.2f | Alto %.2f | Largo %.2f casillas" % [tipo, posmod(fase, modelos.fases(tipo))+1, modelos.fases(tipo),medidas.x,medidas.y,medidas.z]
 	if comparar.button_pressed:
-		info.text = "Escala comun | Cuadricula: 1 casilla | Tamano incluye patas, cola y mandibulas"
+		_actualizar_info_seleccion()
 		for i in range(comparados.size()):
 			comparados[i].mesh = modelos.malla(ids_comparados[i],fase)
+			etiquetas[i].position.y = comparados[i].mesh.get_aabb().end.y+.18
 
 
 func _process(delta: float) -> bool:
@@ -220,9 +367,9 @@ func _process(delta: float) -> bool:
 	if reproducir.button_pressed and not capturar:
 		reloj += delta
 	if girar.button_pressed and not capturar:
-		angulo += delta * .3
+		angulo += delta*.3
 	_ultima_revision += delta
-	if _ultima_revision > 2.0 and not capturar:
+	if _ultima_revision > 2.0 and not capturar and not comparar.button_pressed:
 		_ultima_revision = 0.0
 		var ruta := CATALOGO.CARPETA + str(modelos.fichas[str(tipo)]["archivo"])
 		var revision := FileAccess.get_modified_time(ruta)
@@ -231,12 +378,17 @@ func _process(delta: float) -> bool:
 			modelos._cache.erase(tipo)
 	_actualizar_modelo()
 	var alto := modelo.mesh.get_aabb().size.y if modelo.mesh != null else 1.0
-	var foco := Vector3(-distancia*.10, alto*.45, 0)
+	var foco := Vector3(-distancia*.10,alto*.45,0)
 	camara.size = distancia
 	if comparar.button_pressed:
-		foco = Vector3(0,.16,0)
-		camara.size = maxf(3.5,ceili(ids_comparados.size()/3.0)*3.1)*zoom_comparacion
-	camara.position = foco + Vector3(sin(angulo)*cos(elevacion), sin(elevacion), cos(angulo)*cos(elevacion)) * 8
+		foco = foco_comparacion+Vector3(0,.16,0)
+		camara.size = tamano_comparacion*zoom_comparacion
+		var dx := (1.0 if Input.is_key_pressed(KEY_D) else 0.0)-(1.0 if Input.is_key_pressed(KEY_A) else 0.0)
+		var dy := (1.0 if Input.is_key_pressed(KEY_S) else 0.0)-(1.0 if Input.is_key_pressed(KEY_W) else 0.0)
+		if not is_zero_approx(dx) or not is_zero_approx(dy):
+			_panear_camara(Vector2(-dx,dy)*520.0*delta)
+	camara.position = foco+Vector3(sin(angulo)*cos(elevacion),sin(elevacion),
+		cos(angulo)*cos(elevacion))*20
 	camara.look_at(foco)
 	frames += 1
 	if capturar and frames == 12:
@@ -245,21 +397,98 @@ func _process(delta: float) -> bool:
 
 
 func _input(event: InputEvent) -> void:
-	if event is InputEventMouseMotion and event.button_mask & MOUSE_BUTTON_MASK_LEFT:
-		angulo -= event.relative.x * .01
-		elevacion = clampf(elevacion + event.relative.y * .006, .12, 1.45)
-		girar.button_pressed = false
-	if event is InputEventMouseButton and event.pressed:
-		if comparar.button_pressed:
-			if event.button_index == MOUSE_BUTTON_WHEEL_UP:
-				zoom_comparacion = maxf(.5,zoom_comparacion*.9)
-			elif event.button_index == MOUSE_BUTTON_WHEEL_DOWN:
-				zoom_comparacion = minf(2.,zoom_comparacion*1.1)
-			return
-		if event.button_index == MOUSE_BUTTON_WHEEL_UP:
-			distancia = maxf(.5, distancia * .9)
-		elif event.button_index == MOUSE_BUTTON_WHEEL_DOWN:
-			distancia = minf(12, distancia * 1.1)
+	if event is InputEventMouseButton:
+		if event.button_index == MOUSE_BUTTON_LEFT:
+			if event.pressed and comparar.button_pressed and event.position.y > 115:
+				if _seleccionar_en_pantalla(event.position):
+					var punto = _punto_en_suelo(event.position)
+					if punto != null:
+						offset_arrastre = comparados[seleccionado].position-punto
+						arrastrando = true
+			elif not event.pressed:
+				arrastrando = false
+		if event.pressed and event.button_index == MOUSE_BUTTON_WHEEL_UP:
+			if comparar.button_pressed:
+				zoom_comparacion = maxf(.25,zoom_comparacion*.88)
+			else:
+				distancia = maxf(.5,distancia*.9)
+		if event.pressed and event.button_index == MOUSE_BUTTON_WHEEL_DOWN:
+			if comparar.button_pressed:
+				zoom_comparacion = minf(5.0,zoom_comparacion*1.14)
+			else:
+				distancia = minf(12,distancia*1.1)
+	if event is InputEventMouseMotion:
+		if arrastrando and event.button_mask&MOUSE_BUTTON_MASK_LEFT:
+			var punto = _punto_en_suelo(event.position)
+			if punto != null:
+				comparados[seleccionado].position = punto+offset_arrastre
+				comparados[seleccionado].position.y = 0
+				_actualizar_info_seleccion()
+		elif event.button_mask&MOUSE_BUTTON_MASK_RIGHT:
+			angulo -= event.relative.x*.01
+			elevacion = clampf(elevacion+event.relative.y*.006,.12,1.45)
+			girar.button_pressed = false
+		elif comparar.button_pressed and event.button_mask&MOUSE_BUTTON_MASK_MIDDLE:
+			_panear_camara(event.relative)
+	if event is InputEventKey and event.pressed and not event.echo and comparar.button_pressed:
+		match event.keycode:
+			KEY_UP:
+				_mover_seleccionado(Vector3(0,0,-.15))
+			KEY_DOWN:
+				_mover_seleccionado(Vector3(0,0,.15))
+			KEY_LEFT:
+				_mover_seleccionado(Vector3(-.15,0,0))
+			KEY_RIGHT:
+				_mover_seleccionado(Vector3(.15,0,0))
+			KEY_Q:
+				if seleccionado >= 0:
+					comparados[seleccionado].rotation.y += PI/12
+			KEY_E:
+				if seleccionado >= 0:
+					comparados[seleccionado].rotation.y -= PI/12
+			KEY_F:
+				_enfocar_seleccion()
+			KEY_R:
+				_ordenar_comparados()
+
+
+func _probar_visor() -> void:
+	var comprobaciones := 0
+	var fallas := 0
+	var esperados := 0
+	for clave in modelos.fichas:
+		if modelos.es_monstruo(0x40000001,int(clave)):
+			esperados += 1
+	var condiciones := [
+		comparados.size()==esperados,
+		etiquetas.size()==esperados,
+		ids_comparados.size()==esperados,
+		esperados==40,
+	]
+	for condicion in condiciones:
+		comprobaciones += 1
+		if not condicion:
+			fallas += 1
+	if not comparados.is_empty():
+		_seleccionar_indice(0)
+		var posicion := comparados[0].position
+		_mover_seleccionado(Vector3(.25,0,.5))
+		comprobaciones += 1
+		if comparados[0].position==posicion:
+			fallas += 1
+		_ordenar_comparados()
+		comprobaciones += 1
+		if comparados[0].position!=_posicion_ordenada(0,ceili(sqrt(float(comparados.size()))),
+				ceili(float(comparados.size())/ceili(sqrt(float(comparados.size()))))):
+			fallas += 1
+		var foco := foco_comparacion
+		_panear_camara(Vector2(40,20))
+		comprobaciones += 1
+		if foco_comparacion==foco:
+			fallas += 1
+	print("MONSTERS_VIEWER: %d comprobaciones, %d fallas, %d modelos" % [
+		comprobaciones,fallas,comparados.size()])
+	quit(0 if fallas==0 else 1)
 
 
 func _capturar() -> void:

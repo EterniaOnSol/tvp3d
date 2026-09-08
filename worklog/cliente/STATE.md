@@ -12,6 +12,38 @@ Contrato publicado: SI
 - `assets`: contrato publicado.
 
 ## Le toca
+2026-09-07: cierre retomado del visor 1.22.0.
+- Diff completo releido y limitado a visor.gd, VISOR.md, captura y worklog cliente.
+- Restaurada la recarga automatica de la malla seleccionada en modo detalle;
+  la galeria completa evita sondear 40 archivos por frame.
+- Verificado de nuevo: visor 7/7, renderer 690/690, ambos con codigo 0.
+- La captura visor_todos.png se conserva como evidencia del recorrido visual
+  revisado en la pasada original; no se regeneraron mallas ni assets.
+- Cambios ajenos en ranura.gd, partidas, QA, previews y temporal de trolls
+  permanecen fuera del commit.
+- Decision reversible: toda la interaccion sigue local al visor, sin estado
+  persistente, red, colisiones ni autoridad de gameplay.
+
+2026-09-07: continuacion de cierre y publicacion del visor 1.22.0.
+- Se conserva el alcance ya verificado: 40 monstruos, movimiento individual y
+  camara orbital/paneable; no se agregan cambios de runtime ni autoridad.
+- Objetivo de esta reapertura: releer el diff, repetir pruebas, aislar cambios
+  ajenos y completar commit/push autorizado del visor.
+- Decision reversible: mantener esta pasada limitada al visor y su documentacion.
+
+2026-09-07: visor completo verificado, contrato 1.22.0.
+- Descubre automaticamente las 40 fichas anatomicas y las ordena por nombre.
+- Seleccion por clic o lista; arrastre X/Z, flechas para precision y Q/E para
+  girar cada monster. Ordenar restaura la cuadricula de la sesion.
+- Camara: boton derecho orbita, centro/WASD panean, rueda acerca y F enfoca.
+- Modo individual, animacion, sprites y argumentos de captura conservados.
+- Godot viewer 7/7, renderer 690/690 y detalle individual cargado sin errores.
+- Captura real visor_todos.png revisada: 40 modelos visibles y UI legible.
+- Comandos y controles completos en monstruos3d/VISOR.md.
+- Decision reversible: interaccion local en visor.gd; no persiste posiciones,
+  no modifica runtime, colisiones, red ni autoridad.
+- Commit/push autorizados; resultado Git se confirma al cierre.
+
 
 2026-09-07: Chicken 111, Flamingo 212, Parrot 217 y Terror Bird 218 verificados,
 contrato 1.21.0.

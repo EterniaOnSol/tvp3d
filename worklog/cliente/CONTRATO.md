@@ -1,9 +1,22 @@
 # Contrato: cliente
 
-Version: 1.21.0
+Version: 1.22.0
 Estado: PUBLICADO
 Propietario: cliente
 Depende de: modelo-comun 1.0.0, protocolo-red 1.1.0, assets 1.3.0
+
+## Visor de catalogo 3D
+
+- El visor local descubre todas las fichas con `anatomia=true`; una nueva
+  apariencia generada aparece sin mantener otra lista manual.
+- Modo `Todos`: cuadricula comun, animacion por fases, etiqueta de nombre/id,
+  seleccion con clic y arrastre individual sobre el plano X/Z.
+- Camara ortogonal: orbita con boton derecho, paneo con boton central o WASD,
+  zoom con rueda y enfoque de la criatura seleccionada.
+- Flechas mueven la criatura seleccionada; Q/E la giran. `Ordenar` restaura la
+  cuadricula sin alterar mallas, catalogo ni estado del juego.
+- El visor es una herramienta local: no envia acciones, no cambia colisiones
+  y no participa en la autoridad del servidor.
 
 ## Aves
 
