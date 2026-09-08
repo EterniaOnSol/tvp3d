@@ -15,12 +15,17 @@ OTClient incluido en 3DTIBIA (licencia MIT).
 La base mide cerca de 0.95 casillas; sombreros, cascos y armas pueden elevar el
 AABB hasta 1.15. El componente ofrece cuatro orientaciones y tres poses.
 
+Integracion runtime:
+
+- El jugador local usa apariencia, colores y direccion confirmados.
+- Otros jugadores con IDs del rango de jugador usan el mismo componente.
+- Caminar reproduce tres poses; al detenerse vuelve a la pose idle.
+- Outfits no soportados, NPCs y casos incompatibles conservan el billboard.
+- El cambio es visual: no altera colisiones, ocupacion ni autoridad.
+
 Verificacion:
 
     Godot --headless --path cliente3d --script res://propio/personajes3d/self_test.gd
-
-La integracion al runtime legacy mundo3d.gd no pertenece a este carril. En
-este lote los outfits se consumen desde el visor propio.
 
 ## Evolucion prevista: outfits personalizados premium
 

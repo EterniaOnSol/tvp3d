@@ -131,6 +131,19 @@ func aplicar_pose(raiz: Node3D,fase: int) -> void:
 			parte.rotation.x = -paso
 
 
+func aplicar_prioridad_local(raiz: Node) -> void:
+	for hijo in raiz.get_children():
+		var geometria := hijo as GeometryInstance3D
+		if geometria != null:
+			var material := geometria.material_override as StandardMaterial3D
+			if material != null:
+				var copia := material.duplicate() as StandardMaterial3D
+				copia.no_depth_test = true
+				copia.render_priority = 100
+				geometria.material_override = copia
+		aplicar_prioridad_local(hijo)
+
+
 func _brazo(raiz: Node3D,lado: int,torso_x: float,color: Color,paso: float) -> void:
 	var nombre := "BrazoIzquierdo" if lado < 0 else "BrazoDerecho"
 	var brazo := _parte_capsula(raiz,nombre,.052,.31,

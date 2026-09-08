@@ -43,6 +43,7 @@ const CONEXION := preload("res://red/conexion772.gd")
 const ESTADO := preload("res://red/estado_mundo.gd")
 const SPRITES := preload("res://red/sprites772.gd")
 const MONSTRUOS_3D := preload("res://propio/monstruos3d/catalogo.gd")
+const PERSONAJES_3D := preload("res://propio/personajes3d/catalogo.gd")
 const DISCO := preload("res://red/mapa_disco.gd")
 const CATALOGO := preload("res://red/mapa772.gd")
 const IR_TROZOS := preload("res://red/ir_trozos.gd")
@@ -165,7 +166,6 @@ const UMBRAL_ARRASTRE_MOUSE := 3.0
 ## siendo la unica que cambia la posicion logica.
 const DURACION_VISUAL_PASO := 0.26
 const MULTIPLICADOR_DIAGONAL := 3.0
-const ESCALA_JUGADOR := 0.5
 ## En el servidor los NPC usan el rango reservado 0x80000000+.
 ## No tienen que entrar al ciclo de ataque de los monsters.
 const ID_MINIMO_NPC := 0x80000000
@@ -230,10 +230,7 @@ var _material_objetivo: StandardMaterial3D
 var _objetivo_visual_id := 0
 var _tiempo_objetivo := 0.0
 var _jugador_nodo: Node3D
-var _jugador_malla: MeshInstance3D
 var _jugador_visual: Node3D
-var _jugador_cabeza: MeshInstance3D
-var _jugador_nariz: MeshInstance3D
 var _camara: Camera3D
 var _sol: DirectionalLight3D
 var _entorno: Environment
@@ -311,6 +308,7 @@ var _animaciones_palanca: Array = []
 var _animaciones_criaturas: Array = []
 var _nodos_criaturas := {}
 var _modelos_monstruos := MONSTRUOS_3D.new()
+var _modelos_personajes := PERSONAJES_3D.new()
 var _efectos_visuales: Array = []
 var _desconocidos := 0
 var _mapa_visible := {}
@@ -1470,15 +1468,19 @@ func _usar_con_clic(posicion_mouse: Vector2) -> void:
 
 func _clic_sobre_jugador(posicion_mouse: Vector2) -> bool:
 	"""Comprueba el cuerpo del modelo propio, no solo el suelo bajo el clic."""
-	if _camara == null or not is_instance_valid(_jugador_nodo):
+	if (_camara == null or not is_instance_valid(_jugador_nodo)
+			or not is_instance_valid(_jugador_visual)):
 		return false
-	var base_3d := _jugador_nodo.position + Vector3(0.0, 0.02, 0.0)
-	var cabeza_3d := _jugador_nodo.position + Vector3(0.0,
-		1.18 * ESCALA_JUGADOR, 0.0)
+	var caja := AABB(Vector3(-.25,0,-.15),Vector3(.5,.95,.3))
+	if _jugador_visual.has_meta("aabb_comparacion"):
+		caja = _jugador_visual.get_meta("aabb_comparacion")
+	var base_3d := _jugador_visual.to_global(Vector3(0.0,caja.position.y,0.0))
+	var cabeza_3d := _jugador_visual.to_global(Vector3(0.0,caja.end.y,0.0))
 	var base := _camara.unproject_position(base_3d)
 	var cabeza := _camara.unproject_position(cabeza_3d)
 	var altura_pantalla := maxf(24.0, absf(base.y - cabeza.y))
-	var ancho_pantalla := maxf(18.0, altura_pantalla * 0.40)
+	var ancho_pantalla := maxf(18.0,altura_pantalla*maxf(.32,caja.size.x/maxf(
+		caja.size.y,.01))*.65)
 	return posicion_mouse.x >= base.x - ancho_pantalla \
 		and posicion_mouse.x <= base.x + ancho_pantalla \
 		and posicion_mouse.y >= minf(base.y, cabeza.y) - 8.0 \
@@ -1926,50 +1928,74 @@ func _crear_jugador_visual() -> void:
 	_jugador_nodo = Node3D.new()
 	_jugador_nodo.name = "JugadorVisual"
 	add_child(_jugador_nodo)
-	# Este es el mismo personaje authored que usaba 3DTIBIA: una capsula
-	# para el cuerpo, una esfera para la cabeza y una nariz que marca la
-	# direccion. El jugador no depende de un atlas 2D para verse completo.
-	_jugador_visual = Node3D.new()
-	_jugador_visual.name = "VisualPrincipal3DTibia"
-	_jugador_visual.scale = Vector3.ONE * ESCALA_JUGADOR
-	_jugador_nodo.add_child(_jugador_visual)
-
-	_jugador_malla = MeshInstance3D.new()
-	_jugador_malla.name = "Cuerpo"
-	var cap := CapsuleMesh.new()
-	cap.radius = 0.26
-	cap.height = 1.0
-	_jugador_malla.mesh = cap
-	_jugador_malla.position = Vector3(0.0, 0.6, 0.0)
-	_jugador_malla.material_override = _material_personaje(
-		Color(0.72, 0.24, 0.22), 0.7)
-	_jugador_visual.add_child(_jugador_malla)
-
-	_jugador_cabeza = MeshInstance3D.new()
-	_jugador_cabeza.name = "Cabeza"
-	var esf := SphereMesh.new()
-	esf.radius = 0.19
-	esf.height = 0.38
-	_jugador_cabeza.mesh = esf
-	_jugador_cabeza.position = Vector3(0.0, 1.25, 0.0)
-	_jugador_cabeza.material_override = _material_personaje(
-		Color(0.88, 0.73, 0.58), 0.8)
-	_jugador_visual.add_child(_jugador_cabeza)
-
-	_jugador_nariz = MeshInstance3D.new()
-	_jugador_nariz.name = "Nariz"
-	var nm := BoxMesh.new()
-	nm.size = Vector3(0.1, 0.1, 0.18)
-	_jugador_nariz.mesh = nm
-	_jugador_nariz.position = Vector3(0.0, 1.25, -0.2)
-	_jugador_nariz.material_override = _material_personaje(
-		Color(0.2, 0.2, 0.22), 0.8)
-	_jugador_visual.add_child(_jugador_nariz)
-
 	var ficha: Dictionary = _estado.criaturas.get(_estado.mi_id, {})
-	_jugador_tipo = int(ficha.get("apariencia", 128))
 	_jugador_direccion = int(ficha.get("direccion", 2))
+	_sincronizar_outfit_jugador(ficha)
 	_actualizar_sprite_jugador(0)
+
+
+func _sincronizar_outfit_jugador(ficha: Dictionary) -> void:
+	var tipo_nuevo := int(ficha.get("apariencia", 128))
+	var colores := _colores_outfit(ficha)
+	var firma := _firma_outfit(tipo_nuevo,colores)
+	if (is_instance_valid(_jugador_visual)
+			and str(_jugador_visual.get_meta("firma_outfit","")) == firma):
+		_jugador_tipo = tipo_nuevo
+		return
+	if is_instance_valid(_jugador_visual):
+		_jugador_nodo.remove_child(_jugador_visual)
+		_jugador_visual.free()
+	_jugador_tipo = tipo_nuevo
+	_jugador_es_sprite = not _modelos_personajes.tiene(tipo_nuevo)
+	if not _jugador_es_sprite:
+		_jugador_visual = _modelos_personajes.crear(tipo_nuevo,colores,2,0)
+		_modelos_personajes.aplicar_prioridad_local(_jugador_visual)
+	else:
+		_jugador_visual = _crear_billboard_jugador(tipo_nuevo,_jugador_direccion)
+	_jugador_visual.name = ("OutfitJugador3D" if not _jugador_es_sprite
+		else "OutfitJugadorFallback2D")
+	_jugador_visual.set_meta("firma_outfit",firma)
+	_jugador_nodo.add_child(_jugador_visual)
+	_jugador_fase = -1
+
+
+func _crear_billboard_jugador(tipo: int,direccion: int) -> MeshInstance3D:
+	var nodo := MeshInstance3D.new()
+	var alto := clampf(_sprites.alto_de_outfit(tipo)*LADO*.72,
+		LADO*.55,ALTO_PISO*2.4)
+	var cuadro: Dictionary = _sprites.cuadro_outfit(tipo,direccion,0)
+	var proporcion := .62
+	if not cuadro.is_empty() and float(cuadro["escala"].y) > 0.0:
+		proporcion = float(cuadro["escala"].x)/float(cuadro["escala"].y)
+	var ancho := clampf(alto*proporcion,LADO*.45,LADO*1.8)
+	var lamina := QuadMesh.new()
+	lamina.size = Vector2(ancho,alto)
+	nodo.mesh = lamina
+	nodo.position.y = alto*.5
+	var material_base := (_material_de_criatura(cuadro)
+		if not cuadro.is_empty() else _material_cubo_criatura(
+			{"apariencia":tipo},cuadro))
+	var material := material_base.duplicate() as StandardMaterial3D
+	material.no_depth_test = true
+	material.render_priority = 100
+	nodo.material_override = material
+	nodo.set_meta("aabb_comparacion",
+		AABB(Vector3(-ancho*.5,-alto*.5,-.02),Vector3(ancho,alto,.04)))
+	return nodo
+
+
+func _colores_outfit(ficha: Dictionary) -> Array:
+	var origen = ficha.get("colores",[])
+	var resultado := []
+	for indice in range(4):
+		var valor := int(origen[indice]) if origen is Array and indice < origen.size() else 0
+		resultado.append(clampi(valor,0,132))
+	return resultado
+
+
+func _firma_outfit(tipo: int,colores: Array) -> String:
+	return "%d:%d:%d:%d:%d" % [
+		tipo,int(colores[0]),int(colores[1]),int(colores[2]),int(colores[3])]
 
 
 func _material_personaje(color: Color, rugosidad: float) -> StandardMaterial3D:
@@ -1988,14 +2014,28 @@ func _material_personaje(color: Color, rugosidad: float) -> StandardMaterial3D:
 func _actualizar_sprite_jugador(fase: int) -> void:
 	if not is_instance_valid(_jugador_visual):
 		return
-	# Se conserva el nombre de la funcion porque tambien la llama el control
-	# de giro, pero ya no cambia laminas: gira la nariz del modelo authored.
-	_jugador_es_sprite = false
-	_jugador_visual.rotation.y = -float(posmod(_jugador_direccion, 4)) * PI / 2.0
+	if _jugador_es_sprite:
+		var billboard := _jugador_visual as MeshInstance3D
+		var cuadro: Dictionary = _sprites.cuadro_outfit(
+			_jugador_tipo,_jugador_direccion,fase)
+		if billboard != null and not cuadro.is_empty():
+			var material := _material_de_criatura(cuadro).duplicate() as StandardMaterial3D
+			material.no_depth_test = true
+			material.render_priority = 100
+			billboard.material_override = material
+	else:
+		_jugador_visual.rotation.y = PERSONAJES_3D.GIROS[
+			posmod(_jugador_direccion,4)]
+		_modelos_personajes.aplicar_pose(_jugador_visual,fase)
+	_jugador_fase = posmod(fase,maxi(1,_modelos_personajes.fases(_jugador_tipo)))
 
 
 func _actualizar_jugador_confirmado(aqui: Vector3i, rearmado: bool) -> void:
 	_crear_jugador_visual()
+	var ficha: Dictionary = _estado.criaturas.get(_estado.mi_id,{})
+	_jugador_direccion = int(ficha.get("direccion",_jugador_direccion))
+	_sincronizar_outfit_jugador(ficha)
+	_actualizar_sprite_jugador(maxi(0,_jugador_fase))
 	var destino := _posicion_de_apoyo_jugador(aqui)
 	_jugador_y_estable = destino.y
 	var primera_posicion := _jugador_pos_confirmada.x < -9000
@@ -2069,6 +2109,8 @@ func _animar_jugador(delta: float) -> void:
 	if not _jugador_moviendose:
 		if is_instance_valid(_jugador_visual):
 			_jugador_visual.position.y = 0.0
+			if _jugador_fase != 0:
+				_actualizar_sprite_jugador(0)
 		return
 	if _jugador_moviendose:
 		_jugador_t = minf(1.0, _jugador_t + delta / maxf(0.01, _jugador_duracion))
@@ -2079,6 +2121,10 @@ func _animar_jugador(delta: float) -> void:
 			_jugador_moviendose = false
 	if is_instance_valid(_jugador_visual):
 		_jugador_visual.position.y = sin(_reloj_animacion * PI * 2.0 * 2.5) * 0.035
+		var fase := int(_reloj_animacion*FOTOGRAMAS_POR_SEGUNDO)
+		if (posmod(fase,maxi(1,_modelos_personajes.fases(_jugador_tipo)))
+				!= _jugador_fase):
+			_actualizar_sprite_jugador(fase)
 
 
 func _rearmar_escenario(centro: Vector3i) -> bool:
@@ -3930,6 +3976,10 @@ func _dibujar_criaturas() -> void:
 		# El ID autoritativo distingue monsters de jugadores y NPCs que puedan
 		# compartir outfit. Las mallas se reutilizan por apariencia y fase.
 		var tipo: int = c["apariencia"]
+		var id_entidad := int(id)
+		var es_monstruo := _modelos_monstruos.es_monstruo(id_entidad,tipo)
+		var es_jugador_remoto := id_entidad > 0 and id_entidad < 0x40000000
+		var es_personaje_3d := es_jugador_remoto and _modelos_personajes.tiene(tipo)
 		var alto: float = clampf(_sprites.alto_de_outfit(tipo) * LADO * 0.72,
 			LADO * 0.55, ALTO_PISO * 2.4)
 		var direccion: int = int(c.get("direccion", 2))
@@ -3945,17 +3995,37 @@ func _dibujar_criaturas() -> void:
 			_piso_bichos.add_child(m)
 			_nodos_criaturas[int(id)] = m
 		var volumen: ArrayMesh = null
-		if _modelos_monstruos.es_monstruo(int(id), tipo):
+		if es_monstruo:
 			volumen = _modelos_monstruos.malla(tipo,
 				int(_reloj_animacion * FOTOGRAMAS_POR_SEGUNDO))
 		m.set_meta("volumen_monstruo", volumen != null)
+		m.set_meta("volumen_personaje",es_personaje_3d)
 		if volumen != null:
+			_vaciar_outfit_humano(m)
 			m.mesh = volumen
 			m.material_override = null
 			m.rotation.y = MONSTRUOS_3D.GIROS[posmod(direccion, 4)]
 			m.scale = Vector3.ONE * LADO
 			m.cast_shadow = GeometryInstance3D.SHADOW_CASTING_SETTING_ON
+		elif es_personaje_3d:
+			var colores := _colores_outfit(c)
+			var firma := _firma_outfit(tipo,colores)
+			if (str(m.get_meta("firma_outfit","")) != firma
+					or m.get_node_or_null("OutfitHumano3D") == null):
+				_vaciar_outfit_humano(m)
+				var visual := _modelos_personajes.crear(tipo,colores,2,0)
+				visual.name = "OutfitHumano3D"
+				m.add_child(visual)
+				m.set_meta("firma_outfit",firma)
+				m.set_meta("aabb_personaje",visual.get_meta(
+					"aabb_comparacion",AABB(Vector3(-.25,0,-.15),Vector3(.5,.95,.3))))
+			m.mesh = null
+			m.material_override = null
+			m.rotation.y = PERSONAJES_3D.GIROS[posmod(direccion,4)]
+			m.scale = Vector3.ONE*LADO
+			m.cast_shadow = GeometryInstance3D.SHADOW_CASTING_SETTING_OFF
 		else:
+			_vaciar_outfit_humano(m)
 			var lamina := m.mesh as QuadMesh
 			if lamina == null or lamina.size != Vector2(ancho, alto):
 				lamina = QuadMesh.new()
@@ -3970,9 +4040,12 @@ func _dibujar_criaturas() -> void:
 		m.set_meta("server_name", str(c.get("nombre", "Creature")))
 		var p: Vector3i = c["pos"]
 		var posicion_3d := _posicion_visual_de_casilla(p, _centro_escenario)
-		m.position = Vector3(posicion_3d.x, posicion_3d.y + (0.0 if volumen != null else alto * 0.5) + 0.02,
+		var offset_vertical := (0.0 if volumen != null or es_personaje_3d
+			else alto*.5)
+		m.position = Vector3(posicion_3d.x,posicion_3d.y+offset_vertical+.02,
 			posicion_3d.z)
-		var fases: int = _sprites.fases_de_outfit(tipo, direccion)
+		var fases: int = (_modelos_personajes.fases(tipo) if es_personaje_3d
+			else _sprites.fases_de_outfit(tipo,direccion))
 		if fases > 1:
 			animaciones_nuevas.append({"nodo": m, "id": int(id)})
 	for id in _nodos_criaturas.keys():
@@ -3982,6 +4055,15 @@ func _dibujar_criaturas() -> void:
 				sobrante.free()
 			_nodos_criaturas.erase(id)
 	_animaciones_criaturas = animaciones_nuevas
+
+
+func _vaciar_outfit_humano(nodo: MeshInstance3D) -> void:
+	for hijo in nodo.get_children():
+		if hijo.name == "OutfitHumano3D":
+			nodo.remove_child(hijo)
+			hijo.free()
+	nodo.remove_meta("firma_outfit")
+	nodo.remove_meta("aabb_personaje")
 
 
 func _ids_criaturas_ordenados() -> Array:
@@ -4066,6 +4148,12 @@ func _animar_criaturas() -> void:
 			continue
 		var tipo := int(criatura.get("apariencia", 0))
 		var direccion := int(criatura.get("direccion", 2))
+		if bool(nodo.get_meta("volumen_personaje",false)):
+			var visual := nodo.get_node_or_null("OutfitHumano3D") as Node3D
+			if visual != null:
+				_modelos_personajes.aplicar_pose(visual,fase)
+			nodo.rotation.y = PERSONAJES_3D.GIROS[posmod(direccion,4)]
+			continue
 		if bool(nodo.get_meta("volumen_monstruo", false)):
 			var volumen := _modelos_monstruos.malla(tipo, fase)
 			if volumen != null and nodo.mesh != volumen:
@@ -4401,7 +4489,7 @@ func _girar_en_sitio(tecla: int) -> bool:
 		_jugador_direccion = 3
 	else:
 		_jugador_direccion = 0
-	if is_instance_valid(_jugador_malla):
+	if is_instance_valid(_jugador_visual):
 		_jugador_fase = 0
 		_actualizar_sprite_jugador(0)
 	return true
@@ -5178,6 +5266,21 @@ func _criatura_bajo_mouse(posicion_mouse: Vector2) -> int:
 			var impacto = nodo.mesh.get_aabb().intersects_ray(origen, rayo)
 			if impacto != null:
 				var centro := _camara.unproject_position(nodo.global_position + Vector3.UP * nodo.mesh.get_aabb().size.y * .5)
+				var distancia_volumen := posicion_mouse.distance_to(centro)
+				if distancia_volumen < mejor_distancia:
+					mejor_distancia = distancia_volumen
+					elegido = int(id)
+			continue
+		if is_instance_valid(nodo) and bool(nodo.get_meta("volumen_personaje",false)):
+			var caja: AABB = nodo.get_meta("aabb_personaje",
+				AABB(Vector3(-.25,0,-.15),Vector3(.5,.95,.3)))
+			var inversa := nodo.global_transform.affine_inverse()
+			var origen := inversa*_camara.project_ray_origin(posicion_mouse)
+			var rayo := inversa.basis*_camara.project_ray_normal(posicion_mouse)
+			var impacto = caja.intersects_ray(origen,rayo)
+			if impacto != null:
+				var centro := _camara.unproject_position(
+					nodo.to_global(caja.get_center()))
 				var distancia_volumen := posicion_mouse.distance_to(centro)
 				if distancia_volumen < mejor_distancia:
 					mejor_distancia = distancia_volumen

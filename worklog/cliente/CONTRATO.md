@@ -1,12 +1,29 @@
 # Contrato: cliente
 
-Version: 1.25.0
+Version: 1.26.0
 Estado: PUBLICADO
 Propietario: cliente
 Depende de: modelo-comun 1.0.0, protocolo-red 1.1.0, assets 1.3.0
 
 ## Visor de catalogo 3D
 
+- El runtime legacy consume personajes3d para el jugador local y para
+  jugadores remotos con ID positivo menor que 0x40000000 cuya apariencia sea
+  uno de los outfits 128-134 o 136-142. Monsters, NPCs y cualquier apariencia
+  humana no soportada conservan su renderer o billboard 2D como fallback.
+- La identidad visual se deriva solo del estado confirmado: apariencia
+  int, colores Array[head, body, legs, feet] con indices 0..132 y direccion
+  0..3. Un cambio confirmado de apariencia o colores reemplaza la geometria;
+  un cambio de direccion solo rota el contenedor.
+- El movimiento del jugador local aplica las tres poses de personajes3d
+  durante la interpolacion confirmada y vuelve a fase 0 al detenerse. Las
+  criaturas remotas usan el mismo reloj de animacion que los monsters.
+- Los personajes 3D se apoyan en el origen de su casilla, mantienen el
+  picking por volumen y no cambian posiciones, ocupacion, hitbox, colisiones,
+  velocidad, combate, red ni persistencia.
+- El modelo local conserva la prioridad visual que tenia la capsula anterior;
+  esta decision solo afecta profundidad de render y no atraviesa geometria ni
+  modifica reglas del servidor.
 - El componente local personajes3d modela los 14 outfits humanos clasicos:
   128-134 masculinos y 136-142 femeninos, nombres Citizen, Hunter, Mage,
   Knight, Noble, Summoner y Warrior. Cada uno expone cuatro facings y tres

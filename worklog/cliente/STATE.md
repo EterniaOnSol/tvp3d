@@ -12,6 +12,29 @@ Contrato publicado: SI
 - `assets`: contrato publicado.
 
 ## Le toca
+2026-09-08: integracion jugable de outfits humanos 3D, contrato 1.26.0.
+- Se toma cliente para reemplazar la capsula del jugador y los billboards de
+  otros characters clasicos por personajes3d, consumiendo apariencia,
+  colores y direccion confirmados.
+- Fallback reversible: outfits no soportados siguen usando el sprite 2D;
+  monsters conservan su renderer anatomico sin regeneracion.
+- mundo3d.gd es el runtime cliente legacy que consume el componente propio.
+  CARRILES.md no le asigna un propietario explicito; se limita el cambio a
+  presentacion de cliente solicitada por el usuario, sin invadir una ruta
+  asignada a otro carril.
+- Completado: jugador local y jugadores remotos clasicos usan personajes3d
+  con tipo, cuatro colores y direccion del estado confirmado. Se reconstruye
+  geometria solo si cambia la firma tipo/color; giros y poses reutilizan nodos.
+- El jugador local conserva prioridad visual y vuelve a idle al detenerse.
+  Otros jugadores tienen picking AABB; monsters, NPCs y outfits desconocidos
+  mantienen el renderer/billboard anterior.
+- Verificado: personajes3d 86/86 (incluye runtime local/remoto, colores, giro,
+  pose y fallback), monstruos3d 690/690, controles 0 fallas, formas de render
+  0 fallas, compilacion editor codigo 0 y main.tscn codigo 0.
+- Cliente jugable abierto contra el servidor activo, PID 18396 y ventana
+  respondiendo. Falta confirmacion visual del usuario despues de entrar con
+  uno de sus personajes; no se usaron ni registraron credenciales.
+
 2026-09-08: outfits humanos 3D, contrato 1.25.0.
 - Se toma cliente para crear un componente modular en propio/personajes3d y
   mostrar los 14 outfits clasicos 128-134/136-142 en el visor.
