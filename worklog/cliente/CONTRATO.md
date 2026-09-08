@@ -1,6 +1,6 @@
 # Contrato: cliente
 
-Version: 1.26.0
+Version: 1.26.1
 Estado: PUBLICADO
 Propietario: cliente
 Depende de: modelo-comun 1.0.0, protocolo-red 1.1.0, assets 1.3.0
@@ -21,9 +21,10 @@ Depende de: modelo-comun 1.0.0, protocolo-red 1.1.0, assets 1.3.0
 - Los personajes 3D se apoyan en el origen de su casilla, mantienen el
   picking por volumen y no cambian posiciones, ocupacion, hitbox, colisiones,
   velocidad, combate, red ni persistencia.
-- El modelo local conserva la prioridad visual que tenia la capsula anterior;
-  esta decision solo afecta profundidad de render y no atraviesa geometria ni
-  modifica reglas del servidor.
+- El modelo local conserva prioridad de orden, pero todas sus piezas mantienen
+  depth test activo. Desactivar profundidad por pieza aplana torso, ropa,
+  brazos y cabeza en una lamina por superposicion; ningun requisito de
+  visibilidad sobre techos puede romper el volumen 3D.
 - El componente local personajes3d modela los 14 outfits humanos clasicos:
   128-134 masculinos y 136-142 femeninos, nombres Citizen, Hunter, Mage,
   Knight, Noble, Summoner y Warrior. Cada uno expone cuatro facings y tres

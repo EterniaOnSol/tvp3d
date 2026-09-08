@@ -69,7 +69,7 @@ func _probar_runtime() -> void:
 	_ok(mundo._jugador_visual.get_meta("tipo_outfit")==128)
 	var torso_local := mundo._jugador_visual.get_node("Torso") as MeshInstance3D
 	var material_local := torso_local.material_override as StandardMaterial3D
-	_ok(material_local.no_depth_test and material_local.render_priority==100)
+	_ok(not material_local.no_depth_test and material_local.render_priority==100)
 	mundo._dibujar_criaturas()
 	var remoto := mundo._nodos_criaturas[2] as MeshInstance3D
 	var visual_remoto := remoto.get_node_or_null("OutfitHumano3D") as Node3D

@@ -12,6 +12,19 @@ Contrato publicado: SI
 - `assets`: contrato publicado.
 
 ## Le toca
+2026-09-08: correccion de lamina roja en jugador 3D, contrato 1.26.1.
+- Reporte visual del usuario: al entrar, el personaje parece una lamina roja.
+- Causa localizada: aplicar no_depth_test a cada submalla rompe la oclusion
+  interna y superpone torso, ropa, extremidades y cabeza.
+- Correccion reversible: mantener depth test en todas las piezas y conservar
+  solo prioridad de orden; no cambia geometria, estado ni gameplay.
+- Corregido: aplicar_prioridad_local ya no desactiva el z-buffer de las
+  submallas. La prueba runtime exige no_depth_test=false y prioridad 100.
+- Verificado: personajes3d 86/86, formas de render 0 fallas y main.tscn
+  codigo 0. Cliente corregido relanzado, PID 16008 y ventana respondiendo.
+- Falta solo confirmacion visual del usuario tras volver a entrar; el reporte
+  original no era fallback porque sus partidas usan outfits 128/136 soportados.
+
 2026-09-08: integracion jugable de outfits humanos 3D, contrato 1.26.0.
 - Se toma cliente para reemplazar la capsula del jugador y los billboards de
   otros characters clasicos por personajes3d, consumiendo apariencia,

@@ -18,6 +18,7 @@ AABB hasta 1.15. El componente ofrece cuatro orientaciones y tres poses.
 Integracion runtime:
 
 - El jugador local usa apariencia, colores y direccion confirmados.
+- Sus piezas conservan depth test para no colapsar visualmente en una lamina.
 - Otros jugadores con IDs del rango de jugador usan el mismo componente.
 - Caminar reproduce tres poses; al detenerse vuelve a la pose idle.
 - Outfits no soportados, NPCs y casos incompatibles conservan el billboard.

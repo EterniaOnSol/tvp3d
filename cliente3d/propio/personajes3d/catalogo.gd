@@ -138,7 +138,9 @@ func aplicar_prioridad_local(raiz: Node) -> void:
 			var material := geometria.material_override as StandardMaterial3D
 			if material != null:
 				var copia := material.duplicate() as StandardMaterial3D
-				copia.no_depth_test = true
+				# Cada pieza necesita el z-buffer para ocultarse mutuamente y conservar
+				# volumen. Sin depth test el torso termina tapando cabeza/extremidades.
+				copia.no_depth_test = false
 				copia.render_priority = 100
 				geometria.material_override = copia
 		aplicar_prioridad_local(hijo)
