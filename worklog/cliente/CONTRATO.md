@@ -1,9 +1,20 @@
 # Contrato: cliente
 
-Version: 1.20.0
+Version: 1.21.0
 Estado: PUBLICADO
 Propietario: cliente
 Depende de: modelo-comun 1.0.0, protocolo-red 1.1.0, assets 1.3.0
+
+## Aves
+
+- 111 Chicken, 212 Flamingo, 217 Parrot y 218 Terror Bird: torso emplumado,
+  alas plegadas, pico, patas articuladas y dedos; tres poses, salvo las cuatro
+  fases originales de Parrot, y RGB del atlas.
+- Flamingo conserva cuello largo y patas altas; Parrot cola larga; Terror Bird
+  patas robustas, pico grande y alas reducidas. No se comparten siluetas.
+- Extension horizontal maxima artistica: .62, .88, .72 y 1.25 casillas.
+- Catalogo previsto 40/144, 104 pendientes. Lion, Tiger, Badger y Skunk siguen
+  aplazados. Formato TVPVOL01, cache, autoridad y colisiones no cambian.
 
 ## Trolls
 

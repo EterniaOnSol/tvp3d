@@ -372,3 +372,7 @@ PALETTE_FRAME.update({oid: 0 for oid in SKELETON_PROFILES})
 from trolls import make_generators as make_trolls, PROFILES as TROLL_PROFILES
 AUTHORED.update(make_trolls(DragonSculpt))
 PALETTE_FRAME.update({oid: 0 for oid in TROLL_PROFILES})
+
+from aves import make_generators as make_birds, PROFILES as BIRD_PROFILES
+AUTHORED.update(make_birds(DragonSculpt))
+PALETTE_FRAME.update({oid: 0 for oid in BIRD_PROFILES})

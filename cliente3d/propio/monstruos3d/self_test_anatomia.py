@@ -89,7 +89,7 @@ class DragonTests(unittest.TestCase):
     def test_spider_sizes_and_enabled_count(self):
         manifest = json.loads((OUT/'catalogo.json').read_text())['monstruos']
         enabled = {int(k) for k,v in manifest.items() if v.get('anatomia')}
-        self.assertEqual(enabled,{21,56,34,39,30,36,38,208,219,27,52,3,16,42,123,28,81,26,82,83,79,43,45,124,13,14,60,31,74,32,94,33,37,15,53,76})
+        self.assertEqual(enabled,{21,56,34,39,30,36,38,208,219,27,52,3,16,42,123,28,81,26,82,83,79,43,45,124,13,14,60,31,74,32,94,33,37,15,53,76,111,212,217,218})
         small = np.array(manifest['30']['max'])-manifest['30']['min']
         giant = np.array(manifest['38']['max'])-manifest['38']['min']
         self.assertGreater(giant[0],small[0]*1.4)
@@ -299,6 +299,26 @@ class DragonTests(unittest.TestCase):
         entries=json.loads((OUT/'catalogo.json').read_text())['monstruos']
         self.assertLess(entries['32']['escala']['longitud_casillas'],entries['27']['escala']['longitud_casillas'])
         self.assertGreater(entries['94']['escala']['longitud_casillas'],entries['32']['escala']['longitud_casillas']*1.3)
+
+    def test_bird_support_anatomy_phases_and_sizes(self):
+        from aves import PROFILES,leg_joints,toe_paths,neck_path
+        for oid,profile in PROFILES.items():
+            phases=4 if oid==217 else 3
+            for phase in range(phases):
+                feet=np.array([leg_joints(side,phase,profile['shape'])[-1] for side in (-1,1)])
+                ground=.018 if profile['shape'] in ('flamingo','parrot') else (.027 if profile['shape']=='chicken' else .038)
+                self.assertTrue(np.all(feet[:,1]>=ground))
+                self.assertEqual(np.isclose(feet[:,1],ground).sum(),2 if phase%3==0 else 1)
+                for foot in feet:
+                    toes=toe_paths(foot,profile['shape'])
+                    self.assertEqual(len(toes),4)
+                    self.assertTrue(all(np.isclose(path[-1,1],.006) for path,_ in toes))
+        self.assertGreater(neck_path('flamingo')[-1,1],neck_path('terror')[-1,1])
+        entries=json.loads((OUT/'catalogo.json').read_text())['monstruos']
+        height=lambda oid: entries[str(oid)]['max'][1]-entries[str(oid)]['min'][1]
+        self.assertGreater(height(212),height(111)*1.6)
+        self.assertGreater(height(218),height(217)*1.15)
+        self.assertGreater(entries['218']['escala']['longitud_casillas'],entries['111']['escala']['longitud_casillas']*1.8)
 
     def test_troll_support_and_relative_height(self):
         from trolls import leg_joints, arm_joints

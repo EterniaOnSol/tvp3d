@@ -42,10 +42,14 @@ editables en escalas.json; no representan medidas oficiales ni colisiones.
 | Troll | 15 | nuevo | 0.90 | 1.35 |
 | Frost Troll | 53 | nuevo | 1.00 | 1.57 |
 | Swamp Troll | 76 | nuevo | 0.94 | 1.26 |
+| Chicken | 111 | nuevo | 0.62 | 0.43 |
+| Flamingo | 212 | nuevo | 0.88 | 0.96 |
+| Parrot | 217 | nuevo | 0.72 | 0.38 |
+| Terror Bird | 218 | nuevo | 1.25 | 0.82 |
 
 Regenerar las apariencias modificadas con `python generar.py --ids ID ...`.
 Un factor uniforme preserva las proporciones y se aplica a todas las poses.
-La prueba Python audita los 36 objetivos y Godot mide las mallas cargadas.
+La prueba Python audita los 40 objetivos y Godot mide las mallas cargadas.
 
 Comparar en el visor: `--comparar`; solo escarabajos: `--comparar --grupo 83,79`.
 El modo Detalle ajusta el zoom por modelo, por lo que no sirve para comparar

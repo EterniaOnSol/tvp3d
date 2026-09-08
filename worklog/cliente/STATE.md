@@ -13,6 +13,20 @@ Contrato publicado: SI
 
 ## Le toca
 
+2026-09-07: Chicken 111, Flamingo 212, Parrot 217 y Terror Bird 218 verificados,
+contrato 1.21.0.
+- Catalogo 40/144, 104 pendientes. Lion/Tiger/Badger/Skunk siguen aplazados.
+- Tres fases salvo Parrot con sus cuatro originales; RGB del atlas y siluetas
+  separadas. Escalas .62/.88/.72/1.25; alturas .43/.96/.38/.82 casillas.
+- Alas plegadas, picos, dedos y apoyo alternado; cuello en S de Flamingo,
+  cola larga de Parrot y patas robustas de Terror Bird.
+- Python 17/17 y Godot 690/690. Comandos y metricas en monstruos3d/AVES.md.
+- Revisadas ave_111/212/217/218.png, comparacion_aves.png y la referencia
+  original aves_referencia.png.
+- Decision reversible: aves.py y objetivos de escala; formato intacto.
+- Pendientes arte final, partida real, benchmark de grupos y exportacion.
+- Commit/push autorizados; resultado Git se confirma al cierre.
+
 2026-09-07: Troll 15, Frost Troll 53 y Swamp Troll 76 verificados, contrato 1.20.0.
 - Catalogo 36/144, 108 pendientes. Lion/Tiger/Badger/Skunk siguen aplazados.
 - Tres poses, manos con dedos, postura encorvada, RGB originales y escalas
