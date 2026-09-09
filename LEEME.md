@@ -6,6 +6,60 @@ hecho en Godot 4.
 
 Empezado el **24 de agosto de 2026**.
 
+## Relevo inmediato para Astra 6: Cyclops 3D - 8 de septiembre de 2026
+
+**Empezar aqui y trabajar directamente en 3D. No repetir busquedas, SF3D ni la
+reconstruccion inicial.** La referencia primaria entregada por el usuario es
+`C:/Users/dell/Desktop/hazme este cyclops.png`. Todo el trabajo editable esta
+fuera del repositorio, en `C:/Users/dell/Desktop/Cyclops_Asset/`:
+
+- `Cyclops.blend` y `Cyclops.glb`: base 3D del cuerpo, 29.010 triangulos,
+  2,8 m de alto, origen en el suelo y pose A aproximada.
+- `Cyclops_Club.blend` y `Cyclops_Club.glb`: garrote separado, 10.908
+  triangulos y 1,2 m de largo.
+- `textures/`: BaseColor, Normal, Roughness, Metallic y AO en PNG 2048x2048
+  para cuerpo y garrote.
+- `Cyclops_front.png`, `Cyclops_right.png`, `Cyclops_back.png` y
+  `Cyclops_left.png`: renders ortograficos reales para revisar la geometria.
+- `README.md`, `asset_report.json` y `source/export_checks.json`: estado,
+  medidas, pruebas y limites; leerlos antes de editar.
+- Paquete de respaldo: `C:/Users/dell/Desktop/Cyclops_Asset_Draft.zip`.
+
+Verificado: ambos GLB reabren en Blender; el cuerpo tiene una superficie
+cerrada y conexa despues de soldar solo para inspeccion, cero bordes abiertos,
+cero caras no manifold y cero triangulos degenerados. El muestreo UV a
+1024x1024 encontro cero solapamientos en cuerpo y garrote. Los GLB contienen
+albedo, normal, roughness/metallic y AO. Blender instalado:
+`C:/Program Files/Blender Foundation/Blender 5.2/blender.exe`.
+
+**Estado honesto: es una base, no un asset game-ready ni aprobado.** SF3D
+fusiono los dedos, simplifico demasiado el unico ojo, boca, dientes, mohawk,
+cicatrices, correa, faldon y craneos, e invento detalles blandos en perfil y
+dorso. La malla triangular automatica no tiene loops anatomicos demostrados,
+el faldon esta unido al cuerpo y no existe rig, skinning ni animacion. No
+integrar al catalogo o al juego todavia.
+
+Orden de la proxima sesion para gastar los tokens en arte 3D:
+
+1. Abrir `Cyclops.blend` y comparar simultaneamente frente, ambos perfiles y
+   dorso con la hoja original; conservar exactamente un ojo y el diseno dado.
+2. Reconstruir en geometria el rostro, mandibula, dientes irregulares, mohawk,
+   manos con cinco dedos separados, pies, faldon, correa y craneos.
+3. Hacer retopologia humanoide limpia dentro de 20.000-40.000 triangulos, con
+   loops en hombros, codos, munecas, dedos, cadera, rodillas, tobillos, cuello,
+   mandibula y ojo; eliminar intersecciones y separar la ropa cuando convenga.
+4. Rehacer UV/PBR con detalle real, conservar piel sucia y mate, y validar las
+   cuatro vistas. Probar deformacion con un rig temporal antes de llamarlo
+   listo para animar.
+5. Solo despues de aprobacion visual del usuario, preparar idle, walk, attack,
+   hit y death e integrar el outfit correcto mediante el carril `cliente`.
+
+Para mostrar el estado actual sin modificar nada:
+
+```powershell
+& 'C:/Program Files/Blender Foundation/Blender 5.2/blender.exe' 'C:/Users/dell/Desktop/Cyclops_Asset/Cyclops.blend'
+```
+
 ## Checkpoint actual: Skeleton y Demon Skeleton - 7 de septiembre de 2026
 
 **33 apariencias modeladas de 144; 111 pendientes.** Skeleton (33) y Demon
