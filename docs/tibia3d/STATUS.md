@@ -1,6 +1,14 @@
-# TVP3D - Status
+# TVP3D - Status (historical snapshot)
 
 Fecha: 2026-08-27
+
+Estado documental: HISTORICAL, SUPERSEDED por `ARCHITECTURE.md` V2 y
+`MASTER_PLAN.md`.
+
+Este archivo conserva el estado comprobado de la vertical slice legacy en su
+fecha. Las frases donde TVP aparece como autoridad describen ese runtime de
+prueba, no el producto final. No gobierna trabajo nuevo ni convierte al
+servidor Godot en provisional.
 
 ## Current Phase
 
@@ -193,8 +201,9 @@ Godot` para login, movimiento y estado vivo.
 - C++: sin compilacion nativa separada; la imagen Docker existente es la que
   se esta usando.
 
-## Important Decisions
+## Important Decisions at the time (superseded)
 
-Ver `DECISIONS.md`. TVP sigue siendo la autoridad. El visor IR es una
-herramienta de validacion y el camino jugable es `cliente3d/main.tscn` contra
-el protocolo 7.72, no el servidor Godot provisional.
+En esta snapshot, TVP era la autoridad del recorrido legacy y el camino
+jugable comprobado era `cliente3d/main.tscn` contra el protocolo 7.72. D-007
+reemplaza esa direccion: el destino final es el servidor Godot headless y TVP
+queda como oracle/puente de migracion.

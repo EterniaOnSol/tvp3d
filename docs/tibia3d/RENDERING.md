@@ -1,5 +1,9 @@
 # TVP3D - Rendering
 
+Estado documental: CURRENT para las fronteras de render; TRANSITIONAL para las
+tecnicas listadas como implementacion actual. Architecture V2 y D-008 tienen
+precedencia.
+
 ## Implementacion actual
 
 `cliente3d/mundo3d.gd` usa:
@@ -7,7 +11,8 @@
 - MultiMesh para grupos de items repetidos.
 - PlaneMesh para suelos.
 - BoxMesh para elementos con bloqueo y altura.
-- QuadMesh vertical con billboard fijo en Y para decoracion y criaturas.
+- QuadMesh vertical con billboard fijo en Y para decoracion y criaturas como
+  fallback del renderer actual; no es la representacion Monster3D final.
 - PlaneMesh horizontal para bordes de suelo y counters. Los perfiles
   `borde_suelo` vienen de `assets/items772_flags.json`; los counters se
   reconocen por su nombre y conservan el footprint 2x1 o 1x2 del sprite.
@@ -56,6 +61,11 @@ deben registrar tiempo de parseo, construccion, memoria, instancias y FPS con
 El cliente debe poder mostrar Tibia X/Y/Z, id servidor/cliente, flags,
 walkability, chunk, world position, item sin mapping, grid y bordes de chunk.
 La colision visual nunca sustituye la validacion del servidor.
+
+Los monstruos 3D futuros se resuelven en el cliente mediante un Monster
+Registry y un Monster3D Asset Contract versionado. Hasta publicar el Monster
+Domain Contract y ese contrato de assets, los billboards, proxies y prototipos
+existentes son transicionales y no autorizan ampliar el pipeline.
 
 ## Controles portados de 3DTIBIA
 

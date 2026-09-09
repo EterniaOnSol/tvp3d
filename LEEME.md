@@ -1,15 +1,22 @@
 # TVP3D
 
-Tibia **7.72** con cámara 3D de verdad: el servidor es
-[TVP](https://github.com/TVPV8/TVP) tal cual viene, y el cliente es propio,
-hecho en Godot 4.
+Objetivo Architecture V2: Tibia **7.72** en 3D con servidor Godot 4.7
+autoritativo y headless, cliente Godot 3D, protocolo propio y datos de dominio
+versionados. [TVP](https://github.com/TVPV8/TVP) y los archivos originales se
+conservan como oracle, fuentes y puente de migracion; no son el runtime final.
+
+La cronologia operativa que sigue conserva evidencia del prototipo legacy.
+Cualquier frase posterior que diga que TVP es el servidor permanente, que
+Godot es solo cliente o que un monster debe integrarse antes de contratos esta
+SUPERSEDED por `AGENTS.md`, `CARRILES.md`,
+`docs/tibia3d/ARCHITECTURE.md` y `docs/tibia3d/MASTER_PLAN.md`.
 
 Empezado el **24 de agosto de 2026**.
 
-## Relevo inmediato para Astra 6: Cyclops 3D - 8 de septiembre de 2026
+## Handoff historico superseded: Cyclops 3D - 8 de septiembre de 2026
 
-**Empezar aqui y trabajar directamente en 3D. No repetir busquedas, SF3D ni la
-reconstruccion inicial.** La referencia primaria entregada por el usuario es
+**No ejecutar este handoff bajo Architecture V2.** La referencia primaria que
+se entrego en aquella sesion es
 `C:/Users/dell/Desktop/hazme este cyclops.png`. Todo el trabajo editable esta
 fuera del repositorio, en `C:/Users/dell/Desktop/Cyclops_Asset/`:
 

@@ -1,44 +1,194 @@
-# TVP3D - Master Plan
+# TVP3D - Architecture V2 Roadmap
+
+Estado: PLAN VIGENTE
+
+Este roadmap reemplaza el plan en el que TVP/TFS permanecia como runtime
+final. Conserva los resultados de aquel trabajo como fixtures, conocimiento y
+vertical slices de migracion.
 
 ## Mision
 
-Convertir el mundo clasico Tibia 7.4-7.7 a una representacion 3D jugable,
-conservando las coordenadas SQM, reglas, mapa, criaturas, items y autoridad
-del servidor TVP. El mapa original es la fuente de verdad; la escena 3D es una
-proyeccion determinista y trazable.
+Construir un Tibia 3D propio con datos y protocolo versionados, servidor Godot
+headless autoritativo y cliente Godot 3D. Los archivos Tibia 7.4/7.72 y el
+runtime TVP/TFS alimentan importadores y pruebas de paridad, pero no son
+dependencias del juego final.
 
-## Alcance tecnico
+## Reglas del roadmap
 
-- Servidor: `servidor/`, fork TVP basado en TFS, protocolo 7.72.
-- Cliente: `cliente3d/`, Godot 4.7 y GDScript.
-- Datos: `servidor/data/world/map.otbm`, `items.otb`, `items.xml`,
-  `cliente3d/assets/cliente772/Tibia.dat` y `Tibia.spr`.
-- Herramientas: `herramientas/` para analizar, traducir y empaquetar datos.
-- Persistencia y reglas: permanecen en TVP salvo un adaptador documentado.
+- Contrato antes de codigo.
+- Migracion por vertical slices, nunca big-bang.
+- Cada dominio nuevo demuestra paridad o documenta la diferencia.
+- El cliente no adquiere autoridad durante la transicion.
+- Los assets visuales no definen footprint ni colision de gameplay.
+- Una fase no autoriza automaticamente la siguiente.
 
-## Orden de construccion
+## Phase 0: architecture reconciliation
 
-1. Auditar y congelar contratos de coordenadas, items y red.
-2. Validar el parser OTBM contra el servidor y conservar flags/atributos.
-3. Introducir la conversion reversible Tibia <-> mundo 3D.
-4. Generar un IR de mapa con ids, flags, casas, niveles y trazabilidad.
-5. Convertir un area real de 50x50 o 100x100 SQM a chunks 3D.
-6. Mostrar el area con modelos proxy y placeholders visibles para todo item no
-   mapeado.
-7. Sincronizar criaturas y movimiento usando el protocolo TVP 7.72.
-8. Agregar pisos, escaleras, puertas, interaccion, combate y UI por fases.
-9. Reemplazar proxies con perfiles 3D y reglas de adyacencia desde el editor.
+Objetivo: eliminar contradicciones activas sin borrar la historia.
 
-## Criterio de primer exito
+Entregables:
 
-El cliente Godot se conecta a TVP, carga automaticamente un area real del
-OTBM, muestra la posicion Tibia en 3D, mueve el personaje SQM por SQM,
-conserva bloqueos y cambia de piso sin deriva de coordenadas.
+- `ARCHITECTURE.md` V2;
+- D-001 marcada historica y superseded por D-007;
+- decisiones D-007 a D-010;
+- roadmap V2 y auditoria de declaraciones contradictorias;
+- plan, no implementacion, para los contratos Monster Domain y Monster3D.
 
-## No hacer al inicio
+Gate de salida: root `AGENTS.md` y `CARRILES.md` no tienen contradicciones
+activas en la documentacion vigente; no cambio codigo de produccion, red, mapa,
+gameplay ni runtime legacy.
 
-- Reescribir `servidor/src` sin una falla demostrada.
-- Crear un segundo servidor que duplique las reglas de TVP.
-- Convertir manualmente ciudades o miles de items.
-- Ocultar items no mapeados.
-- Optimizar draw calls antes de medir chunks reales.
+## Phase 1: freeze domain contracts
+
+Objetivo: publicar la base comun sobre la que migraran servidor, cliente,
+assets, protocolo y QA.
+
+Debe congelar, como minimo:
+
+- identidad estable y aliases de ids de origen;
+- coordenadas Tibia, chunks, pisos y logical footprints;
+- entidades, comandos, eventos y ownership de cada estado;
+- formato/versionado del IR y reglas de compatibilidad;
+- limites de persistencia y errores de validacion;
+- separacion entre metadata de dominio y referencias visuales.
+
+Gate de salida: contratos concretos publicados, con esquemas, rangos, errores,
+consumidores y migraciones. Ningun dominio nativo se implementa antes.
+
+## Phase 2: build parity fixtures against TVP
+
+Objetivo: convertir el legacy en una oracle reproducible.
+
+Entregables:
+
+- fixtures versionados por dominio;
+- harness de comparacion determinista;
+- catalogo de reglas observadas y casos limite;
+- politica para clasificar diferencias como bug, deuda o cambio deliberado.
+
+Gate de salida: cada fixture declara fuente, version, precondiciones y
+resultado esperado sin depender de credenciales ni estado mutable oculto.
+
+## Phase 3: native Godot authoritative server migration
+
+Objetivo: migrar capacidades al servidor Godot headless por slices.
+
+Orden interno orientativo:
+
+1. carga de datos y mundo;
+2. sesiones e identidad;
+3. movimiento, ocupacion y pathfinding;
+4. items, inventario y persistencia;
+5. combate y efectos de dominio;
+6. spawns, monstruos, quests y houses.
+
+Cada slice implementa contrato, pasa fixtures de paridad y cambia al protocolo
+propio antes de retirar su equivalente legacy. TVP puede seguir corriendo al
+lado como oracle durante esta fase.
+
+Gate de salida: el conjunto acordado de reglas autoritativas corre con
+`--headless` y el cliente no necesita consultar al legacy para esas reglas.
+
+## Phase 4: client subsystem decomposition
+
+Objetivo: extraer responsabilidades de `mundo3d.gd` incrementalmente.
+
+Destino:
+
+```text
+Mundo3D
+|-- WorldStreamer
+|-- ChunkRenderer
+|-- StaticMapRenderer
+|-- CreatureManager
+|-- PlayerManager
+|-- EffectManager
+|-- CameraController
+`-- DebugOverlay
+```
+
+No se hace una reescritura total. Cada extraccion conserva la fachada,
+contratos y pruebas del comportamiento existente.
+
+## Phase 5: Monster Domain Contract
+
+Objetivo: definir el monstruo autoritativo sin referencias de render.
+
+El contrato debe cubrir identidad estable, looktype, logical footprint,
+direccion, estados semanticos, movimiento/estado autoritativo y vocabulario
+semantico de animacion. Debe distinguir datos de especie, instancia y estado
+transitorio.
+
+Gate de salida: servidor, protocolo, cliente y QA pueden validar el mismo
+payload sin conocer GLB, rig, materiales o LOD.
+
+## Phase 6: Monster3D Asset Contract
+
+Objetivo: definir el paquete visual consumido por el cliente.
+
+El contrato debe cubrir glTF 2.0/GLB, escala, ejes, orientacion, pivot, naming,
+skeleton archetypes, animaciones semanticas obligatorias, PBR, LOD, colision
+visual, validacion y automatizacion Blender. Debe declarar que
+`logical_footprint` no se deriva de la malla.
+
+Gate de salida: un validador puede aceptar o rechazar un asset sin arrancar el
+servidor ni consultar gameplay.
+
+## Phase 7: Cyclops vertical slice
+
+Objetivo: validar de punta a punta un solo monstruo despues de publicar ambos
+contratos.
+
+Flujo previsto:
+
+```text
+original sprite
+  -> approved 50% faithful / 50% realistic concept
+  -> image-to-3D raw GLB
+  -> automated Blender processing
+  -> validation
+  -> final Godot GLB
+  -> Monster Registry
+```
+
+El concepto aprobado es la fuente de verdad visual. La slice debe demostrar
+registro, carga, escala, facing, estados semanticos, fallback, validacion y
+separacion de footprint.
+
+## Phase 8: Giant Spider + Dragon archetype validation
+
+Objetivo: probar que los contratos no estan acoplados a un humanoide.
+
+Giant Spider valida un archetype de multiples extremidades. Dragon valida un
+archetype grande/volador o cuadrupedo. Cualquier excepcion descubierta vuelve
+al contrato antes de producir mas assets.
+
+## Phase 9: mass monster production
+
+Objetivo: escalar solo un pipeline ya validado.
+
+Incluye lotes, trazabilidad a concepto aprobado, QA automatico, revision
+visual, presupuestos de rendimiento y reporte de fallos. Ningun fallo se
+resuelve cambiando gameplay para ajustarlo a una malla.
+
+## Phase 10: legacy runtime retirement after sufficient parity
+
+Objetivo: retirar TVP/TFS del camino de ejecucion del producto.
+
+Condiciones:
+
+- dominios requeridos migrados al servidor Godot;
+- protocolo propio cubre cliente-servidor;
+- persistencia propia verificada;
+- fixtures de paridad acordados en verde o con diferencias aprobadas;
+- arranque y operacion no requieren TVP/TFS, MariaDB legacy ni archivos de
+  runtime no importados.
+
+TVP/TFS y los fixtures pueden conservarse en el repositorio como referencia y
+regresion historica aun despues del retiro.
+
+## Proxima fase exacta
+
+Despues de cerrar Phase 0, continuar unicamente con **Phase 1: freeze domain
+contracts**. No iniciar refactor de `mundo3d.gd`, Monster Domain,
+Monster3D, Cyclops ni migracion de gameplay hasta congelar la base comun.

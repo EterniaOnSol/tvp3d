@@ -1,6 +1,10 @@
-# TVP3D - Repository Audit
+# TVP3D - Repository Audit (historical snapshot)
 
 Fecha de auditoria: 2026-08-25.
+
+Estado documental: HISTORICAL. Conserva lo observado antes de Architecture V2.
+Las referencias a autoridad describen el runtime de aquella fecha y quedan
+SUPERSEDED por `ARCHITECTURE.md` y D-007.
 
 ## Estructura real
 
@@ -68,8 +72,10 @@ Fecha de auditoria: 2026-08-25.
 5. No se encontro un editor 3D de produccion; el editor inicial actual es
    prototipo y debe integrarse con el IR.
 
-## Zonas que no se tocan inicialmente
+## Zonas que no se tocaban inicialmente
 
 `servidor/src/protocolgame.cpp`, `game.cpp`, `map.cpp`, `tile.cpp`, Lua y
-`servidor/data/` quedan como autoridad. Primero se validan los extractores y
-el cliente con fixtures y pruebas de posicion.
+`servidor/data/` quedaron como autoridad de la primera vertical slice. En V2
+se conservan como oracle de solo lectura y referencia de migracion. La nueva
+autoridad se implementa en el dominio servidor Godot despues de contratos y
+fixtures de paridad.

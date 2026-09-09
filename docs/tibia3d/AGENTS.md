@@ -1,5 +1,9 @@
 # TVP3D - Specialized Agent Roles
 
+Estado documental: CURRENT bajo `AGENTS.md`, `CARRILES.md` y Architecture
+V2. Estos roles no pueden cambiar las fronteras de autoridad ni saltarse
+contratos.
+
 El entorno actual no expone subagentes nativos; el orquestador emula estos
 roles con tareas separadas, contratos y documentos. Cada rol debe inspeccionar
 antes de editar y dejar evidencia en `STATUS.md` o el documento de salida.
@@ -25,7 +29,9 @@ Cada hallazgo que cambie direccion se registra en `DECISIONS.md`.
 
 ## Reglas de convivencia
 
-- Un rol no reescribe el servidor TVP por conveniencia.
+- Un rol no muta el servidor TVP por conveniencia: el legacy se protege como
+  oracle. El carril `servidor` migra reglas al servidor Godot en rutas propias
+  solo despues de contrato y fixtures de paridad.
 - Las rutas y contratos se anuncian antes de tocar codigo compartido.
 - Los agentes pueden analizar en paralelo, pero la integracion del mismo
   archivo se hace en serie.

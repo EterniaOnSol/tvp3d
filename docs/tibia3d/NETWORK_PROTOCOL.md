@@ -1,4 +1,9 @@
-# TVP3D - Network Protocol
+# TVP3D - Legacy Network Protocol (transitional)
+
+Estado documental: TRANSITIONAL. Este archivo documenta el adaptador TVP 7.72
+que sirve para compatibilidad, captura de fixtures y paridad. El protocolo
+final entre el servidor Godot headless y el cliente Godot es propio y
+versionado, segun Architecture V2.
 
 ## Contrato actual
 
@@ -45,9 +50,10 @@ contrato en `cliente3d/red/conexion772.gd`.
 La ventana es 18x14 (`maxClientViewportX=8`, `maxClientViewportY=6`). El
 mapa completo se obtiene del OTBM, no del protocolo.
 
-## Direccion futura
+## Papel durante la migracion V2
 
-Se mantiene este protocolo para la primera vertical slice. Un adaptador
-extended opcode solo se agrega si falta un dato necesario para visualizacion o
-debug. La logica de juego no se muda al cliente para resolver una carencia de
+Se mantiene este protocolo solo en el adaptador legacy mientras una vertical
+slice necesite medir TVP o capturar paridad. Un extended opcode legacy solo se
+considera para observabilidad temporal y no se convierte en el protocolo V2.
+La logica de juego nunca se muda al cliente para resolver una carencia de
 render.

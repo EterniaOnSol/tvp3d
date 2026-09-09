@@ -1,4 +1,9 @@
-# TVP3D - Roadmap
+# TVP3D - Roadmap (historical, superseded)
+
+Estado documental: HISTORICAL. Este checklist conserva la primera vertical
+slice y queda SUPERSEDED por `MASTER_PLAN.md`, el roadmap Architecture V2.
+Sus checks no autorizan implementar Monster3D ni convierten TVP en runtime
+final.
 
 ## P0 - Bloqueadores
 
