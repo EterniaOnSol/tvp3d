@@ -115,6 +115,44 @@ assert np.allclose(matrix.sum(1),1)
 for col,name in enumerate(wnames):
     group=obj.vertex_groups.new(name=name)
     for idx in np.nonzero(matrix[:,col]>1e-6)[0]:group.add([int(idx)],float(matrix[idx,col]),'REPLACE')
+# Solve skin weights along the mesh surface instead of spatial bands.
+proxy=obj.copy();proxy.data=obj.data.copy();bpy.context.collection.objects.link(proxy)
+proxy.vertex_groups.clear()
+bm=bmesh.new();bm.from_mesh(proxy.data)
+bmesh.ops.remove_doubles(bm,verts=list(bm.verts),dist=.00002)
+bm.to_mesh(proxy.data);bm.free()
+bpy.ops.object.select_all(action='DESELECT')
+proxy.select_set(True);arm.select_set(True)
+bpy.context.view_layer.objects.active=arm
+bpy.ops.object.parent_set(type='ARMATURE_AUTO')
+from mathutils.kdtree import KDTree
+tree=KDTree(len(proxy.data.vertices))
+for vertex in proxy.data.vertices:tree.insert(vertex.co,vertex.index)
+tree.balance()
+obj.vertex_groups.clear()
+for group in proxy.vertex_groups:obj.vertex_groups.new(name=group.name)
+for vertex in obj.data.vertices:
+    _,j,_=tree.find(vertex.co)
+    for group in proxy.data.vertices[j].groups:
+        obj.vertex_groups[group.group].add([vertex.index],group.weight,'REPLACE')
+bpy.data.objects.remove(proxy,do_unlink=True)
+# Preserve the separately classified tail all the way to its raised tip.
+for vertex in obj.data.vertices:
+    i=vertex.index
+    if w_tail[i]>.001:
+        for group in list(vertex.groups):
+            obj.vertex_groups[group.group].add([i],group.weight*(1-w_tail[i]),'REPLACE')
+        for name in ['tail_01','tail_02','tail_03']:
+            obj.vertex_groups[name].add([i],float(weights[name][i]),'REPLACE')
+# Keep the editable glTF and baked runtime on the same normalized four weights.
+for vertex in obj.data.vertices:
+    entries=sorted([(g.group,g.weight) for g in vertex.groups],key=lambda item:item[1],reverse=True)
+    total=sum(value for _,value in entries[:4])
+    assert total>1e-6, 'Bone heat solve left an unweighted vertex'
+    for index,value in entries:
+        obj.vertex_groups[index].remove([vertex.index])
+    for index,value in entries[:4]:
+        obj.vertex_groups[index].add([vertex.index],value/total,'REPLACE')
 mod=obj.modifiers.new('Demon_skin','ARMATURE');mod.object=arm
 obj.parent=arm
 # Rebind the requested posture before creating either animation.
@@ -138,6 +176,11 @@ bpy.ops.pose.armature_apply(selected=False)
 bpy.ops.object.mode_set(mode='OBJECT')
 mod=obj.modifiers.new('Demon_skin','ARMATURE');mod.object=arm
 for suffix in ['L','R']:
+    # Keep the knee in its natural hinge plane; unconstrained IK can twist
+    # one thigh around its long axis even with symmetric foot targets.
+    arm.pose.bones['thigh.'+suffix].lock_ik_y=True
+    arm.pose.bones['shin.'+suffix].lock_ik_y=True
+    arm.pose.bones['shin.'+suffix].lock_ik_z=True
     ik=arm.pose.bones['shin.'+suffix].constraints.new('IK');ik.target=arm;ik.subtarget='foot_ik.'+suffix;ik.chain_count=2;ik.use_stretch=False
     # Foot keeps its original orientation while the leg bends toward the target.
     rot=arm.pose.bones['foot.'+suffix].constraints.new('COPY_ROTATION');rot.target=arm;rot.subtarget='foot_ik.'+suffix;rot.target_space='WORLD';rot.owner_space='WORLD'

@@ -619,8 +619,8 @@
       "fases": 12,
       "formato": "TVPVOL02",
       "max": [
-        0.717891384993008,
-        1.7905268113662787,
+        0.7155280639085089,
+        1.7886522329777357,
         0.8435734821664544
       ],
       "min": [
@@ -629,7 +629,7 @@
         -1.1564265178335456
       ],
       "nombre": "Demon / Apocalypse / Morgaroth / Infernatil / Bazir",
-      "sha256": "d60f7f33069e4859a91b0e06f0f9f37a56026734f2b2755975635c81de9c7815",
+      "sha256": "b57a1ccacaaee3feed4bb30f04db2409c16c58f1a9a9e45f88a2f5e1ca89f123",
       "textura": "../demon_3dtibia/color.jpg",
       "vertices": [
         27592,

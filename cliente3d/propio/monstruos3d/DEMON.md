@@ -45,6 +45,10 @@ Quedan 24544 triangulos y 27592 vertices UV. La huella artistica maxima es
 2.0 casillas; altura 1.790 con torso erguido y brazos relajados.
 Se conservan los muslos y piernas originales: el usuario descarto afinarlos.
 La cola conserva pesos hasta la punta y oscila desde su raiz sin retorcerse.
+El skinning se calcula con Bone Heat sobre una copia con costuras soldadas,
+y se transfiere a la malla original sin alterar sus UV. Esto evita que la
+mandibula arrastre el muslo al erguirlo. Cuatro influencias normalizadas por
+vertice y rodillas sin torsion longitudinal mantienen coherentes GLB y poses.
 El banco ocupa 17070484 bytes y se carga una vez por catalogo.
 
 Validado en renderer real y mediante estado sintetico; falta partida viva

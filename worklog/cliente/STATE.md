@@ -12,6 +12,11 @@ Contrato publicado: SI
 - `assets`: contrato publicado.
 
 ## Le toca
+2026-09-08: corregida deformacion asimetrica del muslo al erguir el Demon.
+- Bone Heat sobre copia soldada; pesos transferidos a UV originales, cuatro influencias normalizadas. Rodillas con torsion limitada; cola preservada.
+- Verificado: anatomia 18/18, Demon 20/20; capturas frontales de reposo y caminata. Visor abierto con Caminar activo.
+- Decision reversible: sustituir pesos espaciales por pesos de superficie, sin remodelar piernas. Pendiente revision visual del usuario.
+
 2026-09-08: torso erguido, brazos naturales y correccion de cola.
 - Usuario detecta deformacion de cola al caminar; revisar pesos y clips.
 - Contrato 1.30.0. Ajustes de postura y pesos reversibles.
