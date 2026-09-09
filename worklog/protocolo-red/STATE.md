@@ -1,9 +1,19 @@
 # Estado: protocolo-red
 
 Estado: LISTO_PARA_REVISION
-Ultimo agente: claude
-Ultima actualizacion: 2026-08-29T14:20:00-06:00
+Ultimo agente: codex
+Ultima actualizacion: 2026-09-09T16:35:03-06:00
 Contrato publicado: SI
+
+## Ultimo turno cerrado
+
+- Phase 1B publico Protocol V2 `2.0.0` sobre `modelo-comun 2.0.0`.
+- Se congelaron las capas TCP/frame/payload, header de 16 bytes, kinds,
+  handshake, estados, sync por snapshot, errores, limites y fixtures.
+- El perfil propio 1.x y el adaptador TVP 7.72 quedaron historicos/legacy
+  separados y preservados como oracle; no se implemento interop.
+- No se modifico codigo de red, servidor, cliente, gameplay, mapa ni runtime
+  legacy.
 
 ## Depende de
 
