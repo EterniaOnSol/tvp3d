@@ -238,36 +238,65 @@ es su productor autoritativo, el cliente su consumidor no autoritativo y
 `protocolo-red` conserva solo framing, transporte, roles y orden de stream.
 
 Para Architecture V2, `ENTITY_SPAWNED`, `ENTITY_CORE_STATE_CHANGED`,
-`ENTITY_DESPAWNED` y el snapshot `CORE_ENTITY_STATE` requieren schemas
-neutrales en `modelo-comun`. Sus formas actuales
+`ENTITY_DESPAWNED` y el snapshot `CORE_ENTITY_STATE` ya tienen schemas
+neutrales publicados en `modelo-comun 2.1.0`. Las formas iniciales
 `tvp3d.server.entity_spawned/2.0.0`,
 `tvp3d.server.entity_core_state_changed/2.0.0`,
 `tvp3d.server.entity_despawned/2.0.0` y
-`tvp3d.server.core_entity_state/2.0.0` quedan como publicacion inicial del
-servidor que debe migrarse, no como dependencia del cliente. Autorizacion,
-`SessionBindingV2`, procesamiento de comandos, persistencia, seleccion del
-replication set, decisiones autoritativas, `ServerErrorV2` y
-`COMMAND_REJECTED` permanecen en `servidor`.
+`tvp3d.server.core_entity_state/2.0.0` son
+`HISTORICAL / SUPERSEDED INITIAL SERVER OWNERSHIP`: fueron la publicacion
+inicial del servidor antes de D-011 y quedan preservadas, con su tabla de
+migracion, dentro de `worklog/servidor/CONTRATO.md`; ya no son la forma
+normativa de esos cuatro payloads. Autorizacion, `SessionBindingV2`,
+procesamiento de comandos, persistencia, seleccion del replication set,
+decisiones autoritativas, `ServerErrorV2` y `COMMAND_REJECTED` permanecen en
+`servidor`.
 
-El siguiente turno contractual obligatorio es `modelo-comun 2.1.0`, antes de
-publicar Client V2. Es una ampliacion minor porque agrega schemas compartidos
-sin cambiar forma ni significado de los tipos comunes 2.0.0; una version
-`3.0.0` solo seria necesaria si ese turno rompe o reinterpreta una forma V2
-existente.
+Estado verificado en HEAD (no es dependencia futura, ya ocurrio):
 
-Gate vigente de Architecture V2: despues de `modelo-comun 2.1.0`, el
-contrato `servidor` debe alinearse para consumir los schemas neutrales y solo
-entonces puede publicarse Client V2 contra ellos. Las olas iniciales siguientes
-se conservan como secuencia historica del andamiaje; no levantan este gate.
+- `modelo-comun 2.1.0` publica los cuatro payloads neutrales de replicacion;
+- `servidor 2.1.0` los consume como su unico productor autoritativo, sin
+  redefinirlos;
+- `cliente 2.0.0` los consume como su unico consumidor no autoritativo, sin
+  depender de `servidor`;
+- `protocolo-red 2.1.0` negocia `common_domain_version` (incluido `2.1.0`) y
+  los transporta sin poseer su semantica.
 
-Ola 0: publicar contratos de `modelo-comun` y `assets` en paralelo.
+### Phase 1 y roadmap vigente
 
-Ola 1: publicar `protocolo-red`; con ese contrato, preparar contratos de
-`servidor`, `cliente` y `editor`.
+**Phase 1 — freeze domain contracts: CERRADA / GATE APROBADO.** La secuencia
+que antes se describia aqui como pendiente ("el siguiente turno contractual
+obligatorio es `modelo-comun 2.1.0`, luego alineacion de `servidor`, luego
+Client V2") ya se ejecuto por completo y quedo cerrada; no es un gate futuro.
+El detalle completo de esa revision de cierre vive en
+`docs/tibia3d/PHASE1_CLOSURE_REVIEW.md`.
 
-Ola 2: implementar servidor, cliente, assets y editor respetando contratos;
-servidor y cliente pueden avanzar en paralelo despues de sus dependencias.
+Fase exacta vigente: **Phase 2 — build parity fixtures against TVP**.
+`docs/tibia3d/MASTER_PLAN.md` es la unica fuente de la secuencia detallada de
+fases; este archivo no la duplica. En resumen, Phase 2:
 
-Ola 3: integrar arranque y datos.
+- materializa fixtures `LEGACY_PARITY` reproducibles contra TVP;
+- NO implementa el servidor Godot nativo (eso sigue siendo Phase 3);
+- NO autoriza Monster Domain, Monster3D ni Cyclops.
 
-Ola 4: ejecutar QA y revision cruzada.
+### Olas iniciales de andamiaje (HISTORICAL INITIAL SCAFFOLDING)
+
+Las siguientes "olas" fueron la secuencia inicial de despacho antes de que
+Architecture V2 introdujera los contratos major (Phase 1A-1H). Se conservan
+como evidencia historica del orden real en que se trabajo; NO son la
+secuencia de fases vigente ni compiten con `docs/tibia3d/MASTER_PLAN.md`,
+que gobierna las fases actuales (Phase 0-10).
+
+Ola 0 (historica): publicar contratos de `modelo-comun` y `assets` en
+paralelo.
+
+Ola 1 (historica): publicar `protocolo-red`; con ese contrato, preparar
+contratos de `servidor`, `cliente` y `editor`.
+
+Ola 2 (historica): implementar servidor, cliente, assets y editor respetando
+contratos; servidor y cliente pueden avanzar en paralelo despues de sus
+dependencias.
+
+Ola 3 (historica): integrar arranque y datos.
+
+Ola 4 (historica): ejecutar QA y revision cruzada.
