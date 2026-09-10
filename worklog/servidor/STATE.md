@@ -1,19 +1,29 @@
 # Estado: servidor
 
 Estado: LISTO_PARA_REVISION
-Ultimo agente: claude
-Ultima actualizacion: 2026-08-30T06:25:00-06:00
+Ultimo agente: codex
+Ultima actualizacion: 2026-09-09T17:48:05-06:00
 Contrato publicado: SI
+
+## Ultimo turno cerrado
+
+- Phase 1D publico Authoritative Server V2 2.0.0 y conservo Server 1.1.0
+  como evidencia historica/paridad.
+- Se consumen modelo-comun 2.0.0, protocolo-red 2.0.0 y assets 2.0.0.
+- No se modifico codigo Godot/C++/Lua, red, cliente, importadores, mapa,
+  persistencia, autenticacion, gameplay ni contratos Monster.
 
 ## Depende de
 
-- `modelo-comun`: contrato publicado.
-- `protocolo-red`: contrato publicado.
-- `assets`: contrato publicado.
+- `modelo-comun` 2.0.0: contrato publicado.
+- `protocolo-red` 2.0.0: contrato publicado.
+- `assets` 2.0.0: contrato publicado.
 
-## Le toca
+## Evidencia historica / paridad
 
 2026-09-08: sala del pergamino de Demon, contrato 1.1.0.
+- Este snapshot culmino en `CIERRE_SALA_DEMON_VERIFICADA`; sus bullets se
+  conservan como historia y no describen trabajo V2 pendiente.
 - El contenedor activo monta C:\Users\dell\TVP3D\servidor en /srv.
 - La entrada inicial ya era amount=1 pero usaba radius=30; se hará
   determinista con radius=0 para impedir que el spawn caiga fuera de la sala.
@@ -24,6 +34,26 @@ Contrato publicado: SI
 Construir el servidor Godot headless autoritativo, sus reglas y persistencia.
 
 ## Hecho
+
+### Phase 1D
+
+- Publicado `CONTRATO.md` 2.0.0 con autoridad final Godot 4.7
+  `--headless` y TVP/TFS solo como oracle/migration reference.
+- Congelados AuthoritativeDatasetManifestV2, registro de payloads,
+  lifecycle BOOTING..FAILED, runtime scope, DefinitionRegistry,
+  RuntimeEntityStore y SessionBindingV2.
+- Congelados pipeline atomico de CommandEnvelopeV2, ServerErrorV2,
+  COMMAND_REJECTED y los eventos ENTITY_SPAWNED,
+  ENTITY_CORE_STATE_CHANGED y ENTITY_DESPAWNED.
+- Publicado CoreEntityStateSnapshotV2 como payload CORE_ENTITY_STATE, con
+  recovery por snapshot y stream nuevo baseline 0.
+- Assets solo entra por NormalizedRecordV2 publicado NORMALIZED_DOMAIN;
+  audit, diagnostic, unresolved, ids legacy y schemas desconocidos fallan.
+- LogicalFootprintV1 gobierna ocupacion; datos visuales no entran al servidor.
+- MOVE queda contratado genericamente, pero no habilitado en produccion V2
+  antes de publicar Map / World Rules.
+
+### Evidencia legacy previa
 
 - La guarda generica de `Game::playerUseItem` (game.cpp:2568-2573) rechazaba
   cualquier item de cama con `RETURNVALUE_CANNOTUSETHISOBJECT` antes de
@@ -86,6 +116,18 @@ Construir el servidor Godot headless autoritativo, sus reglas y persistencia.
 
 ## Falta
 
+### V2
+
+- Publicar Map / World Rules antes de implementar carga de mundo, ocupacion,
+  pathfinding o MOVE nativo.
+- Publicar Item / Inventory, Authentication / Persistent Character Identity,
+  Combat, Monster / Spawn y Quest / House antes de sus implementaciones.
+- Migrar contratos de cliente, editor, QA e integracion en sus propios
+  carriles; no se tocaron en Phase 1D.
+- Implementar Server V2 y fixtures solo en fases posteriores de roadmap.
+
+### Deuda historica legacy
+
 - Integrar el cliente 3D propio con este recorrido de autoridad.
 - Ejecutar revision cruzada del carril y decidir una persistencia duradera para
   jugadores cuando exista contrato de identidad/autenticacion.
@@ -99,7 +141,8 @@ Construir el servidor Godot headless autoritativo, sus reglas y persistencia.
 
 ## Bloqueos activos
 
-- Resuelto: tras reiniciar Docker Desktop, MariaDB quedo healthy y
+- Ninguno para Phase 1D.
+- Historico resuelto: tras reiniciar Docker Desktop, MariaDB quedo healthy y
   servidor-server-1 quedo Up. El contenedor monta el XML con radius=0, el
   puerto 7171 responde y el cliente 3D se abrio para revision visual.
 
@@ -107,10 +150,22 @@ Construir el servidor Godot headless autoritativo, sus reglas y persistencia.
 
 | Decision | Motivo | Reversible |
 |---|---|---|
+| El runtime scope nace tras validar datos y cambia en cada restart | Impide que refs runtime stale parezcan identidad persistente | no |
+| Protocol READY no concede control; SessionBinding AUTHORIZED es obligatorio | Separa transporte de autenticacion/autorizacion | no |
+| Solo NORMALIZED_DOMAIN resuelto entra a autoridad | Audit/legacy/provenance no son reglas runtime | no |
+| Todo rechazo conserva world state/revisions/persistencia | Garantiza atomicidad autoritativa | no |
+| Recovery minimo usa snapshot, stream nuevo y baseline 0 | Protocol V2 no garantiza replay log | si, con nueva version |
+| MOVE no se habilita sin Map / World Rules | El contrato servidor no inventa caminabilidad final | no |
 | La persistencia pertenece al servidor | El cliente no puede escribir estado del juego | no |
 | El estado de jugadores del perfil propio es de sesion y vive en memoria | Evita rehidratar sesiones sin autenticacion ni contrato de identidad persistente | si |
 | Un mapa existente invalido detiene el arranque; solo la ausencia usa el demo anunciado | Evita ocultar corrupcion o incompatibilidad de datos | si |
 
 ## Notas para quien retome
 
+- Siguiente carril recomendado: `cliente`, contract-only, para consumir los
+  cuatro eventos core y CORE_ENTITY_STATE sobre Protocol V2 sin modificar
+  `mundo3d.gd` ni gameplay.
+- Los detalles de Demon, beds, readable/writeable items, skull/party y
+  movimiento TVP son fixtures/oracle, no primitives Server V2.
+- Monster Domain, Monster3D y Cyclops siguen sin publicar/implementar.
 - El proceso debe arrancar sin renderer mediante `--headless`.
