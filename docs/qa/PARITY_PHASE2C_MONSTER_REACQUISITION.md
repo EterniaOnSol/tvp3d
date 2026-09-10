@@ -290,3 +290,50 @@ personaje de prueba con suficiente vida para sostener la ventana de medicion
 sin morir; o (c) publicar contractualmente una forma acotada y segura de
 aislar el campo (mas estrecha que `/killall`) que no dependa de matar fauna
 preexistente. Ninguna de las tres se ejecuta en este turno.
+
+## Addendum (Phase 2C.0.1) — higiene de normalizacion del fixture
+
+Turno posterior de correccion de datos/documentacion, **sin ejecucion en
+vivo de TVP**. La cronologia original de Phase 2C de arriba no se reescribe.
+
+- El resultado parcial original de Phase 2C **sigue siendo valido**: el
+  fixture, el `QACaseV2` de 12 aserciones y la observacion
+  `RECORDED_EVIDENCE` quedaron correctamente materializados, y el replay
+  contra evidencia grabada daba `PASS 12/12`.
+- La **certificacion en vivo sigue `BLOCKED`**, por la misma razon ya
+  documentada (terreno en zona de spawn de cave rats + personaje de prueba
+  de nivel 1). Este turno no intento capturar en vivo, no creo ninguna
+  observacion `LIVE_ORACLE` y no ejecuto Docker/TVP.
+- **Unico cambio de datos:** se limpio la prosa del propio fixture
+  (`parity-monster-reacquisition-001.json`) para que los valores concretos y
+  volatiles de la corrida historica —el runtime id concreto, la secuencia
+  exacta de HP y la distancia exacta de 39 SQM— **dejen de duplicarse en el
+  fixture reutilizable**. Esos valores ya estaban declarados como excluidos
+  en `excluded_nondeterministic_fields`, pero seguian apareciendo en
+  `input_action`, en una `normalization_rules` y en `determinism_notes`.
+  Ahora el fixture expresa **relaciones** en su lugar: id de runtime que no
+  existia antes y que vuelve a observarse identico tras el regreso, vida que
+  baja tras cada ataque autoritativo que nombra al cave rat, y una condicion
+  de alejamiento **conductual** (que el objetivo deje de ser visible) en vez
+  de una distancia fija como invariante de paridad.
+- Los valores historicos exactos siguen disponibles, sin cambios, a traves
+  de `source_evidence` -> `docs/qa/PRUEBA_VIVA_REACQUISICION.md`. Ese
+  documento historico **no se modifico**.
+- **Sin cambios de semantica:** `fixture_id`, `schema`/`version`, `oracle`/
+  `oracle_version`, `classification` (`MATCH_EXPECTED`) y
+  `excluded_nondeterministic_fields` quedan exactamente iguales. La regla de
+  comportamiento observable no se debilito ni se reforzo.
+- **Las 12 aserciones no cambiaron**; el archivo `QACaseV2` quedo
+  byte-identico. La observacion `RECORDED_EVIDENCE` tambien quedo
+  byte-identica (ya estaba correctamente normalizada: nunca contuvo id, HP,
+  dano, coordenadas ni distancia).
+- **El replay contra evidencia grabada sigue en `PASS 12/12`**, ejecutado
+  dos veces con reporte byte-identico entre corridas; ademas el reporte
+  resultante es byte-identico al ya commiteado en Phase 2C
+  (`sha256 e9f70a1b...`), lo que confirma que el cambio de prosa no altero
+  ninguna semantica de replay. `qa/parity/tools/replay.py` y
+  `wrap_live_observation.py` no se tocaron.
+- Conteos sin cambio: 198/0 obligaciones Architecture V2, 5 fixtures
+  `LEGACY_PARITY`, 5 casos de replay, 4 observaciones `RECORDED_EVIDENCE`,
+  1 observacion `LIVE_ORACLE` (la de monster-corpse; reacquisicion sigue
+  `BLOCKED`).

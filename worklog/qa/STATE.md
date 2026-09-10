@@ -2,8 +2,57 @@
 
 Estado: BLOQUEADO
 Ultimo agente: claude
-Ultima actualizacion: 2026-09-10T08:00:00-06:00
+Ultima actualizacion: 2026-09-10T08:30:00-06:00
 Contrato publicado: SI (`CONTRATO.md` v2.1.1, sin cambios en este turno)
+
+## Turno cerrado: Phase 2C.0.1 — Higiene de normalizacion del fixture de reacquisicion
+
+Turno de correccion de datos/documentacion. **Sin ejecucion en vivo de TVP,
+sin Docker, sin observacion `LIVE_ORACLE` nueva.** Detalle en el addendum de
+`docs/qa/PARITY_PHASE2C_MONSTER_REACQUISITION.md`.
+
+- Se limpio la prosa de
+  `qa/parity/fixtures/tvp772/monster_reacquisition/parity-monster-reacquisition-001.json`:
+  los valores concretos y volatiles de la corrida historica (runtime id
+  concreto, secuencia exacta de HP, distancia exacta de 39 SQM) ya no se
+  duplican en el fixture reutilizable. Estaban declarados como excluidos en
+  `excluded_nondeterministic_fields` pero seguian apareciendo en
+  `input_action`, en una `normalization_rules` y en `determinism_notes`.
+  Ahora el fixture expresa relaciones: id que no existia antes y que se
+  observa identico tras el regreso, vida que baja tras cada ataque
+  autoritativo que nombra al cave rat, y alejamiento definido de forma
+  **conductual** (que el objetivo deje de ser visible) en vez de una
+  distancia fija como invariante.
+- Los valores historicos exactos siguen accesibles via `source_evidence` ->
+  `docs/qa/PRUEBA_VIVA_REACQUISICION.md`, que **no se modifico**.
+- Sin cambio de semantica: `fixture_id`, `schema`/`version` (`2.0.0`),
+  `oracle`/`oracle_version`, `classification` (`MATCH_EXPECTED`) y
+  `excluded_nondeterministic_fields` identicos. La regla observable no se
+  debilito ni se reforzo.
+- **Las 12 aserciones no cambiaron.** `QACaseV2` byte-identico
+  (`sha256 88b81ed0...`). Observacion `RECORDED_EVIDENCE` byte-identica
+  (`sha256 df3b45e3...`), ya estaba correctamente normalizada.
+- Replay contra evidencia grabada: **`PASS 12/12`**, dos corridas,
+  byte-identico entre si y byte-identico al reporte ya commiteado en Phase
+  2C (`sha256 e9f70a1b...`), confirmando que el cambio de prosa no altero
+  semantica de replay. `qa/parity/tools/replay.py` y
+  `wrap_live_observation.py` no se tocaron; el adaptador de captura tampoco.
+- **Certificacion en vivo de reacquisicion: sigue `BLOCKED`**, sin cambios
+  respecto a Phase 2C.
+
+## Conteos (Phase 2C.0.1, sin cambio)
+
+| Inventario | Especificadas | Materializadas |
+|---|---:|---:|
+| Obligaciones de contrato Architecture V2 (`qa 2.1.1`) | 198 | 0 |
+| Fixtures `LEGACY_PARITY` | — | 5 |
+| Casos de replay `QACaseV2`/`ParityExpectationV1` | — | 5 |
+| Observaciones `RECORDED_EVIDENCE` | — | 4 |
+| Observaciones `LIVE_ORACLE` canonicas | — | 1 (monster-corpse; reacquisicion `BLOCKED`) |
+| Ejecuciones frescas de oracle TVP en este turno | — | 0 |
+
+**Le toca:** Phase 2C.1 — calificar un terreno de prueba TVP aislado para
+reacquisicion de monstruo.
 
 ## Turno cerrado: Phase 2C — Slice de paridad de reacquisicion (PARCIAL, live BLOCKED)
 
