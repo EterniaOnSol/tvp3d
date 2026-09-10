@@ -1,9 +1,15 @@
 # Contrato: integracion
 
-Version: 2.0.0
+Version: 2.0.1
 Estado: PUBLICADO
 Propietario: integracion
 Depende de: servidor 2.1.0, cliente 2.0.0, editor 2.0.0, assets 2.0.0
+
+Erratum de patch: `2.0.1` corrige una contradiccion interna de schema en
+`2.0.0` (seccion 1/1.3 y seccion 27); no cambia ninguna decision de
+arquitectura, politica de secretos, precedencia de configuracion,
+`DatasetBindingV2`, orden de arranque, readiness, frontera de smoke,
+politica sin-fallback ni `IntegrationErrorV2`.
 
 Integracion V2 ensambla consumidores ya publicados; no agrega dependencia
 normativa sobre `modelo-comun` o `protocolo-red` solo porque esos contratos
@@ -38,15 +44,52 @@ TVP/TFS + Docker + MariaDB permanecen como perfil `LEGACY / PARITY /
 MIGRATION`, NO el runtime nativo final. Este turno es contract-only: no se
 modifican `.bat`, `project.godot`, archivos Docker, escenas de produccion,
 codigo de servidor/cliente/editor, ni `servidor/key.pem`. Las palabras
-`DEBE`, `NO DEBE`, `PUEDE` y `SOLO` son normativas en las secciones 0-26; el
+`DEBE`, `NO DEBE`, `PUEDE` y `SOLO` son normativas en las secciones 0-27; el
 contenido bajo `HISTORICAL / SUPERSEDED` no es normativo para V2.
 
 ## 1. `IntegrationProfileV2`
 
+`IntegrationProfileV2` es una **union discriminada** exacta por
+`profile_kind`. Identificador de schema: `tvp3d.integration.profile`, version
+`2.0.1`. Cada documento valido es EXACTAMENTE una de las dos variantes de las
+secciones 1.1/1.2; no existe un tercer perfil mixto, ni en `2.0.0` ni en
+`2.0.1` (ver seccion 27 sobre por que `2.0.0` no podia validar su propio
+ejemplo `LEGACY_TVP_772`).
+
+### 1.0 Raiz comun (identica en ambas variantes)
+
+| Campo | Regla |
+|---|---|
+| `schema` | literal `tvp3d.integration.profile` |
+| `version` | literal `2.0.1` |
+| `profile_id` | `registry_token`-like, `^[A-Z][A-Z0-9_]{0,63}$`; identidad logica del perfil, no un path |
+| `profile_kind` | `NATIVE_V2` o `LEGACY_TVP_772` (seccion 2); determina la variante (seccion 1.3) |
+| `godot.resolution_order` | permutacion de `CONFIG_REFERENCE\|REPO_LOCAL_TOOL\|PATH`, 1..3 valores unicos |
+| `godot.config_reference_env` | nombre de variable de entorno (string), nunca la ruta resuelta en si |
+| `godot.repo_local_path` | path relativo al repositorio, nunca absoluto |
+| `environment_overrides` | `0..N` `{env_var, applies_to}`; puede ser `[]` |
+| `environment_overrides[].env_var` | nombre de variable de entorno |
+| `environment_overrides[].applies_to` | path de puntos hacia un campo de este mismo objeto |
+
+Estos seis campos (`schema`, `version`, `profile_id`, `profile_kind`,
+`godot`, `environment_overrides`) tienen identica semantica en las dos
+variantes. Un tipo incorrecto o un valor fuera de rango en cualquiera de
+ellos produce `INTEGRATION_CONFIG_INVALID` (seccion 22); no hay defaults
+silenciosos.
+
+### 1.1 Variante `NATIVE_V2`
+
+Campos de raiz exactos, todos obligatorios, ninguno extra permitido:
+
+```text
+schema, version, profile_id, profile_kind, godot, server, client, editor,
+environment_overrides
+```
+
 ```json
 {
   "schema": "tvp3d.integration.profile",
-  "version": "2.0.0",
+  "version": "2.0.1",
   "profile_id": "NATIVE_V2_DEV",
   "profile_kind": "NATIVE_V2",
   "godot": {
@@ -85,54 +128,37 @@ contenido bajo `HISTORICAL / SUPERSEDED` no es normativo para V2.
 }
 ```
 
-Todos los campos de nivel raiz son obligatorios; `client` y `editor` pueden
-ser objetos vacios `{}` si ese perfil no lanza esos roles.
-`environment_overrides` puede ser `[]`.
-
 | Campo | Regla |
 |---|---|
-| `profile_id` | `registry_token`-like, `^[A-Z][A-Z0-9_]{0,63}$`; identidad logica del perfil, no un path |
-| `profile_kind` | enum cerrado (seccion 2) |
-| `godot.resolution_order` | permutacion de `CONFIG_REFERENCE\|REPO_LOCAL_TOOL\|PATH`, 1..3 valores unicos |
-| `godot.config_reference_env` | nombre de variable de entorno (string), nunca la ruta resuelta en si |
-| `godot.repo_local_path` | path relativo al repositorio, nunca absoluto |
+| `server` | **obligatorio**; objeto con la forma de abajo. `NATIVE_V2` sin `server` es invalido |
 | `server.headless_required` | `true` para `NATIVE_V2` |
 | `server.bind_host` | string validado (IP o hostname); es configuracion, no invariante (seccion 6) |
 | `server.port` | entero `1..65535`; es configuracion, no invariante (seccion 6) |
 | `server.accepted_common_domain_versions` | lista no vacia de SemVer; debe coincidir con el perfil de aplicacion nativo de `servidor` (`["2.1.0"]` para `servidor 2.1.0`) |
-| `server.dataset_binding` | `DatasetBindingV2` exacto (seccion 10) |
+| `server.dataset_binding` | `DatasetBindingV2` exacto (seccion 10), sin cambios |
 | `server.log_destination_env` | nombre de variable de entorno o `null`; nunca un valor secreto |
-| `client.server_endpoint` | `{host, port}` del mismo tipo que `server.bind_host`/`server.port` |
-| `client.common_domain_offer` | debe coincidir con el perfil nativo de `cliente` (`["2.1.0"]` para `cliente 2.0.0`) |
-| `editor.default_project_path_hint` | path relativo bajo `assets/proyectos/`; es una sugerencia de apertura, NUNCA identidad del proyecto (seccion 8) |
-| `environment_overrides[].env_var` | nombre de variable de entorno |
-| `environment_overrides[].applies_to` | path de puntos hacia un campo de este mismo objeto |
+| `client` | **obligatorio como objeto**; PUEDE ser `{}` si este perfil no lanza el rol cliente |
+| `client.server_endpoint` | si `client` no es `{}`: `{host, port}` del mismo tipo que `server.bind_host`/`server.port` |
+| `client.common_domain_offer` | si `client` no es `{}`: debe coincidir con el perfil nativo de `cliente` (`["2.1.0"]` para `cliente 2.0.0`) |
+| `editor` | **obligatorio como objeto**; PUEDE ser `{}` si este perfil no lanza el rol editor |
+| `editor.default_project_path_hint` | si `editor` no es `{}`: path relativo bajo `assets/proyectos/`; sugerencia de apertura, NUNCA identidad del proyecto (seccion 8) |
 
-Un campo desconocido, un tipo incorrecto o un valor fuera de rango produce
-`INTEGRATION_CONFIG_INVALID` (seccion 22); no hay defaults silenciosos.
+`legacy` NO PUEDE aparecer en un documento `NATIVE_V2`, ni siquiera como
+`{}`; su presencia es rechazada (seccion 1.3).
 
-## 2. `profile_kind` (registro cerrado)
+### 1.2 Variante `LEGACY_TVP_772`
+
+Campos de raiz exactos, todos obligatorios, ninguno extra permitido:
 
 ```text
-NATIVE_V2
-LEGACY_TVP_772
+schema, version, profile_id, profile_kind, godot, legacy,
+environment_overrides
 ```
-
-| `profile_kind` | Clasificacion | Significado |
-|---|---|---|
-| `NATIVE_V2` | runtime final de Architecture V2 | Godot headless autoritativo + Godot 3D client + Protocol V2 + Assets V2 + Editor V2; NO requiere Docker, MariaDB ni `servidor/key.pem` |
-| `LEGACY_TVP_772` | `LEGACY / PARITY / MIGRATION`, explicito | TVP/TFS + Docker + MariaDB; oracle y puente de migracion, nunca runtime final |
-
-`NATIVE_V2` NO se documenta como experimental. `LEGACY_TVP_772` NO se
-documenta como runtime primario. Un perfil declara exactamente un
-`profile_kind`; no existe un tercer valor mixto en `2.0.0`.
-
-Ejemplo minimo `LEGACY_TVP_772` (sin secretos, solo referencias):
 
 ```json
 {
   "schema": "tvp3d.integration.profile",
-  "version": "2.0.0",
+  "version": "2.0.1",
   "profile_id": "LEGACY_TVP_772_DEV",
   "profile_kind": "LEGACY_TVP_772",
   "godot": {
@@ -153,9 +179,62 @@ Ejemplo minimo `LEGACY_TVP_772` (sin secretos, solo referencias):
 }
 ```
 
-`legacy.rsa_private_key_ref_env` es el nombre de una variable de entorno que
-apuntaria a la clave; el valor de la clave JAMAS aparece en un
-`IntegrationProfileV2` versionado (seccion 3).
+| Campo | Regla |
+|---|---|
+| `legacy` | **obligatorio**; objeto con la forma de abajo (`LegacyProfileV2`). `LEGACY_TVP_772` sin `legacy` es invalido |
+| `legacy.requires_docker` | boolean |
+| `legacy.requires_mariadb` | boolean |
+| `legacy.login_port` | entero `1..65535` |
+| `legacy.game_port` | entero `1..65535` |
+| `legacy.mariadb_windows_port` | entero `1..65535` |
+| `legacy.phpmyadmin_port` | entero `1..65535` |
+| `legacy.rsa_private_key_ref_env` | nombre de variable de entorno (string) o `null`; NUNCA el valor de la clave (seccion 3) |
+
+`server`, `client` y `editor` NO PUEDEN aparecer en un documento
+`LEGACY_TVP_772`, ni siquiera como `{}`; su presencia convertiria un perfil
+legacy en un perfil mixto, lo cual esta prohibido (seccion 1.3).
+
+### 1.3 Algoritmo de discriminador
+
+Orden obligatorio, exacto:
+
+1. parsear el envelope/raiz comun (seccion 1.0);
+2. validar `profile_kind` contra el registro cerrado (seccion 2);
+3. seleccionar EXACTAMENTE una variante de schema segun ese valor
+   (`NATIVE_V2` -> seccion 1.1; `LEGACY_TVP_772` -> seccion 1.2);
+4. validar solo los campos permitidos por esa variante;
+5. rechazar cualquier campo que pertenezca solo a la otra variante;
+6. rechazar cualquier campo desconocido de ambas variantes;
+7. `profile_kind` NUNCA se infiere de la presencia/ausencia de campos; es
+   siempre el valor explicito del documento el que selecciona la variante.
+
+Ejemplos normativos:
+
+| Entrada | Resultado |
+|---|---|
+| `profile_kind=NATIVE_V2` + campo `legacy` presente (incluso `{}`) | rechazado, `INTEGRATION_CONFIG_INVALID` |
+| `profile_kind=LEGACY_TVP_772` + campo `server` presente (incluso `{}`) | rechazado, `INTEGRATION_CONFIG_INVALID` |
+| `profile_kind=LEGACY_TVP_772` sin campo `legacy` | rechazado, `INTEGRATION_CONFIG_INVALID` |
+| `profile_kind=NATIVE_V2` sin campo `server` | rechazado, `INTEGRATION_CONFIG_INVALID` |
+
+No hay conversion automatica entre variantes.
+
+## 2. `profile_kind` (registro cerrado)
+
+```text
+NATIVE_V2
+LEGACY_TVP_772
+```
+
+| `profile_kind` | Clasificacion | Significado |
+|---|---|---|
+| `NATIVE_V2` | runtime final de Architecture V2 | Godot headless autoritativo + Godot 3D client + Protocol V2 + Assets V2 + Editor V2; NO requiere Docker, MariaDB ni `servidor/key.pem`; raiz exacta en seccion 1.1 |
+| `LEGACY_TVP_772` | `LEGACY / PARITY / MIGRATION`, explicito | TVP/TFS + Docker + MariaDB; oracle y puente de migracion, nunca runtime final; raiz exacta en seccion 1.2 |
+
+`NATIVE_V2` NO se documenta como experimental. `LEGACY_TVP_772` NO se
+documenta como runtime primario. Un perfil declara exactamente un
+`profile_kind`, que selecciona una unica variante de raiz (seccion 1.3); no
+existe un tercer valor ni un perfil mixto.
 
 ## 3. Politica de secretos (no negociable en V2)
 
@@ -195,9 +274,9 @@ politica queda explicitamente superada:
   del alcance de este turno, pertenece solo a la historia de
   migracion/paridad legacy, y una limpieza operativa/de seguridad futura debe
   decidir su remocion o rotacion;
-- ninguna configuracion `2.0.0` puede copiar o depender de ese material
-  privado; `legacy.rsa_private_key_ref_env` (seccion 2) es una referencia por
-  nombre, nunca el contenido.
+- ninguna configuracion `2.0.1` puede copiar o depender de ese material
+  privado; `legacy.rsa_private_key_ref_env` (seccion 1.2) es una referencia
+  por nombre, nunca el contenido.
 
 ## 4. Resolucion de Godot
 
@@ -590,6 +669,25 @@ tabla.
 | `INTEGRATION-LOGREDACT-001` | logs generados durante un smoke | cero valores secretos presentes |
 | `INTEGRATION-SHUTDOWN-PRESERVE-001` | apagado tras un smoke | datasets/proyectos/artefactos fuente quedan intactos |
 
+### Fixtures agregadas en el erratum 2.0.1 (discriminador de variante)
+
+| Fixture | Caso minimo | Resultado obligatorio |
+|---|---|---|
+| `INTEGRATION-VARIANT-NATIVE-MIN-001` | `NATIVE_V2` minimo con `client`/`editor` presentes | acepta |
+| `INTEGRATION-VARIANT-NATIVE-CLIENTEMPTY-001` | `NATIVE_V2` valido con `client={}` | acepta |
+| `INTEGRATION-VARIANT-NATIVE-EDITOREMPTY-001` | `NATIVE_V2` valido con `editor={}` | acepta |
+| `INTEGRATION-VARIANT-LEGACY-MIN-001` | `LEGACY_TVP_772` minimo con `legacy` presente | acepta |
+| `INTEGRATION-VARIANT-NATIVE-LEGACYFIELD-001` | `NATIVE_V2` con campo `legacy` (incluso `{}`) | `INTEGRATION_CONFIG_INVALID` |
+| `INTEGRATION-VARIANT-LEGACY-SERVERFIELD-001` | `LEGACY_TVP_772` con campo `server` (incluso `{}`) | `INTEGRATION_CONFIG_INVALID` |
+| `INTEGRATION-VARIANT-LEGACY-CLIENTFIELD-001` | `LEGACY_TVP_772` con campo `client` (incluso `{}`) | `INTEGRATION_CONFIG_INVALID` |
+| `INTEGRATION-VARIANT-LEGACY-MISSING-001` | `LEGACY_TVP_772` sin campo `legacy` | `INTEGRATION_CONFIG_INVALID` |
+| `INTEGRATION-VARIANT-NATIVE-MISSING-001` | `NATIVE_V2` sin campo `server` | `INTEGRATION_CONFIG_INVALID` |
+| `INTEGRATION-VARIANT-KIND-UNKNOWN-001` | `profile_kind` fuera de `NATIVE_V2\|LEGACY_TVP_772` | `INTEGRATION_CONFIG_INVALID` |
+| `INTEGRATION-VARIANT-ROOT-UNKNOWN-001` | campo de raiz no perteneciente a ninguna variante | `INTEGRATION_CONFIG_INVALID` |
+| `INTEGRATION-VARIANT-DISCRIMINATOR-001` | la variante se determina solo por `profile_kind`, nunca por presencia/ausencia de campos | confirmado por el algoritmo de la seccion 1.3 |
+| `INTEGRATION-VARIANT-NOSECRET-001` | ambas variantes minimas validas | cero valores secretos en cualquiera de los dos documentos |
+| `INTEGRATION-VARIANT-DATASETBINDING-UNCHANGED-001` | `server.dataset_binding` de un `NATIVE_V2` valido | sigue siendo exactamente `tvp3d.integration.dataset_binding/2.0.0`, sin cambios de forma |
+
 Especificaciones de contrato; ningun test ni produccion se implementa en
 este turno.
 
@@ -628,20 +726,63 @@ Application Session, Monster Domain ni Monster3D. No autoriza modificar
 | Map / World Rules Domain | caminabilidad/ocupacion/pathfinding autoritativos; sin esto `MOVE` sigue sin habilitarse en produccion (servidor 2.1.0 seccion 14) |
 | Posibles dominios adicionales (Combat, Item/Inventory, Monster/Spawn) | jugabilidad completa mas alla del smoke de baseline |
 
-QA V2 debe materializar, como minimo, las fixtures de la seccion 23: perfiles
-minimos validos, ausencia de Docker/MariaDB/`key.pem` en `NATIVE_V2`, rechazo
-de secretos/paths absolutos, puertos validos/invalidos, precedencia de
-overrides, distincion `PROCESS_STARTED`/`PROTOCOL_NEGOTIATED`/
+QA V2 debe materializar, como minimo, las fixtures de la seccion 23
+(incluida la subseccion del erratum 2.0.1): perfiles minimos validos de
+ambas variantes, ausencia de Docker/MariaDB/`key.pem` en `NATIVE_V2`,
+rechazo de secretos/paths absolutos, puertos validos/invalidos, precedencia
+de overrides, el algoritmo de discriminador completo (campo de la otra
+variante rechazado, variante requerida ausente rechazada,
+`profile_kind` desconocido rechazado, la variante nunca se infiere de la
+presencia de campos), distincion `PROCESS_STARTED`/`PROTOCOL_NEGOTIATED`/
 `AUTHORITATIVE_BASELINE_ACCEPTED`, bloqueo explicito de
 `FULL_NATIVE_PLAYABLE`, ausencia de fallback automatico a legacy, y
 preservacion de datasets/proyectos/fuentes tras apagado.
+
+## 27. Erratum de schema 2.0.1
+
+`Integration 2.0.0` publico la separacion pretendida `NATIVE_V2`/
+`LEGACY_TVP_772`, pero el texto de validacion de raiz
+("todos los campos de nivel raiz son obligatorios" + rechazo de campos
+desconocidos) era autocontradictorio: el ejemplo normativo `LEGACY_TVP_772`
+de `2.0.0` omitia `server`/`client`/`editor` e introducia `legacy`, un campo
+fuera de la tabla generica de campos raiz de esa version. Bajo la regla de
+validacion literal de `2.0.0`, su propio ejemplo `LEGACY_TVP_772` no
+validaba contra su propio contrato.
+
+`2.0.1` no cambia ninguna decision de arquitectura ya tomada en `2.0.0`:
+`NATIVE_V2` sigue siendo el runtime final, `LEGACY_TVP_772` sigue siendo
+`LEGACY/PARITY/MIGRATION` explicito, la politica de secretos,
+`DatasetBindingV2`, la precedencia de configuracion, el orden de arranque,
+las observaciones de disponibilidad, la frontera de smoke,
+`IntegrationErrorV2` y la politica sin-fallback quedan exactamente iguales.
+Lo unico que `2.0.1` hace es publicar `IntegrationProfileV2` como una union
+discriminada explicita (seccion 1), con una raiz comun (1.0) y dos raices de
+variante mutuamente excluyentes (1.1 `NATIVE_V2`, 1.2 `LEGACY_TVP_772`) mas
+un algoritmo de discriminador exacto (1.3). Esto es una clarificacion de la
+intencion ya declarada, no un cambio de comportamiento: por eso corresponde
+un patch (`2.0.1`) y no una minor ni una major nueva.
+
+El identificador de objeto `tvp3d.integration.profile` tambien avanza de
+`2.0.0` a `2.0.1` en este mismo turno, porque su regla de validacion de raiz
+cambio de forma observable (antes ambigua/contradictoria, ahora una union
+discriminada exacta); un consumidor que valide estrictamente contra
+`tvp3d.integration.profile/2.0.0` podria aceptar o rechazar el ejemplo
+`LEGACY_TVP_772` de forma inconsistente, asi que `2.0.0` queda
+`SUPERSEDED POR ERRATUM` para ese schema especifico. Esto es una decision de
+este objeto en particular, no una regla general: otros schemas de este mismo
+contrato (`tvp3d.integration.dataset_binding`, `tvp3d.integration.error`) NO
+cambian de version porque su forma no tenia ninguna ambiguedad que corregir;
+la version del contrato contenedor y la version de un schema individual son
+ejes independientes, igual que ya establecieron modelo-comun 2.1.0 y
+protocolo-red 2.1.0.
 
 ## Historial de contrato de integracion
 
 | Version | Publicacion |
 |---|---|
 | `1.0.0` | TVP/Docker/MariaDB como runtime primario, perfil propio experimental en `127.0.0.1:7277`, `servidor/key.pem` versionado (ver HISTORICAL) |
-| `2.0.0` | `IntegrationProfileV2` con `profile_kind` cerrado (`NATIVE_V2` final, `LEGACY_TVP_772` explicito), politica de secretos no negociable, host/puerto como configuracion, `DatasetBindingV2`, capas de configuracion deterministas, sin fallback implicito a legacy, `FULL_NATIVE_PLAYABLE` declarado bloqueado |
+| `2.0.0` | `IntegrationProfileV2` con `profile_kind` cerrado (`NATIVE_V2` final, `LEGACY_TVP_772` explicito), politica de secretos no negociable, host/puerto como configuracion, `DatasetBindingV2`, capas de configuracion deterministas, sin fallback implicito a legacy, `FULL_NATIVE_PLAYABLE` declarado bloqueado. Su propio ejemplo `LEGACY_TVP_772` no validaba contra su propia regla de raiz (ver seccion 27); `tvp3d.integration.profile/2.0.0` queda `SUPERSEDED POR ERRATUM` |
+| `2.0.1` | Erratum de patch: `IntegrationProfileV2`/`tvp3d.integration.profile` publicado como union discriminada exacta por `profile_kind`, con raiz comun (1.0) y dos raices de variante mutuamente excluyentes (1.1/1.2) mas algoritmo de discriminador (1.3). Ninguna decision de arquitectura cambio |
 
 ## HISTORICAL / SUPERSEDED — Integration 1.0.0
 

@@ -2,8 +2,63 @@
 
 Estado: LISTO_PARA_REVISION
 Ultimo agente: claude
-Ultima actualizacion: 2026-09-10T00:45:00-06:00
-Contrato publicado: SI (`CONTRATO.md` v2.0.0)
+Ultima actualizacion: 2026-09-10T01:05:00-06:00
+Contrato publicado: SI (`CONTRATO.md` v2.0.1)
+
+## Turno cerrado: Phase 1G.1 — Integration Profile Schema Erratum
+
+- Erratum de patch `2.0.0 -> 2.0.1`. Sin cambios de arquitectura: politica de
+  secretos, `DatasetBindingV2`, precedencia de configuracion, orden de
+  arranque, observaciones de disponibilidad, frontera de smoke,
+  `IntegrationErrorV2` y politica sin-fallback quedan identicos.
+- Corregida la contradiccion interna de `2.0.0`: el texto exigia "todos los
+  campos de nivel raiz obligatorios" y rechazo de campos desconocidos, pero
+  el propio ejemplo normativo `LEGACY_TVP_772` omitia `server`/`client`/
+  `editor` e introducia `legacy`, un campo fuera de la tabla generica de
+  campos raiz. Bajo esa regla literal, el propio ejemplo `LEGACY_TVP_772` de
+  2.0.0 no validaba contra su propio contrato.
+- `IntegrationProfileV2` republicado como **union discriminada exacta** por
+  `profile_kind` (seccion 1): raiz comun (`schema`, `version`, `profile_id`,
+  `profile_kind`, `godot`, `environment_overrides`, identica en ambas
+  variantes) + dos raices de variante mutuamente excluyentes:
+  - `NATIVE_V2` (1.1): `server` obligatorio; `client`/`editor` obligatorios
+    como objetos pero pueden ser `{}`; `legacy` prohibido incluso vacio.
+  - `LEGACY_TVP_772` (1.2): `legacy` obligatorio (forma cerrada
+    `LegacyProfileV2`: `requires_docker`, `requires_mariadb`, `login_port`,
+    `game_port`, `mariadb_windows_port`, `phpmyadmin_port`,
+    `rsa_private_key_ref_env`); `server`/`client`/`editor` prohibidos
+    incluso vacios.
+- Publicado el algoritmo de discriminador exacto (seccion 1.3, 7 pasos):
+  `profile_kind` selecciona la variante; nunca se infiere de la presencia de
+  campos; un campo de la otra variante o un campo desconocido siempre
+  produce `INTEGRATION_CONFIG_INVALID`.
+- `tvp3d.integration.profile` avanza `2.0.0 -> 2.0.1` porque su regla de
+  validacion de raiz cambio de forma observable; `2.0.0` queda
+  `SUPERSEDED POR ERRATUM` para ese schema especifico (seccion 27).
+  `tvp3d.integration.dataset_binding/2.0.0` y `tvp3d.integration.error/2.0.0`
+  NO cambiaron de version porque su forma no tenia ninguna ambiguedad.
+- Agregadas 14 fixtures especificas del erratum (seccion 23, subseccion
+  dedicada) cubriendo ambas variantes minimas, `client={}`/`editor={}`,
+  rechazo cruzado de campos de la otra variante, variante requerida ausente,
+  `profile_kind` desconocido, campo de raiz desconocido, no-inferencia del
+  discriminador, ausencia de secretos y `DatasetBindingV2` sin cambios.
+- No se modifico codigo de produccion, `.bat`, Docker, `project.godot`,
+  config ni `servidor/key.pem`; el archivo de clave no fue leido ni impreso.
+
+## Verificacion de cierre Phase 1G.1
+
+- Ambos ejemplos normativos (`NATIVE_V2` y `LEGACY_TVP_772`) validan contra
+  su propia variante declarada en el contrato corregido.
+- Ninguna variante acepta campos que pertenecen solo a la otra.
+- No existe un tercer perfil mixto.
+- `NATIVE_V2` sigue siendo el runtime final; `LEGACY_TVP_772` sigue siendo
+  `LEGACY/PARITY/MIGRATION` explicito, ninguno reclasificado.
+- Politica de secretos sin cambios; `DatasetBindingV2` sin cambios de forma.
+- 4 bloques JSON del contrato parsean.
+- `git diff --check` no reporta errores en las rutas del turno.
+- Solo contrato/estado de `integracion` y el diario append-only forman parte
+  del cierre; los cambios sucios ajenos detectados al inicio quedan
+  intactos.
 
 ## Turno cerrado: Phase 1G — Native Integration V2
 
