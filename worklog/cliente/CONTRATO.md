@@ -1,9 +1,676 @@
 # Contrato: cliente
 
-Version: 1.30.0
+Version: 2.0.0
 Estado: PUBLICADO
 Propietario: cliente
-Depende de: modelo-comun 1.0.0, protocolo-red 1.1.0, assets 1.3.0
+Depende de: modelo-comun 2.1.0, protocolo-red 2.1.0, assets 2.0.0
+
+Cliente V2 NO depende de `servidor`. Los payloads de replicacion compartidos
+vienen de modelo-comun; la politica de implementacion del servidor no se
+importa. Historial: Client 1.30.0 dependia de modelo-comun 1.0.0,
+protocolo-red 1.1.0 y assets 1.3.0 (ver HISTORICAL mas abajo). Esta es una
+revision **major** deliberada: 1.x usa `WELCOME`/`STATE`, ids uint32,
+comportamiento TVP 7.72 y renderizado dirigido por looktype; ningun objeto de
+1.x se reinterpreta silenciosamente como V2.
+
+## 0. Proposito y alcance normativo (Client V2)
+
+```text
+Godot 4.7 3D client
+        |
+        | Protocol V2
+        |
+Authoritative Godot headless server
+```
+
+El cliente presenta estado autoritativo, envia intenciones y mantiene
+presentacion/interpolacion/UI locales. Nunca decide verdad de gameplay. Las
+palabras `DEBE`, `NO DEBE`, `PUEDE` y `SOLO` son normativas en esta seccion y
+en las secciones 1-24. El material anterior a esta revision queda clasificado
+como `HISTORICAL / SUPERSEDED` mas abajo y no es normativo V2.
+
+## 1. Perfil de aplicacion nativo (common domain)
+
+Protocol V2 2.1.0 sabe negociar common domain `2.0.0` y `2.1.0`, pero esa es
+capacidad de transporte, no politica de aplicacion. El perfil nativo Client V2
+ofrece exactamente:
+
+```json
+{
+  "schema": "tvp3d.cliente.common_domain_offer",
+  "version": "2.0.0",
+  "common_domain_versions": ["2.1.0"]
+}
+```
+
+Motivo: el store de replica autoritativa nativo (seccion 4) y el consumo de
+eventos/snapshot (secciones 6-8) dependen de los registros neutrales que solo
+existen desde modelo-comun 2.1.0. No hay requisito concreto de compatibilidad
+2.0.0 para este perfil; ofrecerla ademas de 2.1.0 pertenece a un adaptador de
+compatibilidad explicito, no al perfil nativo final.
+
+Reglas de aceptacion de `SERVER_WELCOME` para este perfil:
+
+- `protocol_version` debe ser exactamente `{major:2, minor:0}`;
+- `common_domain_version` debe ser exactamente `"2.1.0"`; cualquier otro
+  valor (incluido `"2.0.0"`) se rechaza sin pasar a mundo activo, aunque
+  Protocol V2 haya completado su propia negociacion con otro perfil de
+  servidor;
+- `SERVER_WELCOME.runtime_scope_id` fija el scope de la sesion (seccion 3).
+
+Protocol `READY` sigue siendo exclusivamente un estado de transporte de
+`protocolo-red`; no se redefine aqui y no implica fase de mundo `ACTIVE`
+(seccion 2) ni autorizacion de aplicacion.
+
+## 2. Fase de mundo del cliente (`ClientWorldPhaseV2`)
+
+Es un estado de aplicacion/presentacion propio del cliente, ortogonal a
+`ProtocolConnectionStateV2` (que sigue siendo exclusivo de `protocolo-red`:
+`CONNECTED`, `NEGOTIATING`, `READY`, `SYNCING`, `CLOSING`, `CLOSED`). Este
+contrato NO publica otra maquina de conexion competidora.
+
+Enum cerrado:
+
+```text
+EMPTY
+BASELINE_PENDING
+ACTIVE
+RECOVERING
+```
+
+```json
+{
+  "schema": "tvp3d.cliente.world_phase",
+  "version": "2.0.0",
+  "phase": "ACTIVE"
+}
+```
+
+| Fase | Significado |
+|---|---|
+| `EMPTY` | ningun mundo runtime autoritativo es utilizable actualmente |
+| `BASELINE_PENDING` | la negociacion Protocol tuvo exito, pero ningun baseline autoritativo fue aceptado todavia |
+| `ACTIVE` | existe un baseline autoritativo valido; replicacion incremental puede presentarse |
+| `RECOVERING` | el baseline anterior no puede aceptar mas estado incremental con seguridad; se requiere un snapshot autoritativo fresco |
+
+Reglas:
+
+- `Protocol READY` NO implica `ACTIVE`; tras `SERVER_WELCOME` aceptado
+  (seccion 1) el cliente entra en `BASELINE_PENDING`, nunca directo a
+  `ACTIVE`;
+- `ACTIVE` NO implica autorizacion del jugador (seccion 13);
+- el estado de presentacion nunca autoriza gameplay;
+- ningun `CommandEnvelopeV2` de gameplay se emite en `BASELINE_PENDING` ni en
+  `RECOVERING`;
+- una desconexion o un `runtime_scope_id` incompatible retira el mundo
+  autoritativo actual de `ACTIVE` (vuelve a `EMPTY` o `BASELINE_PENDING`
+  segun si ya hay sesion Protocol nueva);
+- un snapshot de recuperacion valido transiciona `RECOVERING -> ACTIVE`.
+
+## 3. Store de replica autoritativa (`ClientReplicaStoreV2`)
+
+Concepto: una copia local exacta del estado autoritativo del servidor. NO es
+autoridad por si mismo.
+
+```text
+ClientReplicaStoreV2
+key:   RuntimeInstanceRefV2
+value: AuthoritativeEntityStateV2
+```
+
+```json
+{
+  "schema": "tvp3d.cliente.replica_store_entry",
+  "version": "2.0.0",
+  "runtime_id": {
+    "scope_id": "550e8400-e29b-41d4-a716-446655440000",
+    "instance_id": "42"
+  },
+  "state": {
+    "schema": "tvp3d.entity_state",
+    "version": "2.0.0",
+    "runtime_id": {
+      "scope_id": "550e8400-e29b-41d4-a716-446655440000",
+      "instance_id": "42"
+    },
+    "definition": {
+      "canonical_id": "tvp3d:entity_type:player",
+      "definition_version": "1.0.0"
+    },
+    "position": {"x": 32097, "y": 32219, "z": 7},
+    "direction": "NORTH",
+    "revision": "0"
+  }
+}
+```
+
+`state` es `AuthoritativeEntityStateV2` exacto de modelo-comun 2.1.0; el
+cliente no lo redefine ni le agrega campos.
+
+Reglas NO DEBE, sin excepcion:
+
+- el cliente NUNCA crea una entidad autoritativa localmente;
+- el cliente NUNCA inventa un `RuntimeInstanceRefV2`;
+- el cliente NUNCA edita posicion/direccion/revision confirmadas en base al
+  renderer;
+- la interpolacion visual NO escribe en el store de replica;
+- el estado de camara NO escribe en el store de replica;
+- el input del usuario NO escribe en el store de replica;
+- un GLB/sprite faltante NO elimina estado de dominio del store.
+
+Una capa de presentacion separada (seccion 9) consume el store; nunca al
+reves.
+
+## 4. Runtime scope
+
+`SERVER_WELCOME.runtime_scope_id` define el epoch runtime de la sesion.
+
+Reglas:
+
+- todo estado replicado aceptado debe pertenecer a ese scope;
+- un `runtime_scope_id` nuevo invalida todo `RuntimeInstanceRefV2` anterior;
+- ninguna ref de entidad del scope anterior sobrevive al nuevo store
+  autoritativo;
+- las intenciones pendientes (seccion 14) que refieran al scope anterior se
+  descartan;
+- los nodos de presentacion del scope anterior se retiran o se convierten a
+  un estado de desmontaje no autoritativo;
+- el cliente espera un baseline fresco (seccion 5) antes de volver a
+  `ACTIVE`.
+
+Un `runtime_id` nunca se mapea a identidad persistente; es transitorio por
+definicion de modelo-comun.
+
+## 5. Baseline inicial
+
+Tras una negociacion aceptada (seccion 1), el cliente entra en
+`BASELINE_PENDING`. El mundo V2 nativo se vuelve `ACTIVE` solo tras aceptar un
+Protocol SNAPSHOT valido con:
+
+```text
+payload_type    = CORE_ENTITY_STATE
+payload_version = 1.0.0
+payload schema  = tvp3d.replication.core_entity_state/1.0.0 (modelo-comun)
+```
+
+El snapshot DEBE validarse completo antes de reemplazar el store de replica
+activo. No hay aplicacion parcial.
+
+## 6. Aplicacion atomica del snapshot
+
+Para un snapshot `CORE_ENTITY_STATE` candidato, el orden obligatorio es:
+
+1. validar el envelope Protocol SNAPSHOT;
+2. validar el payload comun neutral (`tvp3d.replication.core_entity_state/1.0.0`);
+3. validar `runtime_scope_id`;
+4. validar cada `AuthoritativeEntityStateV2` del array `entities`;
+5. validar que cada `definition` referenciada sea resoluble por el dataset
+   del cliente;
+6. construir el store de reemplazo completo en staging;
+7. intercambiarlo atomicamente al estado activo;
+8. actualizar el baseline de protocolo segun lo defina `protocolo-red`
+   (`last_accepted_sequence = last_sequence`);
+9. entrar en `ACTIVE`.
+
+Si la validacion falla en cualquier paso:
+
+- no se conserva ningun reemplazo parcialmente aplicado;
+- el cliente entra o permanece en `RECOVERING` o `BASELINE_PENDING` segun
+  corresponda;
+- el cliente solicita recuperacion autoritativa (`SYNC_REQUEST` segun
+  `protocolo-red`);
+- el cliente NUNCA parchea datos invalidos localmente.
+
+### Membresia del snapshot != despawn
+
+El snapshot representa el replication set completo que el productor
+autoritativo selecciono para esa sesion. Si una entidad existia en el store
+anterior pero esta ausente del snapshot nuevo:
+
+- se retira del store/presentacion **del cliente**;
+- pero el cliente NO DEBE afirmar `ENTITY_DESPAWNED`;
+- y NO DEBE inferir que la entidad fue destruida globalmente.
+
+Membresia de replication set y despawn autoritativo son conceptos distintos
+(igual que en modelo-comun/servidor); este contrato no los mezcla.
+
+## 7. Consumo de eventos neutrales
+
+Consumidos directamente de modelo-comun 2.1.0, sin copiar ni redefinir su
+forma:
+
+| Event type | Payload (modelo-comun) |
+|---|---|
+| `ENTITY_SPAWNED` | `tvp3d.replication.entity_spawned/1.0.0` |
+| `ENTITY_CORE_STATE_CHANGED` | `tvp3d.replication.entity_core_state_changed/1.0.0` |
+| `ENTITY_DESPAWNED` | `tvp3d.replication.entity_despawned/1.0.0` |
+
+Todos viajan en `AuthoritativeEventEnvelopeV2`; el cliente los acepta solo
+para el `stream_id` activo con `sequence == last_accepted + 1`, segun las
+reglas de `protocolo-red`.
+
+### `ENTITY_SPAWNED`, en `ACTIVE`
+
+1. validar envelope + payload neutral;
+2. `runtime_scope_id` del `state` debe coincidir con el scope activo;
+3. `envelope.subject` debe coincidir con `state.runtime_id`;
+4. `state.revision` debe ser `"0"` (invariante comun de spawn);
+5. `definition` debe ser resoluble;
+6. el `runtime_id` NO DEBE existir ya en el store autoritativo.
+
+Solo tras la insercion autoritativa exitosa la presentacion puede instanciar
+o resolver un nodo visual. Si la resolucion visual falla, el cliente conserva
+el estado de dominio replicado y usa un fallback/diagnostico de presentacion
+(seccion 16); NUNCA descarta el estado autoritativo por un modelo faltante.
+
+### `ENTITY_CORE_STATE_CHANGED`, en `ACTIVE`
+
+1. la entidad debe existir en el store;
+2. el payload contiene el estado completo, nunca un patch;
+3. `runtime_id` y scope deben coincidir;
+4. `revision` debe ser estrictamente mayor que la conocida, segun la regla
+   comun de modelo-comun; el cliente no inventa una regla adicional de
+   renderer/world-space para aceptarla o rechazarla.
+
+El cliente reemplaza el estado autoritativo atomicamente; nunca lo convierte
+en un modelo de patch. Si la validacion comun/protocolo indica una secuencia
+insegura (revision repetida/decreciente, gap de stream), el cliente entra en
+`RECOVERING` y sigue `SYNC_REQUEST -> snapshot autoritativo`.
+
+### `ENTITY_DESPAWNED`, en `ACTIVE`
+
+1. validar el evento neutral;
+2. el `subject` debe existir en el store;
+3. la revision terminal debe ser valida (mayor que la conocida);
+4. remover la entidad del store autoritativo;
+5. remover o retirar el nodo de presentacion asociado;
+6. el `RuntimeInstanceRefV2` retirado NUNCA se reutiliza.
+
+Este evento significa retiro autoritativo del runtime. NO se usa para camera
+culling, streaming de chunks ni desaparicion ordinaria de un replication set
+(ver seccion 6, membresia != despawn).
+
+## 8. Capas: autoridad, presentacion e intencion
+
+Tres capas estrictamente separadas:
+
+1. **AuthoritativeReplica** — estado logico confirmado exacto recibido por
+   replicacion comun (seccion 3). Es la unica que representa verdad de mundo
+   confirmada.
+2. **PresentationState** — transforms, interpolacion, fase de animacion,
+   camara, UI, fallback visual. Puede ser suave y de apariencia predictiva,
+   pero NUNCA se convierte en autoridad.
+3. **PendingIntent** — registro local de comandos enviados o en preparacion
+   (seccion 14). NUNCA muta `AuthoritativeReplica`.
+
+## 9. Interpolacion
+
+La presentacion puede interpolar entre estados logicos confirmados:
+
+```text
+PosicionTibia confirmada A
+      ->
+transform de presentacion entre A y B
+      ->
+PosicionTibia confirmada B
+```
+
+Reglas:
+
+- la interpolacion es exclusivamente visual;
+- `PosicionTibiaV2` autoritativa sigue siendo estado SQM entero;
+- el transform de presentacion puede usar floats;
+- un transform world-space NUNCA sobrescribe `PosicionTibiaV2`;
+- completar una interpolacion NO confirma movimiento;
+- el siguiente evento autoritativo siempre gana sobre cualquier interpolacion
+  en curso;
+- ningun root motion puede crear movimiento de gameplay.
+
+## 10. Adaptador de coordenadas
+
+El cliente convierte `PosicionTibiaV2` + `DirectionV2` a coordenadas de
+presentacion Godot mediante el adaptador de coordenadas centralizado de
+Architecture V2 (`docs/tibia3d/ARCHITECTURE.md`, "Arquitectura de
+coordenadas"). Se preservan como configuracion de presentacion centralizada,
+donde Architecture ya los ubica:
+
+- `SQM_WORLD_SIZE`;
+- `FLOOR_WORLD_HEIGHT`.
+
+Reglas:
+
+- NO se congela una escala de malla arbitraria dentro de estado de dominio;
+- NO se introduce `Vector3` de Godot en estado autoritativo comun;
+- la conversion debe ser reversible para diagnostico donde sea practico, pero
+  los floats del renderer nunca son verdad de dominio.
+
+## 11. Entrada del usuario / comandos
+
+El cliente emite solo `CommandEnvelopeV2` registrados por el contrato de
+dominio propietario. Para el `MOVE` comun:
+
+```text
+direccion de input
+    -> DirectionV2
+    -> CommandEnvelopeV2(type=MOVE)
+```
+
+El cliente propone la intencion de movimiento. NO envia:
+
+- la posicion autoritativa resultante;
+- la revision resultante;
+- las celdas ocupadas;
+- "el movimiento tuvo exito".
+
+El servidor decide esos resultados; el cliente solo los recibe despues via
+`ENTITY_CORE_STATE_CHANGED`.
+
+## 12. Frontera de autorizacion / actor controlado
+
+Critico: `SessionBindingV2` es interno del servidor y NO se importa al
+cliente. Client V2 NO DEBE inventar su propia autoridad de autorizacion.
+
+Un `CommandEnvelopeV2` de gameplay solo puede emitirse cuando:
+
+- la sesion Protocol es usable (`READY`, no `SYNCING`/`CLOSING`/`CLOSED`);
+- la fase de mundo del cliente es `ACTIVE` (seccion 2);
+- no esta en `RECOVERING` ni `BASELINE_PENDING`;
+- un `RuntimeInstanceRefV2` de actor controlado, valido para el scope activo,
+  fue suministrado a traves de un contrato FUTURO de
+  sesion-de-aplicacion/autenticacion que **todavia no existe**.
+
+Ese contrato futuro no existe hoy. Por lo tanto este contrato:
+
+- define esto como un boundary de binding externo requerido, sin publicar su
+  forma final;
+- NO define username, password, token ni OAuth;
+- NO inventa como se prueba la autorizacion de un actor;
+- NO afirma que Client V2 pueda autorizarse a si mismo.
+
+Conocer o adivinar un `RuntimeInstanceRefV2` no concede control (misma regla
+que modelo-comun/servidor). Mientras ese contrato futuro no exista, el
+cliente nativo V2 no tiene ninguna via legitima para obtener un actor
+controlado y por lo tanto NO DEBE emitir ningun `CommandEnvelopeV2` de
+gameplay en produccion real; solo puede prepararlos/simularlos localmente en
+modo diagnostico sin enviarlos.
+
+## 13. Registro de intencion pendiente (`PendingIntentV2`)
+
+Registro transitorio, solo-cliente:
+
+```json
+{
+  "schema": "tvp3d.cliente.pending_intent",
+  "version": "2.0.0",
+  "command_id": "7b1d9ad4-5d72-4b95-a00b-a6d83b302d7f",
+  "actor": {
+    "scope_id": "550e8400-e29b-41d4-a716-446655440000",
+    "instance_id": "42"
+  },
+  "type": "MOVE",
+  "local_state": "SENT"
+}
+```
+
+`local_state` es un enum cerrado `PREPARING|SENT`; puede llevar metadata
+adicional solo de presentacion (por ejemplo un timestamp local de UX). NO
+DEBE contener estado autoritativo resultante (posicion, revision, "exito").
+
+Se descarta cuando:
+
+- cambia el `runtime_scope_id` (seccion 4);
+- hay desconexion;
+- ocurre invalidacion/recuperacion y la causalidad ya no es confiable
+  (`RECOVERING`).
+
+Una intencion pendiente puede impulsar feedback local de UX (por ejemplo, un
+indicador "enviado, esperando confirmacion"), pero nunca autoridad.
+
+## 14. Frontera COMMAND_REJECTED / evento servidor-owned
+
+D-011 deja intencionalmente `COMMAND_REJECTED` y `ServerErrorV2` en
+`servidor`. Client V2 NO DEBE crear una dependencia oculta de `servidor` para
+parsearlos. El contrato core de Client V2 permanece correcto incluso sin
+importar `tvp3d.server.command_rejected` ni `tvp3d.server.error`: la
+correctitud del estado autoritativo depende solo de los eventos/snapshot de
+replicacion comun reconocidos (secciones 5-7).
+
+### Analisis de la frontera (obligatorio este turno)
+
+`AuthoritativeEventEnvelopeV2` (modelo-comun 2.1.0) es generico:
+`event_id`, `stream_id`, `sequence`, `type`, `subject`, `subject_revision` y
+`causation_command_id` son campos comunes, sin importar el `type`. Esto
+permite, sin importar el contrato `servidor`:
+
+- **recibir** el frame EVENT y avanzar la contabilidad de `stream_id/sequence`
+  igual que para cualquier otro evento, aunque el `type` no este en el
+  registro que el cliente interpreta;
+- **ignorar** con seguridad el contenido de `payload` cuando su `type` (por
+  ejemplo `COMMAND_REJECTED`) no pertenece al registro neutral que este
+  contrato consume;
+- **correlacionar** el evento con un `PendingIntentV2` local usando
+  `causation_command_id`, que es `uuid_v4|null` generico y no requiere
+  conocer la forma de `tvp3d.server.command_rejected`;
+- **enrutar** ese resultado a una UX generica ("la intencion `command_id` fue
+  rechazada") basandose solo en la correlacion anterior, sin decodificar
+  `error.code`, `message` ni `retryable`.
+
+Conclusion: la frontera **es posible** sin contradiccion arquitectonica. No
+se agrega `cliente -> servidor` y no se copia `ServerErrorV2` a `cliente`.
+
+Deuda downstream explicita: una UX de rechazo enriquecida (motivo exacto,
+reintentable, mensaje) requiere un futuro contrato neutral de
+command-outcome/error, o un adaptador explicito y declarado que importe
+`servidor` solo para diagnostico. Ninguno de los dos se publica en este
+turno.
+
+## 15. Resolucion de definicion/asset
+
+La identidad de dominio del cliente proviene de `CanonicalDomainId` +
+`definition_version`, nunca de client id, server id, looktype, numero de
+sprite, filename ni filename de GLB.
+
+Un resolver de presentacion puede mapear mas adelante identidad canonica de
+dominio a assets visuales; ese mapping visual NO se congela en este turno.
+Assets 2.0.0 es dueno de datos de asset/importacion; el cliente consume, no
+reescribe fuentes de assets.
+
+Si una entidad canonica existe pero falta el mapping de presentacion:
+
+- se preserva el estado de replica autoritativa;
+- se usa una representacion de diagnostico/fallback local clara;
+- NUNCA se sustituye por otra identidad canonica;
+- NUNCA se usa looktype como identidad nativa V2.
+
+## 16. Gate de contrato Monster/Visual
+
+El Client 1.x historico (ver HISTORICAL mas abajo) contiene trabajo extenso
+sobre Demon 35, TVPVOL01/TVPVOL02, 41/144 monsters, outfits, ArrayMesh,
+fallback billboard, renderizado dirigido por looktype y animacion/escalas de
+prototipo. Ese trabajo se preserva como evidencia historica/prototipo y se
+reclasifica explicitamente como:
+
+**HISTORICAL / SUPERSEDED CLIENT 1.x VISUAL PROTOTYPE EVIDENCE**
+
+No es el contrato final Monster3D. No autoriza:
+
+- nuevos monsters;
+- decisiones de formato GLB;
+- estandares de rig;
+- estandares de animation clip;
+- pipeline Blender;
+- mappings finales looktype -> asset;
+- footprint de gameplay derivado de AABB;
+- Monster Domain.
+
+No se borra trabajo util; no permanece como texto normativo V2.
+
+## 17. `mundo3d.gd`
+
+`mundo3d.gd` es deuda tecnica/runtime legacy transicional. Este turno NO lo
+modifica. La implementacion futura descompondra responsabilidades de
+presentacion incrementalmente, siguiendo la descomposicion ya documentada en
+`docs/tibia3d/ARCHITECTURE.md` ("Evolucion de `mundo3d.gd`":
+`WorldStreamer`, `ChunkRenderer`, `StaticMapRenderer`, `CreatureManager`,
+`PlayerManager`, `EffectManager`, `CameraController`, `DebugOverlay`), en vez
+de convertir `mundo3d.gd` en la nueva arquitectura. Este contrato no prescribe
+archivos de refactor de produccion mas alla de las rutas que `CARRILES.md` ya
+asigna a `cliente`.
+
+## 18. Legado TVP 7.72
+
+Todo el conocimiento util de Client 1.x / TVP 7.72 (muerte/reentrada, party,
+trade, camas, ventanas de texto, skulls/shields, modos de combate, looktypes,
+renderizado legacy de monsters, etc., preservado integramente en HISTORICAL
+mas abajo) se reclasifica como:
+
+**LEGACY ADAPTER / PARITY / HISTORICAL CLIENT PROFILE**
+
+No es el protocolo nativo nativo Client V2. No se borra. `conexion772.gd` NO
+forma parte del perfil nativo V2.
+
+## 19. Perdida de conexion / reconexion
+
+El cliente no inventa continuidad autoritativa entre conexiones. Ante perdida
+de transporte/sesion:
+
+- la emision de comandos de gameplay se detiene;
+- las intenciones pendientes atadas a la sesion/scope vieja se invalidan
+  (seccion 13);
+- el mundo autoritativo actual deja de considerarse vivo;
+- puede conservarse temporalmente un frame visual congelado, solo por UX y
+  claramente marcado como no autoritativo;
+- la reconexion debe negociar Protocol/common domain de nuevo (seccion 1);
+- un `runtime_scope_id` nuevo invalida las refs runtime viejas (seccion 4);
+- el cliente requiere un baseline autoritativo fresco antes de volver a
+  `ACTIVE` (seccion 5).
+
+Host, puerto y tiempos de backoff no se especifican aqui: pertenecen a
+`integracion` si su contrato los publica.
+
+## 20. Errores propios del cliente
+
+El cliente consume, sin redefinir, `ProtocolErrorV2` y los errores comunes de
+replicacion/dominio de modelo-comun. Define solo los codigos necesarios para
+su propio estado de aplicacion/presentacion:
+
+```json
+{
+  "schema": "tvp3d.cliente.error",
+  "version": "2.0.0",
+  "code": "CLIENT_CONTROL_BINDING_REQUIRED",
+  "path": null,
+  "message": "no controlled actor binding supplied for this scope"
+}
+```
+
+| Codigo | Mutacion de world state | Mutacion de replica | Accion de presentacion | Accion de sync/reconexion |
+|---|---|---|---|---|
+| `CLIENT_BASELINE_REQUIRED` | ninguna | ninguna | bloquear UI de gameplay | permanecer/entrar en `BASELINE_PENDING`, esperar SNAPSHOT |
+| `CLIENT_SCOPE_CHANGED` | ninguna | vacia el store del scope anterior | retirar/desmontar nodos del scope anterior | esperar baseline fresco del nuevo scope |
+| `CLIENT_REPLICA_MISSING` | ninguna | ninguna (rechaza la operacion) | no aplicar el evento a un nodo inexistente | solicitar recuperacion (`RECOVERING`) |
+| `CLIENT_PRESENTATION_UNRESOLVED` | ninguna | ninguna | usar fallback/diagnostico visual | ninguna |
+| `CLIENT_CONTROL_BINDING_REQUIRED` | ninguna | ninguna | bloquear emision de comandos de gameplay | ninguna (espera contrato futuro de sesion) |
+| `CLIENT_RECOVERY_REQUIRED` | ninguna | descarta el store activo hacia staging | mostrar estado "sincronizando" | `RECOVERING` -> `SYNC_REQUEST` -> snapshot |
+
+Ninguno de estos codigos duplica `ProtocolErrorV2`, un error comun de
+modelo-comun o un error `servidor`.
+
+## 21. No se inventan reglas de Map/World
+
+Map / World Rules sigue siendo un contrato de dominio especializado
+faltante. Client V2 NO DEBE definir con autoridad final:
+
+- caminabilidad de tile;
+- ocupacion dinamica;
+- teleports;
+- cambios de piso;
+- permisos de casa;
+- reglas de pathfinding.
+
+Datos de mapa/render importados legacy pueden seguir siendo input
+visual/paridad. El servidor/dominio especializado sera dueno de las reglas
+finales de mundo. Se reporta como dependencia downstream (ver seccion 24)
+para jugabilidad nativa completa.
+
+## 22. Fixtures contractuales (especificacion, sin produccion)
+
+| Fixture | Caso minimo | Resultado obligatorio |
+|---|---|---|
+| `CLIENT-OFFER-001` | perfil nativo | `common_domain_versions=["2.1.0"]` |
+| `CLIENT-WELCOME-REJECT-001` | `SERVER_WELCOME.common_domain_version="2.0.0"` | rechazado por el perfil nativo, no entra a mundo activo |
+| `CLIENT-PHASE-001` | Protocol `READY` sin baseline aceptado | fase de mundo permanece `BASELINE_PENDING`, nunca `ACTIVE` |
+| `CLIENT-SNAPSHOT-EMPTY-001` | snapshot `CORE_ENTITY_STATE` valido, `entities=[]` | fase pasa a `ACTIVE` |
+| `CLIENT-SNAPSHOT-MULTI-001` | snapshot valido multi-entidad | fase pasa a `ACTIVE`, store poblado exacto |
+| `CLIENT-SNAPSHOT-INVALID-001` | snapshot invalido (schema/scope/orden) | cero mutacion parcial del store; fase permanece `BASELINE_PENDING`/`RECOVERING` |
+| `CLIENT-SCOPE-001` | `runtime_scope_id` nuevo | refs runtime viejas se limpian del store |
+| `CLIENT-SPAWN-001` | `ENTITY_SPAWNED` valido | crea entrada en el store autoritativo |
+| `CLIENT-SPAWN-DUP-001` | spawn de `runtime_id` ya existente | rechazado localmente; se solicita recuperacion |
+| `CLIENT-CHANGED-001` | `ENTITY_CORE_STATE_CHANGED` valido | reemplaza el estado completo en el store |
+| `CLIENT-CHANGED-STALE-001` | revision igual/decreciente | cero mutacion del store |
+| `CLIENT-DESPAWN-001` | `ENTITY_DESPAWNED` valido | remueve la entrada del store |
+| `CLIENT-MEMBERSHIP-001` | entidad ausente en snapshot de reemplazo | se retira del store local; NO se interpreta como `ENTITY_DESPAWNED` |
+| `CLIENT-INTERP-001` | interpolacion en curso | `PosicionTibiaV2` en el store no cambia por la interpolacion |
+| `CLIENT-RENDER-001` | transform de renderer alterado manualmente | no puede sobrescribir estado autoritativo |
+| `CLIENT-ASSET-MISSING-001` | asset de presentacion faltante | el store autoritativo se preserva integro |
+| `CLIENT-IDENTITY-001` | intento de usar looktype/client id como identidad | rechazado; no reemplaza `CanonicalDomainId` |
+| `CLIENT-CMD-PENDING-001` | comando durante `BASELINE_PENDING` | rechazado localmente, no se envia |
+| `CLIENT-CMD-RECOVERING-001` | comando durante `RECOVERING` | rechazado localmente, no se envia |
+| `CLIENT-CMD-NOBINDING-001` | comando sin actor controlado suministrado externamente | rechazado localmente, no se envia |
+| `CLIENT-MOVE-INTENT-001` | `CommandEnvelopeV2(type=MOVE)` emitido | contiene solo intencion (`dx,dy`); ningun campo de resultado |
+| `CLIENT-SCOPE-INTENT-001` | cambio de `runtime_scope_id` con intentos pendientes | los `PendingIntentV2` viejos se invalidan |
+| `CLIENT-DISCONNECT-001` | desconexion de transporte | el mundo autoritativo deja de considerarse vivo |
+| `CLIENT-NO-SERVIDOR-001` | analisis de dependencias del contrato `cliente` | no referencia `worklog/servidor/CONTRATO.md` como dependencia normativa |
+| `CLIENT-HISTORICAL-001` | secciones HISTORICAL de Client 1.x/TVP | no contienen palabras normativas V2 (`DEBE`/`NO DEBE`/`SOLO` en sentido de contrato vigente) |
+| `CLIENT-NOVISUAL-001` | intento de agregar campo visual a `AuthoritativeEntityStateV2`/eventos comunes | rechazado por modelo-comun; el cliente no lo reintroduce localmente |
+
+Estas son especificaciones de contrato; ningun test/produccion se implementa
+en este turno.
+
+## 23. Consumidores y exclusiones
+
+Consumidores: cliente Godot 3D, QA, integracion.
+
+Client V2 no expone credenciales, tokens, secretos, autoridad de servidor,
+`SessionBindingV2`, `ServerErrorV2`/`COMMAND_REJECTED` redefinidos, reglas
+finales de Map/World, ni mapping visual final looktype->asset. No autoriza
+modificar `mundo3d.gd`, red, servidor, Monster Domain o Monster3D.
+
+## 24. Dependencias downstream faltantes para jugabilidad nativa completa
+
+Para que Client V2 sea completamente jugable de forma nativa (sin adaptador
+legacy) faltan, como minimo, estos contratos especializados que este turno no
+publica:
+
+| Capacidad faltante | Contrato requerido |
+|---|---|
+| autenticacion, sesion de aplicacion y actor controlado | Authentication / Application Session (seccion 12) |
+| caminabilidad, ocupacion dinamica, pathfinding, pisos, casas | Map / World Rules Domain |
+| combate, dano, condiciones | Combat Domain |
+| inventario, items dinamicos, drops | Item / Inventory Domain |
+| monstruos, IA, spawns, loot | Monster Domain + Spawn Domain |
+| UX de rechazo enriquecida sin adaptador servidor | Command Outcome / Error neutral (seccion 14) |
+| mapping final canonical id -> asset visual | resolver de presentacion (fuera de este turno) |
+
+## Historial de contrato de cliente
+
+| Version | Publicacion |
+|---|---|
+| `1.0.0` .. `1.30.0` | perfil propio JSON, adaptador TVP 7.72 y prototipos visuales (ver HISTORICAL) |
+| `2.0.0` | Client V2 nativo: perfil de common domain 2.1.0 exclusivo, fase de mundo propia, store de replica autoritativa, consumo neutral de eventos/snapshot, capas autoridad/presentacion/intencion, boundary de autorizacion externo, frontera COMMAND_REJECTED analizada sin dependencia servidor |
+
+## HISTORICAL / SUPERSEDED — Client 1.30.0 y anteriores
+
+Estado: `SUPERSEDED` por Client V2 2.0.0 (secciones 0-24 arriba).
+
+Todo el contenido siguiente describe el perfil propio JSON 1.x
+(`WELCOME`/`STATE`, ids uint32) y el cliente jugable de la rama TVP 7.72
+(`mundo3d.gd`), incluyendo prototipos visuales de monstruos/outfits. Se
+preserva integramente como evidencia historica y fixture de paridad. NO es
+normativo para Client V2: ninguna palabra `DEBE`/`NO DEBE`/`SOLO` en las
+secciones siguientes gobierna el contrato vigente. Dependencias originales de
+este material: modelo-comun 1.0.0, protocolo-red 1.1.0/1.4.0/1.6.0,
+assets 1.3.0.
 
 ## Demon 35 reutilizado y animado
 

@@ -1,15 +1,104 @@
 # Estado: cliente
 
 Estado: LISTO_PARA_REVISION
-Ultimo agente: codex
-Ultima actualizacion: 2026-09-08
+Ultimo agente: claude
+Ultima actualizacion: 2026-09-09T23:45:00-06:00
 Contrato publicado: SI
+Version publicada: 2.0.0
+
+## Turno cerrado: Phase 1E — Native Client V2
+
+- Publicado Client V2 `2.0.0` como revision **major** deliberada sobre
+  Client `1.30.0`: nuevo boundary normativo (secciones 0-24) al inicio del
+  contrato; todo el material 1.30.0/TVP 7.72 se preservo integro bajo
+  `## HISTORICAL / SUPERSEDED — Client 1.30.0 y anteriores` sin borrar
+  evidencia ni reescribirla.
+- Dependencias normativas: `modelo-comun 2.1.0`, `protocolo-red 2.1.0`,
+  `assets 2.0.0`. Cliente V2 NO depende de `servidor`.
+- Perfil nativo de common domain: `common_domain_versions=["2.1.0"]`
+  exclusivamente; `SERVER_WELCOME.common_domain_version` distinto de
+  `2.1.0` (incluido `2.0.0`) se rechaza para este perfil.
+- Publicada `ClientWorldPhaseV2` (`EMPTY|BASELINE_PENDING|ACTIVE|RECOVERING`),
+  ortogonal a `ProtocolConnectionStateV2` de `protocolo-red` (no se redefine
+  ni compite con ella).
+- Publicado `ClientReplicaStoreV2` (copia local no autoritativa de
+  `AuthoritativeEntityStateV2` por `RuntimeInstanceRefV2`), reglas de
+  runtime scope, aplicacion atomica de snapshot `CORE_ENTITY_STATE/1.0.0` y
+  consumo neutral de `ENTITY_SPAWNED`/`ENTITY_CORE_STATE_CHANGED`/
+  `ENTITY_DESPAWNED` referenciados desde modelo-comun 2.1.0 sin copiarlos.
+- Distincion explicita: ausencia en un snapshot de reemplazo retira la
+  entidad del store local pero NO se interpreta como `ENTITY_DESPAWNED`.
+- Publicadas tres capas (AuthoritativeReplica/PresentationState/PendingIntent)
+  y reglas de interpolacion que nunca mutan `PosicionTibiaV2`.
+- Publicado el boundary de autorizacion: `SessionBindingV2` no se importa;
+  un actor controlado requiere un contrato futuro de
+  autenticacion/sesion-de-aplicacion que hoy no existe; el cliente no puede
+  autorizarse a si mismo ni emitir comandos de gameplay en produccion real
+  sin ese binding externo.
+- Analizada la frontera `COMMAND_REJECTED`/`ServerErrorV2`: **no hay
+  contradiccion arquitectonica**. El envelope generico de
+  `AuthoritativeEventEnvelopeV2` permite recibir, ignorar con seguridad,
+  correlacionar por `causation_command_id` y enrutar una UX generica de
+  rechazo sin importar el contrato `servidor`. Una UX enriquecida queda como
+  deuda downstream explicita (Command Outcome / Error neutral futuro).
+- Reclasificado el trabajo historico de Demon/monsters/outfits como
+  `HISTORICAL / SUPERSEDED CLIENT 1.x VISUAL PROTOTYPE EVIDENCE`: no
+  autoriza Monster Domain, Monster3D, GLB/rig/animation standards ni
+  mappings looktype->asset finales.
+- Reclasificado TVP 7.72 (muerte/reentrada, party, trade, camas, ventanas de
+  texto, skulls/shields, combate) como `LEGACY ADAPTER / PARITY / HISTORICAL
+  CLIENT PROFILE`; `conexion772.gd` no es parte del perfil nativo V2.
+- `mundo3d.gd` no se modifico; el contrato solo referencia la descomposicion
+  ya documentada en `docs/tibia3d/ARCHITECTURE.md`.
+- No se modifico codigo de produccion, assets, red, servidor ni
+  modelo-comun/protocolo-red.
+
+## Dependencias downstream reportadas (Phase 1E)
+
+- Authentication / Application Session (actor controlado) — bloquea emision
+  real de comandos de gameplay.
+- Map / World Rules Domain — bloquea caminabilidad/ocupacion/pathfinding
+  nativos.
+- Combat Domain, Item / Inventory Domain, Monster Domain + Spawn Domain —
+  bloquean jugabilidad completa.
+- Command Outcome / Error neutral — bloquea UX de rechazo enriquecida sin
+  adaptador servidor.
+- Resolver de presentacion (canonical id -> asset visual) — fuera de este
+  turno.
+
+## Decisiones Phase 1E
+
+| Decision | Motivo | Reversible |
+|---|---|---|
+| Client V2 es major (2.0.0), no minor sobre 1.30.0 | 1.x usa WELCOME/STATE, ids uint32 y protocolo propio; ningun objeto se reinterpreta silenciosamente | no |
+| Perfil nativo ofrece solo `2.1.0` | El store de replica y el consumo de eventos dependen de registros que solo existen desde modelo-comun 2.1.0; anunciar 2.0.0 sin necesidad concreta confundiria capacidad de transporte con compatibilidad de aplicacion | si, un adaptador de compatibilidad futuro podria ofrecer ambas |
+| `ClientWorldPhaseV2` no se llama `ProtocolConnectionStateV2` ni la reemplaza | Debe quedar ortogonal a transporte; nombrarla igual invitaria a fusionar las dos maquinas | no |
+| COMMAND_REJECTED se analiza pero no se importa | D-011 lo deja servidor-owned; el envelope generico ya permite correlacion segura sin el payload especifico | no, salvo un contrato neutral futuro |
+| Historial 1.30.0 preservado integro bajo HISTORICAL, no reescrito | Evita perder evidencia/fixtures de paridad; edicion minima destructiva | no |
+
+## Verificacion de cierre Phase 1E
+
+- 5 bloques JSON del contrato (todos nuevos en las secciones 0-24) parsean.
+- Los eventos agregados son lineas JSON validas y solo se anexaron al final.
+- `git diff --check` no reporta errores en las rutas del turno.
+- Solo contrato/estado de `cliente` y el diario append-only forman parte del
+  cierre; los cambios sucios ajenos detectados al inicio quedan intactos.
+- No se modifico `mundo3d.gd`, red, servidor, assets ni
+  modelo-comun/protocolo-red.
+- El contrato `cliente` no referencia `worklog/servidor/CONTRATO.md` como
+  dependencia normativa.
+- Monster Domain, Monster3D y Cyclops siguen sin publicarse/implementarse.
 
 ## Depende de
 
-- `modelo-comun`: contrato publicado.
-- `protocolo-red`: contrato publicado.
-- `assets`: contrato publicado.
+- `modelo-comun` 2.1.0: contrato publicado.
+- `protocolo-red` 2.1.0: contrato publicado.
+- `assets` 2.0.0: contrato publicado.
+- NO depende de `servidor`.
+- Historial: Client 1.30.0 dependia de modelo-comun 1.0.0, protocolo-red
+  1.1.0/1.4.0/1.6.0 y assets 1.3.0; preservado en HISTORICAL del contrato.
+
+## Historial de turnos (1.x, preservado)
 
 ## Le toca
 2026-09-08: corregida deformacion asimetrica del muslo al erguir el Demon.
