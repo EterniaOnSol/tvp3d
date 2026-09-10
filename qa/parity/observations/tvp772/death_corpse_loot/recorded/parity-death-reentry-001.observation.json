@@ -1,0 +1,16 @@
+{
+  "schema": "tvp3d.qa.oracle_observation",
+  "version": "1.0.0",
+  "fixture_id": "PARITY-DEATH-REENTRY-001",
+  "oracle": "TVP_772",
+  "oracle_version": "7.72",
+  "capture_origin": "RECORDED_EVIDENCE",
+  "source_evidence": [
+    {"logical_path": "docs/qa/PRUEBA_VIVA_MUERTE_LOOT.md"}
+  ],
+  "payload": {
+    "alive": true,
+    "death_position": {"x": 32081, "y": 32145, "z": 6},
+    "reentry_position": {"x": 32369, "y": 32241, "z": 7}
+  }
+}

@@ -1,0 +1,71 @@
+{
+  "schema": "tvp3d.qa.case",
+  "version": "2.0.0",
+  "case_id": "PARITY-DEATH-CORPSE-001",
+  "class": "LEGACY_PARITY",
+  "title": "TVP 7.72 leaves a corpse and zero authoritative HP on player death",
+  "owners": ["qa"],
+  "contracts": [
+    {"contract": "qa", "version": "2.1.1"}
+  ],
+  "requirement_refs": [
+    {
+      "contract": "qa",
+      "version": "2.1.1",
+      "section": "16E",
+      "source_fixture_id": "PARITY-DEATH-CORPSE-001"
+    }
+  ],
+  "preconditions": [
+    "personaje conectado y vivo, ubicado fuera de zona de proteccion (ZONE_PROTECTION) por accion del servidor (talkaction /c), no por caminata simulada del cliente",
+    "un monstruo autoritativo invocado por el servidor (demon) ataca al personaje de forma continua"
+  ],
+  "input_fixture": {
+    "logical_path": "qa/parity/fixtures/tvp772/death_corpse_loot/parity-death-corpse-001.json"
+  },
+  "expected": {
+    "schema": "tvp3d.qa.parity_expectation",
+    "version": "1.0.0",
+    "mode": "SINGLE_OBSERVATION",
+    "assertions": [
+      {
+        "assertion_id": "HP-ZERO",
+        "left_path": "/player_hp_zero",
+        "operator": "EQ",
+        "right": {"literal": true}
+      },
+      {
+        "assertion_id": "REMOVED-FROM-WORLD",
+        "left_path": "/player_removed_from_live_world",
+        "operator": "EQ",
+        "right": {"literal": true}
+      },
+      {
+        "assertion_id": "CORPSE-PRESENT",
+        "left_path": "/player_corpse/present",
+        "operator": "EQ",
+        "right": {"literal": true}
+      },
+      {
+        "assertion_id": "CORPSE-NAME",
+        "left_path": "/player_corpse/name",
+        "operator": "EQ",
+        "right": {"literal": "dead human"}
+      },
+      {
+        "assertion_id": "CORPSE-AT-DEATH-POSITION",
+        "left_path": "/player_corpse/at_death_position",
+        "operator": "EQ",
+        "right": {"literal": true}
+      }
+    ]
+  },
+  "mutates_external_state": false,
+  "requires_network": false,
+  "requires_legacy": false,
+  "requires_secrets": false,
+  "status_policy": {
+    "missing_prerequisite_status": "BLOCKED",
+    "assertion_mismatch_status": "FAIL"
+  }
+}

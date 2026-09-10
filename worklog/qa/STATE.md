@@ -2,8 +2,82 @@
 
 Estado: LISTO_PARA_REVISION
 Ultimo agente: claude
-Ultima actualizacion: 2026-09-10T04:00:00-06:00
-Contrato publicado: SI (`CONTRATO.md` v2.1.1)
+Ultima actualizacion: 2026-09-10T04:30:00-06:00
+Contrato publicado: SI (`CONTRATO.md` v2.1.1, sin cambios en este turno)
+
+## Turno cerrado: Phase 2B.1 — Captura controlada de oracle TVP y replay generico
+
+Turno de implementacion (no contract-only). `worklog/qa/CONTRATO.md` **no se
+modifico**: se implemento exactamente contra `qa 2.1.1` publicado en el turno
+anterior. Detalle completo en
+`docs/qa/PARITY_PHASE2B1_CAPTURE_REPLAY.md`.
+
+- Materializados cuatro `QACaseV2` `LEGACY_PARITY` de replay en
+  `qa/parity/cases/tvp772/death_corpse_loot/`, uno por cada `ParityFixtureV2`
+  de Phase 2A, con `case_id == fixture_id` (seccion 16D.1) y un
+  `ParityExpectationV1` embebido en `expected`: tres `SINGLE_OBSERVATION`
+  (`PARITY-DEATH-CORPSE-001`, `PARITY-DEATH-REENTRY-001`,
+  `PARITY-MONSTER-CORPSE-001`) y uno `EVIDENCE_ONLY` con `assertions: []`
+  (`PARITY-LOOT-RANDOMNESS-001`). Los cuatro fixtures de Phase 2A quedan
+  byte-identicos; no se tocaron.
+- Materializadas tres `OracleObservationV1` `RECORDED_EVIDENCE` en
+  `qa/parity/observations/tvp772/death_corpse_loot/recorded/`, usando
+  solo hechos ya publicados en `docs/qa/PRUEBA_VIVA_MUERTE_LOOT.md` (sin
+  timestamps inventados, sin ids de runtime, sin credenciales).
+- Implementado `qa/parity/tools/replay.py` (Python 3, solo libreria
+  estandar): carga caso/fixture/expectativa/observacion, resuelve JSON
+  Pointer RFC 6901 (decodificando `~1` antes que `~0`, orden correcto segun
+  RFC 6901 seccion 4), evalua el registro cerrado de nueve operadores
+  (`EQ, NE, EXISTS, NOT_EXISTS, GT, GTE, LT, LTE, ONE_OF`) sin `eval` y sin
+  coercion de tipos (incluye rechazo explicito de `bool` como operando
+  numerico), y emite `tvp3d.qa.report/2.0.0`
+  (`suite_id=PARITY_TVP_772`, `profile=LEGACY_TVP_772`). Confirmado por
+  `grep` que el archivo no contiene ningun valor especifico de fixture.
+- Auto-prueba en memoria (`--selftest`): 46/46 comprobaciones `OK`, codigo de
+  salida 0. Nunca escribe un archivo malformado versionado.
+- Replay contra las tres observaciones grabadas:
+  `PARITY-DEATH-CORPSE-001 PASS`, `PARITY-DEATH-REENTRY-001 PASS`,
+  `PARITY-MONSTER-CORPSE-001 PASS`, `PARITY-LOOT-RANDOMNESS-001 NOT_RUN`;
+  codigo de salida `0`. Ejecutado dos veces: reporte
+  `qa/parity/reports/replay_recorded_death_corpse_loot_report.json`
+  byte-identico entre corridas (confirmado con `diff`).
+- Prueba de mutacion deliberada: se corrompio temporalmente
+  `parity-monster-corpse-001.observation.json`, el replay reporto `FAIL`
+  con codigo `1`, y el archivo se restauro byte-a-byte antes de cualquier
+  commit (hash `sha256` identico antes/despues).
+- Captura en vivo de `PARITY-MONSTER-CORPSE-001`: **no ejecutada, `BLOCKED`**.
+  Dos prerequisitos ausentes de forma independiente: el motor de Docker
+  esta inalcanzable (`docker ps` fallo de inmediato, motor apagado, no el
+  problema de puente WSL con motor vivo de turnos anteriores) y las
+  variables de entorno `TVP772_ACCOUNT`/`TVP772_PASSWORD`/
+  `TVP772_GOD_CHARACTER` no estan definidas. No se fabrico ninguna
+  observacion `LIVE_ORACLE`, no se reetiqueto la observacion grabada como
+  si fuera en vivo, no se reporto `PASS`, y no se creo
+  `qa/parity/reports/replay_live_monster_corpse_report.json` (no hay
+  observacion real que replayar). `cliente3d/red/`, `estado_mundo.gd` y
+  `conexion772.gd` no se tocaron; `prueba_muerte_loot_vivo.gd` tampoco se
+  modifico.
+- Ningun jugador murio en este turno (cero ejecuciones de la corrida
+  completa de duelo); no se ejecuto TVP/Docker en absoluto.
+- Ninguna credencial se escribio, imprimio ni copio a ningun archivo nuevo.
+
+## Conteos (Phase 2B.1)
+
+| Inventario | Especificadas | Materializadas |
+|---|---:|---:|
+| Obligaciones de contrato Architecture V2 (`qa 2.1.1`) | 198 | 0 (sin cambio) |
+| Corpus piloto `LEGACY_PARITY` (Phase 2A, sin cambio) | 4 | 4 |
+| Casos de replay `QACaseV2`/`ParityExpectationV1` (este turno) | 4 | 4 (3 `SINGLE_OBSERVATION` / 1 `EVIDENCE_ONLY`) |
+| Observaciones `RECORDED_EVIDENCE` | 3 | 3 |
+| Observaciones `LIVE_ORACLE` frescas | 1 (planeada) | 0 (`BLOCKED`) |
+
+Estos conteos no se combinan entre si: replayar paridad legacy no
+materializa ninguna obligacion de contrato Architecture V2.
+
+**Le toca:** un turno futuro con Docker y credenciales `TVP772_*`
+disponibles puede ejecutar la captura en vivo documentada en
+`docs/qa/PARITY_PHASE2B1_CAPTURE_REPLAY.md` y, por separado, investigar el
+caveat de desalineamiento de mapa `0x64`.
 
 ## Turno cerrado: QA 2.1.1 — Erratum de conteo de operadores de replay
 
