@@ -189,6 +189,23 @@ regresion historica aun despues del retiro.
 
 ## Proxima fase exacta
 
-Despues de cerrar Phase 0, continuar unicamente con **Phase 1: freeze domain
-contracts**. No iniciar refactor de `mundo3d.gd`, Monster Domain,
-Monster3D, Cyclops ni migracion de gameplay hasta congelar la base comun.
+**Phase 1 — freeze domain contracts: CERRADA / GATE APROBADO.** Los ocho
+contratos fundacionales quedaron publicados y coherentes: `modelo-comun
+2.1.0`, `protocolo-red 2.1.0`, `assets 2.0.0`, `servidor 2.1.0`,
+`cliente 2.0.0`, `editor 2.0.0`, `integracion 2.0.1` y `qa 2.0.0`. El detalle
+completo de la revision (grafo de dependencias, invariantes cruzados,
+defectos encontrados) vive en `docs/tibia3d/PHASE1_CLOSURE_REVIEW.md`.
+
+Este cierre es sobre CONTRATO, no sobre implementacion: ningun carril queda
+`HECHO` por este cierre, `FULL_NATIVE_PLAYABLE` sigue bloqueado
+(Authentication/Application Session, Map/World Rules y otros dominios
+especializados siguen sin publicarse) y QA V2 sigue con 0 fixtures
+materializadas.
+
+Continuar unicamente con **Phase 2: build parity fixtures against TVP**.
+Objetivo exacto: convertir el comportamiento legacy en fixtures de oracle
+reproducibles (`LEGACY_PARITY`, usando `ParityFixtureV2` ya publicado por
+`qa 2.0.0`), no implementar el servidor Godot nativo. La migracion del
+servidor Godot headless sigue siendo Phase 3. No iniciar refactor de
+`mundo3d.gd`, Monster Domain, Monster3D, Cyclops ni migracion de gameplay
+hasta que Phase 2 entregue fixtures de paridad suficientes.
