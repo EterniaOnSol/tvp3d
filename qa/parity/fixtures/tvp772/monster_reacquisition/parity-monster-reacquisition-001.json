@@ -1,0 +1,34 @@
+{
+  "schema": "tvp3d.qa.parity_fixture",
+  "version": "2.0.0",
+  "fixture_id": "PARITY-MONSTER-REACQUISITION-001",
+  "oracle": "TVP_772",
+  "oracle_version": "7.72",
+  "source_evidence": {
+    "logical_path": "docs/qa/PRUEBA_VIVA_REACQUISICION.md"
+  },
+  "preconditions": [
+    "el god reune al personaje normal en una casilla de campo fuera de casa y de zona de proteccion",
+    "el god invoca un cave rat cuyo runtime id no existia antes de la invocacion",
+    "ese cave rat ataca al personaje de forma autoritativa al menos una vez antes de que el personaje se aleje"
+  ],
+  "input_action": "el god mueve al personaje 39 SQM lejos del cave rat (mismo piso, sin logout, sin muerte, sin cambio de piso) hasta que el cave rat sale del conjunto de criaturas visibles del personaje, y luego lo devuelve a la casilla de campo original",
+  "observed_authoritative_result": "al volver el personaje a la casilla de campo, el mismo cave rat (identico runtime id) reaparece en su conjunto de criaturas visibles y retoma el ataque, produciendo un segundo mensaje autoritativo de dano que nombra explicitamente a 'a cave rat'",
+  "normalization_rules": [
+    "el runtime id real del cave rat NUNCA se compara como literal esperado: solo se compara la relacion 'es el mismo id antes y despues de volver', nunca su valor numerico exacto",
+    "los valores exactos de HP y el monto de dano de cada golpe se excluyen de la comparacion; solo se exige que la vida haya bajado en cada golpe",
+    "las coordenadas exactas de campo y de la posicion lejana, y la distancia recorrida (39 SQM), son detalles de implementacion de la captura, no hechos observados versionados",
+    "una bajada de vida generica NO es evidencia suficiente: el mensaje autoritativo de dano debe nombrar explicitamente al 'cave rat' para descartar ataques de otra criatura silvestre del campo (el propio documento fuente registra un falso positivo temprano causado por una spider silvestre)",
+    "se ignoran marcas de tiempo de reloj de pared, coordenadas de campo, id de cuenta y cualquier metadata de host/proceso"
+  ],
+  "determinism_notes": "observado en una corrida documentada del 2026-08-29: cave rat invocado con id 1073764894, primer golpe autoritativo nombrando 'a cave rat' (133 -> 131 HP), personaje alejado 39 SQM sin logout/muerte/cambio de piso, reingreso a la casilla de campo con el mismo id de cave rat visible, segundo golpe autoritativo nombrando nuevamente 'a cave rat' (131 -> 128 HP). Una corrida preliminar distinta fue descartada explicitamente por el propio documento fuente porque una spider silvestre, no el cave rat invocado, habia causado las bajadas de vida; esa corrida invalida no se usa como evidencia de este fixture. La limpieza retiro al monstruo invocado y el personaje no murio ni perdio nivel.",
+  "excluded_nondeterministic_fields": [
+    "monster_runtime_id",
+    "exact_hp_values",
+    "exact_damage_amounts",
+    "field_coordinates",
+    "travel_distance",
+    "wall_clock_timestamp"
+  ],
+  "classification": "MATCH_EXPECTED"
+}

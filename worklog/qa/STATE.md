@@ -1,9 +1,84 @@
 # Estado: qa
 
-Estado: LISTO_PARA_REVISION
+Estado: BLOQUEADO
 Ultimo agente: claude
-Ultima actualizacion: 2026-09-10T07:00:00-06:00
+Ultima actualizacion: 2026-09-10T08:00:00-06:00
 Contrato publicado: SI (`CONTRATO.md` v2.1.1, sin cambios en este turno)
+
+## Turno cerrado: Phase 2C — Slice de paridad de reacquisicion (PARCIAL, live BLOCKED)
+
+Detalle completo en `docs/qa/PARITY_PHASE2C_MONSTER_REACQUISITION.md`.
+Trabajo local completo y verde; **certificacion en vivo BLOQUEADA** por una
+restriccion real del entorno. No se fabrico ninguna observacion.
+
+- **Materializado** `PARITY-MONSTER-REACQUISITION-001`: fixture
+  (`tvp3d.qa.parity_fixture/2.0.0`, `MATCH_EXPECTED`), `QACaseV2`
+  (`case_id == fixture_id`, `LEGACY_PARITY`, `SINGLE_OBSERVATION`) con
+  `ParityExpectationV1` de **12 aserciones**, y observacion
+  `RECORDED_EVIDENCE` derivada solo de hechos ya probados por
+  `docs/qa/PRUEBA_VIVA_REACQUISICION.md`.
+- **Replay contra evidencia grabada: `PASS 12/12`**, codigo 0, reporte
+  byte-identico en dos corridas. `qa/parity/tools/replay.py` **no se
+  modifico**: el comparador generico acepto un dominio de comportamiento
+  distinto (reacquisicion, no corpse) sin cambios, confirmando que
+  generaliza.
+- **Limite semantico respetado:** el fixture afirma solo lo observable
+  (mismo runtime id reaparece + segundo ataque autoritativo nombrando al
+  cave rat). NO afirma `attacked_creature_pointer_preserved` ni ningun otro
+  estado interno de TFS/TVP.
+- **Adaptador de captura nuevo:**
+  `cliente3d/pruebas/prueba_parity_monster_reacquisition_capture.gd`+`.tscn`.
+  `prueba_reacquisicion_monstruo.gd` no se toco. Credenciales solo por
+  entorno (`TVP772_ACCOUNT`/`PASSWORD`/`GOD_CHARACTER`/`PLAYER_CHARACTER`),
+  sin defaults ni literales; fallo de personaje no enumera la cuenta. Sin
+  `/killall` amplio inicial. `cliente3d/red/` no se toco.
+- **Certificacion en vivo: `BLOCKED`.** 13 ejecuciones, 0 observaciones
+  emitidas. Causa: conflicto real entre "prohibido `/killall` amplio
+  inicial" y "abortar si otro cave rat hace ambigua la identidad del
+  atacante", sobre un terreno que es zona de spawn de cave rats de Thais.
+  Desglose: 8 abortos por ambiguedad, 3 por vida cero antes de medir, 2 por
+  cave rat preexistente. Se probaron las dos casillas ya certificadas
+  intercambiando roles; ambas tienen fauna. Ningun ajuste de expectativa,
+  ninguna proteccion relajada, ninguna evidencia grabada reetiquetada como
+  en vivo.
+- **Muertes de jugador en este turno: NO fueron cero.** `Valentino` murio
+  varias veces (`You are dead`, revivido por el servidor en su templo). Las
+  primeras muertes vinieron de un defecto propio de la primera version del
+  adaptador (no devolvia al personaje a lugar seguro al abortar, quedando
+  expuesto entre corridas); ese defecto se corrigio a mitad del turno y se
+  verifico funcionando. Las restantes fueron densidad de fauna contra un
+  personaje nivel 1. Se informo al usuario en cada caso y decidio continuar.
+- **Estado final del entorno verificado:** `Valentino` vivo con 134 HP en el
+  templo `(32369,32241,7)`; 0 cave rats vivos visibles; cada monstruo
+  invocado por este turno fue retirado por ataque dirigido puntual (nunca
+  por area). No se reseteo base de datos ni volumenes.
+- `worklog/qa/CONTRATO.md` sigue en `2.1.1`. Los cuatro fixtures de Phase 2A,
+  los cuatro `QACaseV2` de Phase 2B.1, las tres observaciones
+  `RECORDED_EVIDENCE` previas y la observacion `LIVE_ORACLE` de
+  monster-corpse quedan byte-identicas.
+- Desalineamiento de mapa `0x64` no investigado ni tocado; no fue causa de
+  ningun aborto.
+
+## Conteos (Phase 2C)
+
+| Inventario | Especificadas | Materializadas |
+|---|---:|---:|
+| Obligaciones de contrato Architecture V2 (`qa 2.1.1`) | 198 | 0 (sin cambio) |
+| Fixtures `LEGACY_PARITY` | — | **5** (antes 4) |
+| Casos de replay `QACaseV2`/`ParityExpectationV1` | — | **5** (antes 4) |
+| Observaciones `RECORDED_EVIDENCE` | — | **4** (antes 3) |
+| Observaciones `LIVE_ORACLE` canonicas | — | 1 (sin cambio; reacquisicion quedo `BLOCKED`) |
+| Ejecuciones frescas de oracle TVP en este turno | — | 13 intentos / 0 certificaciones |
+
+Estos conteos no se combinan: los cinco fixtures de paridad NO cuentan para
+las 198 obligaciones Architecture V2.
+
+**Le toca:** para cerrar la certificacion en vivo de reacquisicion hace falta
+resolver la tension terreno/ambiguedad de forma legitima — (a) certificar una
+tercera casilla fuera de zona de spawn de cave rats, (b) usar un personaje de
+prueba con vida suficiente para sostener la ventana de medicion, o (c)
+publicar contractualmente un aislamiento de campo acotado y seguro que no
+dependa de matar fauna preexistente.
 
 ## Turno cerrado: Phase 2B.2.1 — Endurecimiento y recertificacion de la primera captura viva
 

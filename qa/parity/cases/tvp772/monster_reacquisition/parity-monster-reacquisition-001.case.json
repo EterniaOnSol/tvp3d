@@ -1,0 +1,114 @@
+{
+  "schema": "tvp3d.qa.case",
+  "version": "2.0.0",
+  "case_id": "PARITY-MONSTER-REACQUISITION-001",
+  "class": "LEGACY_PARITY",
+  "title": "TVP 7.72 monster retains and reacquires its attack target after a temporary visibility gap",
+  "owners": ["qa"],
+  "contracts": [
+    {"contract": "qa", "version": "2.1.1"}
+  ],
+  "requirement_refs": [
+    {
+      "contract": "qa",
+      "version": "2.1.1",
+      "section": "16",
+      "source_fixture_id": "PARITY-MONSTER-REACQUISITION-001"
+    }
+  ],
+  "preconditions": [
+    "el god reune al personaje normal en una casilla de campo fuera de casa y de zona de proteccion",
+    "el god invoca un cave rat cuyo runtime id no existia antes de la invocacion",
+    "ese cave rat ataca al personaje de forma autoritativa al menos una vez antes de que el personaje se aleje"
+  ],
+  "input_fixture": {
+    "logical_path": "qa/parity/fixtures/tvp772/monster_reacquisition/parity-monster-reacquisition-001.json"
+  },
+  "expected": {
+    "schema": "tvp3d.qa.parity_expectation",
+    "version": "1.0.0",
+    "mode": "SINGLE_OBSERVATION",
+    "assertions": [
+      {
+        "assertion_id": "MONSTER-KIND",
+        "left_path": "/monster_kind",
+        "operator": "EQ",
+        "right": {"literal": "cave rat"}
+      },
+      {
+        "assertion_id": "BEFORE-ATTACK-OBSERVED",
+        "left_path": "/before_leave/attack_observed",
+        "operator": "EQ",
+        "right": {"literal": true}
+      },
+      {
+        "assertion_id": "BEFORE-ATTACKER-MATCHES",
+        "left_path": "/before_leave/attacker_matches_monster_kind",
+        "operator": "EQ",
+        "right": {"literal": true}
+      },
+      {
+        "assertion_id": "BEFORE-HP-DECREASED",
+        "left_path": "/before_leave/hp_decreased",
+        "operator": "EQ",
+        "right": {"literal": true}
+      },
+      {
+        "assertion_id": "GAP-TARGET-LEFT-VISIBLE-SET",
+        "left_path": "/visibility_gap/target_left_visible_set",
+        "operator": "EQ",
+        "right": {"literal": true}
+      },
+      {
+        "assertion_id": "GAP-SESSION-CONTINUED",
+        "left_path": "/visibility_gap/player_session_continued",
+        "operator": "EQ",
+        "right": {"literal": true}
+      },
+      {
+        "assertion_id": "GAP-PLAYER-SURVIVED",
+        "left_path": "/visibility_gap/player_survived",
+        "operator": "EQ",
+        "right": {"literal": true}
+      },
+      {
+        "assertion_id": "AFTER-TARGET-REAPPEARED",
+        "left_path": "/after_return/target_reappeared",
+        "operator": "EQ",
+        "right": {"literal": true}
+      },
+      {
+        "assertion_id": "AFTER-SAME-RUNTIME-ID",
+        "left_path": "/after_return/same_runtime_id",
+        "operator": "EQ",
+        "right": {"literal": true}
+      },
+      {
+        "assertion_id": "AFTER-ATTACK-OBSERVED",
+        "left_path": "/after_return/attack_observed",
+        "operator": "EQ",
+        "right": {"literal": true}
+      },
+      {
+        "assertion_id": "AFTER-ATTACKER-MATCHES",
+        "left_path": "/after_return/attacker_matches_monster_kind",
+        "operator": "EQ",
+        "right": {"literal": true}
+      },
+      {
+        "assertion_id": "AFTER-HP-DECREASED",
+        "left_path": "/after_return/hp_decreased",
+        "operator": "EQ",
+        "right": {"literal": true}
+      }
+    ]
+  },
+  "mutates_external_state": false,
+  "requires_network": false,
+  "requires_legacy": false,
+  "requires_secrets": false,
+  "status_policy": {
+    "missing_prerequisite_status": "BLOCKED",
+    "assertion_mismatch_status": "FAIL"
+  }
+}
