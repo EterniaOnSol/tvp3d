@@ -111,3 +111,54 @@ implementa en Godot y se compara antes de retirar su dependencia legacy.
 Una diferencia de paridad debe clasificarse como bug, regla no migrada o cambio
 deliberado. Ninguna de las tres se resuelve eligiendo silenciosamente una
 fuente.
+
+## D-011: Estados por capa y payloads de replicacion con owner neutral
+
+Estado: ACEPTADA.
+
+Architecture V2 separa maquinas que antes aparecian juntas bajo
+`conexion y mundo`:
+
+- `protocolo-red` posee `CONNECTED`, `NEGOTIATING`, `READY`, `SYNCING`,
+  `CLOSING` y `CLOSED`, que describen solo transporte;
+- `servidor` posee autorizacion de aplicacion mediante `SessionBindingV2` y
+  el lifecycle del proceso/mundo autoritativo;
+- `cliente` puede publicar estados de presentacion/UX, pero no convertirlos en
+  autorizacion o verdad de gameplay.
+
+La tabla historica `DESCONECTADO/CONECTANDO/EN_MUNDO` se conserva como perfil
+1.x superseded. La tabla
+`SOLICITADA/VALIDADA/RECHAZADA/APLICADA/EMITIDA` solo describe un lifecycle
+interno historico de resolucion de comandos; no es estado de protocolo,
+secuencia wire, autoridad cliente, `stream_id/sequence` ni revision de entidad.
+
+Para la dependencia Client V2 se elige **Option B**:
+
+1. Los schemas compartidos de payloads de replicacion pertenecen a
+   `modelo-comun`.
+2. El servidor es su productor autoritativo.
+3. El cliente es su consumidor no autoritativo.
+4. El protocolo los transporta sin poseer su semantica.
+5. Autorizacion, `SessionBindingV2`, procesamiento de comandos, persistencia,
+   seleccion del replication set, decisiones autoritativas, politica de
+   `ServerErrorV2` y `COMMAND_REJECTED` permanecen en `servidor`.
+6. `modelo-comun` debe publicar una revision antes de Client V2.
+
+La revision recomendada es `modelo-comun 2.1.0`: agregar los schemas neutrales
+es compatible con los tipos comunes 2.0.0 ya publicados y no reinterpreta sus
+campos. Corresponderia `3.0.0` solo si al redactarlos se cambia de forma
+incompatible un schema comun existente.
+
+El siguiente turno contractual debe republicar bajo ownership neutral las
+formas hoy publicadas por Server V2 como:
+
+- `tvp3d.server.entity_spawned/2.0.0` (`ENTITY_SPAWNED`);
+- `tvp3d.server.entity_core_state_changed/2.0.0`
+  (`ENTITY_CORE_STATE_CHANGED`);
+- `tvp3d.server.entity_despawned/2.0.0` (`ENTITY_DESPAWNED`);
+- `tvp3d.server.core_entity_state/2.0.0` (`CORE_ENTITY_STATE`).
+
+El contrato comun debe fijar los nuevos identificadores neutrales y su regla
+de migracion sin cambiar silenciosamente los identificadores anteriores. El
+contrato servidor posterior debe consumir esos schemas en vez de redefinirlos.
+No se crea dependencia directa entre `servidor` y `cliente`.

@@ -7,8 +7,9 @@ propiedad exclusiva salvo las rutas compartidas que aparecen abajo.
 
 ### modelo-comun
 
-Objetivo: definir las entidades, coordenadas, tiles, acciones y transiciones
-que comparten servidor, cliente, editor y pruebas.
+Objetivo: definir las entidades, coordenadas, tiles, acciones, transiciones y
+payloads neutrales de replicacion que comparten servidor, cliente, editor y
+pruebas.
 
 Depende de: ninguno.
 
@@ -58,6 +59,12 @@ Objetivo: presentar el mundo jugable en 3D, enviar intenciones y representar
 solo el estado confirmado por el servidor.
 
 Depende de: `modelo-comun`, `protocolo-red`, `assets`.
+
+El cliente no depende de `servidor`. Los schemas de estado replicado que
+ambos necesitan pertenecen a `modelo-comun`: servidor los produce con
+autoridad, cliente los consume sin autoridad y `protocolo-red` solo los
+transporta. Si un payload compartido aparece primero en el contrato servidor,
+debe publicarse en `modelo-comun` antes de convertirlo en dependencia cliente.
 
 Contrato: `worklog/cliente/CONTRATO.md`, con estados visuales, input,
 reconexion y limites de autoridad.
@@ -144,10 +151,33 @@ fallos y un reporte reproducible para una revision cruzada.
 
 ## Fuente de verdad del dominio
 
-Estas tablas son dato de dominio. El codigo debe cargarlas/validarlas y las
-pruebas deben generarse desde ellas; no duplicarlas en condicionales.
+Las tablas que un contrato vigente califica como normativas son datos de
+dominio: el codigo debe cargarlas/validarlas y las pruebas deben generarse
+desde ellas, sin duplicarlas en condicionales. Las tablas marcadas historicas
+se conservan como evidencia y no se cargan como autoridad V2.
 
-### Estados de conexion y mundo
+### Ownership de estados Architecture V2
+
+No existe una maquina unica que mezcle transporte, autorizacion de aplicacion
+y presentacion del mundo. Cada estado tiene un solo owner contractual:
+
+| Capa | Owner | Estados vigentes | Regla |
+|---|---|---|---|
+| Transporte Protocol V2 | `protocolo-red` | `CONNECTED`, `NEGOTIATING`, `READY`, `SYNCING`, `CLOSING`, `CLOSED` | `READY` solo significa transporte negociado; no concede autorizacion ni entrada al mundo |
+| Autorizacion de aplicacion/sesion | `servidor` | `UNBOUND`, `AUTHORIZED`, `REVOKED` en `SessionBindingV2` | Solo `AUTHORIZED` puede habilitar comandos para el actor ligado; el servidor decide la transicion |
+| Lifecycle del proceso y mundo autoritativo | `servidor` | `BOOTING`, `LOADING_DATA`, `VALIDATING_DATA`, `READY`, `DRAINING`, `STOPPED`, `FAILED` | No es el `READY` de transporte y no es estado de UI |
+| Presentacion/UX del mundo | `cliente` | Lo que publique su contrato V2, si lo necesita | Describe pantalla e interaccion local; nunca autoriza sesion, actor ni estado de gameplay |
+
+La coincidencia textual de `READY` entre dos contratos no une sus maquinas:
+siempre debe calificarse como `ProtocolConnectionStateV2.READY` o
+`ServerLifecycleStateV2.READY`.
+
+### Perfil historico de conexion/mundo 1.x
+
+La tabla siguiente se conserva como significado historico del prototipo
+propio y de su UX. Esta `SUPERSEDED` para Architecture V2: no es autoridad de
+`protocolo-red` 2.0.0, no sustituye `SessionBindingV2` y ningun agente debe
+usarla para validar una sesion o payload V2.
 
 | Estado | Evento valido | Siguiente |
 |---|---|---|
@@ -157,7 +187,18 @@ pruebas deben generarse desde ellas; no duplicarlas en condicionales.
 | `EN_MUNDO` | `CERRAR` | `DESCONECTADO` |
 | `EN_MUNDO` | `ERROR_RED` | `DESCONECTADO` |
 
-### Resolucion de una accion
+### Lifecycle interno historico de resolucion de comandos
+
+La tabla siguiente se conserva como concepto interno para describir como la
+autoridad resolvia una accion. No es la maquina de conexion de Protocol V2,
+no es una secuencia de eventos wire y no concede autoridad al cliente.
+Tampoco sus estados son valores de `CommandEnvelopeV2.type` o
+`AuthoritativeEventEnvelopeV2.type`, ni equivalen a
+`stream_id/sequence` o a la `revision` de una entidad.
+
+Si una implementacion V2 conserva este lifecycle para diagnostico interno,
+pertenece al procesamiento de comandos del `servidor`. Hacia la red solo se
+publican el evento autoritativo o el rechazo cuyo schema haya sido contratado.
 
 | Estado | Evento valido | Siguiente |
 |---|---|---|
@@ -176,13 +217,48 @@ origen; no debe convertirlo silenciosamente en `SUELO`.
 ## Grafo y olas
 
 ```text
-modelo-comun  ----> protocolo-red ----> servidor ----\
-      |                    |             cliente ----+--> integracion --> qa
-      |                    |                         /
-      +------------------> cliente                  /
-assets ------------------> servidor --------------/
-assets + modelo-comun ---> editor ----------------/
+modelo-comun ----+----> protocolo-red ----+----> servidor
+                 |                        `----> cliente
+                 +----> servidor
+                 +----> cliente
+                 `----> editor
+
+assets ----------+----> servidor
+                 +----> cliente
+                 `----> editor
+
+servidor + cliente + editor + assets ----> integracion
+
+qa depende de todos los contratos publicados.
 ```
+
+No existe arista `servidor -> cliente` ni `cliente -> servidor`. Los payloads
+compartidos de replicacion se publican una vez en `modelo-comun`; el servidor
+es su productor autoritativo, el cliente su consumidor no autoritativo y
+`protocolo-red` conserva solo framing, transporte, roles y orden de stream.
+
+Para Architecture V2, `ENTITY_SPAWNED`, `ENTITY_CORE_STATE_CHANGED`,
+`ENTITY_DESPAWNED` y el snapshot `CORE_ENTITY_STATE` requieren schemas
+neutrales en `modelo-comun`. Sus formas actuales
+`tvp3d.server.entity_spawned/2.0.0`,
+`tvp3d.server.entity_core_state_changed/2.0.0`,
+`tvp3d.server.entity_despawned/2.0.0` y
+`tvp3d.server.core_entity_state/2.0.0` quedan como publicacion inicial del
+servidor que debe migrarse, no como dependencia del cliente. Autorizacion,
+`SessionBindingV2`, procesamiento de comandos, persistencia, seleccion del
+replication set, decisiones autoritativas, `ServerErrorV2` y
+`COMMAND_REJECTED` permanecen en `servidor`.
+
+El siguiente turno contractual obligatorio es `modelo-comun 2.1.0`, antes de
+publicar Client V2. Es una ampliacion minor porque agrega schemas compartidos
+sin cambiar forma ni significado de los tipos comunes 2.0.0; una version
+`3.0.0` solo seria necesaria si ese turno rompe o reinterpreta una forma V2
+existente.
+
+Gate vigente de Architecture V2: despues de `modelo-comun 2.1.0`, el
+contrato `servidor` debe alinearse para consumir los schemas neutrales y solo
+entonces puede publicarse Client V2 contra ellos. Las olas iniciales siguientes
+se conservan como secuencia historica del andamiaje; no levantan este gate.
 
 Ola 0: publicar contratos de `modelo-comun` y `assets` en paralelo.
 
