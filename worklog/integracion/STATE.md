@@ -1,20 +1,111 @@
 # Estado: integracion
 
 Estado: LISTO_PARA_REVISION
-Ultimo agente: codex
-Ultima actualizacion: 2026-08-26T07:26:36-06:00
-Contrato publicado: SI
+Ultimo agente: claude
+Ultima actualizacion: 2026-09-10T00:45:00-06:00
+Contrato publicado: SI (`CONTRATO.md` v2.0.0)
+
+## Turno cerrado: Phase 1G — Native Integration V2
+
+- Publicado Integration V2 `2.0.0` (major) sobre `servidor 2.1.0`,
+  `cliente 2.0.0`, `editor 2.0.0` y `assets 2.0.0`. Sin dependencia normativa
+  agregada sobre `modelo-comun`/`protocolo-red`.
+- `IntegrationProfileV2` con `profile_kind` cerrado: `NATIVE_V2` (runtime
+  final Architecture V2, NO experimental) y `LEGACY_TVP_772` (explicito
+  `LEGACY/PARITY/MIGRATION`, NO runtime primario). Se invierte la relacion
+  de 1.0.0.
+- Politica de secretos no negociable: ningun perfil versionado puede
+  contener contrasenas/claves/tokens; solo nombres de variables de entorno o
+  referencias logicas. `INTEGRATION_SECRET_IN_VERSIONED_CONFIG` rechaza
+  cualquier valor con forma de secreto.
+- Politica superada explicitamente: versionar `servidor/key.pem` como clave
+  privada de desarrollo aceptable. El archivo NO se toco, borro ni inspecciono
+  este turno; queda como nota de remediacion/deuda para una limpieza
+  operativa/de seguridad futura. Ningun campo `2.0.0` porta material privado.
+- `127.0.0.1:7277` deja de ser invariante de arquitectura: host/puerto son
+  `server.bind_host`/`server.port` de configuracion (`1..65535`), con un
+  perfil de ejemplo que puede usarlos como default.
+- Publicado `DatasetBindingV2` (localizacion logica de la publicacion Assets
+  V2 sin redefinir sus schemas) y prohibicion explicita de apuntar el
+  perfil nativo a OTBM/OTB/DAT/SPR/`servidor/data/` como autoridad runtime.
+- Publicadas capas de configuracion deterministas (defaults -> perfil
+  versionado -> entorno -> CLI explicito), reglas de paths (solo
+  relativos/logicos en artefactos versionados) y orden de arranque nativo de
+  11 pasos sin inventar autorizacion de gameplay.
+- Publicadas observaciones de disponibilidad de integracion
+  (`PROCESS_STARTED`/`TRANSPORT_REACHABLE`/`PROTOCOL_NEGOTIATED`/
+  `AUTHORITATIVE_BASELINE_ACCEPTED`) sin redefinir las maquinas de estado de
+  `protocolo-red`/`servidor`/`cliente`.
+- Declarado explicitamente: `FULL_NATIVE_PLAYABLE` esta BLOQUEADO/AUN NO
+  DEFINIDO, pendiente de Authentication/Application Session y Map/World
+  Rules. El smoke nativo (arranque headless, negociacion 2.1.0, baseline
+  aceptado, apagado limpio, cero secretos) SI puede certificarse hoy.
+  Movimiento/gameplay del prototipo historico sigue siendo evidencia
+  `HISTORICAL`, nunca gate de aceptacion V2.
+- Fijado sin fallback implicito: si `NATIVE_V2` falla, falla; nunca arranca
+  `LEGACY_TVP_772` automaticamente, nunca reusa la clave RSA legacy, nunca
+  elige otro dataset/puerto sin reportarlo.
+- Roles logicos de entrypoint (`PREPARE_NATIVE`, `START_NATIVE_SERVER`,
+  `START_NATIVE_CLIENT`, `OPEN_EDITOR`, `SMOKE_NATIVE`, `STOP_NATIVE` y sus
+  equivalentes legacy) documentados separados de los nombres `.bat`
+  existentes, que no se modificaron.
+- Integration 1.0.0 preservado integro bajo
+  `HISTORICAL / SUPERSEDED — Integration 1.0.0`.
+- No se modificaron `.bat`, `project.godot`, config, Docker, escenas de
+  produccion, codigo de servidor/cliente/editor ni `servidor/key.pem`.
+
+## Dependencias downstream reportadas (Phase 1G)
+
+- **QA V2** debe materializar las fixtures de la seccion 23 del contrato:
+  perfiles minimos, ausencia de Docker/MariaDB/`key.pem` en `NATIVE_V2`,
+  rechazo de secretos/paths absolutos, puertos validos/invalidos,
+  precedencia de overrides, distincion de las cuatro observaciones de
+  disponibilidad, bloqueo de `FULL_NATIVE_PLAYABLE`, ausencia de fallback
+  automatico y preservacion de datasets/proyectos/fuentes tras apagado.
+- **Authentication / Application Session** (futuro) debe publicarse antes de
+  que cualquier smoke nativo pueda certificar gameplay autorizado.
+- **Map / World Rules Domain** (futuro) debe publicarse antes de que `MOVE`
+  o cualquier regla de mundo sea autoritativa en el smoke nativo.
+- Remediacion de seguridad pendiente (fuera de este carril): decidir
+  remocion/rotacion de `servidor/key.pem` versionado.
+
+## Decisiones Phase 1G
+
+| Decision | Motivo | Reversible |
+|---|---|---|
+| `NATIVE_V2` y `LEGACY_TVP_772` como unico registro cerrado de `profile_kind`, sin tercer valor mixto | Evita perfiles ambiguos que mezclen runtime final con oracle legacy | si, un minor futuro podria agregar otro valor explicito |
+| Politica de secretos rechaza cualquier valor con forma de secreto, no solo nombres de campo conocidos | Un campo inocuo podria terminar cargando una clave real; la deteccion por forma es mas robusta que por nombre | no |
+| `servidor/key.pem` no se toca este turno, solo se documenta como deuda | El turno es contract-only; borrar/rotar una clave es una accion operativa fuera de alcance y potencialmente destructiva | no aplica (decision de alcance) |
+| `FULL_NATIVE_PLAYABLE` declarado bloqueado explicitamente | Sin Authentication/Application Session y Map/World Rules, certificar jugabilidad completa seria una afirmacion falsa | no, hasta que esos contratos existan |
+| Roles logicos de entrypoint separados de nombres `.bat` | Permite documentar el contrato sin tocar los scripts existentes este turno | si |
+
+## Verificacion de cierre Phase 1G
+
+- 4 bloques JSON del contrato parsean.
+- Los eventos agregados son lineas JSON validas y solo se anexaron al final.
+- `git diff --check` no reporta errores en las rutas del turno.
+- Solo contrato/estado de `integracion` y el diario append-only forman parte
+  del cierre; los cambios sucios ajenos detectados al inicio quedan
+  intactos.
+- No se modificaron `.bat`, `project.godot`, Docker, escenas, codigo de
+  servidor/cliente/editor ni `servidor/key.pem`; el archivo de clave no fue
+  leido ni impreso.
+- Ningun ejemplo normativo contiene un valor de credencial/clave real.
+- Monster Domain, Monster3D y Cyclops siguen sin publicarse/implementarse.
 
 ## Depende de
 
-- `servidor`: contrato publicado.
-- `cliente`: contrato publicado.
-- `editor`: contrato publicado.
-- `assets`: contrato publicado.
+- `servidor` 2.1.0: contrato publicado.
+- `cliente` 2.0.0: contrato publicado.
+- `editor` 2.0.0: contrato publicado.
+- `assets` 2.0.0: contrato publicado.
 
 ## Le toca
 
-Ensamblar configuracion, escenas, comandos de arranque y empaquetado.
+Ensamblar configuracion, roles de entrypoint y smoke nativo sobre los
+contratos V2 publicados, manteniendo `LEGACY_TVP_772` como perfil explicito
+no primario, hasta que Authentication/Application Session y Map/World Rules
+permitan certificar `FULL_NATIVE_PLAYABLE`.
 
 ## Hecho
 
