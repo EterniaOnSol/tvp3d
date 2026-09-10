@@ -1,9 +1,11 @@
 # Contrato: servidor
 
-Version: 2.0.0
+Version: 2.1.0
 Estado: PUBLICADO
 Propietario: servidor
-Depende de: modelo-comun 2.0.0, protocolo-red 2.0.0, assets 2.0.0
+Depende de: modelo-comun 2.1.0, protocolo-red 2.1.0, assets 2.0.0
+(historial: Server V2 2.0.0 dependia de modelo-comun 2.0.0 y
+protocolo-red 2.0.0; ver seccion 18 para el analisis de compatibilidad)
 
 ## Proposito y alcance normativo
 
@@ -49,11 +51,64 @@ Server V2 consume sin redefinir de modelo-comun 2.0.0:
 
 Sus formas, rangos, orden, nulabilidad, versionado y errores siguen siendo los
 del contrato comun. El servidor no acepta una segunda forma de id, posicion,
-direccion, footprint, comando, evento o estado.
+direccion, footprint, comando, evento o estado. Ninguno de estos ocho tipos
+cambio en 2.1.0.
 
-Protocol V2 2.0.0 transporta esos envelopes y controla framing, handshake,
-roles y secuencias. Assets V2 2.0.0 publica datos importados/normalizados. El
-servidor no reimplementa ninguno de ambos contratos.
+Desde 2.1.0, Server V2 tambien consume sin redefinir de modelo-comun 2.1.0
+(seccion 8A de ese contrato) los cuatro payloads neutrales de replicacion y
+sus tres event types compartidos: `tvp3d.replication.entity_spawned/1.0.0`,
+`tvp3d.replication.entity_core_state_changed/1.0.0`,
+`tvp3d.replication.entity_despawned/1.0.0` y
+`tvp3d.replication.core_entity_state/1.0.0`. El servidor sigue siendo su
+unico productor autoritativo; modelo-comun sigue siendo el unico dueno de su
+forma y semantica. Para estos cuatro payloads, esta seccion y las secciones
+10-11 reemplazan la normativa que el servidor publicaba en 2.0.0; esa forma
+2.0.0 queda preservada solo como HISTORICAL/SUPERSEDED (ver mas abajo).
+
+Protocol V2 2.1.0 transporta esos envelopes y controla framing, handshake,
+negociacion exacta de `common_domain_version` y secuencias. Assets V2 2.0.0
+publica datos importados/normalizados. El servidor no reimplementa ninguno de
+los tres contratos.
+
+### Perfil de common domain nativo (protocolo-red 2.1.0)
+
+Protocol V2 2.1.0 exige que cada perfil de aplicacion declare
+`accepted_common_domain_versions`. El perfil nativo Architecture V2 de este
+servidor declara exactamente:
+
+```json
+{
+  "schema": "tvp3d.server.common_domain_profile",
+  "version": "2.1.0",
+  "accepted_common_domain_versions": ["2.1.0"]
+}
+```
+
+Motivo: los cuatro eventos/snapshot core autoritativos de este servidor
+dependen de los registros introducidos en modelo-comun 2.1.0
+(`ENTITY_SPAWNED`, `ENTITY_CORE_STATE_CHANGED`, `ENTITY_DESPAWNED`,
+`CORE_ENTITY_STATE`). El servidor NO DEBE anunciar `2.0.0` en este conjunto
+solo porque el transporte sepa negociarlo: capacidad de transporte no es
+compatibilidad de aplicacion.
+
+Consecuencias exactas, aplicando el algoritmo de seleccion de
+protocolo-red 2.1.0:
+
+- si el cliente ofrece unicamente `["2.0.0"]`, la interseccion con
+  `accepted_common_domain_versions=["2.1.0"]` es vacia: Protocol V2 responde
+  `COMMON_DOMAIN_VERSION_UNSUPPORTED` y cierra; esta sesion NUNCA llega a
+  READY ni a gameplay;
+- si el cliente ofrece `["2.1.0"]` o `["2.0.0","2.1.0"]`, Protocol V2
+  selecciona `2.1.0` y `SERVER_WELCOME.common_domain_version` es
+  exactamente `"2.1.0"`;
+- Protocol `READY` en esta seleccion sigue sin implicar autorizacion de
+  aplicacion; `SessionBindingV2` sigue siendo obligatorio antes de mutar
+  gameplay (seccion 7).
+
+Este perfil es una decision de la aplicacion Server V2 nativa, no una
+capacidad nueva de protocolo-red: protocolo-red 2.1.0 ya sabia negociar
+`2.0.0` y `2.1.0` antes de este turno; lo que este contrato fija es que el
+perfil nativo solo acepta `2.1.0`.
 
 ## 3. Boundary de datos publicados
 
@@ -459,7 +514,7 @@ invalido usa ProtocolErrorV2 y nunca COMMAND_REJECTED.
 
 ## 10. Registro minimo de eventos core
 
-Server V2 2.0.0 registra solo:
+Server V2 2.1.0 sigue registrando exactamente:
 
 ```text
 ENTITY_SPAWNED
@@ -469,86 +524,57 @@ COMMAND_REJECTED
 ```
 
 Todos viajan en AuthoritativeEventEnvelopeV2. No son opcodes de transporte.
+Desde 2.1.0 el servidor deja de redefinir la forma completa de los primeros
+tres: son payloads neutrales de modelo-comun 2.1.0, referenciados aqui sin
+copiarlos. `COMMAND_REJECTED` sigue siendo integramente servidor-owned.
 
-| type | payload schema | subject | subject_revision | causation |
+| type | payload schema (owner) | subject | subject_revision | causation |
 |---|---|---|---|---|
-| `ENTITY_SPAWNED` | `tvp3d.server.entity_spawned/2.0.0` | runtime id creado | `"0"` | command id o null |
-| `ENTITY_CORE_STATE_CHANGED` | `tvp3d.server.entity_core_state_changed/2.0.0` | runtime id mutado | revision resultante | command id o null |
-| `ENTITY_DESPAWNED` | `tvp3d.server.entity_despawned/2.0.0` | runtime id retirado | revision terminal | command id o null |
-| `COMMAND_REJECTED` | `tvp3d.server.command_rejected/2.0.0` | actor valido/conocido o null | null | command id obligatorio |
+| `ENTITY_SPAWNED` | `tvp3d.replication.entity_spawned/1.0.0` (modelo-comun) | runtime id creado | `"0"` | command id o null |
+| `ENTITY_CORE_STATE_CHANGED` | `tvp3d.replication.entity_core_state_changed/1.0.0` (modelo-comun) | runtime id mutado | revision resultante | command id o null |
+| `ENTITY_DESPAWNED` | `tvp3d.replication.entity_despawned/1.0.0` (modelo-comun) | runtime id retirado | revision terminal | command id o null |
+| `COMMAND_REJECTED` | `tvp3d.server.command_rejected/2.0.0` (servidor) | actor valido/conocido o null | null | command id obligatorio |
+
+El servidor solo puede producir `ENTITY_SPAWNED`, `ENTITY_CORE_STATE_CHANGED`
+y `ENTITY_DESPAWNED` dentro de una protocol session cuyo
+`SERVER_WELCOME.common_domain_version` sea exactamente `2.1.0` (perfil nativo
+de la seccion 2). Este perfil nunca deja que una sesion negociada en `2.0.0`
+llegue a READY, asi que no existe una ruta nativa para que ese caso ocurra en
+produccion; si ocurriera por un adapter transicional explicito, corresponde a
+`COMMON_DOMAIN_REGISTRY_MISMATCH` de protocolo-red, no a un error de dominio
+servidor.
 
 ### ENTITY_SPAWNED
 
-```json
-{
-  "schema": "tvp3d.server.entity_spawned",
-  "version": "2.0.0",
-  "state": {
-    "schema": "tvp3d.entity_state",
-    "version": "2.0.0",
-    "runtime_id": {
-      "scope_id": "550e8400-e29b-41d4-a716-446655440000",
-      "instance_id": "42"
-    },
-    "definition": {
-      "canonical_id": "tvp3d:entity_type:player",
-      "definition_version": "1.0.0"
-    },
-    "position": {"x": 32097, "y": 32219, "z": 7},
-    "direction": "NORTH",
-    "revision": "0"
-  }
-}
-```
-
-payload.state es AuthoritativeEntityStateV2 exacto. Envelope.subject coincide
-con state.runtime_id y subject_revision con state.revision. Una instancia
-nueva empieza en revision `0`. causation puede ser command_id o null.
+`payload` es exactamente `tvp3d.replication.entity_spawned/1.0.0` de
+modelo-comun 2.1.0: `{schema, version, state}`, con `state` igual a
+`AuthoritativeEntityStateV2`. El servidor no repite esa forma aqui;
+`worklog/modelo-comun/CONTRATO.md` seccion 8A define el objeto exacto y sus
+invariantes (revision inicial `"0"`, `envelope.subject == state.runtime_id`,
+`envelope.subject_revision == state.revision`). Regla propia del servidor:
+solo emite este evento cuando una transaccion del pipeline (seccion 8) crea
+una instancia runtime nueva con definicion resuelta; el payload no decide
+quien puede spawnear, eso es politica de dominio/servidor.
 
 ### ENTITY_CORE_STATE_CHANGED
 
-```json
-{
-  "schema": "tvp3d.server.entity_core_state_changed",
-  "version": "2.0.0",
-  "state": {
-    "schema": "tvp3d.entity_state",
-    "version": "2.0.0",
-    "runtime_id": {
-      "scope_id": "550e8400-e29b-41d4-a716-446655440000",
-      "instance_id": "42"
-    },
-    "definition": {
-      "canonical_id": "tvp3d:entity_type:player",
-      "definition_version": "1.0.0"
-    },
-    "position": {"x": 32098, "y": 32219, "z": 7},
-    "direction": "EAST",
-    "revision": "1"
-  }
-}
-```
-
-El payload lleva el estado core resultante completo, no un segundo modelo de
-entidad ni un patch ambiguo. subject/revision coinciden con state. Cada
-transaccion que cambia el core incrementa exactamente una vez la revision,
-aunque cambie posicion y direccion juntas.
+`payload` es exactamente `tvp3d.replication.entity_core_state_changed/1.0.0`
+de modelo-comun 2.1.0: estado core resultante completo, nunca un patch
+ambiguo (ver seccion 8A de modelo-comun para la prohibicion explicita de
+forma patch). Regla propia del servidor: cada transaccion atomica que cambia
+posicion y/o direccion de una instancia incrementa su revision exactamente
+una vez y emite exactamente un evento con ese estado resultante, aunque
+cambien varios campos core en la misma transaccion.
 
 ### ENTITY_DESPAWNED
 
-```json
-{
-  "schema": "tvp3d.server.entity_despawned",
-  "version": "2.0.0",
-  "reason": "REMOVED"
-}
-```
-
-`reason` solo admite `REMOVED` en 2.0.0. El servidor incrementa una vez la
-revision terminal, emite esa revision como subject_revision y elimina la
-instancia atomicamente. La ref queda retirada para siempre. Salir de un
-replication set sin destruir la instancia no se reinterpreta como despawn;
-una politica futura debe contratar ese evento.
+`payload` es exactamente `tvp3d.replication.entity_despawned/1.0.0` de
+modelo-comun 2.1.0: `{schema, version, reason}`, con `reason` unicamente
+`REMOVED` en esta version del payload neutral. Regla propia del servidor:
+incrementa una vez la revision terminal, la emite como `subject_revision` y
+retira la instancia atomicamente; la ref queda retirada para siempre. Salir
+de un replication set sin destruir la instancia no se reinterpreta como
+despawn; una politica futura debe contratar ese evento.
 
 ### Semantica de revisions y multiples sujetos
 
@@ -565,43 +591,42 @@ animacion ni assets.
 
 ## 11. Snapshot core y replication set
 
-`CoreEntityStateSnapshotV2` es el payload exacto que Protocol SNAPSHOT
-transporta con `payload_type=CORE_ENTITY_STATE` y
-`payload_version=2.0.0`:
+Protocol SNAPSHOT transporta, para este perfil nativo, exactamente:
 
-```json
-{
-  "schema": "tvp3d.server.core_entity_state",
-  "version": "2.0.0",
-  "runtime_scope_id": "550e8400-e29b-41d4-a716-446655440000",
-  "entities": [{
-    "schema": "tvp3d.entity_state",
-    "version": "2.0.0",
-    "runtime_id": {
-      "scope_id": "550e8400-e29b-41d4-a716-446655440000",
-      "instance_id": "42"
-    },
-    "definition": {
-      "canonical_id": "tvp3d:entity_type:player",
-      "definition_version": "1.0.0"
-    },
-    "position": {"x": 32097, "y": 32219, "z": 7},
-    "direction": "NORTH",
-    "revision": "0"
-  }]
-}
+```text
+payload_type    = CORE_ENTITY_STATE
+payload_version = 1.0.0
+payload schema  = tvp3d.replication.core_entity_state/1.0.0 (modelo-comun)
 ```
 
-Todos los campos son obligatorios. `entities` contiene `0..1000000`
-AuthoritativeEntityStateV2 exactos, sin runtime_id duplicados, todos en
-runtime_scope_id y ordenados por valor numerico ascendente de instance_id.
-Cada definition debe existir en DefinitionRegistry.
+El servidor deja de redefinir aqui la forma completa de ese payload;
+`worklog/modelo-comun/CONTRATO.md` seccion 8A define el objeto exacto
+(`schema`, `version`, `runtime_scope_id`, `entities[]`) y sus invariantes:
+`0..1000000` `AuthoritativeEntityStateV2` exactos, sin `runtime_id`
+duplicados, todos dentro de `runtime_scope_id`, ordenados por valor numerico
+ascendente de `instance_id`, cada `definition` resoluble por el consumidor.
+
+Lo que sigue siendo autoridad exclusiva del servidor, y que modelo-comun no
+decide:
+
+- el instante/boundary de generacion del snapshot;
+- que entidades pertenecen al replication set de esa protocol session;
+- cuando capturar un snapshot nuevo (INITIAL, gap, conflict, stale revision);
+- que cada `definition` referenciada exista en `DefinitionRegistry` antes de
+  incluirla.
 
 El payload representa el replication set autoritativo completo de esa
 protocol session en el boundary capturado; no necesariamente todas las
-entidades del mundo. El servidor elige el set. Visibilidad, regiones de
-interes y streaming espacial requieren contrato futuro; el cliente no agrega
-ni omite miembros por iniciativa propia.
+entidades del mundo. Visibilidad, regiones de interes y streaming espacial
+requieren contrato futuro; el cliente no agrega ni omite miembros por
+iniciativa propia.
+
+Un snapshot solo se transporta dentro de una protocol session cuyo
+`common_domain_version` negociado sea `2.1.0` (seccion 2); este perfil nunca
+deja llegar a READY una sesion negociada en `2.0.0`, asi que no existe una
+ruta nativa de produccion para transportar
+`tvp3d.server.core_entity_state/2.0.0` bajo 2.1.0 (forma preservada solo como
+HISTORICAL/SUPERSEDED, ver mas abajo).
 
 No contiene aliases legacy, client id, looktype, sprite, GLB, material, rig,
 clip, animacion, collider, visual bounds o transform 3D.
@@ -626,12 +651,13 @@ Ante INITIAL, gap, duplicate conflict o stale subject revision:
 2. no se aceptan, encolan ni aplican gameplay COMMAND;
 3. el servidor captura el replication set desde un unico boundary
    autoritativo, fuera de una transaccion parcialmente aplicada;
-4. valida CoreEntityStateSnapshotV2 completo;
+4. valida el snapshot neutral `tvp3d.replication.core_entity_state/1.0.0`
+   completo (seccion 11);
 5. crea un stream_id nuevo y envia Protocol SNAPSHOT con `last_sequence="0"`;
 6. ese snapshot reemplaza atomicamente el payload_type y fija baseline; el
    siguiente evento de ese stream usa sequence `"1"`.
 
-Server V2 2.0.0 no exige replay de eventos. Enviar un COMMAND durante
+Server V2 2.1.0 no exige replay de eventos. Enviar un COMMAND durante
 Protocol SYNCING es una violacion de estado protocol; si una llamada interna
 alcanza el application pipeline, recibe `SYNC_IN_PROGRESS` sin mutacion ni
 cola. PING/PONG y GOODBYE conservan su semantica de protocolo.
@@ -728,7 +754,39 @@ La implementacion futura debe cubrir, como minimo:
 - cambiar dimensiones visuales deja ocupacion byte-equivalente;
 - estado/mensaje Server 1.x no valida como schema Server V2.
 
-Son especificaciones, no tests ni implementacion de produccion en Phase 1D.
+### Fixtures agregados en Phase 1D.4 (alineacion 2.1.0)
+
+- el perfil nativo declara `accepted_common_domain_versions=["2.1.0"]`;
+- un cliente que solo ofrece `["2.0.0"]` nunca alcanza una sesion de
+  gameplay: Protocol V2 responde `COMMON_DOMAIN_VERSION_UNSUPPORTED` antes de
+  READY;
+- un cliente que ofrece `2.1.0` hace que Protocol V2 seleccione `2.1.0` y
+  `SERVER_WELCOME.common_domain_version` sea exactamente `"2.1.0"`;
+- Protocol `READY` con `SessionBindingV2.authorization_state=UNBOUND` produce
+  cero mutacion de gameplay ante cualquier COMMAND;
+- `ENTITY_SPAWNED` emitido en produccion usa el payload neutral
+  `tvp3d.replication.entity_spawned/1.0.0`, no `tvp3d.server.*`;
+- `ENTITY_CORE_STATE_CHANGED` emitido en produccion usa el payload neutral
+  `tvp3d.replication.entity_core_state_changed/1.0.0`;
+- `ENTITY_DESPAWNED` emitido en produccion usa el payload neutral
+  `tvp3d.replication.entity_despawned/1.0.0`;
+- el identificador superseded `tvp3d.server.entity_spawned/2.0.0` es
+  rechazado como forma normativa en una sesion nativa negociada en `2.1.0`;
+- `COMMAND_REJECTED` sigue usando exactamente `tvp3d.server.command_rejected/2.0.0`,
+  sin migrar al registro neutral;
+- el snapshot SNAPSHOT usa `payload_type=CORE_ENTITY_STATE`,
+  `payload_version=1.0.0` y el schema neutral `tvp3d.replication.core_entity_state/1.0.0`;
+- el payload del snapshot no cambia de forma aunque el servidor elija un
+  replication set distinto entre dos capturas;
+- un comando rechazado sigue produciendo cero mutacion de gameplay,
+  exactamente como en 2.0.0;
+- un comando aceptado sigue incrementando la revision de la entidad
+  exactamente una vez, exactamente como en 2.0.0;
+- ningun payload autoritativo (evento, snapshot, error) admite un campo
+  visual (GLB, sprite, mesh, material, rig, skeleton, clip, animacion, LOD,
+  AABB, escala visual, Blender, image-to-3D).
+
+Son especificaciones, no tests ni implementacion de produccion.
 
 ## 17. Downstream y contratos especializados faltantes
 
@@ -759,24 +817,92 @@ especializados:
 No se publican aqui. Especialmente Monster Domain, Monster3D y Cyclops siguen
 fuera de alcance.
 
-La siguiente migracion recomendada es el carril `cliente`, contract-only,
-para consumir Protocol V2, los eventos core y CORE_ENTITY_STATE sin tocar
-`mundo3d.gd` ni implementar gameplay.
+### Gate Client V2 (Phase 1D.4)
+
+Con `servidor 2.1.0` publicado sobre `modelo-comun 2.1.0` y
+`protocolo-red 2.1.0`, el siguiente carril contractual puede ser `cliente`.
+Su contrato debe depender de:
+
+```text
+modelo-comun 2.1.0
+protocolo-red 2.1.0
+assets 2.0.0
+```
+
+NO de `servidor`. El cliente consume `AuthoritativeEventEnvelopeV2` +
+`ENTITY_SPAWNED`/`ENTITY_CORE_STATE_CHANGED`/`ENTITY_DESPAWNED` neutrales y
+Protocol SNAPSHOT + `CORE_ENTITY_STATE`/1.0.0 directamente desde
+modelo-comun y protocolo-red; no importa ni depende del contrato `servidor`
+para interpretar esos payloads. El cliente si debe conocer, fuera de
+schema, que un servidor con este perfil nativo exige
+`common_domain_version=2.1.0` para llegar a gameplay, y que
+`SessionBindingV2 AUTHORIZED` sigue siendo una precondicion de aplicacion
+que el cliente no controla ni puede simular.
+
+Contract-only: este turno no modifica `cliente`, `mundo3d.gd` ni implementa
+gameplay.
 
 ## 18. Compatibilidad y migracion
 
-Server 2.0.0 es un cambio major. Server 1.x usa ids uint32 de sesion,
-HELLO/STATE/ERROR, mapa v1 y protocolo propio 1.x; ningun objeto se
-reinterpreta como V2. Un endpoint/fixture 1.x requiere adapter explicito.
+Server 2.0.0 es un cambio major frente a Server 1.x. Server 1.x usa ids
+uint32 de sesion, HELLO/STATE/ERROR, mapa v1 y protocolo propio 1.x; ningun
+objeto se reinterpreta como V2. Un endpoint/fixture 1.x requiere adapter
+explicito.
+
+### Analisis SemVer explicito: 2.0.0 -> 2.1.0
+
+Server 2.1.0 es una extension minor compatible de 2.0.0, no una
+reinterpretacion:
+
+| Superficie | Cambio en 2.1.0 | Compatible |
+|---|---|---|
+| Autoridad exclusiva (seccion 1) | ninguno | si |
+| Ocho tipos comunes core consumidos (seccion 2) | ninguno | si |
+| `AuthoritativeDatasetManifestV2`, registro de payloads, entradas rechazadas | ninguno | si |
+| `ServerLifecycleStateV2` y maquina de startup | ninguno | si |
+| Runtime scope / asignacion de instancias | ninguno | si |
+| `DefinitionRegistry` / `RuntimeEntityStore` | ninguno | si |
+| `SessionBindingV2`, sus tres estados y transiciones | ninguno | si |
+| Pipeline de comandos (13 pasos, seccion 8) | ninguno | si |
+| `ServerErrorV2`, codigos propios, `COMMAND_REJECTED` | ninguno | si |
+| `tvp3d.server.entity_spawned/2.0.0`, `tvp3d.server.entity_core_state_changed/2.0.0`, `tvp3d.server.entity_despawned/2.0.0`, `tvp3d.server.core_entity_state/2.0.0` | dejan de ser la forma normativa; se sustituyen por una migracion explicita hacia `tvp3d.replication.*/1.0.0` de modelo-comun, con campos equivalentes segun la normalizacion ya declarada por modelo-comun 2.1.0, no una reinterpretacion silenciosa | si, es una migracion declarada con tabla e HISTORICAL/SUPERSEDED (ver mas abajo) |
+| `accepted_common_domain_versions` del perfil nativo | pasa a declararse explicitamente como `["2.1.0"]` | si, es politica de aplicacion nueva, no un campo de un schema 2.0.0 existente |
+| Footprint, MOVE comun, boundary de persistencia, boundary de assets | ninguno | si |
+
+Ningun schema, rango, regla de autoridad o estado obligatorio de Server 2.0.0
+cambio de significado; los cuatro identificadores de payload de replicacion
+se reemplazan por una migracion declarada, con sus campos preservados segun
+la normalizacion de modelo-comun 2.1.0 (solo `schema`/`version` raiz
+cambian). Por eso 2.1.0 es la version correcta; no se requiere 3.0.0.
+
+### Migracion de los cuatro identificadores server-owned (D-011)
+
+| Identificador Server 2.0.0 (superseded) | Identificador neutral 2.1.0 (normativo) |
+|---|---|
+| `tvp3d.server.entity_spawned/2.0.0` | `tvp3d.replication.entity_spawned/1.0.0` |
+| `tvp3d.server.entity_core_state_changed/2.0.0` | `tvp3d.replication.entity_core_state_changed/1.0.0` |
+| `tvp3d.server.entity_despawned/2.0.0` | `tvp3d.replication.entity_despawned/1.0.0` |
+| `tvp3d.server.core_entity_state/2.0.0` | `tvp3d.replication.core_entity_state/1.0.0` |
+
+La migracion cambia solo los campos raiz `schema` y `version`; todo otro
+campo, tipo, rango, nulabilidad, orden e invariante permanece igual, segun la
+normalizacion que modelo-comun 2.1.0 ya declaro. El perfil nativo de este
+servidor (`accepted_common_domain_versions=["2.1.0"]`) NO DEBE aceptar los
+cuatro identificadores `tvp3d.server.*` como formas validas de esos tres
+eventos o del snapshot en produccion: quedan como HISTORICAL/SUPERSEDED (ver
+mas abajo) y cualquier adapter transicional que los traduzca debe ser
+explicito, nunca un alias implicito silencioso.
 
 TVP/TFS y protocolo 7.72 quedan operativos como oracle/migration bridge hasta
 Phase 10. Paridad se captura como fixture con procedencia; nunca se invoca al
 legacy para decidir una transaccion V2 en vivo.
 
 Un patch no cambia schema ni autoridad. Una minor puede agregar un codigo,
-registro o capacidad opcional solo con negociacion/rechazo seguro. Cambiar
-estado obligatorio, autoridad, lifecycle, ids, atomicidad o forma de schema
-requiere major nuevo.
+registro o capacidad opcional solo con negociacion/rechazo seguro, o
+sustituir un identificador de schema propio por una migracion explicita hacia
+un contrato owner neutral sin cambiar campos ni semantica. Cambiar estado
+obligatorio, autoridad, lifecycle, ids, atomicidad o forma/semantica de un
+schema que siga siendo servidor-owned requiere major nuevo.
 
 ## 19. Consumidores y exclusiones
 
@@ -787,6 +913,106 @@ Server V2 no expone secretos, credenciales, proveedores, storage backend,
 host/puerto final, filesystem privado, payloads no publicados, datos de
 monster/combat/item/quest, ni informacion visual. No autoriza modificar
 codigo, mapa, red, runtime legacy, `mundo3d.gd`, Monster Domain o Monster3D.
+
+## HISTORICAL / SUPERSEDED: schemas server-owned de replicacion (Server 2.0.0)
+
+Estado: `SUPERSEDED` por las secciones 10 y 11 de este contrato desde 2.1.0.
+
+Server V2 2.0.0, publicado antes de D-011, definia normativamente estos
+cuatro payloads completos. Se preservan aqui unicamente como evidencia
+historica y como base de la tabla de migracion de la seccion 18; ya NO son la
+forma normativa de `ENTITY_SPAWNED`, `ENTITY_CORE_STATE_CHANGED`,
+`ENTITY_DESPAWNED` ni del snapshot `CORE_ENTITY_STATE` bajo el perfil nativo
+2.1.0, y el perfil nativo no los acepta como entrada.
+
+### `tvp3d.server.entity_spawned/2.0.0` (superseded)
+
+```json
+{
+  "schema": "tvp3d.server.entity_spawned",
+  "version": "2.0.0",
+  "state": {
+    "schema": "tvp3d.entity_state",
+    "version": "2.0.0",
+    "runtime_id": {
+      "scope_id": "550e8400-e29b-41d4-a716-446655440000",
+      "instance_id": "42"
+    },
+    "definition": {
+      "canonical_id": "tvp3d:entity_type:player",
+      "definition_version": "1.0.0"
+    },
+    "position": {"x": 32097, "y": 32219, "z": 7},
+    "direction": "NORTH",
+    "revision": "0"
+  }
+}
+```
+
+### `tvp3d.server.entity_core_state_changed/2.0.0` (superseded)
+
+```json
+{
+  "schema": "tvp3d.server.entity_core_state_changed",
+  "version": "2.0.0",
+  "state": {
+    "schema": "tvp3d.entity_state",
+    "version": "2.0.0",
+    "runtime_id": {
+      "scope_id": "550e8400-e29b-41d4-a716-446655440000",
+      "instance_id": "42"
+    },
+    "definition": {
+      "canonical_id": "tvp3d:entity_type:player",
+      "definition_version": "1.0.0"
+    },
+    "position": {"x": 32098, "y": 32219, "z": 7},
+    "direction": "EAST",
+    "revision": "1"
+  }
+}
+```
+
+### `tvp3d.server.entity_despawned/2.0.0` (superseded)
+
+```json
+{
+  "schema": "tvp3d.server.entity_despawned",
+  "version": "2.0.0",
+  "reason": "REMOVED"
+}
+```
+
+### `tvp3d.server.core_entity_state/2.0.0` (superseded)
+
+```json
+{
+  "schema": "tvp3d.server.core_entity_state",
+  "version": "2.0.0",
+  "runtime_scope_id": "550e8400-e29b-41d4-a716-446655440000",
+  "entities": [{
+    "schema": "tvp3d.entity_state",
+    "version": "2.0.0",
+    "runtime_id": {
+      "scope_id": "550e8400-e29b-41d4-a716-446655440000",
+      "instance_id": "42"
+    },
+    "definition": {
+      "canonical_id": "tvp3d:entity_type:player",
+      "definition_version": "1.0.0"
+    },
+    "position": {"x": 32097, "y": 32219, "z": 7},
+    "direction": "NORTH",
+    "revision": "0"
+  }]
+}
+```
+
+Estos cuatro objetos son equivalentes campo a campo a sus sucesores
+neutrales, excepto por los campos raiz `schema`/`version`, segun la
+normalizacion que modelo-comun 2.1.0 ya declaro. No desaparecen del
+historial Git ni de este documento: dejan de ser la forma que el perfil
+nativo 2.1.0 produce o acepta como entrada valida.
 
 ## HISTORICAL / PARITY EVIDENCE: Server 1.1.0
 

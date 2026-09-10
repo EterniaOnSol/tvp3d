@@ -1,23 +1,95 @@
 # Estado: servidor
 
 Estado: LISTO_PARA_REVISION
-Ultimo agente: codex
-Ultima actualizacion: 2026-09-09T17:48:05-06:00
+Ultimo agente: claude
+Ultima actualizacion: 2026-09-09T23:10:00-06:00
 Contrato publicado: SI
+Version publicada: 2.1.0
 
-## Ultimo turno cerrado
+## Turno cerrado: Phase 1D.4
 
-- Phase 1D publico Authoritative Server V2 2.0.0 y conservo Server 1.1.0
-  como evidencia historica/paridad.
-- Se consumen modelo-comun 2.0.0, protocolo-red 2.0.0 y assets 2.0.0.
+- Publicado Server V2 `2.1.0` como extension minor compatible de `2.0.0`:
+  autoridad, tipos comunes core, lifecycle, runtime scope, DefinitionRegistry/
+  RuntimeEntityStore, `SessionBindingV2`, pipeline de 13 pasos, `ServerErrorV2`
+  y `COMMAND_REJECTED` no cambiaron.
+- El servidor deja de redefinir normativamente los cuatro payloads
+  `tvp3d.server.entity_spawned/2.0.0`,
+  `tvp3d.server.entity_core_state_changed/2.0.0`,
+  `tvp3d.server.entity_despawned/2.0.0` y
+  `tvp3d.server.core_entity_state/2.0.0`; ahora referencia sin copiar los
+  cuatro schemas neutrales `tvp3d.replication.*/1.0.0` de modelo-comun 2.1.0.
+  Las formas 2.0.0 quedan preservadas solo como HISTORICAL/SUPERSEDED con
+  tabla de migracion explicita (solo `schema`/`version` raiz cambian).
+- El servidor sigue siendo el unico productor autoritativo de
+  `ENTITY_SPAWNED`, `ENTITY_CORE_STATE_CHANGED` y `ENTITY_DESPAWNED`;
+  modelo-comun sigue siendo el unico dueno de su forma/semantica.
+- `COMMAND_REJECTED` permanece integramente servidor-owned
+  (`tvp3d.server.command_rejected/2.0.0`), sin moverse al registro neutral.
+- Publicado el perfil nativo `accepted_common_domain_versions=["2.1.0"]`:
+  este servidor NO acepta `2.0.0` como version de aplicacion aunque el
+  transporte protocolo-red 2.1.0 sepa negociarla. Un cliente que solo ofrezca
+  `2.0.0` nunca alcanza READY ni gameplay contra este perfil.
+- Snapshot: `payload_type=CORE_ENTITY_STATE`, `payload_version=1.0.0`,
+  schema `tvp3d.replication.core_entity_state/1.0.0`; el servidor conserva
+  autoridad exclusiva sobre boundary de generacion y seleccion del
+  replication set.
+- Agregado un `Gate Client V2` explicito: el proximo carril puede ser
+  `cliente`, dependiendo de modelo-comun 2.1.0 + protocolo-red 2.1.0 +
+  assets 2.0.0, NO de `servidor`.
 - No se modifico codigo Godot/C++/Lua, red, cliente, importadores, mapa,
   persistencia, autenticacion, gameplay ni contratos Monster.
 
+## Analisis SemVer (Phase 1D.4)
+
+- Ninguna superficie de autoridad, lifecycle, binding, pipeline o error
+  cambio; ver la tabla completa en la seccion 18 del contrato.
+- Los unicos cambios externos son: (1) migracion declarada de cuatro
+  identificadores de payload hacia sus equivalentes neutrales, con campos
+  preservados segun la normalizacion ya declarada por modelo-comun 2.1.0, y
+  (2) la declaracion explicita de `accepted_common_domain_versions` como
+  politica de aplicacion nueva, no como cambio de un schema 2.0.0 existente.
+- Conclusion: `2.1.0` es la version correcta; `3.0.0` no aplica porque no
+  hubo reinterpretacion incompatible de ningun schema/campo/regla existente.
+
 ## Depende de
 
-- `modelo-comun` 2.0.0: contrato publicado.
-- `protocolo-red` 2.0.0: contrato publicado.
-- `assets` 2.0.0: contrato publicado.
+- `modelo-comun` 2.1.0: contrato publicado.
+- `protocolo-red` 2.1.0: contrato publicado.
+- `assets` 2.0.0: contrato publicado (sin cambios).
+- Historial: Server V2 2.0.0 dependia de modelo-comun 2.0.0 y
+  protocolo-red 2.0.0; preservado en la seccion 18 del contrato.
+
+## Follow-up obligatorio Phase 1D.4
+
+- Client V2 puede comenzar como siguiente carril contractual.
+- El contrato `cliente` debe depender de modelo-comun 2.1.0,
+  protocolo-red 2.1.0 y assets 2.0.0; no de `servidor`.
+- `cliente` debe saber, fuera de schema, que este perfil de servidor exige
+  `common_domain_version=2.1.0` para llegar a gameplay y que
+  `SessionBindingV2 AUTHORIZED` sigue siendo precondicion de aplicacion.
+
+## Decisiones Phase 1D.4
+
+| Decision | Motivo | Reversible |
+|---|---|---|
+| Perfil nativo acepta unicamente `2.1.0` | Los cuatro eventos/snapshot core autoritativos dependen de registros introducidos en modelo-comun 2.1.0; anunciar 2.0.0 solo porque el transporte lo sabe negociar confundiria capacidad de transporte con compatibilidad de aplicacion | si, un perfil futuro podria aceptar ambas durante una transicion explicita |
+| Los cuatro payloads se referencian, no se copian | D-011/modelo-comun 2.1.0 ya es su unico dueno normativo; mantener dos definiciones normativas simultaneas violaria ownership | no |
+| `COMMAND_REJECTED` permanece servidor-owned | D-011 excluye explicitamente el error/politica de aplicacion del registro neutral compartido | no |
+| Las formas 2.0.0 quedan como HISTORICAL/SUPERSEDED con tabla de migracion | Preserva evidencia e historia Git sin dejarlas como normativa duplicada | no |
+
+## Verificacion de cierre Phase 1D.4
+
+- Los 12 bloques JSON del contrato parsean.
+- Los eventos agregados son lineas JSON validas y solo se anexaron al final.
+- `git diff --check` no reporta errores en las rutas del turno.
+- Solo contrato/estado de `servidor` y el diario append-only forman parte del
+  cierre; los cambios sucios ajenos detectados al inicio quedan intactos.
+- No se modifico codigo Godot/C++/Lua, red, cliente, assets ni
+  modelo-comun/protocolo-red.
+- `SessionBindingV2` y el pipeline de 13 pasos no cambiaron.
+- No se introdujo autenticacion.
+- No entraron campos visuales a ningun payload autoritativo.
+- Monster Domain, Monster3D y Cyclops siguen sin publicarse/implementarse.
 
 ## Evidencia historica / paridad
 
