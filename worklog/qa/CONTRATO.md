@@ -1,10 +1,17 @@
 # Contrato: qa
 
-Version: 2.0.0
+Version: 2.0.1
 Estado: PUBLICADO
 Propietario: qa
 Depende de: modelo-comun 2.1.0, protocolo-red 2.1.0, assets 2.0.0,
 servidor 2.1.0, cliente 2.0.0, editor 2.0.0, integracion 2.0.1
+
+Erratum de patch: `2.0.1` corrige unicamente la aritmetica de la matriz de
+cobertura de la seccion 5 (`docs/tibia3d/PHASE1_CLOSURE_REVIEW.md` seccion 6
+detecto que el total publicado en `2.0.0`, 194, no era reproducible desde los
+siete contratos fuente; el total verificado es 198). No cambia taxonomia,
+schemas, estados de resultado, codigos de salida, perfiles de suite ni
+ninguna otra decision normativa de `2.0.0`.
 
 QA V2 depende de TODOS los contratos Architecture V2 publicados hasta ahora,
 tal como fija `CARRILES.md`. No depende de ningun contrato futuro no
@@ -214,20 +221,35 @@ obligaciones de fixture ya publicadas por cada contrato.
 
 | Contrato | Version | Obligaciones publicadas | Namespace QA | Estado actual |
 |---|---|---:|---|---|
-| `modelo-comun` | `2.1.0` | 41 (ids `ID-*`, `ALIAS-*`, `POSITION-*`, `CHUNK-*`, `DIRECTION-*`, `FOOTPRINT-*`, `RUNTIME-ID-*`, `COMMAND-*`, `EVENT-*`, `OWNERSHIP-*`, `VERSION-*`, `REPL-*`) | `COMMON-*` | `SPECIFIED_NOT_MATERIALIZED` |
+| `modelo-comun` | `2.1.0` | 42 (ids `ID-*`, `ALIAS-*`, `POSITION-*`, `CHUNK-*`, `DIRECTION-*`, `FOOTPRINT-*`, `RUNTIME-ID-*`, `COMMAND-*`, `EVENT-*`, `OWNERSHIP-*`, `VERSION-*`, `REPL-*`) | `COMMON-*` | `SPECIFIED_NOT_MATERIALIZED` |
 | `protocolo-red` | `2.1.0` | 20 (10 obligaciones en prosa de framing/handshake/sync 2.0.0 + 10 ids `NEGOTIATE-*` de negociacion 2.1.0) | `PROTOCOL-*` | `SPECIFIED_NOT_MATERIALIZED` |
-| `assets` | `2.0.0` | 12 (obligaciones en prosa, seccion 18) | `ASSETS-*` | `SPECIFIED_NOT_MATERIALIZED` |
-| `servidor` | `2.1.0` | 35 (21 obligaciones en prosa base + 14 agregadas en la alineacion 2.1.0, seccion 16) | `SERVER-*` | `SPECIFIED_NOT_MATERIALIZED` |
+| `assets` | `2.0.0` | 13 (obligaciones en prosa, seccion 18) | `ASSETS-*` | `SPECIFIED_NOT_MATERIALIZED` |
+| `servidor` | `2.1.0` | 37 (23 obligaciones en prosa base, seccion 16 + 14 agregadas en la alineacion 2.1.0, subseccion "Fixtures agregados en Phase 1D.4") | `SERVER-*` | `SPECIFIED_NOT_MATERIALIZED` |
 | `cliente` | `2.0.0` | 26 (ids `CLIENT-*`, seccion 22) | `CLIENT-*` | `SPECIFIED_NOT_MATERIALIZED` |
 | `editor` | `2.0.0` | 21 (ids `EDITOR-*`, seccion 21) | `EDITOR-*` | `SPECIFIED_NOT_MATERIALIZED` |
 | `integracion` | `2.0.1` | 39 (ids `INTEGRATION-*`, seccion 23, incluida la subseccion del erratum) | `INTEGRATION-*` | `SPECIFIED_NOT_MATERIALIZED` |
 
-**Total de obligaciones especificadas: 194. Total materializadas en este
+**Total de obligaciones especificadas: 198. Total materializadas en este
 turno: 0.** Este contrato inventaria y clasifica; no ejecuta. Las
 obligaciones en prosa (assets, servidor, protocolo-red 2.0.0 base) requieren
 que QA les asigne `case_id` propio (prefijo `ASSETS-`/`SERVER-`/`PROTOCOL-`)
 antes de poder materializarse, porque el contrato origen no las enumero con
 un id individual.
+
+### Erratum de conteo 2.0.1
+
+`qa 2.0.0` publico esta misma tabla con un total de 194, resultado de un
+error aritmetico de conteo en tres filas: `modelo-comun` (41, correcto 42),
+`assets` (12, correcto 13) y `servidor` (35, correcto 37 = 23 + 14, no
+21 + 14 como se conto entonces). `protocolo-red`, `cliente`, `editor` e
+`integracion` ya eran correctos en `2.0.0` y no cambian. La revision de
+cierre de Phase 1 (`docs/tibia3d/PHASE1_CLOSURE_REVIEW.md`, seccion 6)
+detecto la discrepancia recalculando cada fila directamente desde su
+contrato fuente; este patch aplica esa correccion. La metodologia de conteo
+(mapear cada obligacion ya publicada por el contrato fuente a un `case_id`
+de QA) no cambio: solo la ejecucion aritmetica del total estaba mal en
+`2.0.0`. El total materializado sigue siendo 0 en ambas versiones; ningun
+fixture fue creado ni ejecutado por esta correccion.
 
 ## 6. Estado de resultado (`QAResultStatusV2`)
 
@@ -532,7 +554,7 @@ Este turno publica el contrato/taxonomia QA V2 unicamente. No reporta "todas
 las fixtures V2 pasaron" porque ninguna fue materializada/ejecutada. El
 cierre de este turno reporta: obligaciones inventariadas, casos
 especificados (schema/boundary), cobertura mapeada, estado de
-materializacion (`SPECIFIED_NOT_MATERIALIZED` para las 194 obligaciones).
+materializacion (`SPECIFIED_NOT_MATERIALIZED` para las 198 obligaciones).
 
 ## 21. Migracion desde QA 1.4.0
 
@@ -565,6 +587,7 @@ produccion de ningun otro carril en este turno.
 |---|---|
 | `1.0.0`..`1.4.0` | TVP 7.72 en vivo como oracle/runtime primario, paquetes/ids legacy, pruebas Docker-orientadas (ver HISTORICAL) |
 | `2.0.0` | taxonomia `TestClassV2`, `QACaseV2`/`QAReportV2`, matriz de cobertura de 194 obligaciones sobre los 7 contratos V2, invariantes cruzados, dominios bloqueados explicitos, `FULL_NATIVE_PLAYABLE` declarado bloqueado, boundary de `ParityFixtureV2` para Phase 2 |
+| `2.0.1` | erratum de patch: corrige la aritmetica de la matriz de cobertura (194 -> 198, seccion 5), sin cambiar taxonomia, schemas (`tvp3d.qa.case/2.0.0`, `tvp3d.qa.report/2.0.0`, `tvp3d.qa.parity_fixture/2.0.0`, `tvp3d.qa.error/2.0.0` sin cambios), estados de resultado, codigos de salida ni perfiles de suite. 0 materializadas, sin cambio |
 
 ## HISTORICAL / SUPERSEDED — QA 1.4.0 y anteriores
 

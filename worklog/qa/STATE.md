@@ -2,8 +2,72 @@
 
 Estado: LISTO_PARA_REVISION
 Ultimo agente: claude
-Ultima actualizacion: 2026-09-10T01:30:00-06:00
-Contrato publicado: SI (`CONTRATO.md` v2.0.0)
+Ultima actualizacion: 2026-09-10T02:45:00-06:00
+Contrato publicado: SI (`CONTRATO.md` v2.0.1)
+
+## Turno cerrado: QA 2.0.1 — Erratum de conteo de cobertura
+
+- `docs/tibia3d/PHASE1_CLOSURE_REVIEW.md` (revision de cierre de Phase 1,
+  seccion 6) recalculo la matriz de cobertura de `qa 2.0.0` directamente
+  desde los siete contratos fuente y encontro que el total publicado, 194,
+  no era reproducible. Este turno recontó de forma independiente antes de
+  corregir nada, con el mismo resultado.
+- **Conteo verificado de forma independiente en este turno** (recalculado
+  desde cada `CONTRATO.md`, no copiado de la revision de cierre):
+
+  | Contrato | 2.0.0 (incorrecto) | 2.0.1 (verificado) |
+  |---|---:|---:|
+  | `modelo-comun` | 41 | **42** |
+  | `protocolo-red` | 20 | 20 |
+  | `assets` | 12 | **13** |
+  | `servidor` | 35 | **37** (23 base + 14 Phase 1D.4, no 21+14) |
+  | `cliente` | 26 | 26 |
+  | `editor` | 21 | 21 |
+  | `integracion` | 39 | 39 |
+  | **Total** | **194** | **198** |
+
+- Corregido `worklog/qa/CONTRATO.md` seccion 5 (tabla y texto de resumen) a
+  los conteos verificados, y agregada la subseccion "Erratum de conteo
+  2.0.1" documentando exactamente que filas cambiaron y por que. Corregida
+  tambien la referencia de la seccion 20 ("Sin reclamos de ejecucion").
+- **El total materializado sigue siendo 0.** Este turno NO creo, ejecuto ni
+  modifico ningun `QACaseV2`, fixture de paridad, prueba ejecutable ni
+  archivo bajo `cliente3d/pruebas/`, `qa/` o `docs/qa/`. No se inicio Docker,
+  TVP ni Phase 2.
+- Sin cambio de taxonomia/schema: `TestClassV2`, `QAResultStatusV2`
+  (`PASS/FAIL/BLOCKED/NOT_RUN`), los codigos de salida (0/1/2/3), los cuatro
+  `SuiteProfileV2` y los cuatro schemas `tvp3d.qa.case/2.0.0`,
+  `tvp3d.qa.report/2.0.0`, `tvp3d.qa.parity_fixture/2.0.0` y
+  `tvp3d.qa.error/2.0.0` quedan exactamente iguales a `2.0.0`.
+- `FULL_NATIVE_PLAYABLE` sigue `BLOCKED`; los dominios especializados
+  faltantes (Authentication/Application Session, Map/World Rules, Combat,
+  Item/Inventory, Monster/Spawn Domain, Command Outcome neutral, visual/
+  Monster3D final) quedan exactamente igual que en `2.0.0`. Este parche
+  aritmetico no desbloquea nada de gameplay.
+- El turno historico `Phase 1H` (mas abajo) reporto honestamente 194 porque
+  era lo que su propio conteo (con el error aritmetico) producia en ese
+  momento; ese texto NO se reescribe para aparentar que ya sabia 198. La
+  correccion queda documentada aqui, como turno posterior explicito.
+- **Phase 2 queda limpia del defecto de conteo QA.** Este turno NO
+  materializo el primer fixture de paridad; esa es la recomendacion para el
+  proximo turno de `qa` (piloto pequeno sobre `LEGACY_PARITY`, por ejemplo el
+  flujo de muerte/corpse/loot que ya tiene evidencia viva documentada en
+  `docs/qa/PRUEBA_VIVA_MUERTE_LOOT.md`), no ejecutada en este turno.
+
+## Verificacion de cierre QA 2.0.1
+
+- 5 bloques JSON del contrato parsean (mismo total que 2.0.0; ningun schema
+  cambio de forma).
+- `42 + 20 + 13 + 37 + 26 + 21 + 39 = 198` verificado por suma directa.
+- Los cuatro schemas `tvp3d.qa.*` permanecen en `2.0.0`.
+- `git diff --check` no reporta errores en las rutas del turno.
+- Solo `worklog/qa/CONTRATO.md`, `worklog/qa/STATE.md` y el diario
+  append-only cambiaron; ningun otro contrato/estado de carril, prueba
+  ejecutable, `cliente3d/pruebas/`, `qa/`, `docs/qa/` ni codigo de produccion
+  se tocaron.
+- Ninguna linea historica de `worklog/EVENTS.jsonl` fue reescrita; las dos
+  lineas malformadas historicas (140-141) permanecen intactas.
+- Monster Domain, Monster3D y Cyclops siguen sin publicarse/implementarse.
 
 ## Turno cerrado: Phase 1H — QA V2 Contract / Test Taxonomy
 
@@ -85,7 +149,8 @@ esta reclasificacion no reporta que paso.
 
 ## Le toca
 
-Materializar progresivamente las 194 obligaciones especificadas
+Materializar progresivamente las 198 obligaciones especificadas (conteo
+corregido en `2.0.1`; ver "Turno cerrado: QA 2.0.1" arriba)
 (`SPECIFIED_NOT_MATERIALIZED -> MATERIALIZED`) a medida que exista
 implementacion nativa que probar, construir el corpus `ParityFixtureV2` de
 Phase 2, y mantener `FULL_NATIVE_PLAYABLE` honesto hasta que Authentication/
