@@ -2,9 +2,62 @@
 
 Estado: LISTO_PARA_REVISION
 Ultimo agente: codex
-Ultima actualizacion: 2026-09-09T06:43:44-06:00
+Ultima actualizacion: 2026-09-09T22:04:40-06:00
 Contrato publicado: SI
-Version publicada: 2.0.0
+Version publicada: 2.1.0
+
+## Turno cerrado: Phase 1D.2
+
+- Publicado `modelo-comun 2.1.0` como extension minor compatible bajo D-011.
+- Publicados `tvp3d.replication.entity_spawned/1.0.0`,
+  `tvp3d.replication.entity_core_state_changed/1.0.0`,
+  `tvp3d.replication.entity_despawned/1.0.0` y
+  `tvp3d.replication.core_entity_state/1.0.0`.
+- Registrados los event types `ENTITY_SPAWNED`,
+  `ENTITY_CORE_STATE_CHANGED` y `ENTITY_DESPAWNED` como semantica comun, no
+  opcodes; `COMMAND_REJECTED` permanece en `servidor`.
+- Registrado `CORE_ENTITY_STATE` como payload type comun de snapshot.
+- Publicadas normalizacion de migracion, errores con accion obligatoria,
+  fixtures y separacion de revisions/scope/stream.
+
+## Compatibilidad Phase 1D.2
+
+- Los schemas comunes existentes 2.0.0 conservan forma y significado.
+- Los cuatro schemas neutrales son identidades nuevas y comienzan en 1.0.0;
+  la version del contrato contenedor es 2.1.0.
+- La migracion cambia solo `schema/version` raiz; los demas campos permanecen
+  byte por byte iguales.
+- No se requiere `modelo-comun 3.0.0` porque no hubo reinterpretacion,
+  eliminacion ni cambio de rango de tipos existentes.
+
+## Follow-up obligatorio Phase 1D.2
+
+- Client V2 NO DEBE comenzar aun.
+- Siguiente carril exacto: `servidor`, contract-only.
+- Debe consumir `modelo-comun 2.1.0`, sustituir las cuatro referencias
+  `tvp3d.server.*` por los schemas neutrales, emitir
+  `CORE_ENTITY_STATE/1.0.0` y dejar de redefinir esas formas.
+- Autoridad, SessionBinding, pipeline, persistencia, seleccion del replication
+  set, `ServerErrorV2` y `COMMAND_REJECTED` permanecen en `servidor`.
+
+## Decisiones Phase 1D.2
+
+| Decision | Motivo | Reversible |
+|---|---|---|
+| Schemas neutrales empiezan en `1.0.0` | Son identidades nuevas; no heredan la version de los identificadores server-owned ni del contrato contenedor | no sin migracion de schema |
+| Registrar tres event types en comun | Productor y consumidor necesitan un token semantico neutral unico | no sin romper consumidores |
+| Mantener `COMMAND_REJECTED` fuera | D-011 conserva error/politica de aplicacion en servidor | no |
+| Migracion por normalizacion raiz | Conserva exactamente todos los campos utiles sin fingir byte-equivalencia del objeto completo | no |
+
+## Verificacion de cierre Phase 1D.2
+
+- Los 18 bloques JSON del contrato parsean.
+- Los eventos agregados son lineas JSON validas y solo se anexaron al final.
+- `git diff --check` no reporta errores en las rutas del turno.
+- Solo contrato/estado de `modelo-comun` y el diario append-only forman parte
+  del cierre; los cambios sucios ajenos detectados al inicio quedan intactos.
+- No se modifico produccion ni contratos/estados de otro carril.
+- No se publicaron Monster Domain, Monster3D, Cyclops ni eventos de gameplay.
 
 ## Turno cerrado: Phase 1A
 
@@ -43,7 +96,7 @@ comandos, eventos, ownership, versionado y errores compartidos.
 - Frontera de persistencia, exclusion visual y migracion v1 -> v2 publicadas.
 - Fixtures contractuales especificados; no se agrego codigo ni comportamiento.
 
-## Follow-up fuera de este carril
+## Follow-up fuera de este carril (Phase 1A, historico)
 
 - `protocolo-red` debe publicar un perfil V2 que consuma los envelopes y
   rechace versiones/ownership invalidos.
@@ -109,4 +162,6 @@ comandos, eventos, ownership, versionado y errores compartidos.
   los consumidores que deban rechazar entradas usan `cargar_validado()` y
   revisan `ok/error`.
 - Solo cambiaron contrato/estado de `modelo-comun` y el diario append-only.
-- Siguiente carril recomendado: `protocolo-red` para publicar su migracion V2.
+- La recomendacion original de seguir con `protocolo-red` fue cumplida y
+  queda `SUPERSEDED` por D-011; el siguiente carril vigente es `servidor`
+  para la alineacion contractual descrita al inicio.

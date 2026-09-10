@@ -1,6 +1,6 @@
 # Contrato: modelo-comun
 
-Version: 2.0.0
+Version: 2.1.0
 Estado: PUBLICADO
 Propietario: modelo-comun
 Depende de: ninguno
@@ -12,9 +12,11 @@ servidor, protocolo, cliente, assets, editor y QA compartan identidad,
 procedencia, coordenadas, ocupacion logica y estado autoritativo sin mezclar
 dominio con presentacion.
 
-Este contrato define primitivas. No define combate, inventario, IA, spawns,
-persistencia fisica, Monster Domain ni Monster3D. Un contrato especializado
-puede componer estas primitivas, pero no cambiar sus rangos o autoridad.
+Este contrato define primitivas y, desde 2.1.0, los payloads neutrales de
+replicacion core compartidos. No define combate, inventario, IA, politica de
+spawn, persistencia fisica, Monster Domain ni Monster3D. Un contrato
+especializado puede componer estas primitivas, pero no cambiar sus rangos o
+autoridad.
 
 Las palabras `DEBE`, `NO DEBE` y `SOLO` son normativas.
 
@@ -494,6 +496,321 @@ publique el protocolo.
 
 No se hace cast, copia de campos ni reinterpretacion silenciosa entre ambos.
 
+## 8A. Registro neutral de replicacion (agregado en 2.1.0)
+
+D-011 asigna a `modelo-comun` la forma y semantica de los payloads core que
+comparten productor y consumidor. Esto no cambia la autoridad:
+
+| Responsabilidad | Owner |
+|---|---|
+| forma y semantica de los cuatro payloads de esta seccion | `modelo-comun` |
+| produccion autoritativa, seleccion de replication set y decisiones | `servidor` |
+| consumo y presentacion sin autoridad | `cliente` |
+| framing, roles, stream y transporte generico EVENT/SNAPSHOT | `protocolo-red` |
+
+Los cuatro identificadores neutrales son identidades de schema nuevas y
+comienzan en `1.0.0`. La version del contrato que los registra es
+`modelo-comun 2.1.0`; ambas versiones evolucionan independientemente. No se
+usa `2.0.0` para los schemas nuevos porque ese numero pertenecia a otras
+identidades `tvp3d.server.*`, ni `2.1.0` porque la version de un schema no es
+la version de su contrato contenedor.
+
+Todo objeto de esta seccion rechaza propiedades desconocidas y usa las claves
+en el orden mostrado para serializacion canonica. Los `state` embebidos son
+exactamente `AuthoritativeEntityStateV2`
+`tvp3d.entity_state/2.0.0`: no se amplian ni reinterpretan.
+
+### Registro de event types compartidos
+
+`modelo-comun 2.1.0` registra estos tokens semanticos cerrados:
+
+| `AuthoritativeEventEnvelopeV2.type` | Payload exacto |
+|---|---|
+| `ENTITY_SPAWNED` | `tvp3d.replication.entity_spawned/1.0.0` |
+| `ENTITY_CORE_STATE_CHANGED` | `tvp3d.replication.entity_core_state_changed/1.0.0` |
+| `ENTITY_DESPAWNED` | `tvp3d.replication.entity_despawned/1.0.0` |
+
+Son event types de dominio compartido, no opcodes ni `message_kind` de
+Protocol V2. `COMMAND_REJECTED` no pertenece a este registro: su payload,
+`ServerErrorV2` y su politica permanecen exclusivamente en `servidor`.
+
+### `EntitySpawnedPayloadV1`
+
+Schema canonico: `tvp3d.replication.entity_spawned/1.0.0`.
+
+```json
+{
+  "schema": "tvp3d.replication.entity_spawned",
+  "version": "1.0.0",
+  "state": {
+    "schema": "tvp3d.entity_state",
+    "version": "2.0.0",
+    "runtime_id": {
+      "scope_id": "550e8400-e29b-41d4-a716-446655440000",
+      "instance_id": "42"
+    },
+    "definition": {
+      "canonical_id": "tvp3d:entity_type:player",
+      "definition_version": "1.0.0"
+    },
+    "position": {"x": 32097, "y": 32219, "z": 7},
+    "direction": "NORTH",
+    "revision": "0"
+  }
+}
+```
+
+| Campo | Tipo | Obligatorio | Regla |
+|---|---|---:|---|
+| `schema` | string | si | literal `tvp3d.replication.entity_spawned` |
+| `version` | SemVer | si | literal `1.0.0` |
+| `state` | `AuthoritativeEntityStateV2` | si | objeto exacto y completo |
+
+Invariantes con su `AuthoritativeEventEnvelopeV2`:
+
+- la instancia runtime nace en `state.revision="0"`;
+- `envelope.subject` coincide byte a byte con `state.runtime_id`;
+- `envelope.subject_revision` coincide con `state.revision`;
+- `causation_command_id` es uuid_v4 o `null` segun las reglas comunes;
+- el payload no decide quien puede crear una entidad: eso es politica del
+  dominio/servidor autoritativo.
+
+### `EntityCoreStateChangedPayloadV1`
+
+Schema canonico:
+`tvp3d.replication.entity_core_state_changed/1.0.0`.
+
+```json
+{
+  "schema": "tvp3d.replication.entity_core_state_changed",
+  "version": "1.0.0",
+  "state": {
+    "schema": "tvp3d.entity_state",
+    "version": "2.0.0",
+    "runtime_id": {
+      "scope_id": "550e8400-e29b-41d4-a716-446655440000",
+      "instance_id": "42"
+    },
+    "definition": {
+      "canonical_id": "tvp3d:entity_type:player",
+      "definition_version": "1.0.0"
+    },
+    "position": {"x": 32098, "y": 32219, "z": 7},
+    "direction": "EAST",
+    "revision": "1"
+  }
+}
+```
+
+| Campo | Tipo | Obligatorio | Regla |
+|---|---|---:|---|
+| `schema` | string | si | literal `tvp3d.replication.entity_core_state_changed` |
+| `version` | SemVer | si | literal `1.0.0` |
+| `state` | `AuthoritativeEntityStateV2` | si | estado core resultante completo |
+
+No existe forma patch. Omitir `definition`, `position`, `direction` o
+`revision` invalida el payload. `envelope.subject` debe coincidir byte a byte
+con `state.runtime_id` y `envelope.subject_revision` con `state.revision`.
+Una transaccion autoritativa que cambia el core incrementa la revision de la
+entidad exactamente una vez, aunque cambie posicion y direccion juntas.
+
+Un consumidor no autoritativo solo reemplaza estado por una revision
+estrictamente mayor que la conocida. Una revision repetida o decreciente se
+rechaza con `STATE_REVISION_INVALID`, sin mutacion local; si llego mediante
+Protocol V2, el consumidor sigue la recuperacion/sync de ese contrato.
+
+### `EntityDespawnedPayloadV1`
+
+Schema canonico: `tvp3d.replication.entity_despawned/1.0.0`.
+
+```json
+{
+  "schema": "tvp3d.replication.entity_despawned",
+  "version": "1.0.0",
+  "reason": "REMOVED"
+}
+```
+
+| Campo | Tipo | Obligatorio | Regla |
+|---|---|---:|---|
+| `schema` | string | si | literal `tvp3d.replication.entity_despawned` |
+| `version` | SemVer | si | literal `1.0.0` |
+| `reason` | enum | si | unico valor `REMOVED` |
+
+`envelope.subject` identifica la instancia runtime retirada y no puede ser
+`null`. `envelope.subject_revision` es su revision terminal y tampoco puede
+ser `null`. El productor incrementa la revision exactamente una vez para ese
+retiro terminal. Despawn significa eliminacion autoritativa del runtime: la
+ref no vuelve a existir ni se reutiliza.
+
+Que una entidad deje el replication set de una sesion no significa despawn.
+Entrada/salida por interest management requiere contratos futuros y no se
+normaliza a `ENTITY_SPAWNED`/`ENTITY_DESPAWNED`.
+
+### Registro de snapshot payloads
+
+`modelo-comun 2.1.0` registra el token compartido:
+
+| `Protocol SNAPSHOT.payload_type` | `payload_version` | Payload exacto |
+|---|---|---|
+| `CORE_ENTITY_STATE` | `1.0.0` | `tvp3d.replication.core_entity_state/1.0.0` |
+
+El token define el significado del payload, no un opcode. Protocol V2 solo
+transporta su envelope generico y su `last_sequence`; el servidor genera el
+payload y decide que entidades pertenecen al replication set de cada sesion.
+
+### `CoreEntityStateSnapshotPayloadV1`
+
+Schema canonico: `tvp3d.replication.core_entity_state/1.0.0`.
+
+```json
+{
+  "schema": "tvp3d.replication.core_entity_state",
+  "version": "1.0.0",
+  "runtime_scope_id": "550e8400-e29b-41d4-a716-446655440000",
+  "entities": [{
+    "schema": "tvp3d.entity_state",
+    "version": "2.0.0",
+    "runtime_id": {
+      "scope_id": "550e8400-e29b-41d4-a716-446655440000",
+      "instance_id": "42"
+    },
+    "definition": {
+      "canonical_id": "tvp3d:entity_type:player",
+      "definition_version": "1.0.0"
+    },
+    "position": {"x": 32097, "y": 32219, "z": 7},
+    "direction": "NORTH",
+    "revision": "0"
+  }]
+}
+```
+
+| Campo | Tipo | Obligatorio | Regla |
+|---|---|---:|---|
+| `schema` | string | si | literal `tvp3d.replication.core_entity_state` |
+| `version` | SemVer | si | literal `1.0.0` |
+| `runtime_scope_id` | uuid_v4 | si | epoch runtime del payload |
+| `entities` | array | si | `0..1000000` estados exactos |
+
+Invariantes:
+
+- cada `entities[i]` es `AuthoritativeEntityStateV2` exacto;
+- cada `entities[i].runtime_id.scope_id` coincide con
+  `runtime_scope_id`;
+- no hay dos `runtime_id` iguales;
+- el orden es estrictamente ascendente por el valor numerico de
+  `runtime_id.instance_id`;
+- cada par `definition.canonical_id + definition_version` debe resolverse en
+  el registro de definiciones publicado que usa el consumidor; resolverlo no
+  concede autoridad al cliente;
+- el array es el conjunto completo que el productor declara para esa
+  captura, incluidos cero elementos.
+
+Este schema no decide quien entra al conjunto. Visibilidad, radio de interes,
+streaming espacial, regiones, camera culling y seleccion del replication set
+son politica de servidor o presentacion futura, no semantica comun.
+
+### Exclusiones de los payloads neutrales
+
+Ninguno de los cuatro schemas admite aliases legacy ni campos de looktype,
+sprite, GLB, mesh, material, textura, rig, skeleton, clip, FPS, escala
+visual, AABB, collider visual, LOD, Blender, image-to-3D, transform o camara.
+Un campo visual inyectado se rechaza como `SCHEMA_FIELD_UNKNOWN`.
+
+Tampoco publican identidad, stats, IA, combate, loot, definiciones de spawn,
+estados semanticos, animaciones o comportamiento de monsters. Un futuro
+Monster Domain puede componer estas primitivas sin reabrirlas.
+
+### Contadores que no se mezclan
+
+| Concepto | Significado | Regla |
+|---|---|---|
+| `AuthoritativeEntityStateV2.revision` | orden de mutaciones de una instancia runtime | no es orden de entrega |
+| Protocol `stream_id/sequence` | orden de entrega en un stream protocol | no se copia a revision |
+| `runtime_scope_id` | epoch del runtime autoritativo | no es contador |
+| SNAPSHOT `last_sequence` | baseline del envelope Protocol V2 | queda fuera del payload comun |
+| simulation tick | no definido aqui | no se deriva |
+| persistent revision | no definido aqui | no se deriva |
+
+Ninguno se copia, iguala o deriva automaticamente de otro.
+
+### Errores de validacion de replicacion
+
+Estos codigos se publican en la extension compatible
+`tvp3d.domain_error/2.1.0`. Conserva exactamente los campos, tipos, rangos y
+acciones generales de `tvp3d.domain_error/2.0.0`; solo amplia el registro
+cerrado de `code` para validar los schemas nuevos. Un consumidor que negocio
+solo 2.0.0 no recibe estos codigos. No duplican `ProtocolErrorV2` ni
+`ServerErrorV2`. Todo rechazo conserva el payload y estado conocidos sin
+mutacion.
+
+```json
+{
+  "schema": "tvp3d.domain_error",
+  "version": "2.1.0",
+  "code": "REPLICATION_SUBJECT_MISMATCH",
+  "path": "$.subject",
+  "message": "event subject must equal payload state runtime_id"
+}
+```
+
+| Codigo | Condicion | Accion obligatoria del consumidor |
+|---|---|---|
+| `REPLICATION_SCHEMA_UNSUPPORTED` | schema/version no pertenece al registro neutral solicitado | rechazar; usar un adaptador de migracion explicito o negociar soporte |
+| `REPLICATION_PAYLOAD_INVALID` | falta un campo obligatorio, el tipo/rango es invalido o se intento una forma patch | rechazar el payload completo sin defaults |
+| `REPLICATION_SUBJECT_MISMATCH` | envelope.subject no coincide con el runtime_id del state o falta en despawn | rechazar evento; en Protocol V2 solicitar sync |
+| `REPLICATION_REVISION_MISMATCH` | envelope.subject_revision no coincide con state.revision o falta en despawn | rechazar evento; en Protocol V2 solicitar sync |
+| `REPLICATION_SCOPE_MISMATCH` | estado/snapshot usa scope distinto del runtime_scope_id esperado | rechazar payload; en Protocol V2 solicitar baseline valido |
+| `REPLICATION_INSTANCE_DUPLICATE` | snapshot repite un runtime_id | rechazar snapshot completo sin reemplazo parcial |
+| `REPLICATION_ORDER_INVALID` | entities no esta en orden numerico ascendente por instance_id | rechazar snapshot completo |
+| `REPLICATION_REASON_UNKNOWN` | despawn.reason no es `REMOVED` | rechazar evento sin retirar la instancia |
+
+Se reutilizan `SCHEMA_FIELD_UNKNOWN` para miembros extra,
+`STATE_REVISION_INVALID` para una revision repetida/decreciente,
+`DEFINITION_UNKNOWN` para referencias no resolubles y los errores existentes
+de `RuntimeInstanceRefV2` para ids mal formados.
+
+### Migracion desde identificadores publicados por Server V2
+
+La migracion es semanticamente equivalente bajo esta normalizacion unica:
+sustituir solo los campos raiz `schema` y `version` por el identificador
+neutral de la tabla. Todos los demas campos, tipos, rangos, nulabilidad,
+orden e invariantes permanecen byte por byte iguales; los objetos completos
+no son byte-identicos porque cambian esos dos strings.
+
+| Identificador inicial servidor | Identificador neutral canonico |
+|---|---|
+| `tvp3d.server.entity_spawned/2.0.0` | `tvp3d.replication.entity_spawned/1.0.0` |
+| `tvp3d.server.entity_core_state_changed/2.0.0` | `tvp3d.replication.entity_core_state_changed/1.0.0` |
+| `tvp3d.server.entity_despawned/2.0.0` | `tvp3d.replication.entity_despawned/1.0.0` |
+| `tvp3d.server.core_entity_state/2.0.0` | `tvp3d.replication.core_entity_state/1.0.0` |
+
+Los identificadores `tvp3d.server.*` no desaparecen de la historia Git.
+Quedan como identificadores de compatibilidad superseded hasta que
+`servidor` alinee su contrato. Un lector neutral no los acepta como aliases
+implicitos: un boundary transicional debe declarar y aplicar exactamente la
+normalizacion anterior.
+
+### Gate downstream
+
+Client V2 NO DEBE comenzar todavia. El siguiente carril contractual
+obligatorio es `servidor`, que debe:
+
+1. consumir `modelo-comun 2.1.0` y referenciar los tres event types neutrales;
+2. reemplazar en su registro los tres payload schemas `tvp3d.server.*` por
+   sus equivalentes `tvp3d.replication.*/1.0.0`;
+3. transportar SNAPSHOT con `payload_type=CORE_ENTITY_STATE`,
+   `payload_version=1.0.0` y el schema neutral;
+4. retirar la redefinicion server-owned de esas cuatro formas, conservando
+   una tabla de migracion/historia;
+5. conservar en `servidor` autoridad de produccion, SessionBinding,
+   autorizacion, pipeline, persistencia, seleccion de replication set,
+   `ServerErrorV2` y `COMMAND_REJECTED`.
+
+Solo despues de esa alineacion el cliente puede consumir los tres eventos y
+el snapshot sin importar ni depender del contrato `servidor`.
+
 ## 9. Metadata de ownership
 
 `OwnershipClassV2` es un enum de documentacion/schema:
@@ -672,9 +989,44 @@ comparar el `code` exacto y comprobar cero mutaciones tras rechazo.
 | `EVENT-SEQUENCE-001` | stream pasa de 1 a 3 | `EVENT_STREAM_GAP` |
 | `OWNERSHIP-001` | comando agrega `owner: SERVER` o estado confirmado | `OWNERSHIP_VIOLATION` |
 | `VERSION-001` | `1.0.0`, `2.1.0` o `3.0.0` ante lector solo 2.0.0 | `SCHEMA_VERSION_UNSUPPORTED` |
+| `REPL-SPAWN-VALID-001` | envelope + `ENTITY_SPAWNED` neutral, state revision 0 | acepta |
+| `REPL-SPAWN-REV-001` | spawned state empieza en revision 1 | `REPLICATION_PAYLOAD_INVALID` |
+| `REPL-SUBJECT-001` | envelope.subject difiere de state.runtime_id | `REPLICATION_SUBJECT_MISMATCH` |
+| `REPL-SUBJECT-REV-001` | envelope.subject_revision difiere de state.revision | `REPLICATION_REVISION_MISMATCH` |
+| `REPL-CORE-VALID-001` | changed neutral con estado resultante completo | acepta |
+| `REPL-CORE-PATCH-001` | changed omite campos de state como si fuera patch | `REPLICATION_PAYLOAD_INVALID` |
+| `REPL-CORE-STALE-001` | consumidor conoce revision mayor o igual | `STATE_REVISION_INVALID`, cero mutacion |
+| `REPL-DESPAWN-VALID-001` | subject/revision terminal + reason REMOVED | acepta y retira |
+| `REPL-DESPAWN-REASON-001` | reason distinto de REMOVED | `REPLICATION_REASON_UNKNOWN` |
+| `REPL-SNAPSHOT-EMPTY-001` | scope valido + entities vacio | acepta |
+| `REPL-SNAPSHOT-MULTI-001` | varios states del scope en orden numerico | acepta |
+| `REPL-SNAPSHOT-DUP-001` | runtime_id repetido | `REPLICATION_INSTANCE_DUPLICATE` |
+| `REPL-SNAPSHOT-SCOPE-001` | state pertenece a otro runtime_scope_id | `REPLICATION_SCOPE_MISMATCH` |
+| `REPL-SNAPSHOT-ORDER-001` | instance ids `2,10,3` | `REPLICATION_ORDER_INVALID` |
+| `REPL-VISUAL-001` | payload agrega looktype, GLB, mesh o camera | `SCHEMA_FIELD_UNKNOWN` |
+| `REPL-MIGRATION-001` | old `tvp3d.server.*` sin adapter declarado | `REPLICATION_SCHEMA_UNSUPPORTED` |
+| `REPL-TOKEN-001` | message_kind/opcode se usa como event type | `REPLICATION_SCHEMA_UNSUPPORTED` |
+| `REPL-COMMAND-REJECTED-001` | se busca COMMAND_REJECTED en registry comun | no registrado; permanece servidor-owned |
 
 La suite debe incluir tambien orden canonico de aliases/celdas, rechazo de
 campos extra y los limites exactos de todos los strings/enteros.
+
+Los fixtures `REPL-*` son especificacion contractual de `modelo-comun`.
+Materializarlos como codigo o pruebas de produccion corresponde a un turno
+posterior de QA; Phase 1D.2 no agrega implementacion.
+
+## Historial de contrato comun
+
+| Version | Publicacion |
+|---|---|
+| `2.0.0` | identidad, procedencia y primitivas core; definicion/instancia, envelopes, ownership, persistencia, errores y migracion v1 |
+| `2.1.0` | extension compatible bajo D-011: cuatro schemas neutrales de replicacion, tres event types compartidos y `CORE_ENTITY_STATE` |
+
+La publicacion 2.1.0 no cambia schema, campo, rango, nulabilidad ni significado
+de `DomainIdentityV2`, `SourceAliasV2`, `PosicionTibiaV2`, `DirectionV2`,
+`LogicalFootprintV1`, `RuntimeInstanceRefV2`, `EntityDefinitionCoreV2`,
+`AuthoritativeEntityStateV2`, `CommandEnvelopeV2` ni
+`AuthoritativeEventEnvelopeV2`. Por eso corresponde una minor y no 3.0.0.
 
 ## Compatibilidad y migracion desde 1.0.0
 
@@ -719,9 +1071,14 @@ Reglas operativas de migracion:
    declarados extensibles y con negociacion; una major cambia significado o
    forma incompatible.
 
-## Migraciones requeridas en contratos consumidores
+## Migraciones requeridas en contratos consumidores (snapshot 2.0.0)
 
-Este contrato no edita otros carriles. Deja las solicitudes precisas:
+Esta tabla conserva las solicitudes del cierre Phase 1A/2.0.0 y no reescribe
+su historia. Los contratos V2 de `protocolo-red`, `assets` y `servidor` ya
+fueron publicados despues. Para trabajo nuevo gobierna el gate 2.1.0 de la
+seccion 8A: `servidor` debe alinearse antes de Client V2.
+
+El snapshot 2.0.0 dejo estas solicitudes precisas:
 
 | Carril/contrato actual | Migracion requerida |
 |---|---|
@@ -732,9 +1089,9 @@ Este contrato no edita otros carriles. Deja las solicitudes precisas:
 | `editor 1.0.0` | Sustituir autoria permanente por `itemId` por `CanonicalDomainId`, conservando el numero original como alias/procedencia; mantener fuentes importadas read-only. |
 | `qa 1.4.0` | Materializar los fixtures de esta tabla, probar roles de emisor y diferenciar oracle TVP transicional de autoridad final Godot. |
 
-La siguiente migracion recomendada es `protocolo-red`, porque hoy declara
-dependencia directa de modelo-comun 1.0.0 y es la frontera que debe impedir
-que un comando se interprete como evento.
+La recomendacion original de migrar primero `protocolo-red` queda
+`SUPERSEDED` por los contratos ya publicados y por D-011. Se conserva para
+explicar el orden seguido; no es el siguiente carril vigente.
 
 ## Suficiencia para el futuro Monster Domain
 
