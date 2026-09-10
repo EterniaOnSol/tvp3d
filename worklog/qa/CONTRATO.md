@@ -1,10 +1,18 @@
 # Contrato: qa
 
-Version: 2.1.0
+Version: 2.1.1
 Estado: PUBLICADO
 Propietario: qa
 Depende de: modelo-comun 2.1.0, protocolo-red 2.1.0, assets 2.0.0,
 servidor 2.1.0, cliente 2.0.0, editor 2.0.0, integracion 2.0.1
+
+Erratum de patch: `2.1.1` corrige unicamente una descripcion incorrecta del
+tamano del registro de operadores de la seccion 16C. Ese registro normativo
+**siempre** tuvo nueve valores (`EQ, NE, EXISTS, NOT_EXISTS, GT, GTE, LT,
+LTE, ONE_OF`); una frase descriptiva en la fila `2.1.0` de "Historial de
+contrato de qa" decia "8 operadores" por error de conteo. Este patch corrige
+esa frase a "9 operadores". No cambia el registro, no agrega ni quita
+ningun operador, no cambia ningun schema y no cambia semantica de replay.
 
 Erratum de patch histórico: `2.0.1` corrigio unicamente la aritmetica de la
 matriz de cobertura de la seccion 5 (`docs/tibia3d/PHASE1_CLOSURE_REVIEW.md`
@@ -953,7 +961,8 @@ produccion de ningun otro carril en este turno.
 | `1.0.0`..`1.4.0` | TVP 7.72 en vivo como oracle/runtime primario, paquetes/ids legacy, pruebas Docker-orientadas (ver HISTORICAL) |
 | `2.0.0` | taxonomia `TestClassV2`, `QACaseV2`/`QAReportV2`, matriz de cobertura de 194 obligaciones sobre los 7 contratos V2, invariantes cruzados, dominios bloqueados explicitos, `FULL_NATIVE_PLAYABLE` declarado bloqueado, boundary de `ParityFixtureV2` para Phase 2 |
 | `2.0.1` | erratum de patch: corrige la aritmetica de la matriz de cobertura (194 -> 198, seccion 5), sin cambiar taxonomia, schemas (`tvp3d.qa.case/2.0.0`, `tvp3d.qa.report/2.0.0`, `tvp3d.qa.parity_fixture/2.0.0`, `tvp3d.qa.error/2.0.0` sin cambios), estados de resultado, codigos de salida ni perfiles de suite. 0 materializadas, sin cambio |
-| `2.1.0` | extension minor: publica el boundary de replay de oracle legacy `OracleObservationV1` (`tvp3d.qa.oracle_observation/1.0.0`) y `ParityExpectationV1` (`tvp3d.qa.parity_expectation/1.0.0`), el modelo de comparacion generico de 8 operadores, la regla `case_id == fixture_id` y el reuso exacto de `QACaseV2`/`QAReportV2` para replay (secciones 16A-16F). `tvp3d.qa.case/2.0.0`, `tvp3d.qa.report/2.0.0` y `tvp3d.qa.parity_fixture/2.0.0` no cambian; `tvp3d.qa.error` avanza a `2.1.0` solo para agregar `QA_OBSERVATION_INVALID` al registro cerrado. Los 4 fixtures de Phase 2A y sus conteos (198/0 V2; 4/4 paridad) no cambian; no se implementa captura/replay |
+| `2.1.0` | extension minor: publica el boundary de replay de oracle legacy `OracleObservationV1` (`tvp3d.qa.oracle_observation/1.0.0`) y `ParityExpectationV1` (`tvp3d.qa.parity_expectation/1.0.0`), el modelo de comparacion generico de 9 operadores, la regla `case_id == fixture_id` y el reuso exacto de `QACaseV2`/`QAReportV2` para replay (secciones 16A-16F). `tvp3d.qa.case/2.0.0`, `tvp3d.qa.report/2.0.0` y `tvp3d.qa.parity_fixture/2.0.0` no cambian; `tvp3d.qa.error` avanza a `2.1.0` solo para agregar `QA_OBSERVATION_INVALID` al registro cerrado. Los 4 fixtures de Phase 2A y sus conteos (198/0 V2; 4/4 paridad) no cambian; no se implementa captura/replay |
+| `2.1.1` | erratum de patch: corrige unicamente la descripcion "8 operadores" de la fila `2.1.0` a "9 operadores" (el registro normativo de la seccion 16C siempre tuvo `EQ, NE, EXISTS, NOT_EXISTS, GT, GTE, LT, LTE, ONE_OF`). Sin cambio de schema, registro ni semantica de replay |
 
 ## HISTORICAL / SUPERSEDED — QA 1.4.0 y anteriores
 

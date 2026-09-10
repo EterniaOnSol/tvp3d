@@ -2,8 +2,31 @@
 
 Estado: LISTO_PARA_REVISION
 Ultimo agente: claude
-Ultima actualizacion: 2026-09-10T03:45:00-06:00
-Contrato publicado: SI (`CONTRATO.md` v2.1.0)
+Ultima actualizacion: 2026-09-10T04:00:00-06:00
+Contrato publicado: SI (`CONTRATO.md` v2.1.1)
+
+## Turno cerrado: QA 2.1.1 — Erratum de conteo de operadores de replay
+
+- `qa 2.1.0` publico correctamente el registro normativo de nueve
+  operadores en la seccion 16C (`EQ, NE, EXISTS, NOT_EXISTS, GT, GTE, LT,
+  LTE, ONE_OF`). Una frase descriptiva (la fila `2.1.0` de "Historial de
+  contrato de qa") decia "8 operadores" por error de conteo; el evento de
+  publicacion de aquel turno en `worklog/EVENTS.jsonl` repitio el mismo
+  error descriptivo.
+- `qa 2.1.1` corrige unicamente esa frase descriptiva a "9 operadores" y
+  agrega su propia fila al historial. **No cambio ningun operador, schema
+  ni semantica de replay.** El registro de la seccion 16C es byte-a-byte el
+  mismo que en `2.1.0`.
+- La linea historica de `worklog/EVENTS.jsonl` que dice "8 operadores
+  deterministicos" NO se reescribio: es un evento append-only y se preserva
+  tal cual, con una nueva linea de aclaracion agregada a continuacion.
+- Sin cambio de conteos: obligaciones Architecture V2 siguen en 198
+  especificadas / 0 materializadas; corpus piloto `LEGACY_PARITY` sigue en
+  4 fixtures materializados. Ninguna ejecucion fresca de TVP/Docker en este
+  turno; ningun archivo bajo `qa/` ni `docs/qa/` se toco.
+- **Phase 2B.1 sigue siendo la siguiente tarea de implementacion** (captura/
+  replay controlada de TVP contra el boundary publicado en `2.1.0`), no
+  ejecutada en este turno.
 
 ## Turno cerrado: Phase 2B.0 — Boundary de replay de oracle legacy
 
