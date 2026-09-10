@@ -2,8 +2,92 @@
 
 Estado: LISTO_PARA_REVISION
 Ultimo agente: claude
-Ultima actualizacion: 2026-09-10T06:00:00-06:00
+Ultima actualizacion: 2026-09-10T07:00:00-06:00
 Contrato publicado: SI (`CONTRATO.md` v2.1.1, sin cambios en este turno)
+
+## Turno cerrado: Phase 2B.2.1 — Endurecimiento y recertificacion de la primera captura viva
+
+Detalle completo en `docs/qa/PARITY_PHASE2B21_CAPTURE_HARDENING.md`. El
+resultado de Phase 2B.2 (mas abajo) sigue siendo historico y genuino; este
+turno no lo reescribe, lo endurece y lo recertifica contra el codigo final
+exacto que se commitea.
+
+- **Motivo:** Phase 2B.2 aplico una correccion de higiene de codigo al
+  adaptador de captura **despues** de su corrida exitosa, sin recapturar.
+  Revision encontro ademas tres defectos de robustez: el nombre de corpse
+  observado se forzaba a minusculas antes de serializarse (podia ocultar
+  una diferencia real de capitalizacion de TVP); el fallback `/killall` no
+  verificaba su area real de efecto antes de emitirse; y el log de fallo de
+  personaje god enumeraba innecesariamente los demas nombres de personaje
+  de la cuenta.
+- **Fix 1:** `_emitir_observacion()` ya no aplica `.to_lower()` al nombre de
+  corpse observado; el hecho versionado preserva el string exacto del
+  servidor. La comparacion en minusculas sigue existiendo solo como logica
+  de descubrimiento interno.
+- **Fix 2:** se leyo (sin modificar)
+  `servidor/data/scripts/talkactions/god/kill_creatures.lua` y
+  `servidor/data/scripts/spells/areas.lua`: `/killall` ejecuta un Combat con
+  `AREA_SQUARE1X1` (matriz 3x3, radio Chebyshev 1) centrado en la posicion
+  propia del god, matando a todo monstruo alcanzado. Se agrego
+  `_area_de_killall_segura(centro)`: rechaza emitir `/killall` si existe
+  otra criatura viva (distinta de la rata de la corrida) dentro de ese
+  cuadrado. En la corrida de recertificacion, `/killall` no llego a
+  emitirse: la rata murio por el ataque directo antes del umbral de 6s.
+- **Fix 3:** el fallo de `TVP772_GOD_CHARACTER` no encontrado ya no imprime
+  la lista de personajes de la cuenta; mensaje generico sin metadata de
+  cuenta.
+- **Fix 4:** `wrap_live_observation.py` ahora escanea el log completo,
+  exige exactamente una linea `OBSERVATION_JSON` (rechaza 0 y 2+ como
+  ambiguo, nunca elige la primera silenciosamente), exige que el payload
+  etiquetado sea un objeto JSON, valida cada `--source-evidence` con las
+  mismas reglas repo-relativas de `OracleObservationV1`, y escribe el
+  archivo de salida de forma atomica (temporal + `os.replace`). Auto-prueba
+  nueva (`--selftest`, stdlib-only): 14/14 `OK`, codigo 0.
+- **`qa/parity/tools/replay.py` sin modificar:** no se detecto ningun
+  defecto concreto; la recertificacion usa el mismo comparador generico ya
+  commiteado en Phase 2B.1.
+- **Congelamiento y hashes:** SHA-256 de
+  `cliente3d/pruebas/prueba_parity_monster_corpse_capture.gd` y
+  `qa/parity/tools/wrap_live_observation.py` calculados antes de la corrida
+  en vivo y recalculados despues; **identicos en ambos casos**
+  (`a36a2ac4...f999b3b` y `920783f0...5769b1` respectivamente). El codigo
+  commiteado es exactamente el codigo que corrio en vivo.
+- **Recertificacion en vivo:** una ejecucion exitosa (codigo 0) contra el
+  stack de TVP que seguia arriba de Phase 2B.2 (decision previa del usuario
+  de no apagarlo). Mutacion: una rata de prueba invocada, matada por el
+  ataque directo del god (no por `/killall`, que nunca se emitio en esta
+  corrida), su corpse creado y abierto como contenedor real. Cero
+  colateral: `/killall` nunca se envio, asi que su area de efecto nunca se
+  activo. Cero jugadores murieron; no se ejecuto duelo ni reentrada.
+- **Observacion regenerada** (reemplaza, no acumula, la de Phase 2B.2 para
+  el mismo `fixture_id`):
+  `qa/parity/observations/tvp772/death_corpse_loot/live/parity-monster-corpse-001.observation.json`,
+  `source_evidence` apuntando a `docs/qa/PARITY_PHASE2B21_CAPTURE_HARDENING.md`.
+  Nombre de corpse observado crudo: `"dead rat"` (exacto, sin normalizar).
+- **Replay:** mismo comparador generico, dos corridas contra la misma
+  observacion fresca: `PASS`, `assertions_total=4`, `assertions_passed=4`,
+  codigo `0`, reporte byte-identico entre corridas.
+- `worklog/qa/CONTRATO.md` sigue en `2.1.1`, sin cambios. Los cuatro
+  `ParityFixtureV2` de Phase 2A y los cuatro `QACaseV2` de replay de Phase
+  2B.1 quedan byte-identicos.
+- El desalineamiento de mapa `0x64` no se investigo ni se toco; sigue
+  `INVESTIGACION_DESALINEAMIENTO_MAPA_0X64_PENDIENTE`.
+
+## Conteos (Phase 2B.2.1)
+
+| Inventario | Especificadas | Materializadas |
+|---|---:|---:|
+| Obligaciones de contrato Architecture V2 (`qa 2.1.1`) | 198 | 0 (sin cambio) |
+| Corpus piloto `LEGACY_PARITY` (Phase 2A) | 4 | 4 (sin cambio) |
+| Casos de replay `QACaseV2`/`ParityExpectationV1` (Phase 2B.1) | 4 | 4 (sin cambio) |
+| Observaciones `RECORDED_EVIDENCE` | 3 | 3 (sin cambio) |
+| Observaciones `LIVE_ORACLE` canonicas | 1 (`PARITY-MONSTER-CORPSE-001`) | 1 (recertificada, `PASS`; reemplaza la de Phase 2B.2 para el mismo fixture, no se suma) |
+| Ejecuciones frescas de oracle TVP en este turno | — | 1 |
+
+**Le toca:** investigar el desalineamiento de mapa `0x64` como su propia
+linea de evidencia, o evaluar si otro fixture `SINGLE_OBSERVATION` amerita
+su propio adaptador narrow siguiendo el mismo patron de congelar-hashear-
+capturar-rehashear-confirmar.
 
 ## Turno cerrado: Phase 2B.2 — Primera captura fresca de oracle TVP en vivo (EXITO)
 

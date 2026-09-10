@@ -7,7 +7,7 @@
   "capture_origin": "LIVE_ORACLE",
   "source_evidence": [
     {
-      "logical_path": "docs/qa/PARITY_PHASE2B2_LIVE_MONSTER_CORPSE.md"
+      "logical_path": "docs/qa/PARITY_PHASE2B21_CAPTURE_HARDENING.md"
     }
   ],
   "payload": {

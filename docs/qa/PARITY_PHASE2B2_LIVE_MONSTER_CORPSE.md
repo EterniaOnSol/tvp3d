@@ -1,5 +1,22 @@
 # Phase 2B.2 — Primera captura fresca de oracle TVP en vivo (monster corpse)
 
+> **Addendum (Phase 2B.2.1):** este resultado permanece historico y genuino
+> tal cual se describe abajo; no se reescribe. Sin embargo, revision
+> posterior encontro que el adaptador de captura recibio una correccion de
+> higiene de codigo **despues** de esta corrida exitosa (documentado mas
+> abajo en "Correccion de higiene de codigo sobre el propio archivo nuevo de
+> este mismo turno"), por lo que el codigo exactamente commiteado en Phase
+> 2B.2 nunca habia corrido en vivo contra TVP. Phase 2B.2.1
+> (`docs/qa/PARITY_PHASE2B21_CAPTURE_HARDENING.md`) recertifico en vivo el
+> adaptador endurecido — congelando el codigo, calculando su SHA-256,
+> corriendo la captura real, y confirmando que el hash no cambio despues —
+> y ademas corrigio tres defectos de robustez adicionales (preservacion del
+> nombre de corpse observado sin forzar minusculas, aislamiento del area
+> real de `/killall` contra dano colateral, y remocion de la enumeracion de
+> personajes de la cuenta en el log de fallo). La observacion
+> `LIVE_ORACLE` vigente para `PARITY-MONSTER-CORPSE-001` es ahora la de
+> Phase 2B.2.1, no la de este documento.
+
 Estado: **exito**. Se completo el primer ciclo real de extremo a extremo:
 
 ```

@@ -1,12 +1,20 @@
 extends Node
 
-# Captura QA-owned en vivo, solo corpse de monstruo (Phase 2B.2).
+# Captura QA-owned en vivo, solo corpse de monstruo (Phase 2B.2, endurecida
+# en Phase 2B.2.1).
 #
 # Reemplaza al modo `--solo-loot` de `prueba_muerte_loot_vivo.gd` con un
 # camino narrow que no toca al personaje normal, no arma ningun duelo y no
 # depende de la precondicion de muerte/reentrada. Conecta solo con la sesion
 # god, invoca una rata de prueba, la mata, abre su corpse y emite en stdout
 # UNA linea machine-readable con los hechos normalizados observados.
+#
+# Endurecido en Phase 2B.2.1 contra cuatro defectos de la primera version:
+# el nombre de corpse observado ya no se fuerza a minusculas antes de
+# serializarse; `/killall` no se emite si otra criatura viva distinta de la
+# rata de esta corrida esta dentro de su area real (AREA_SQUARE1X1, 3x3,
+# radio Chebyshev 1 sobre la posicion del god); y un fallo de personaje god
+# ya no enumera los demas nombres de personaje de la cuenta.
 #
 # Esta rama NO decide PASS/FAIL: eso lo hace exclusivamente
 # `qa/parity/tools/replay.py` comparando esta observacion contra la
@@ -140,11 +148,7 @@ func _al_recibir_personajes(_motd: String, personajes: Array) -> void:
 			puerto = int(p.get("puerto", 0))
 			break
 	if puerto <= 0:
-		var nombres := []
-		for p in personajes:
-			nombres.append(str(p.get("nombre", "")))
-		print("Personajes disponibles en la cuenta: %s" % str(nombres))
-		_fallar("FAIL la cuenta no tiene el personaje configurado en TVP772_GOD_CHARACTER")
+		_fallar("FAIL character configured by TVP772_GOD_CHARACTER was not found")
 		return
 	_puerto_juego = puerto
 	_entrar_al_mundo()
@@ -249,13 +253,37 @@ func _contenedor_en(posicion: Vector3i) -> Dictionary:
 	return {}
 
 
+## `/killall` (servidor/data/scripts/talkactions/god/kill_creatures.lua)
+## ejecuta un Combat con AREA_SQUARE1X1 centrado en la posicion propia de
+## quien lo dice (servidor/data/scripts/spells/areas.lua: matriz 3x3, radio
+## Chebyshev 1) y mata a todo monstruo dentro de esa area, no solo al
+## objetivo. Antes de emitirlo hay que confirmar que ninguna otra criatura
+## viva distinta de la rata de esta corrida esta dentro de esa misma area.
+func _area_de_killall_segura(centro: Vector3i) -> bool:
+	for id in _estado.criaturas:
+		if int(id) == _estado.mi_id or int(id) == _id_monstruo:
+			continue
+		var criatura: Dictionary = _estado.criaturas[id]
+		if int(criatura.get("vida", 100)) <= 0:
+			continue
+		var pos: Vector3i = criatura.get("pos", Vector3i.ZERO)
+		if pos.z != centro.z:
+			continue
+		if absi(pos.x - centro.x) <= 1 and absi(pos.y - centro.y) <= 1:
+			return false
+	return true
+
+
 func _vigilar_al_monstruo() -> void:
 	if _estado.criaturas.has(_id_monstruo) \
 			and int(_estado.criaturas[_id_monstruo].get("vida", 100)) > 0:
 		_pos_monstruo = _estado.criaturas[_id_monstruo].get("pos", _pos_monstruo)
 		if _espera > 6.0:
 			_espera = 0.0
-			_con.enviar_hablar("/killall")
+			if _area_de_killall_segura(_estado.mi_pos):
+				_con.enviar_hablar("/killall")
+			else:
+				print("  otra criatura viva esta dentro del area de /killall (AREA_SQUARE1X1, radio 1 sobre %s); no se emite para evitar dano colateral" % str(_estado.mi_pos))
 		return
 	if _corpse_monstruo.is_empty():
 		for donde in _estado.casillas:
@@ -312,11 +340,18 @@ func _al_contenedor(_id: int, datos: Dictionary) -> void:
 
 
 func _emitir_observacion() -> void:
+	## `_nombre_corpse` se serializa TAL CUAL lo emitio el servidor: la
+	## comparacion en minusculas (`.to_lower()`) solo se usa como logica de
+	## descubrimiento en `_buscar_monstruo`/`_contenedor_en` para localizar el
+	## corpse; el hecho observado versionado nunca se normaliza aca. Si TVP
+	## emitiera una capitalizacion distinta de "dead rat", esta observacion la
+	## preserva y es `qa/parity/tools/replay.py` quien decide PASS/FAIL contra
+	## la expectativa publicada, sin que la captura oculte la diferencia.
 	var payload := {
 		"monster_kind": MONSTRUO,
 		"corpse": {
 			"present": true,
-			"name": _nombre_corpse.to_lower(),
+			"name": _nombre_corpse,
 			"openable_container": true,
 		},
 	}
