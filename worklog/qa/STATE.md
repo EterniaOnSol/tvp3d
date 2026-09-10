@@ -1,28 +1,99 @@
 # Estado: qa
 
-Estado: BLOQUEADO
-Ultimo agente: codex
-Ultima actualizacion: 2026-08-29T17:08:00-06:00
-Contrato publicado: SI
+Estado: LISTO_PARA_REVISION
+Ultimo agente: claude
+Ultima actualizacion: 2026-09-10T01:30:00-06:00
+Contrato publicado: SI (`CONTRATO.md` v2.0.0)
 
-Retest preparado: la prueba reconoce el movimiento autoritativo a la cama y
-reconecta con pausa. Docker vuelve a perder el contexto/socket al reiniciar el
-servidor; la última restauración SQL confirmada dejó owner y premium en `0`.
-Acción: reparar el contexto Docker y correr el retest antes de abrir
-modal/house windows.
-- En este intento Docker reporta engine activo y TCP 7171 abierto, pero el
-  servidor no registra el login del arnés; `prueba_casa_cama_vivo.tscn` expira
-  en `login god`. No se abre el siguiente bloque hasta una conexión limpia.
+## Turno cerrado: Phase 1H — QA V2 Contract / Test Taxonomy
+
+- Publicado QA V2 `2.0.0` (major) sobre los siete contratos Architecture V2
+  vigentes: `modelo-comun 2.1.0`, `protocolo-red 2.1.0`, `assets 2.0.0`,
+  `servidor 2.1.0`, `cliente 2.0.0`, `editor 2.0.0`, `integracion 2.0.1`.
+- Publicada `TestClassV2` (`CONTRACT_FIXTURE`, `NATIVE_INTEGRATION`,
+  `LEGACY_PARITY`, `LEGACY_LIVE_MUTATING`), `QACaseV2`
+  (`tvp3d.qa.case/2.0.0`), `QAReportV2` (`tvp3d.qa.report/2.0.0`),
+  `QAResultStatusV2` (`PASS/FAIL/BLOCKED/NOT_RUN`, con `BLOCKED`/`NOT_RUN`
+  explicitamente distintos de `PASS`), codigos de salida de suite (0/1/2/3)
+  y cuatro `SuiteProfileV2` (`CONTRACT_V2`, `NATIVE_SMOKE_V2`,
+  `PARITY_TVP_772`, `LEGACY_LIVE_MANUAL`).
+- Reconstruida la matriz de cobertura leyendo los siete contratos: **194
+  obligaciones de fixture especificadas, 0 materializadas.** Ver detalle por
+  contrato en `CONTRATO.md` seccion 5.
+- Publicados 9 invariantes cruzados con `case_id` estable (`XCUT-*`):
+  scope runtime, `READY != AUTHORIZED != ACTIVE`, footprint != visual,
+  `CanonicalDomainId` != id legacy, cadena de replicacion neutral,
+  coincidencia de `common_domain_version` nativo, `SourceBindingV2` del
+  editor, ausencia de secretos, TVP/TFS como oracle no autoridad.
+- Representados explicitamente como `BLOCKED`/`CONTRACT_NOT_PUBLISHED`:
+  Authentication/Application Session, Map/World Rules, Combat,
+  Item/Inventory, Monster/Spawn Domain, Command Outcome neutral, visual/
+  Monster3D final. Ninguna prueba fue inventada para ellos.
+- Declarado explicitamente: `FULL_NATIVE_PLAYABLE` NO es una suite que pase
+  hoy; bloqueada como minimo por Authentication/Application Session y
+  Map/World Rules. Movimiento por teclado/login/combate/gameplay de
+  prototipo NO se certifican como aceptacion V2.
+- Publicado el boundary `ParityFixtureV2` (`tvp3d.qa.parity_fixture/2.0.0`)
+  para Phase 2, sin materializar el corpus completo, y el principio de que
+  la paridad TVP es evidencia (`BUG|DEBT|DELIBERATE_CHANGE`), no
+  especificacion V2 automatica.
+- Documentada la distincion `QAReportV2.status=PASS` (ejecucion) vs
+  veredicto `HECHO` de `revisar-carril` (Definicion de Hecho completa): no
+  son identicos.
+- QA 1.4.0 preservado integro bajo
+  `HISTORICAL / SUPERSEDED — QA 1.4.0 y anteriores`, con cada seccion
+  reclasificada explicitamente `LEGACY_PARITY` o `LEGACY_LIVE_MUTATING`.
+- No se implemento ninguna prueba ejecutable, no se modifico
+  `cliente3d/pruebas/`, `qa/`, `docs/qa/` ni codigo de otro carril, no se
+  inicio Docker y no se ejecuto ninguna prueba viva mutante este turno.
+
+## Reclasificacion del bloqueo historico Docker/casas-camas
+
+El bloqueo `Estado: BLOQUEADO` que encabezaba este archivo (retest de
+`prueba_casa_cama_vivo.tscn` atascado por perdida de contexto Docker, con
+`owner`/`premium` pendientes de confirmar en `0`) es un bloqueo de una
+certificacion `LEGACY_LIVE_MUTATING` especifica (casas/camas TVP 7.72), NO
+un bloqueo para publicar el contrato QA V2 de Architecture V2. Se reclasifica
+aqui explicitamente sin borrar el texto original, que queda integro debajo
+como evidencia operativa. La prueba de casas/camas SIGUE sin certificarse;
+esta reclasificacion no reporta que paso.
+
+## Verificacion de cierre Phase 1H
+
+- 5 bloques JSON del contrato (`QACaseV2`, referencia de contrato,
+  `QAReportV2`, `QAErrorV2`, `ParityFixtureV2`) parsean.
+- Los eventos agregados son lineas JSON validas y solo se anexaron al final.
+- `git diff --check` no reporta errores en las rutas del turno.
+- Solo contrato/estado de `qa` y el diario append-only forman parte del
+  cierre; los cambios sucios ajenos detectados al inicio quedan intactos.
+- No se modificaron `cliente3d/pruebas/`, `qa/`, `docs/qa/` ni contratos de
+  otro carril.
+- Ninguna dependencia normativa apunta a un contrato futuro no publicado;
+  su ausencia esta representada como `BLOCKED`.
+- `FULL_NATIVE_PLAYABLE` queda declarado bloqueado, no aprobado.
+- Monster Domain, Monster3D y Cyclops siguen sin publicarse/implementarse.
 
 ## Depende de
 
-- `assets`: contrato publicado.
-- `protocolo-red`: implementacion existente y contrato especializado en
-  `docs/tibia3d/NETWORK_PROTOCOL.md`; falta formalizar su STATE.
+- `modelo-comun` 2.1.0: contrato publicado.
+- `protocolo-red` 2.1.0: contrato publicado.
+- `assets` 2.0.0: contrato publicado.
+- `servidor` 2.1.0: contrato publicado.
+- `cliente` 2.0.0: contrato publicado.
+- `editor` 2.0.0: contrato publicado.
+- `integracion` 2.0.1: contrato publicado.
 
 ## Le toca
 
-Probar contratos, recorridos completos, concurrencia, fixtures y regresiones.
+Materializar progresivamente las 194 obligaciones especificadas
+(`SPECIFIED_NOT_MATERIALIZED -> MATERIALIZED`) a medida que exista
+implementacion nativa que probar, construir el corpus `ParityFixtureV2` de
+Phase 2, y mantener `FULL_NATIVE_PLAYABLE` honesto hasta que Authentication/
+Application Session y Map/World Rules se publiquen.
+
+Nota de cierre historica (turno anterior): el commit local `31db317`
+contiene aquel cierre; `git push` quedo bloqueado por falta de conexion a
+`github.com:443`.
 
 ## Hecho
 
