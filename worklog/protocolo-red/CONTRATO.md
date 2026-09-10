@@ -1,9 +1,11 @@
 # Contrato: protocolo-red
 
-Version: 2.0.0
+Version: 2.1.0
 Estado: PUBLICADO
 Propietario: protocolo-red
-Depende de: modelo-comun 2.0.0
+Depende de: modelo-comun 2.0.0 (obligatorio, envelopes/refs core) y
+modelo-comun 2.1.0 (negociable por sesion, payloads neutrales de
+replicacion referenciados sin copiar)
 
 ## Proposito y alcance normativo
 
@@ -35,6 +37,17 @@ Protocol V2 consume sin redefinir los schemas de modelo-comun 2.0.0:
 - AuthoritativeEventEnvelopeV2 para todo hecho del servidor;
 - PosicionTibiaV2, DirectionV2 y sus invariantes;
 - errores y ownership comunes.
+
+Estos cinco puntos no cambiaron en 2.1.0: son la dependencia obligatoria de
+cualquier sesion, sin importar que common_domain_version se negocie.
+
+Desde 2.1.0, cuando una sesion negocia `common_domain_version=2.1.0`, el
+transporte ademas referencia sin copiar los cuatro payloads neutrales y los
+tres event types registrados por modelo-comun 2.1.0 (seccion 8A de ese
+contrato) y el payload type `CORE_ENTITY_STATE`. Protocol V2 2.0.0 dependia
+unicamente de modelo-comun 2.0.0; esa dependencia historica no desaparece,
+se preserva como el piso obligatorio de toda sesion y se documenta en el
+historial de este contrato.
 
 Un campo transportado no se convierte en autoridad por cruzar la red. Un
 session_id, un id de TCP, un client id legacy, un looktype o un opcode nunca
@@ -121,7 +134,8 @@ kinds de monstruos, GLB, rigs o clips.
 ## Handshake
 
 El cliente inicia una conexion con un frame CLIENT_HELLO cuyo header ya usa
-TVP2, major 2 y minor 0. Su objeto exacto es:
+TVP2, major 2 y minor 0. Su objeto exacto, sin cambio de forma desde 2.0.0,
+es:
 
 ```json
 {
@@ -133,14 +147,79 @@ TVP2, major 2 y minor 0. Su objeto exacto es:
 }
 ```
 
+Un cliente que tambien soporta el common domain neutral publica ambas
+versiones en la misma lista ya existente, sin agregar un campo nuevo para el
+mismo concepto:
+
+```json
+{
+  "schema": "tvp3d.protocol.client_hello",
+  "version": "2.0.0",
+  "protocol_versions": [{"major": 2, "minor": 0}],
+  "common_domain_versions": ["2.0.0", "2.1.0"],
+  "capabilities": []
+}
+```
+
 protocol_versions contiene de 1 a 8 pares unicos; major/minor son uint16.
 common_domain_versions contiene de 1 a 16 SemVer unicos. capabilities
-contiene cero a 64 registry_token unicos; en 2.0.0 todos son opcionales.
-Campos extra, duplicados o listas fuera de limite son invalidos. No hay
-usuario, contrasena, token, clave ni configuracion de proveedor.
+contiene cero a 64 registry_token unicos; en 2.1.0 todos siguen siendo
+opcionales. Campos extra, duplicados o listas fuera de limite son invalidos.
+No hay usuario, contrasena, token, clave ni configuracion de proveedor.
 
-El servidor responde con SERVER_WELCOME solo si selecciona major 2, minor 0
-y common domain 2.0.0 anunciados por el cliente:
+`tvp3d.protocol.client_hello/2.0.0` sigue siendo el schema exacto y valido
+bajo el contrato de protocolo 2.1.0. El shape del objeto no cambio: lo unico
+que cambia es el conjunto de valores SemVer que un emisor puede colocar
+dentro de `common_domain_versions`, ya declarado como lista de 1..16 desde
+2.0.0, y las reglas de seleccion del receptor descritas abajo. No se publica
+`tvp3d.protocol.client_hello/2.1.0` porque no hay campo nuevo, eliminado o
+reinterpretado.
+
+### Seleccion de common domain
+
+El protocolo 2.1.0 sabe negociar exactamente estas versiones de common
+domain:
+
+```text
+2.0.0
+2.1.0
+```
+
+Ese conjunto es la capacidad del transporte, no una politica de aplicacion.
+Un perfil de servidor concreto declara, fuera de este contrato, cuales de
+esas versiones acepta esa ejecucion (`accepted_common_domain_versions`), como
+lista no vacia en orden de preferencia. Un perfil puede aceptar una sola
+version (por ejemplo unicamente `2.1.0`) o varias durante una transicion.
+
+El servidor DEBE seleccionar exactamente una version que:
+
+1. el cliente anuncio en `common_domain_versions`;
+2. el protocolo 2.1.0 sepa negociar (`2.0.0` o `2.1.0`);
+3. el perfil de la aplicacion en ejecucion acepte explicitamente.
+
+Algoritmo determinista: interseccion exacta por igualdad de string entre la
+oferta del cliente, el conjunto negociable del protocolo y
+`accepted_common_domain_versions` del perfil; el servidor elige el primer
+elemento de esa interseccion en el orden de preferencia declarado por el
+perfil. La eleccion nunca usa comparacion SemVer de compatibilidad, solo
+igualdad exacta de string y orden de preferencia declarado. Si la
+interseccion es vacia, el servidor NO DEBE inferir compatibilidad entre
+versiones "cercanas": responde `COMMON_DOMAIN_VERSION_UNSUPPORTED` si el
+frame se pudo formar y cierra sin pasar a READY. El servidor NUNCA
+selecciona una version que el cliente no anuncio, aunque el perfil la
+acepte, y NUNCA selecciona una version que el cliente si anuncio pero el
+perfil no acepta.
+
+Un cliente que solo anuncia `2.0.0` frente a un perfil que solo acepta
+`2.1.0` DEBE fallar explicitamente. Que modelo-comun describa `2.1.0` como
+una minor compatible de `2.0.0` no autoriza al servidor a asumir esa
+compatibilidad en la red: la negociacion usa solo versiones exactas
+publicadas por cada lado. Simetricamente, un cliente que solo anuncia
+`2.1.0` frente a un perfil que solo acepta `2.0.0` DEBE fallar, salvo que ese
+perfil declare `2.1.0` explicitamente dentro de su conjunto aceptado.
+
+El servidor responde con SERVER_WELCOME solo si selecciono major 2, minor 0
+y una version de common domain segun el algoritmo anterior:
 
 ```json
 {
@@ -154,13 +233,59 @@ y common domain 2.0.0 anunciados por el cliente:
 }
 ```
 
-session_id identifica esta conexion y es transitorio. runtime_scope_id es el
-scope que debe aparecer en los RuntimeInstanceRefV2 de esta sesion; lo asigna
-el servidor y tampoco sustituye una identidad canonica. El servidor devuelve
+Cuando el perfil selecciona `2.1.0`, el unico valor que cambia es
+`common_domain_version`; el shape es identico al de arriba:
+
+```json
+{
+  "schema": "tvp3d.protocol.server_welcome",
+  "version": "2.0.0",
+  "protocol_version": {"major": 2, "minor": 0},
+  "common_domain_version": "2.1.0",
+  "session_id": "9b7d8c4e-8e64-4f3b-a9e6-5efc17a8b2d1",
+  "runtime_scope_id": "550e8400-e29b-41d4-a716-446655440000",
+  "capabilities": []
+}
+```
+
+`tvp3d.protocol.server_welcome/2.0.0` sigue siendo el schema exacto bajo
+protocolo 2.1.0 por la misma razon que `client_hello`: el shape no cambia,
+solo el valor negociado que ya vivia en `common_domain_version`.
+`runtime_scope_id` no cambia de semantica: sigue siendo el scope que debe
+aparecer en los `RuntimeInstanceRefV2` de esta sesion, asignado por el
+servidor, y sigue sin sustituir una identidad canonica. Este handshake no
+agrega autenticacion de usuario ni credenciales.
+
+session_id identifica esta conexion y es transitorio. El servidor devuelve
 solo capacidades que selecciono de la oferta. Si no hay interseccion de
-versiones, envia COMMON_DOMAIN_VERSION_UNSUPPORTED si puede y cierra. No hay
-downgrade silencioso. READY significa protocolo negociado, no autenticacion
-de usuario; autenticacion es una preocupacion separada.
+versiones validas segun el algoritmo anterior, envia
+COMMON_DOMAIN_VERSION_UNSUPPORTED si puede y cierra. No hay downgrade
+silencioso ni inferencia SemVer implicita. READY significa protocolo
+negociado, no autenticacion de usuario; autenticacion es una preocupacion
+separada.
+
+### Registro neutral habilitado por `common_domain_version`
+
+El valor de `common_domain_version` seleccionado en el handshake fija que
+registros de modelo-comun puede usar esa sesion. El protocolo no redefine
+esos payloads, solo referencia su schema y los deja pasar o los rechaza segun
+la version negociada:
+
+| `common_domain_version` seleccionado | Registros disponibles en la sesion |
+|---|---|
+| `2.0.0` | Solo los tipos de modelo-comun 2.0.0. `ENTITY_SPAWNED`, `ENTITY_CORE_STATE_CHANGED`, `ENTITY_DESPAWNED` y el snapshot `CORE_ENTITY_STATE` no estan habilitados |
+| `2.1.0` | Todo lo de 2.0.0 mas los tres event types neutrales y `CORE_ENTITY_STATE` registrados por modelo-comun 2.1.0 |
+
+Un EVENT con `type=ENTITY_SPAWNED`/`ENTITY_CORE_STATE_CHANGED`/
+`ENTITY_DESPAWNED`, cuyo payload es exactamente
+`tvp3d.replication.*/1.0.0` de modelo-comun, o un SNAPSHOT con
+`payload_type=CORE_ENTITY_STATE` y `payload_version=1.0.0`, son validos solo
+en una sesion que negocio `common_domain_version=2.1.0`. El envelope EVENT
+sigue siendo exactamente `AuthoritativeEventEnvelopeV2` y el envelope
+SNAPSHOT sigue siendo el generico de este contrato; protocolo-red no
+redefine ninguno de los dos ni copia el payload de modelo-comun. Un emisor
+que use esos tokens en una sesion negociada en `2.0.0` produce
+`COMMON_DOMAIN_REGISTRY_MISMATCH` sin mutar el mundo.
 
 ## Maquina de estados de conexion
 
@@ -323,18 +448,22 @@ suficientemente confiable; nunca se salta byte ni se reinterpreta.
 | PAYLOAD_NOT_OBJECT | JSON array/primitive | si | obligatorio si frame valido |
 | JSON_NESTING_EXCEEDED | profundidad >32 | si | obligatorio si frame valido |
 | MESSAGE_SCHEMA_INVALID | schema/protocolo malformado | segun estado | obligatorio si frame valido |
-| COMMON_DOMAIN_VERSION_UNSUPPORTED | handshake sin 2.0.0 | si | permitido |
+| COMMON_DOMAIN_VERSION_UNSUPPORTED | sin interseccion exacta entre la oferta del cliente, las versiones que el protocolo sabe negociar (2.0.0/2.1.0) y las que acepta el perfil del servidor | si | permitido |
 | ROLE_VIOLATION | direccion ilegal | si | obligatorio |
 | HANDSHAKE_REQUIRED | mensaje antes de hello | si | obligatorio |
 | HANDSHAKE_DUPLICATE | hello/welcome repetido | si | obligatorio |
 | SESSION_SCOPE_MISMATCH | ref fuera del scope asignado | si | obligatorio |
 | SYNC_REQUIRED | receptor debe obtener snapshot | no | obligatorio |
+| COMMON_DOMAIN_REGISTRY_MISMATCH | EVENT.type o SNAPSHOT.payload_type pertenece a un registro de modelo-comun de una common_domain_version distinta de la negociada en esta sesion | no | permitido |
 
 MESSAGE_SCHEMA_INVALID en NEGOTIATING es fatal. En READY solo cubre forma
 del envelope de protocolo y es no fatal; un CommandEnvelopeV2 con reglas o
 tipo de dominio rechazado se devuelve como error del dominio, no como error
-de framing. SYNC_REQUIRED no muta estado y deja la conexion en SYNCING. Todo
-error fatal pasa por CLOSING y luego CLOSED.
+de framing. SYNC_REQUIRED no muta estado y deja la conexion en SYNCING.
+COMMON_DOMAIN_REGISTRY_MISMATCH es distinto de MESSAGE_SCHEMA_INVALID: el
+envelope tiene forma valida, pero el token no pertenece al registro que la
+`common_domain_version` de esa sesion habilito; no muta el mundo y no cierra
+por si solo. Todo error fatal pasa por CLOSING y luego CLOSED.
 
 ## Ownership y limites de protocolo
 
@@ -352,7 +481,7 @@ El cliente no puede enviar EVENT ni marcar un campo como SERVER para confirmar
 estado. Protocol V2 no contiene rutas .glb, nombres de materiales, texturas,
 skeletons, animaciones, Blender, Astra ni dimensiones visuales.
 
-## Limites exactos 2.0.0
+## Limites exactos (vigentes desde 2.0.0, sin cambios en 2.1.0)
 
 - payload maximo: 262144 bytes UTF-8;
 - frame maximo: 262160 bytes;
@@ -375,6 +504,26 @@ flags futuros o kinds no registrados. Cambios compatibles pueden publicarse
 como minor solo si mantienen header, invariantes y rechazo seguro; un cambio
 de framing, autoridad o significado obligatorio exige major nuevo.
 
+2.1.0 aplica esa misma regla de minor compatible. El header de 16 bytes, el
+registro cerrado de message kinds, `CommandEnvelopeV2`,
+`AuthoritativeEventEnvelopeV2`, el envelope generico de SNAPSHOT, PING/PONG,
+GOODBYE, SYNC_REQUEST y la maquina de estados de conexion no cambiaron; el
+frame sigue siendo `protocol_major=2`, `protocol_minor=0`. La unica
+extension es que el handshake ahora puede negociar explicitamente
+`common_domain_version=2.1.0` ademas de `2.0.0`, con el algoritmo de
+seleccion exacta y el gate de registro neutral descritos arriba. Ningun
+objeto 2.0.0 existente cambio forma o significado; por eso corresponde una
+minor y no una major. Si una revision futura necesitara cambiar el framing,
+un kind, un envelope existente o la maquina de estados, esa revision
+exigiria un major nuevo, no otra minor.
+
+## Historial de contrato de protocolo-red (Protocol V2)
+
+| Version | Publicacion |
+|---|---|
+| `2.0.0` | Frame TVP2 de 16 bytes, registro cerrado de kinds, handshake, roles, maquina de estados, sync por snapshot y errores propios sobre modelo-comun 2.0.0 |
+| `2.1.0` | Handshake capaz de negociar explicitamente modelo-comun 2.0.0 o 2.1.0 con seleccion exacta sin inferencia SemVer, gate de registro neutral de replicacion por sesion (`COMMON_DOMAIN_REGISTRY_MISMATCH`); ningun frame, kind, envelope o estado de 2.0.0 cambio |
+
 Migracion:
 
 1. Protocol 1.x (modelo-comun 1.0.0) queda congelado como prototipo y fixture.
@@ -386,12 +535,33 @@ Migracion:
    no hace que un endpoint 1.x sea V2.
 5. El adapter TVP 7.72 permanece separado hasta Phase 10 y sigue siendo oracle,
    fuente de fixtures y puente temporal.
+6. Un consumidor que negocie `common_domain_version=2.1.0` referencia los
+   payloads neutrales publicados por modelo-comun 2.1.0 sin copiarlos a este
+   contrato; protocolo-red no redefine su forma ni su significado.
 
 Migraciones downstream requeridas: servidor, cliente, qa y cualquier
 integracion que consuma el framing 1.6.0 deben publicar contratos/fixtures que
 declaren dependencia protocolo-red 2.0.0; assets solo debe mapear identidades
 de dominio a visuales en su propio contrato, nunca agregar GLB al payload
 comun. No se cambia ninguno de esos carriles en esta fase.
+
+## Gate downstream Phase 1D.3
+
+Client V2 NO DEBE comenzar todavia. El siguiente carril contractual
+obligatorio es `servidor`, que debe alinearse a la vez a:
+
+- `modelo-comun 2.1.0`;
+- este contrato `protocolo-red 2.1.0` (negociacion exacta y gate de
+  registro);
+- `assets 2.0.0`;
+
+y reemplazar en su propio registro los cuatro identificadores server-owned
+(`tvp3d.server.entity_spawned/2.0.0`, `tvp3d.server.entity_core_state_changed/2.0.0`,
+`tvp3d.server.entity_despawned/2.0.0`, `tvp3d.server.core_entity_state/2.0.0`)
+por los equivalentes neutrales `tvp3d.replication.*/1.0.0`, declarando ademas
+que perfil de `accepted_common_domain_versions` corre en produccion. Solo
+despues de esa alineacion el cliente puede negociar `common_domain_version`
+y consumir eventos/snapshot neutrales sin importar el contrato `servidor`.
 
 ## Plan de fixtures y validacion contractual
 
@@ -413,6 +583,26 @@ La suite futura de qa/protocolo-red debe especificar y congelar fixtures para:
 
 Estas son especificaciones de contrato; este turno no implementa tests ni
 produccion.
+
+### Fixtures de negociacion common domain (2.1.0)
+
+| Fixture | Caso minimo | Resultado obligatorio |
+|---|---|---|
+| `NEGOTIATE-EXACT-001` | cliente ofrece `["2.0.0"]`, perfil acepta `["2.0.0"]` | selecciona `2.0.0` |
+| `NEGOTIATE-EXACT-002` | cliente ofrece `["2.0.0","2.1.0"]`, perfil acepta `["2.1.0"]` | selecciona `2.1.0` |
+| `NEGOTIATE-FAIL-001` | cliente ofrece `["2.0.0"]`, perfil acepta `["2.1.0"]` | `COMMON_DOMAIN_VERSION_UNSUPPORTED`, cierre, cero mutacion de gameplay |
+| `NEGOTIATE-FAIL-002` | cliente ofrece `["2.1.0"]`, perfil acepta `["2.0.0"]` | `COMMON_DOMAIN_VERSION_UNSUPPORTED`, salvo que el perfil declare `2.1.0` explicitamente en su conjunto aceptado |
+| `NEGOTIATE-NOT-OFFERED-001` | cliente ofrece `["2.0.0"]`, perfil acepta `["2.0.0","2.1.0"]` | selecciona `2.0.0`; el servidor nunca elige `2.1.0` porque el cliente no lo anuncio |
+| `NEGOTIATE-WELCOME-001` | cualquier seleccion valida de los casos anteriores | `SERVER_WELCOME.common_domain_version` es exactamente la version seleccionada, byte a byte |
+| `NEGOTIATE-REGISTRY-001` | sesion negociada en `2.1.0` + EVENT `type=ENTITY_SPAWNED` con payload `tvp3d.replication.entity_spawned/1.0.0` | el transporte acepta el envelope y la referencia de schema sin redefinirla |
+| `NEGOTIATE-REGISTRY-002` | sesion negociada en `2.0.0` + intento de usar `ENTITY_SPAWNED`, `ENTITY_CORE_STATE_CHANGED`, `ENTITY_DESPAWNED` o `payload_type=CORE_ENTITY_STATE` | `COMMON_DOMAIN_REGISTRY_MISMATCH`, cero mutacion |
+| `NEGOTIATE-SNAPSHOT-001` | sesion negociada en `2.1.0` + SNAPSHOT con `payload_type=CORE_ENTITY_STATE`, `payload_version=1.0.0` | transportable sin cambios al envelope generico de SNAPSHOT |
+| `NEGOTIATE-FRAME-001` | header de cualquier frame producido bajo este contrato | bytes identicos al header 2.0.0: magic `TVP2`, `protocol_major=2`, `protocol_minor=0`, mismos offsets y tamanos |
+
+La suite tambien debe repetir, sin cambios de resultado esperado, los casos
+de fragmentacion, framing invalido, roles y sync ya especificados arriba con
+ambas versiones de common domain seleccionadas. Estas son especificaciones
+de contrato; `qa` las materializa en un turno posterior.
 
 ## Perfil historico Protocol 1.x
 

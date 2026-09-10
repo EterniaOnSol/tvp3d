@@ -1,11 +1,78 @@
 # Estado: protocolo-red
 
 Estado: LISTO_PARA_REVISION
-Ultimo agente: codex
-Ultima actualizacion: 2026-09-09T16:35:03-06:00
+Ultimo agente: claude
+Ultima actualizacion: 2026-09-09T22:30:00-06:00
 Contrato publicado: SI
+Version publicada: 2.1.0
 
-## Ultimo turno cerrado
+## Turno cerrado: Phase 1D.3
+
+- Publicado `protocolo-red 2.1.0` como extension minor compatible: header de
+  16 bytes, registro cerrado de kinds, `CommandEnvelopeV2`,
+  `AuthoritativeEventEnvelopeV2`, el envelope generico de SNAPSHOT,
+  PING/PONG, GOODBYE, SYNC_REQUEST y la maquina de estados no cambiaron.
+- El handshake ahora sabe negociar explicitamente `common_domain_version`
+  `2.0.0` o `2.1.0`. La seleccion es interseccion exacta por string entre
+  la oferta del cliente, el conjunto negociable del protocolo y
+  `accepted_common_domain_versions` del perfil de servidor, sin inferencia
+  SemVer de compatibilidad y sin downgrade silencioso.
+- `tvp3d.protocol.client_hello/2.0.0` y `tvp3d.protocol.server_welcome/2.0.0`
+  siguen siendo los schemas exactos: ningun campo nuevo, el shape no cambio.
+- Se documenta que registros de modelo-comun habilita cada
+  `common_domain_version` seleccionado y se agrega
+  `COMMON_DOMAIN_REGISTRY_MISMATCH` para el uso de tokens 2.1.0-only en una
+  sesion negociada en 2.0.0.
+- EVENT y SNAPSHOT siguen sin redefinirse; los payloads neutrales de
+  modelo-comun 2.1.0 solo se referencian por nombre/version.
+- Publicadas 10 fixtures de negociacion y migracion/historial explicitos.
+
+## Compatibilidad Phase 1D.3
+
+- El frame no cambio: sigue `protocol_major=2`, `protocol_minor=0`, header de
+  16 bytes byte a byte identico a 2.0.0.
+- Ningun kind, envelope existente o estado de conexion 2.0.0 cambio forma o
+  significado; por eso corresponde una minor y no una major.
+- La unica extension es la capacidad de negociacion de common domain y el
+  gate de registro asociado.
+
+## Follow-up obligatorio Phase 1D.3
+
+- Client V2 sigue sin poder comenzar.
+- Siguiente carril exacto: `servidor`, contract-only, alineandose a la vez a
+  `modelo-comun 2.1.0`, este contrato `protocolo-red 2.1.0` y `assets 2.0.0`,
+  y reemplazando sus cuatro schemas `tvp3d.server.*` por los neutrales
+  `tvp3d.replication.*/1.0.0`.
+- `servidor` debe ademas declarar que `accepted_common_domain_versions`
+  corre su perfil en produccion.
+
+## Decisiones Phase 1D.3
+
+| Decision | Motivo | Reversible |
+|---|---|---|
+| No agregar campo nuevo al handshake | `common_domain_versions`/`common_domain_version` ya cubren el concepto; otro campo duplicaria semantica | no sin romper consumidores |
+| No publicar `client_hello/2.1.0` ni `server_welcome/2.1.0` | El shape de ambos objetos no cambio; solo cambian los valores SemVer aceptados y las reglas de seleccion | si, si un futuro cambio de shape lo exige |
+| Seleccion por interseccion exacta + orden de preferencia del perfil, nunca por SemVer | D-011/gobernanza exige negociacion explicita sin asumir compatibilidad de red | no |
+| `COMMON_DOMAIN_REGISTRY_MISMATCH` como codigo nuevo y no fatal | Es distinto de `MESSAGE_SCHEMA_INVALID` (forma valida, registro fuera de la version negociada); no fatal porque no corrompe framing | si |
+
+## Verificacion de cierre Phase 1D.3
+
+- Los 9 bloques JSON del contrato parsean.
+- Los eventos agregados son lineas JSON validas y solo se anexaron al final.
+- `git diff --check` no reporta errores en las rutas del turno.
+- Solo contrato/estado de `protocolo-red` y el diario append-only forman
+  parte del cierre; los cambios sucios ajenos detectados al inicio quedan
+  intactos.
+- No se modifico codigo de red de produccion, `mundo3d.gd`, servidor,
+  cliente ni modelo-comun.
+- El frame de 16 bytes y sus offsets no cambiaron.
+- EVENT y SNAPSHOT conservan su envelope generico sin redefinir payloads de
+  modelo-comun.
+- No se introdujo autenticacion.
+- TVP 7.72 y Protocol 1.x quedan intactos.
+- Monster Domain, Monster3D y Cyclops siguen sin publicarse.
+
+## Turno cerrado: Phase 1B
 
 - Phase 1B publico Protocol V2 `2.0.0` sobre `modelo-comun 2.0.0`.
 - Se congelaron las capas TCP/frame/payload, header de 16 bytes, kinds,
@@ -17,7 +84,8 @@ Contrato publicado: SI
 
 ## Depende de
 
-- `modelo-comun`: contrato publicado.
+- `modelo-comun`: 2.0.0 obligatorio, 2.1.0 negociable por sesion. Ambos
+  contratos publicados.
 
 ## Le toca
 
