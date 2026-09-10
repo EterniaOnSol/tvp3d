@@ -1,0 +1,17 @@
+{
+  "pilot_id": "PHASE2A-DEATH-CORPSE-REENTRY-LOOT",
+  "fixture_schema": "tvp3d.qa.parity_fixture",
+  "fixture_schema_version": "2.0.0",
+  "oracle": "TVP_772",
+  "oracle_version": "7.72",
+  "source_evidence": {
+    "logical_path": "docs/qa/PRUEBA_VIVA_MUERTE_LOOT.md"
+  },
+  "fixture_ids": [
+    "PARITY-DEATH-CORPSE-001",
+    "PARITY-DEATH-REENTRY-001",
+    "PARITY-LOOT-RANDOMNESS-001",
+    "PARITY-MONSTER-CORPSE-001"
+  ],
+  "fixture_count": 4
+}

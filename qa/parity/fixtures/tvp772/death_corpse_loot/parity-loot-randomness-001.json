@@ -1,0 +1,27 @@
+{
+  "schema": "tvp3d.qa.parity_fixture",
+  "version": "2.0.0",
+  "fixture_id": "PARITY-LOOT-RANDOMNESS-001",
+  "oracle": "TVP_772",
+  "oracle_version": "7.72",
+  "source_evidence": {
+    "logical_path": "docs/qa/PRUEBA_VIVA_MUERTE_LOOT.md"
+  },
+  "preconditions": [
+    "un monstruo invocado (rat) murio por ataque autoritativo y dejo un corpse contenedor real, segun PARITY-MONSTER-CORPSE-001"
+  ],
+  "input_action": "se abre el corpse del monstruo muerto como contenedor (0x82) en corridas independientes y procedimentalmente equivalentes (mismo tipo de monstruo, mismo procedimiento de invocacion y muerte)",
+  "observed_authoritative_result": "el contenido exacto del corpse lo decide el servidor (Monster::dropLoot) en cada muerte; corridas equivalentes produjeron contenidos distintos: 'gold coin x3', 'gold coin x4', 'cheese x1', y en una corrida ningun objeto (corpse vacio); las cuatro son respuestas validas del servidor para el mismo procedimiento",
+  "normalization_rules": [
+    "el corpse siempre se compara como contenedor real abrible, independientemente de su contenido",
+    "el contenido exacto (item, cantidad, o ausencia de item) queda fuera de la comparacion deterministica",
+    "la regla estable no es 'que objeto sale', sino 'el servidor decide el contenido en cada muerte y el cliente solo lo muestra, nunca lo predice ni lo adelanta'"
+  ],
+  "determinism_notes": "cuatro observaciones independientes de contenido ('gold coin x3', 'gold coin x4', 'cheese x1', corpse vacio) sobre el mismo procedimiento de invocar y matar una rata prueban que el contenido exacto no es reproducible entre corridas, mientras que el comportamiento de contenedor real si lo es en las cuatro. Este fixture representa esa regla de no-determinismo en si misma; no elige ninguno de los cuatro contenidos observados como 'el loot esperado'.",
+  "excluded_nondeterministic_fields": [
+    "loot_item_id",
+    "loot_item_count",
+    "loot_presence"
+  ],
+  "classification": "MATCH_EXPECTED"
+}

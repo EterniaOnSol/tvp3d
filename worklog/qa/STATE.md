@@ -2,8 +2,92 @@
 
 Estado: LISTO_PARA_REVISION
 Ultimo agente: claude
-Ultima actualizacion: 2026-09-10T02:45:00-06:00
-Contrato publicado: SI (`CONTRATO.md` v2.0.1)
+Ultima actualizacion: 2026-09-10T03:20:00-06:00
+Contrato publicado: SI (`CONTRATO.md` v2.0.1, sin cambios en este turno)
+
+## Turno cerrado: Phase 2A — Piloto LEGACY_PARITY (muerte/corpse/reentrada/loot)
+
+Primer turno real de materializacion Phase 2. Contract-only en lo que toca a
+`qa 2.0.1` (no se modifico `worklog/qa/CONTRATO.md`); este turno SI crea
+archivos QA-owned bajo `qa/` y `docs/qa/`, autorizado explicitamente por el
+alcance de esta fase.
+
+- Materializados cuatro fixtures `LEGACY_PARITY` (`tvp3d.qa.parity_fixture/2.0.0`,
+  ya publicado por `qa 2.0.1`, sin cambios de schema) a partir de evidencia ya
+  grabada en `docs/qa/PRUEBA_VIVA_MUERTE_LOOT.md`:
+  `PARITY-DEATH-CORPSE-001`, `PARITY-DEATH-REENTRY-001`,
+  `PARITY-MONSTER-CORPSE-001`, `PARITY-LOOT-RANDOMNESS-001`. Los cuatro
+  clasificados `MATCH_EXPECTED`.
+- Archivos: `qa/parity/fixtures/tvp772/death_corpse_loot/*.json` (cuatro
+  fixtures + `manifest.json` de metadata propia de QA, no un contrato
+  nuevo), harness `qa/parity/tools/validate_pilot.py` (Python 3, solo
+  libreria estandar), reporte deterministico
+  `qa/parity/reports/pilot_death_corpse_loot_report.json`, y nota de
+  hallazgos `docs/qa/PARITY_PHASE2_PILOT_DEATH_CORPSE_LOOT.md`.
+- El heuristico de deteccion de muerte por cliente ("`0x6C` de `mi_id`
+  siempre alcanza por si solo") **no** se codifico como verdad autoritativa:
+  el propio documento fuente lo muestra como una condicion de carrera
+  corregida despues por `protocolo-red 1.2.0`. El fixture de muerte captura
+  solo el resultado autoritativo (corpse `dead human` + vida cero).
+- El desalineamiento de mapa `0x64` observado en una corrida completa
+  **no** se promovio a comportamiento autoritativo de TVP ni a
+  `KNOWN_LEGACY_BUG`: `PARITY-MONSTER-CORPSE-001` usa exclusivamente las
+  corridas `--solo-loot`, no afectadas por ese problema. El caveat queda
+  documentado como investigacion de paridad futura, no como hallazgo de
+  este piloto.
+- El contenido exacto de loot (`gold coin x3`, `x4`, `cheese x1`, vacio)
+  quedo en `excluded_nondeterministic_fields` de `PARITY-LOOT-RANDOMNESS-001`;
+  la regla estable capturada es "el servidor decide, el cliente muestra",
+  clasificada `MATCH_EXPECTED` porque el fixture representa esa regla de
+  no-determinismo, no un valor de loot especifico.
+- Harness ejecutado dos veces sobre el mismo estado de repositorio: reporte
+  byte-identico ambas veces, codigo de salida 0. Auto-prueba negativa
+  (`--selftest`) ejercito 11 documentos malformados en memoria y confirmo
+  que el validador rechaza a los 11, sin escribir ningun archivo malformado
+  versionado. Ademas se corrompio temporalmente un fixture real
+  (clasificacion invalida), se confirmo codigo de salida 1, y se restauro su
+  contenido original byte a byte antes de este commit.
+- **Cero ejecuciones frescas de TVP/Docker en este turno.** No se inicio
+  Docker, no se conecto a ninguna cuenta, no se ejecuto
+  `prueba_muerte_loot_vivo.tscn`, no se mato a Valentino, no se mutó
+  persistencia legacy y no se requirio `servidor/key.pem` ni ninguna otra
+  credencial.
+
+## Conteos separados (Phase 2A)
+
+**Estos dos inventarios NO se combinan:**
+
+| Inventario | Especificadas | Materializadas |
+|---|---:|---:|
+| Obligaciones de contrato Architecture V2 (`qa 2.0.1`) | **198** | **0** (sin cambio por este turno) |
+| Corpus piloto `LEGACY_PARITY` Phase 2 | 4 | 4 (validadas localmente contra evidencia grabada; 0 ejecuciones frescas de oracle) |
+
+## Verificacion de cierre Phase 2A
+
+- 4 fixtures + 1 manifest parsean como JSON UTF-8 valido.
+- Los cuatro fixtures usan exactamente `tvp3d.qa.parity_fixture/2.0.0`,
+  `oracle=TVP_772`, `oracle_version=7.72`, y `fixture_id` unicos.
+- Los cuatro `source_evidence.logical_path` son relativos al repositorio y
+  resuelven a `docs/qa/PRUEBA_VIVA_MUERTE_LOOT.md`, que existe.
+- Ningun literal con forma de secreto/credencial en ningun fixture ni en el
+  harness.
+- El contenido exacto de loot queda excluido de la comparacion
+  deterministica; el comportamiento de contenedor si se compara.
+- El heuristico de muerte superseded y el desalineamiento de mapa NO quedan
+  codificados como verdad autoritativa vigente.
+- `git diff --check` no reporta errores en las rutas del turno.
+- Solo se tocaron rutas QA-owned (`qa/`, `docs/qa/`,
+  `worklog/qa/STATE.md`) y el diario append-only; `worklog/qa/CONTRATO.md`,
+  cualquier otro `CONTRATO.md`/`STATE.md`, `CARRILES.md`,
+  `docs/tibia3d/MASTER_PLAN.md`, y codigo de produccion de
+  servidor/cliente/editor/integracion quedan intactos.
+- Ninguna linea historica de `worklog/EVENTS.jsonl` fue reescrita.
+- Monster Domain, Monster3D y Cyclops siguen sin publicarse/implementarse.
+- `FULL_NATIVE_PLAYABLE` sigue `BLOCKED`; los dominios especializados
+  faltantes (Authentication/Application Session, Map/World Rules, Combat,
+  Item/Inventory, Monster/Spawn Domain, Command Outcome neutral, visual/
+  Monster3D final) quedan exactamente igual. Este piloto de evidencia legacy
+  no desbloquea gameplay ni afirma paridad del servidor nativo V2.
 
 ## Turno cerrado: QA 2.0.1 — Erratum de conteo de cobertura
 
@@ -152,9 +236,17 @@ esta reclasificacion no reporta que paso.
 Materializar progresivamente las 198 obligaciones especificadas (conteo
 corregido en `2.0.1`; ver "Turno cerrado: QA 2.0.1" arriba)
 (`SPECIFIED_NOT_MATERIALIZED -> MATERIALIZED`) a medida que exista
-implementacion nativa que probar, construir el corpus `ParityFixtureV2` de
-Phase 2, y mantener `FULL_NATIVE_PLAYABLE` honesto hasta que Authentication/
-Application Session y Map/World Rules se publiquen.
+implementacion nativa que probar, y mantener `FULL_NATIVE_PLAYABLE` honesto
+hasta que Authentication/Application Session y Map/World Rules se publiquen.
+
+Para el corpus Phase 2 `LEGACY_PARITY`: el piloto de 4 fixtures
+(muerte/corpse/reentrada/loot, ver "Turno cerrado: Phase 2A" arriba) valido
+el flujo completo fixture+harness contra evidencia ya grabada. El siguiente
+paso recomendado (no ejecutado) es una herramienta de captura/replay
+controlada contra un TVP real para producir observaciones frescas y, por
+separado, investigar el caveat de desalineamiento de mapa documentado en
+`docs/qa/PARITY_PHASE2_PILOT_DEATH_CORPSE_LOOT.md`. Recien despues de
+validar ese flujo conviene escalar al resto del corpus de paridad.
 
 Nota de cierre historica (turno anterior): el commit local `31db317`
 contiene aquel cierre; `git push` quedo bloqueado por falta de conexion a

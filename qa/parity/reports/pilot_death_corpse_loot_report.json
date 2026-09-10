@@ -1,0 +1,40 @@
+{
+  "pilot_id": "PHASE2A-DEATH-CORPSE-REENTRY-LOOT",
+  "harness": "qa/parity/tools/validate_pilot.py",
+  "fixture_schema_checked": "tvp3d.qa.parity_fixture/2.0.0",
+  "oracle": "TVP_772",
+  "oracle_version": "7.72",
+  "fixtures_validated": 4,
+  "fixtures": [
+    {
+      "fixture_id": "PARITY-DEATH-CORPSE-001",
+      "logical_path": "qa/parity/fixtures/tvp772/death_corpse_loot/parity-death-corpse-001.json",
+      "sha256": "4257f94d11c558f0ff5a4813562420f5a4d3634121b54a171281db63af4b5fb3",
+      "classification": "MATCH_EXPECTED",
+      "status": "VALID"
+    },
+    {
+      "fixture_id": "PARITY-DEATH-REENTRY-001",
+      "logical_path": "qa/parity/fixtures/tvp772/death_corpse_loot/parity-death-reentry-001.json",
+      "sha256": "9e81a6e51da056ecbc49899bb9f8ac38d0bbc0316f7c773781446ab51469114b",
+      "classification": "MATCH_EXPECTED",
+      "status": "VALID"
+    },
+    {
+      "fixture_id": "PARITY-LOOT-RANDOMNESS-001",
+      "logical_path": "qa/parity/fixtures/tvp772/death_corpse_loot/parity-loot-randomness-001.json",
+      "sha256": "4adf443743faf5764db3ffcb69c796bba313e783f32a5eadfd0d2bd34cc3e7bc",
+      "classification": "MATCH_EXPECTED",
+      "status": "VALID"
+    },
+    {
+      "fixture_id": "PARITY-MONSTER-CORPSE-001",
+      "logical_path": "qa/parity/fixtures/tvp772/death_corpse_loot/parity-monster-corpse-001.json",
+      "sha256": "f39b604d75a21e6034bd9f63148b7cad4798c04257ad71bfda64a1e73ed43974",
+      "classification": "MATCH_EXPECTED",
+      "status": "VALID"
+    }
+  ],
+  "failures": [],
+  "result": "VALID"
+}

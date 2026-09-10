@@ -1,0 +1,28 @@
+{
+  "schema": "tvp3d.qa.parity_fixture",
+  "version": "2.0.0",
+  "fixture_id": "PARITY-MONSTER-CORPSE-001",
+  "oracle": "TVP_772",
+  "oracle_version": "7.72",
+  "source_evidence": {
+    "logical_path": "docs/qa/PRUEBA_VIVA_MUERTE_LOOT.md"
+  },
+  "preconditions": [
+    "el god invoca un monstruo identificado (rat) cuyo runtime id no existia antes de la invocacion",
+    "el monstruo invocado recibe ataque autoritativo (0xA1) hasta morir"
+  ],
+  "input_action": "el monstruo invocado muere por el ataque autoritativo",
+  "observed_authoritative_result": "el servidor deja un corpse nombrado 'dead rat' en la casilla donde murio el monstruo; ese corpse se abre como contenedor real (0x82, indice 0) y expone el contenido que decidio el servidor (Monster::dropLoot)",
+  "normalization_rules": [
+    "identificar el corpse por su nombre semantico exacto 'dead rat', no por coordenadas fijas",
+    "no comparar el runtime id de la criatura entre corridas distintas: cada invocacion recibe un id nuevo",
+    "el comportamiento de contenedor (se abre, indice de ventana, que expone una lista de contenido) se compara estructuralmente, no por contenido exacto (ver PARITY-LOOT-RANDOMNESS-001)"
+  ],
+  "determinism_notes": "observado en multiples corridas `--solo-loot` aisladas, cada una con una rata nueva identificada por un id no preexistente y un corpse en una casilla sin corpse previo. Estas corridas no dependen de la alineacion completa del mensaje de mapa 0x64 y no se vieron afectadas por el problema de desalineamiento de mapa descrito en la seccion 'Correccion compensatoria' del documento fuente; ese problema afecto la certificacion de la pila de una casilla en una corrida completa distinta, no la creacion del corpse en si. Este fixture deliberadamente NO usa esa corrida completa como evidencia: usa solo las corridas `--solo-loot`, donde el nombre 'dead rat' y el comportamiento de contenedor fueron certificables sin ambiguedad.",
+  "excluded_nondeterministic_fields": [
+    "monster_runtime_id",
+    "corpse_tile_exact_coordinates",
+    "loot_contents"
+  ],
+  "classification": "MATCH_EXPECTED"
+}

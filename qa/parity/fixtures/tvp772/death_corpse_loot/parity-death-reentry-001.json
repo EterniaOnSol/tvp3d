@@ -1,0 +1,27 @@
+{
+  "schema": "tvp3d.qa.parity_fixture",
+  "version": "2.0.0",
+  "fixture_id": "PARITY-DEATH-REENTRY-001",
+  "oracle": "TVP_772",
+  "oracle_version": "7.72",
+  "source_evidence": {
+    "logical_path": "docs/qa/PRUEBA_VIVA_MUERTE_LOOT.md"
+  },
+  "preconditions": [
+    "el personaje murio de verdad segun el resultado autoritativo de PARITY-DEATH-CORPSE-001 (vida autoritativa cero, corpse 'dead human' dejado en la casilla de muerte, sesion cerrada por el servidor tras logout 0x14)",
+    "el personaje vuelve a conectarse con las mismas credenciales despues de ese cierre de sesion"
+  ],
+  "input_action": "el jugador inicia sesion nuevamente tras la muerte y el logout autoritativo que la sigue",
+  "observed_authoritative_result": "el reingreso confirma al personaje vivo, en una posicion autoritativa valida distinta de la posicion donde murio; en las corridas registradas esa posicion fue el templo (32369,32241,7)",
+  "normalization_rules": [
+    "se ignora el valor exacto de vida (HP) al reingresar; solo se exige vida autoritativa positiva (personaje vivo)",
+    "la posicion de reingreso se compara como PosicionTibia entera valida y DISTINTA de la posicion de muerte registrada para esa misma corrida, no como un literal fijo esperado",
+    "se ignoran cambios de nivel/experiencia heredados de la muerte anterior"
+  ],
+  "determinism_notes": "observado identicamente en al menos tres corridas independientes: 2026-08-29 manana con reingreso en (32369,32241,7) y vida 145, y dos corridas posteriores a la correccion de protocolo-red 1.2.0 con reingreso en (32369,32241,7) y vida 140. La posicion de reingreso fue igual entre esas corridas, pero el fixture no exige esa igualdad como regla: exige solo 'vivo' y 'distinto de la posicion de muerte', que es lo unico que el documento fuente prueba de forma estable.",
+  "excluded_nondeterministic_fields": [
+    "reentry_hp_value",
+    "level_after_death"
+  ],
+  "classification": "MATCH_EXPECTED"
+}

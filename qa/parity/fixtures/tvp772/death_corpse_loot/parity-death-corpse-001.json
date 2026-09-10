@@ -1,0 +1,31 @@
+{
+  "schema": "tvp3d.qa.parity_fixture",
+  "version": "2.0.0",
+  "fixture_id": "PARITY-DEATH-CORPSE-001",
+  "oracle": "TVP_772",
+  "oracle_version": "7.72",
+  "source_evidence": {
+    "logical_path": "docs/qa/PRUEBA_VIVA_MUERTE_LOOT.md"
+  },
+  "preconditions": [
+    "personaje conectado y vivo, ubicado fuera de zona de proteccion (ZONE_PROTECTION) por accion del servidor (talkaction /c), no por caminata simulada del cliente",
+    "un monstruo autoritativo invocado por el servidor (demon) ataca al personaje de forma continua"
+  ],
+  "input_action": "el personaje no envia ninguna intencion; el monstruo invocado por el servidor continua atacando hasta que la vida autoritativa del personaje llega a cero",
+  "observed_authoritative_result": "el servidor deja un corpse del jugador nombrado 'dead human' en la casilla de muerte antes de retirar al personaje del mundo vivo; la vida autoritativa mas reciente del personaje es cero en el momento de esa retirada",
+  "normalization_rules": [
+    "la posicion de muerte se compara como PosicionTibia entera (x,y,z) valida, no como un valor identico entre corridas: cada corrida puede ocurrir en una casilla de campo distinta fuera de zona de proteccion",
+    "el corpse se identifica por su nombre exacto 'dead human', no por coordenadas fijas",
+    "se ignora el monto de dano y la cantidad de golpes usados para llegar a vida cero",
+    "se ignora la magnitud de perdida de nivel/experiencia asociada a la muerte, salvo que el proposito especifico de una prueba futura sea exactamente esa regla",
+    "se ignoran marcas de tiempo de reloj de pared"
+  ],
+  "determinism_notes": "observado de forma consistente en al menos dos corridas independientes documentadas (2026-08-29 manana en (32082,32145,6) y 2026-08-29 tarde en (32081,32145,6)): en ambas el corpse 'dead human' aparecio en la casilla de muerte con vida autoritativa cero antes de retirar al personaje. Este fixture no depende de la regla fragil de deteccion de muerte del lado cliente ('0x6C de mi_id siempre alcanza por si solo'), que el propio documento fuente muestra como una condicion de carrera corregida despues por protocolo-red 1.2.0; el fixture solo captura el resultado autoritativo observable (corpse + vida cero), no el heuristico de parser superado.",
+  "excluded_nondeterministic_fields": [
+    "exact_death_tile_coordinates",
+    "damage_amount",
+    "level_loss_magnitude",
+    "wall_clock_timestamp"
+  ],
+  "classification": "MATCH_EXPECTED"
+}
