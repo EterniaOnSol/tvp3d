@@ -2,8 +2,69 @@
 
 Estado: LISTO_PARA_REVISION
 Ultimo agente: claude
-Ultima actualizacion: 2026-09-10T03:20:00-06:00
-Contrato publicado: SI (`CONTRATO.md` v2.0.1, sin cambios en este turno)
+Ultima actualizacion: 2026-09-10T03:45:00-06:00
+Contrato publicado: SI (`CONTRATO.md` v2.1.0)
+
+## Turno cerrado: Phase 2B.0 — Boundary de replay de oracle legacy
+
+Turno contract-only puro: no se creo ni ejecuto ningun archivo bajo `qa/` ni
+`docs/qa/`, no se toco Docker/TVP, y los cuatro fixtures/harness de Phase 2A
+quedan exactamente iguales.
+
+- Publicado `qa 2.1.0` (extension minor): agrega `OracleObservationV1`
+  (`tvp3d.qa.oracle_observation/1.0.0`, nueva identidad de schema) y
+  `ParityExpectationV1` (`tvp3d.qa.parity_expectation/1.0.0`, nueva
+  identidad de schema), secciones 16A-16F.
+- `capture_origin` cerrado `LIVE_ORACLE|RECORDED_EVIDENCE`; ninguno implica
+  `PASS`. Frontera explicita captura cruda (nunca versionada automaticamente)
+  vs observacion normalizada (segura, versionable tras redaccion de
+  secretos/paths/diagnosticos volatiles).
+- `mode` cerrado `SINGLE_OBSERVATION|EVIDENCE_ONLY`. Registro de 8
+  operadores deterministicos (`EQ,NE,EXISTS,NOT_EXISTS,GT,GTE,LT,LTE,ONE_OF`)
+  sobre JSON Pointer RFC 6901; sin `eval`, sin expresiones arbitrarias. El
+  comparador generico no puede contener ningun valor especifico de fixture.
+- Reuso exacto de `tvp3d.qa.case/2.0.0` y `tvp3d.qa.report/2.0.0` para
+  replay, sin publicar un tercer schema de caso ni un segundo de reporte.
+  Congelada la regla `QACaseV2.case_id == ParityFixtureV2.fixture_id`;
+  confirmado sin contradiccion contra la grammar de `case_id` ya publicada
+  (el prefijo `PARITY` ya estaba reservado en la seccion 3.1).
+- `tvp3d.qa.error` avanza `2.0.0 -> 2.1.0` (mismo patron que
+  `modelo-comun 2.1.0` para `tvp3d.domain_error`) solo para agregar
+  `QA_OBSERVATION_INVALID`; sus campos/tipos/rangos no cambian.
+- Documentado el mapeo (sin modificar los archivos) de los cuatro fixtures
+  de Phase 2A: `PARITY-DEATH-CORPSE-001`, `PARITY-DEATH-REENTRY-001` y
+  `PARITY-MONSTER-CORPSE-001` quedan replayables como `SINGLE_OBSERVATION`;
+  `PARITY-LOOT-RANDOMNESS-001` permanece `EVIDENCE_ONLY` (una sola tirada de
+  loot no prueba no-determinismo; no se inventa un requisito estadistico).
+- El caveat de desalineamiento de mapa `0x64` se mantiene fuera del boundary
+  de replay, sin promoverse a regla de oracle autoritativa.
+- `ParityFixtureV2 2.0.0`, `tvp3d.qa.case/2.0.0` y `tvp3d.qa.report/2.0.0`
+  no cambiaron de forma ni significado. Los cuatro fixtures de Phase 2A y su
+  harness (`qa/parity/tools/validate_pilot.py`) no se tocaron.
+
+## Conteos (sin cambio en este turno)
+
+| Inventario | Especificadas | Materializadas |
+|---|---:|---:|
+| Obligaciones de contrato Architecture V2 (`qa 2.1.0`) | 198 | 0 |
+| Corpus piloto `LEGACY_PARITY` Phase 2 | 4 | 4 (sin cambio; ningun fixture nuevo este turno) |
+
+## Verificacion de cierre Phase 2B.0
+
+- 10 bloques JSON del contrato parsean.
+- `tvp3d.qa.parity_fixture`, `tvp3d.qa.case` y `tvp3d.qa.report` permanecen
+  en `2.0.0`; `tvp3d.qa.oracle_observation` y `tvp3d.qa.parity_expectation`
+  son identidades nuevas en `1.0.0`; `tvp3d.qa.error` avanza a `2.1.0`.
+- Ningun archivo bajo `qa/` o `docs/qa/` fue creado, modificado ni
+  ejecutado; los 4 fixtures de Phase 2A y `validate_pilot.py` quedan
+  byte-identicos.
+- No se inicio Docker/TVP; no se conecto a ninguna cuenta legacy.
+- `git diff --check` no reporta errores en las rutas del turno.
+- Solo cambiaron `worklog/qa/CONTRATO.md`, `worklog/qa/STATE.md` y el diario
+  append-only; ningun otro `CONTRATO.md`/`STATE.md`, `CARRILES.md`,
+  `MASTER_PLAN.md` ni codigo de produccion se toco.
+- Ninguna linea historica de `worklog/EVENTS.jsonl` fue reescrita.
+- Monster Domain, Monster3D y Cyclops siguen sin publicarse/implementarse.
 
 ## Turno cerrado: Phase 2A — Piloto LEGACY_PARITY (muerte/corpse/reentrada/loot)
 
@@ -241,10 +302,20 @@ hasta que Authentication/Application Session y Map/World Rules se publiquen.
 
 Para el corpus Phase 2 `LEGACY_PARITY`: el piloto de 4 fixtures
 (muerte/corpse/reentrada/loot, ver "Turno cerrado: Phase 2A" arriba) valido
-el flujo completo fixture+harness contra evidencia ya grabada. El siguiente
-paso recomendado (no ejecutado) es una herramienta de captura/replay
-controlada contra un TVP real para producir observaciones frescas y, por
-separado, investigar el caveat de desalineamiento de mapa documentado en
+el flujo completo fixture+harness contra evidencia ya grabada, y
+`qa 2.1.0` (ver "Turno cerrado: Phase 2B.0" arriba) publico el boundary
+maquina-legible (`OracleObservationV1`/`ParityExpectationV1`) que faltaba
+para comparar una observacion fresca sin hardcodear semantica en codigo.
+
+Siguiente tarea exacta (no ejecutada en este turno): **Phase 2B.1** —
+implementar captura/replay controlada de TVP contra el boundary recien
+publicado, produciendo `OracleObservationV1` reales para
+`PARITY-DEATH-CORPSE-001`, `PARITY-DEATH-REENTRY-001` y
+`PARITY-MONSTER-CORPSE-001` (los tres `SINGLE_OBSERVATION`), y evaluandolas
+con el comparador generico de la seccion 16C. `PARITY-LOOT-RANDOMNESS-001`
+permanece `EVIDENCE_ONLY` hasta que exista una extension de comparacion
+multi-muestra/estocastica. Por separado, investigar el caveat de
+desalineamiento de mapa documentado en
 `docs/qa/PARITY_PHASE2_PILOT_DEATH_CORPSE_LOOT.md`. Recien despues de
 validar ese flujo conviene escalar al resto del corpus de paridad.
 

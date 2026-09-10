@@ -1,17 +1,29 @@
 # Contrato: qa
 
-Version: 2.0.1
+Version: 2.1.0
 Estado: PUBLICADO
 Propietario: qa
 Depende de: modelo-comun 2.1.0, protocolo-red 2.1.0, assets 2.0.0,
 servidor 2.1.0, cliente 2.0.0, editor 2.0.0, integracion 2.0.1
 
-Erratum de patch: `2.0.1` corrige unicamente la aritmetica de la matriz de
-cobertura de la seccion 5 (`docs/tibia3d/PHASE1_CLOSURE_REVIEW.md` seccion 6
-detecto que el total publicado en `2.0.0`, 194, no era reproducible desde los
-siete contratos fuente; el total verificado es 198). No cambia taxonomia,
-schemas, estados de resultado, codigos de salida, perfiles de suite ni
-ninguna otra decision normativa de `2.0.0`.
+Erratum de patch histórico: `2.0.1` corrigio unicamente la aritmetica de la
+matriz de cobertura de la seccion 5 (`docs/tibia3d/PHASE1_CLOSURE_REVIEW.md`
+seccion 6 detecto que el total publicado en `2.0.0`, 194, no era reproducible
+desde los siete contratos fuente; el total verificado es 198). No cambio
+taxonomia, schemas, estados de resultado, codigos de salida, perfiles de
+suite ni ninguna otra decision normativa de `2.0.0`.
+
+Extension minor `2.1.0`: publica el boundary de replay de oracle legacy
+(`OracleObservationV1`, `ParityExpectationV1`, seccion 16A-16F) que faltaba
+para poder implementar captura/replay contra TVP sin hardcodear semantica en
+codigo. Es compatible: `tvp3d.qa.parity_fixture/2.0.0`,
+`tvp3d.qa.case/2.0.0` y `tvp3d.qa.report/2.0.0` no cambian de forma ni de
+significado; los cuatro fixtures de Phase 2A siguen siendo evidencia
+`ParityFixtureV2 2.0.0` valida sin reinterpretarse. `tvp3d.qa.error` amplia
+su registro cerrado de codigos y pasa a `2.1.0` (mismo patron que
+`modelo-comun 2.1.0` uso para `tvp3d.domain_error`), sin cambiar sus campos,
+tipos ni rangos existentes. No se materializa ningun fixture nuevo ni se
+implementa captura/replay en este turno.
 
 QA V2 depende de TODOS los contratos Architecture V2 publicados hasta ahora,
 tal como fija `CARRILES.md`. No depende de ningun contrato futuro no
@@ -44,8 +56,9 @@ Si un contrato es contradictorio o ambiguo, QA reporta `QA_CONTRACT_DEFECT`
 Este turno es contract-only: no se implementan pruebas ejecutables, no se
 modifica `cliente3d/pruebas/`, `qa/`, `docs/qa/` ni ningun otro carril, no se
 arranca Docker y no se ejecuta ninguna prueba viva mutante. Las palabras
-`DEBE`, `NO DEBE`, `PUEDE` y `SOLO` son normativas en las secciones 0-23; el
-contenido bajo `HISTORICAL / SUPERSEDED` no es normativo para V2.
+`DEBE`, `NO DEBE`, `PUEDE` y `SOLO` son normativas en las secciones 0-22
+(incluidas las subsecciones 16A-16F agregadas en `2.1.0`); el contenido bajo
+`HISTORICAL / SUPERSEDED` no es normativo para V2.
 
 ## 1. Clasificacion de pruebas (`TestClassV2`)
 
@@ -483,6 +496,345 @@ turno publica solo la forma; Phase 2 materializa el corpus.
 | `classification` | enum cerrado: `MATCH_EXPECTED\|KNOWN_LEGACY_BUG\|DELIBERATE_V2_DIFFERENCE\|UNRESOLVED` |
 | `excluded_nondeterministic_fields` | campos observados que varian entre corridas (por ejemplo loot aleatorio) y quedan fuera de la comparacion |
 
+## 16A. `OracleObservationV1` (agregado en 2.1.0)
+
+`ParityFixtureV2` describe evidencia legacy en prosa. Para poder comparar esa
+evidencia contra una observacion fresca sin hardcodear semantica en codigo,
+`2.1.0` publica un schema companero para la observacion normalizada en si.
+
+Identificador de schema: `tvp3d.qa.oracle_observation`, version `1.0.0`. Es
+una identidad de schema nueva (igual que `tvp3d.qa.parity_fixture` en
+`2.0.0`, comienza en `1.0.0` independientemente de la version del contrato
+contenedor).
+
+```json
+{
+  "schema": "tvp3d.qa.oracle_observation",
+  "version": "1.0.0",
+  "fixture_id": "PARITY-DEATH-CORPSE-001",
+  "oracle": "TVP_772",
+  "oracle_version": "7.72",
+  "capture_origin": "RECORDED_EVIDENCE",
+  "source_evidence": [
+    {"logical_path": "docs/qa/PRUEBA_VIVA_MUERTE_LOOT.md"}
+  ],
+  "payload": {
+    "player_hp_zero": true,
+    "player_removed_from_live_world": true,
+    "player_corpse": {
+      "present": true,
+      "name": "dead human",
+      "at_death_position": true
+    }
+  }
+}
+```
+
+| Campo | Regla |
+|---|---|
+| `fixture_id` | cumple la grammar de `case_id` (seccion 3.1); DEBE corresponder a un `ParityFixtureV2.fixture_id` ya publicado |
+| `oracle` / `oracle_version` | mismas reglas que en `ParityFixtureV2` (seccion 16); una observacion de un oracle distinto al del fixture referenciado es invalida |
+| `capture_origin` | enum cerrado `LIVE_ORACLE\|RECORDED_EVIDENCE` (seccion 16A.1) |
+| `source_evidence` | `1..8` objetos `{logical_path}`, cada uno relativo al repositorio, sin `..`, sin unidad de disco ni `/` inicial |
+| `payload` | objeto JSON de hechos observados normalizados (seccion 16A.2) |
+
+### 16A.1 `capture_origin`
+
+```text
+LIVE_ORACLE
+RECORDED_EVIDENCE
+```
+
+| Valor | Significado |
+|---|---|
+| `LIVE_ORACLE` | normalizado a partir de una ejecucion real del oracle |
+| `RECORDED_EVIDENCE` | normalizado a partir de evidencia ya grabada (por ejemplo `docs/qa/PRUEBA_VIVA_MUERTE_LOOT.md`) |
+
+Ninguno de los dos valores implica `PASS`. Una observacion es evidencia; el
+comparador (seccion 16C) decide si satisface una expectativa (seccion 16B).
+
+### 16A.2 Payload de observacion
+
+`payload` es evidencia de oracle QA, NO un contrato de dominio/gameplay
+nuevo: su forma puede ser especifica del piloto/fixture y no define
+semantica futura de Combat, Item/Inventory ni Monster Domain.
+
+`payload` NO PUEDE contener:
+
+- credenciales, tokens, claves privadas ni contrasenas;
+- metadata de renderer (mesh, material, camera, GLB, rig);
+- metadata de maquina anfitriona (hostname, usuario, PID);
+- marca de tiempo de reloj de pared dentro de la superficie de comparacion
+  canonica;
+- paths absolutos.
+
+`payload` DEBE conservar suficiente estructura semantica para que una
+`ParityExpectationV1` pueda dirigirse a sus valores mediante paths
+deterministicos (JSON Pointer, seccion 16B).
+
+### 16A.3 Captura cruda vs observacion versionada
+
+Se distinguen dos conceptos que NO PUEDEN confundirse:
+
+| Concepto | Que es | Se versiona |
+|---|---|---|
+| Captura cruda | volcado de red, diagnosticos legacy, ids de runtime volatiles, puede incluir timestamps | NO automaticamente |
+| `OracleObservationV1` | artefacto deterministico despues de redaccion de secretos, normalizacion de paths, remocion de diagnosticos volatiles y normalizacion propia del owner | SI, es el artefacto seguro elegible para versionar |
+
+Ninguna herramienta de captura futura puede commitear una captura cruda
+directamente como si fuera una `OracleObservationV1`. Una herramienta de
+captura en vivo PUEDE referenciar una credencial por NOMBRE de variable de
+entorno; la observacion NUNCA contiene el valor. Este contrato no autoriza
+inspeccionar `servidor/key.pem`.
+
+## 16B. `ParityExpectationV1` (agregado en 2.1.0)
+
+Identificador de schema: `tvp3d.qa.parity_expectation`, version `1.0.0`.
+Expectativa maquina-legible usada por un `QACaseV2` `LEGACY_PARITY`
+replayable.
+
+```json
+{
+  "schema": "tvp3d.qa.parity_expectation",
+  "version": "1.0.0",
+  "mode": "SINGLE_OBSERVATION",
+  "assertions": [
+    {
+      "assertion_id": "CORPSE-NAME",
+      "left_path": "/player_corpse/name",
+      "operator": "EQ",
+      "right": {"literal": "dead human"}
+    },
+    {
+      "assertion_id": "CORPSE-PRESENT",
+      "left_path": "/player_corpse/present",
+      "operator": "EXISTS"
+    }
+  ]
+}
+```
+
+| Campo | Regla |
+|---|---|
+| `mode` | enum cerrado `SINGLE_OBSERVATION\|EVIDENCE_ONLY` (seccion 16B.1) |
+| `assertions` | `0..32` objetos `AssertionV1` (seccion 16B.2). DEBE ser `[]` cuando `mode=EVIDENCE_ONLY`; DEBE tener `1..32` cuando `mode=SINGLE_OBSERVATION` |
+
+No hay `eval`, snippets de Python, expresiones arbitrarias ni ejecucion de
+regex en este schema. Toda la semantica declarable es el registro cerrado de
+operadores de la seccion 16C.
+
+### 16B.1 Modo de replay (`mode`)
+
+```text
+SINGLE_OBSERVATION
+EVIDENCE_ONLY
+```
+
+| Valor | Significado |
+|---|---|
+| `SINGLE_OBSERVATION` | una `OracleObservationV1` normalizada puede producir `PASS`/`FAIL` deterministico por si sola |
+| `EVIDENCE_ONLY` | el fixture legacy sigue siendo evidencia historica/oracle util, pero esta version del contrato de replay NO afirma que una sola observacion pueda probarlo |
+
+Consecuencia sobre el piloto Phase 2A vigente (documentada sin modificar los
+cuatro archivos, ver seccion 16E):
+
+- `PARITY-DEATH-CORPSE-001`, `PARITY-DEATH-REENTRY-001` y
+  `PARITY-MONSTER-CORPSE-001` son replayables como `SINGLE_OBSERVATION`;
+- `PARITY-LOOT-RANDOMNESS-001` permanece `EVIDENCE_ONLY`: una sola tirada de
+  loot no puede probar no-determinismo. NO se inventa un requisito
+  estadisticamente invalido (por ejemplo "cuatro corridas deben contener
+  siempre dos resultados distintos"). Una extension minor futura puede
+  publicar semantica de comparacion multi-muestra/estocastica si se
+  necesita; este turno no la resuelve.
+
+### 16B.2 `AssertionV1`
+
+| Campo | Regla |
+|---|---|
+| `assertion_id` | string `1..64` bytes, unico dentro de la expectativa |
+| `left_path` | JSON Pointer RFC 6901 hacia un valor de `OracleObservationV1.payload`; DEBE empezar con `/` |
+| `operator` | uno de `EQ\|NE\|EXISTS\|NOT_EXISTS\|GT\|GTE\|LT\|LTE\|ONE_OF` (seccion 16C) |
+| `right` | obligatorio para todo operador salvo `EXISTS`/`NOT_EXISTS`; prohibido para `EXISTS`/`NOT_EXISTS` |
+
+`right`, cuando aplica, es EXACTAMENTE uno de:
+
+```json
+{"literal": "<valor JSON>"}
+```
+
+o:
+
+```json
+{"path": "/otro/valor"}
+```
+
+nunca ambos ni ninguno cuando el operador lo requiere. La forma `{"path": ...}`
+permite expresar, por ejemplo, `reentry_position != death_position` sin
+hardcodear coordenadas dentro del schema.
+
+## 16C. Modelo de comparacion (comparador generico)
+
+Reglas exactas, sin excepciones implicitas:
+
+| Operador | Semantica |
+|---|---|
+| `EQ` | igualdad JSON profunda exacta; sin coercion de tipo string/numero |
+| `NE` | negacion exacta de `EQ` |
+| `EXISTS` | `left_path` resuelve a un valor (incluido `null` explicito) |
+| `NOT_EXISTS` | `left_path` NO resuelve |
+| `GT`/`GTE`/`LT`/`LTE` | ambos operandos DEBEN ser numeros JSON; un string numerico no cuenta como numero |
+| `ONE_OF` | `right.literal` DEBE ser un array; el valor izquierdo DEBE ser igual (igualdad profunda) a exactamente uno de sus miembros |
+
+Reglas generales:
+
+- el orden de claves de un objeto es irrelevante despues de parsear JSON;
+- el orden de un array es significativo, salvo que la normalizacion de
+  `payload` ya lo haya vuelto estable antes de la comparacion; el comparador
+  NUNCA ordena ni normaliza por su cuenta;
+- `left_path` ausente para cualquier operador distinto de `NOT_EXISTS`
+  produce FALLO de esa aserción especifica (`assertions_passed` no
+  incrementa), NUNCA un `null` implicito ni un error de harness;
+  para `NOT_EXISTS` la ausencia es exactamente el resultado esperado;
+- un tipo incompatible para `GT/GTE/LT/LTE` (operando no numerico tras
+  resolver `left_path`/`right`) es FALLO de esa aserción, no una coercion ni
+  un error de harness;
+- el comparador generico NO PUEDE conocer valores especificos de un fixture
+  (`"dead human"`, `"dead rat"`, coordenadas o HP concretos): esos valores
+  viven exclusivamente en los datos de `ParityExpectationV1`. Esto evita
+  hardcodear comportamiento de paridad en Python.
+
+## 16D. Reuso de `QACaseV2` y `QAReportV2` para replay
+
+No se publica un tercer schema de caso de prueba. Un `QACaseV2`
+`LEGACY_PARITY` replayable reusa exactamente `tvp3d.qa.case/2.0.0`:
+
+| Campo de `QACaseV2` | Uso para replay de paridad |
+|---|---|
+| `class` | literal `LEGACY_PARITY` |
+| `case_id` | DEBE ser identico byte a byte al `fixture_id` del `ParityFixtureV2` referenciado (regla 1:1, seccion 16D.1) |
+| `input_fixture` | referencia al archivo `ParityFixtureV2` ya publicado (evidencia) |
+| `expected` | contiene exactamente un objeto `ParityExpectationV1` (seccion 16B) |
+
+La `OracleObservationV1` en tiempo de ejecucion NO es parte del `QACaseV2`:
+la suministra por separado el harness de replay (Phase 2B.1, no
+implementado en este turno). Esto mantiene el comparador generico sin
+conocer valores especificos: `QACaseV2` + `ParityExpectationV1` son datos de
+contrato estaticos; `OracleObservationV1` es evidencia de runtime.
+
+### 16D.1 Regla `case_id == fixture_id`
+
+Se congela: `QACaseV2.case_id == ParityFixtureV2.fixture_id` para todo caso
+`LEGACY_PARITY` replayable. Es una correspondencia 1:1 estable sin inventar
+un identificador adicional.
+
+Esta regla NO contradice la grammar de `case_id` ya publicada en la seccion
+3.1: el prefijo `PARITY` ya estaba reservado alli exactamente para este
+namespace, y los cuatro `fixture_id` de Phase 2A
+(`PARITY-DEATH-CORPSE-001`, `PARITY-DEATH-REENTRY-001`,
+`PARITY-MONSTER-CORPSE-001`, `PARITY-LOOT-RANDOMNESS-001`) ya cumplen esa
+grammar sin modificacion. No se detecto contradiccion; no fue necesario
+detener este turno por este punto.
+
+### 16D.2 Reuso de `QAReportV2` para replay
+
+No se publica un segundo schema de reporte. Un reporte de replay de paridad
+reusa exactamente `tvp3d.qa.report/2.0.0` con:
+
+| Campo de `QAReportV2` | Valor para replay de paridad |
+|---|---|
+| `suite_id` | `PARITY_TVP_772` |
+| `profile` | `LEGACY_TVP_772` |
+| `cases[].case_id` | el `case_id`/`fixture_id` de paridad (seccion 16D.1) |
+| `cases[].assertions_total` | numero de `AssertionV1` estructuradas evaluadas |
+| `cases[].assertions_passed` | numero de aserciones exitosas |
+| `cases[].evidence` | referencias logicas a `ParityFixtureV2`, `QACaseV2` y `OracleObservationV1` involucrados |
+
+Sin valores secretos en ningun campo. Un caso `EVIDENCE_ONLY` (seccion
+16B.1) que aparezca en un reporte de este perfil DEBE reportarse con
+`status=NOT_RUN`, `assertions_total=0` y `assertions_passed=0`, y NUNCA
+puede marcarse `REQUIRED` para efectos del codigo de salida de la suite
+(seccion 9): un fixture `EVIDENCE_ONLY` no puede convertirse en `PASS` falso
+solo porque sus campos no deterministicos fueron ignorados.
+
+## 16E. Mapeo del piloto Phase 2A (documentacion, sin modificar los fixtures)
+
+Los cuatro archivos bajo
+`qa/parity/fixtures/tvp772/death_corpse_loot/` NO se modifican en este
+turno. Esta tabla es solo documentacion de como replayarian bajo `2.1.0`:
+
+| `fixture_id` | Modo de replay | Payload de observacion ilustrativo |
+|---|---|---|
+| `PARITY-DEATH-CORPSE-001` | `SINGLE_OBSERVATION` | `{"player_hp_zero": true, "player_removed_from_live_world": true, "player_corpse": {"present": true, "name": "dead human", "at_death_position": true}}` |
+| `PARITY-DEATH-REENTRY-001` | `SINGLE_OBSERVATION` | `{"alive": true, "death_position": {"x": 0, "y": 0, "z": 0}, "reentry_position": {"x": 0, "y": 0, "z": 0}}` |
+| `PARITY-MONSTER-CORPSE-001` | `SINGLE_OBSERVATION` | `{"monster_kind": "rat", "corpse": {"present": true, "name": "dead rat", "openable_container": true}}` |
+| `PARITY-LOOT-RANDOMNESS-001` | `EVIDENCE_ONLY` | (sin `assertions` en esta version; el contenido estocastico sigue excluido) |
+
+Ejemplo ilustrativo de `ParityExpectationV1` para `PARITY-DEATH-REENTRY-001`,
+mostrando comparacion `NE` `path`-a-`path` sin hardcodear coordenadas:
+
+```json
+{
+  "schema": "tvp3d.qa.parity_expectation",
+  "version": "1.0.0",
+  "mode": "SINGLE_OBSERVATION",
+  "assertions": [
+    {"assertion_id": "ALIVE", "left_path": "/alive", "operator": "EQ", "right": {"literal": true}},
+    {
+      "assertion_id": "NOT-AT-DEATH-POSITION",
+      "left_path": "/reentry_position",
+      "operator": "NE",
+      "right": {"path": "/death_position"}
+    }
+  ]
+}
+```
+
+Estos payloads y expectativas son ejemplos normativos de QA para ilustrar el
+boundary; NO se convierten en schemas de gameplay V2 autoritativos. Combat,
+Item/Inventory, Monster/Spawn y Map/World siguen sin publicarse; esta
+seccion no los define.
+
+### Caveat de desalineamiento de mapa 0x64
+
+Se mantiene fuera de este boundary de replay, tal como quedo en Phase 2A. NO
+se incluyen ids de cliente imposibles como hechos de oracle esperados, NO se
+clasifica como `KNOWN_LEGACY_BUG` autoritativo de TVP, y este turno no
+intenta corregir `protocolo-red`/`assets`. Sigue como
+`INVESTIGACION_DESALINEAMIENTO_MAPA_0X64_PENDIENTE`.
+
+## 16F. Fixtures de contrato para el boundary de replay
+
+| Fixture | Caso minimo | Resultado obligatorio |
+|---|---|---|
+| `OBS-LIVE-VALID-001` | `OracleObservationV1` valido con `capture_origin=LIVE_ORACLE` | acepta |
+| `OBS-RECORDED-VALID-001` | `OracleObservationV1` valido con `capture_origin=RECORDED_EVIDENCE` | acepta |
+| `OBS-ABSPATH-001` | `source_evidence[].logical_path` absoluto | rechazado |
+| `OBS-SECRET-001` | literal con forma de credencial dentro de `payload` | rechazado (`QA_SECRET_EXPOSURE`) |
+| `OBS-ORACLE-001` | `oracle`/`oracle_version` distinto del fixture referenciado | rechazado |
+| `OBS-FIXTUREID-001` | `fixture_id` que no cumple la grammar de la seccion 3.1 | rechazado |
+| `EXP-EQ-LITERAL-001` | aserción `EQ` contra `{"literal": ...}` | acepta cuando coincide, falla cuando no |
+| `EXP-NE-PATH-001` | aserción `NE` contra `{"path": ...}` | acepta cuando los valores difieren |
+| `EXP-EXISTS-001` | `left_path` presente, operador `EXISTS` | acepta |
+| `EXP-NOTEXISTS-001` | `left_path` ausente, operador `NOT_EXISTS` | acepta |
+| `EXP-NUMERIC-001` | `GT/GTE/LT/LTE` con dos numeros JSON | acepta segun corresponda |
+| `EXP-ONEOF-001` | `ONE_OF` con `right.literal` array y valor coincidente | acepta |
+| `EXP-BOTHOPERANDS-001` | `right` con `literal` y `path` a la vez | rechazado |
+| `EXP-MISSINGOPERAND-001` | operador que requiere `right` sin `right` | rechazado |
+| `EXP-MISSINGPATH-001` | `left_path` no resuelve, operador distinto de `NOT_EXISTS` | la aserción especifica FALLA, no error de harness |
+| `EXP-TYPEMISMATCH-001` | `GT`/`LT` contra un valor string | la aserción especifica FALLA, no coercion |
+| `EXP-MODE-SINGLE-001` | `mode=SINGLE_OBSERVATION` con `1..32` aserciones | acepta |
+| `EXP-MODE-EVIDENCEONLY-001` | `mode=EVIDENCE_ONLY` con `assertions=[]` | acepta |
+| `EXP-EVIDENCEONLY-NOTPASS-001` | caso `EVIDENCE_ONLY` en un `QAReportV2` | `status=NOT_RUN`, nunca `PASS`, nunca `REQUIRED` |
+| `CASE-CLASS-001` | `QACaseV2.class != LEGACY_PARITY` presentado a un perfil de replay de paridad | rechazado |
+| `CASE-IDMATCH-001` | `QACaseV2.case_id != ParityFixtureV2.fixture_id` referenciado | rechazado por la regla 16D.1 |
+| `REPORT-PARITY-001` | `QAReportV2` con `suite_id=PARITY_TVP_772`, `profile=LEGACY_TVP_772` | acepta el mapeo de campos de la seccion 16D.2 |
+| `COMPARATOR-GENERIC-001` | el motor comparador no contiene ningun valor especifico de fixture en su codigo | confirmado por diseno (seccion 16C) |
+| `PILOT-LOOT-EVIDENCEONLY-001` | `PARITY-LOOT-RANDOMNESS-001` | permanece `EVIDENCE_ONLY`; ninguna aserción de una sola corrida prueba no-determinismo |
+| `PILOT-MAPDESYNC-001` | evidencia de desalineamiento de mapa 0x64 | no se promueve a regla de oracle autoritativa |
+
+Especificaciones de contrato; ningun test ni implementacion de captura/replay
+se materializa en este turno.
+
 ## 17. La paridad no dicta V2 ciegamente
 
 Un comportamiento de TVP observado en Phase 2 es EVIDENCIA. No es
@@ -502,7 +854,7 @@ el comportamiento V2 solo para igualar un bug accidental legacy.
 ```json
 {
   "schema": "tvp3d.qa.error",
-  "version": "2.0.0",
+  "version": "2.1.0",
   "code": "QA_CONTRACT_DEFECT",
   "path": null,
   "message": "modelo-comun 2.1.0 section 8A conflicts with servidor 2.1.0 section 10",
@@ -515,14 +867,27 @@ el comportamiento V2 solo para igualar un bug accidental legacy.
 | `QA_CASE_SCHEMA_INVALID` | un `QACaseV2` no valida contra su propio schema |
 | `QA_CONTRACT_VERSION_MISMATCH` | la version declarada por el caso difiere de la version realmente cargada |
 | `QA_FIXTURE_MISSING` | el `input_fixture` referenciado no existe/no resuelve |
-| `QA_EXPECTATION_INVALID` | `expected` no corresponde al "Resultado obligatorio" real del contrato origen |
+| `QA_EXPECTATION_INVALID` | `expected` no corresponde al "Resultado obligatorio" real del contrato origen, o un `ParityExpectationV1` embebido en `expected` es estructuralmente invalido (modo incorrecto, `assertions` fuera de lo permitido por su `mode`, operando `right` mal formado) |
 | `QA_REPORT_INVALID` | un `QAReportV2` no valida contra su propio schema |
 | `QA_PREREQUISITE_MISSING` | falta un prerequisito declarado en `preconditions`; produce `BLOCKED` en el caso |
-| `QA_SECRET_EXPOSURE` | un valor con forma de secreto aparecio en un fixture/reporte versionado |
+| `QA_SECRET_EXPOSURE` | un valor con forma de secreto aparecio en un fixture/reporte/observacion versionada |
 | `QA_UNDECLARED_MUTATION` | un caso mutó estado externo sin declarar `mutates_external_state=true` |
 | `QA_NONDETERMINISTIC_OUTPUT` | una comparacion deterministica produjo resultados distintos para la misma entrada declarada |
 | `QA_CONTRACT_DEFECT` | dos contratos dependientes se contradicen; QA reporta, no arbitra |
 | `QA_HARNESS_FAILURE` | el propio harness/runner de QA fallo antes de poder evaluar el caso |
+| `QA_OBSERVATION_INVALID` | un `OracleObservationV1` no valida contra su propio schema (agregado en `2.1.0`) |
+
+Codigo nuevo agregado en `2.1.0`: `QA_OBSERVATION_INVALID`. Se justifica
+porque `OracleObservationV1` es una identidad de schema nueva y ninguno de
+los diez codigos de `2.0.0` nombra la falla de validez estructural de ese
+documento especifico, igual que `QA_CASE_SCHEMA_INVALID` y `QA_REPORT_INVALID`
+ya poseen cada uno el suyo para `QACaseV2`/`QAReportV2`. `tvp3d.qa.error`
+avanza de `2.0.0` a `2.1.0` unicamente para ampliar este registro cerrado de
+`code`; conserva exactamente los mismos campos, tipos y rangos de `2.0.0`
+(mismo patron que `modelo-comun 2.1.0` uso para extender
+`tvp3d.domain_error`). Un consumidor que solo reconozca `2.0.0` simplemente
+no reconoce el codigo nuevo; ningun codigo ni campo existente cambio de
+significado.
 
 No se duplican codigos de dominio/protocolo/servidor/cliente. Cuando el
 sistema bajo prueba emite un error propio de su contrato (por ejemplo
@@ -588,6 +953,7 @@ produccion de ningun otro carril en este turno.
 | `1.0.0`..`1.4.0` | TVP 7.72 en vivo como oracle/runtime primario, paquetes/ids legacy, pruebas Docker-orientadas (ver HISTORICAL) |
 | `2.0.0` | taxonomia `TestClassV2`, `QACaseV2`/`QAReportV2`, matriz de cobertura de 194 obligaciones sobre los 7 contratos V2, invariantes cruzados, dominios bloqueados explicitos, `FULL_NATIVE_PLAYABLE` declarado bloqueado, boundary de `ParityFixtureV2` para Phase 2 |
 | `2.0.1` | erratum de patch: corrige la aritmetica de la matriz de cobertura (194 -> 198, seccion 5), sin cambiar taxonomia, schemas (`tvp3d.qa.case/2.0.0`, `tvp3d.qa.report/2.0.0`, `tvp3d.qa.parity_fixture/2.0.0`, `tvp3d.qa.error/2.0.0` sin cambios), estados de resultado, codigos de salida ni perfiles de suite. 0 materializadas, sin cambio |
+| `2.1.0` | extension minor: publica el boundary de replay de oracle legacy `OracleObservationV1` (`tvp3d.qa.oracle_observation/1.0.0`) y `ParityExpectationV1` (`tvp3d.qa.parity_expectation/1.0.0`), el modelo de comparacion generico de 8 operadores, la regla `case_id == fixture_id` y el reuso exacto de `QACaseV2`/`QAReportV2` para replay (secciones 16A-16F). `tvp3d.qa.case/2.0.0`, `tvp3d.qa.report/2.0.0` y `tvp3d.qa.parity_fixture/2.0.0` no cambian; `tvp3d.qa.error` avanza a `2.1.0` solo para agregar `QA_OBSERVATION_INVALID` al registro cerrado. Los 4 fixtures de Phase 2A y sus conteos (198/0 V2; 4/4 paridad) no cambian; no se implementa captura/replay |
 
 ## HISTORICAL / SUPERSEDED — QA 1.4.0 y anteriores
 
