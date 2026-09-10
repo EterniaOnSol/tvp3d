@@ -1,0 +1,34 @@
+{
+  "schema": "tvp3d.qa.report",
+  "version": "2.0.0",
+  "suite_id": "PARITY_TVP_772",
+  "profile": "LEGACY_TVP_772",
+  "contract_versions": [
+    {
+      "contract": "qa",
+      "version": "2.1.1"
+    }
+  ],
+  "cases": [
+    {
+      "case_id": "PARITY-MONSTER-CORPSE-001",
+      "status": "PASS",
+      "assertions_total": 4,
+      "assertions_passed": 4,
+      "error_code": null,
+      "evidence": [
+        "qa/parity/cases/tvp772/death_corpse_loot/parity-monster-corpse-001.case.json",
+        "qa/parity/fixtures/tvp772/death_corpse_loot/parity-monster-corpse-001.json",
+        "qa/parity/observations/tvp772/death_corpse_loot/live/parity-monster-corpse-001.observation.json"
+      ],
+      "blockers": []
+    }
+  ],
+  "summary": {
+    "total": 1,
+    "pass": 1,
+    "fail": 0,
+    "blocked": 0,
+    "not_run": 0
+  }
+}

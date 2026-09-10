@@ -2,8 +2,103 @@
 
 Estado: LISTO_PARA_REVISION
 Ultimo agente: claude
-Ultima actualizacion: 2026-09-10T04:30:00-06:00
+Ultima actualizacion: 2026-09-10T06:00:00-06:00
 Contrato publicado: SI (`CONTRATO.md` v2.1.1, sin cambios en este turno)
+
+## Turno cerrado: Phase 2B.2 — Primera captura fresca de oracle TVP en vivo (EXITO)
+
+Detalle completo en `docs/qa/PARITY_PHASE2B2_LIVE_MONSTER_CORPSE.md`. Se
+completo el primer ciclo real de extremo a extremo (TVP 7.72 real ->
+adquisicion de corpse de monstruo -> `OracleObservationV1` `LIVE_ORACLE` ->
+`qa/parity/tools/replay.py` sin modificar -> `QAReportV2` `PASS` 4/4) para
+`PARITY-MONSTER-CORPSE-001`. Cero jugadores murieron; ningun flujo de
+muerte/reentrada se ejecuto.
+
+- Motor de Docker: alcanzable al abrir el turno. El stack de TVP 7.72 no
+  estaba arriba; **este turno si lo levanto**
+  (`cd servidor && docker compose up --build -d`, sin modificar
+  `docker-compose.override.yml` ni resetear datos). Incidente intermedio: el
+  puente CLI-motor de Docker Desktop se corto justo despues del build (falla
+  conocida de este entorno); el usuario reinicio Docker Desktop, lo que
+  detuvo los contenedores recien creados, y se los volvio a levantar con
+  `docker compose up -d` (sin `--build`, imagen ya existente). Verificado
+  `>> TVP3D Server Online!` en el log y los puertos `7171`/`7172` abiertos
+  antes de capturar. Por decision explicita del usuario, el stack quedo
+  corriendo al cerrar este turno (no se ejecuto `docker compose stop`).
+- Credenciales: las tres variables (`TVP772_ACCOUNT`, `TVP772_PASSWORD`,
+  `TVP772_GOD_CHARACTER`) estaban ausentes al abrir el turno; siguiendo la
+  instruccion literal, se detuvo el trabajo de implementacion y se le pidio
+  al usuario que las proveyera. El usuario opto por darlas directamente para
+  esta ejecucion puntual en vez de configurarlas como variables persistentes
+  del sistema. Se usaron exclusivamente como `export` dentro de una unica
+  invocacion de shell que lanzo Godot, con `unset` inmediato despues; nunca
+  se escribieron a un archivo, se imprimieron en un comando, ni entraron a
+  un commit/evento/documento. El primer intento (cuenta nueva) fue
+  rechazado por el propio servidor ("Account number or password is not
+  correct"); el usuario paso entonces a la cuenta de prueba ya documentada
+  como valor por defecto en `ARRANCAR SERVIDOR.bat` (no repetida aqui). El
+  segundo intento fallo por
+  una diferencia de mayusculas en el nombre del personaje god; el script de
+  captura ya imprime, ante ese fallo especifico, la lista de nombres de
+  personajes disponibles (dato no sensible), lo que permitio identificar
+  `GOD VALENTINO` (todo en mayusculas) sin inspeccionar ningun otro archivo.
+  El tercer intento tuvo exito.
+- **Se creo** `cliente3d/pruebas/prueba_parity_monster_corpse_capture.gd` +
+  `.tscn` (nuevo, QA-owned; no reemplaza ni reescribe
+  `prueba_muerte_loot_vivo.gd`). Reutiliza en modo solo lectura
+  `res://red/conexion772.gd` y `res://red/estado_mundo.gd`, sin modificarlos.
+  Lee credenciales exclusivamente via `OS.get_environment(...)`; el archivo
+  fuente no contiene ningun literal de cuenta/clave/personaje.
+- **Mutacion exacta ejecutada:** una rata de prueba invocada por el god,
+  matada, su corpse creado y abierto como contenedor real. Nada mas: ningun
+  jugador murio, no se toco al personaje normal (`Valentino`). El corpse
+  queda para descomponerse de forma normal; no se ejecuto limpieza especial
+  ni reset de base de datos.
+- **Se creo** la observacion `LIVE_ORACLE`:
+  `qa/parity/observations/tvp772/death_corpse_loot/live/parity-monster-corpse-001.observation.json`,
+  construida por el nuevo `qa/parity/tools/wrap_live_observation.py`
+  (QA-owned, stdlib-only) a partir de la unica linea `OBSERVATION_JSON: ...`
+  que emite el script de captura. Payload exacto:
+  `{"monster_kind": "rat", "corpse": {"present": true, "name": "dead rat",
+  "openable_container": true}}`. Sin ids de runtime, coordenadas, loot,
+  credenciales, timestamps ni paths absolutos.
+- Replay con el mismo comparador generico de Phase 2B.1 (sin modificar),
+  ejecutado dos veces contra la misma observacion:
+  `PASS PARITY-MONSTER-CORPSE-001`, `assertions_total=4`,
+  `assertions_passed=4`, codigo de salida `0`, reporte byte-identico entre
+  corridas (`qa/parity/reports/replay_live_monster_corpse_report.json`).
+  El comportamiento fresco de TVP coincidio con la expectativa ya publicada
+  sin ajustar nada para forzarlo.
+- Correccion de higiene de codigo sobre el propio archivo nuevo de este
+  turno: el script re-enviaba "abrir contenedor" en cada frame mientras
+  esperaba respuesta; se agrego la transicion de fase faltante. No implico
+  una recaptura contra TVP.
+- `worklog/qa/CONTRATO.md` sigue en `2.1.1`, sin cambios. Los cuatro
+  `ParityFixtureV2` de Phase 2A y los cuatro `QACaseV2` de replay de Phase
+  2B.1 quedan byte-identicos.
+- El desalineamiento de mapa `0x64` no se investigo ni se toco; sigue
+  `INVESTIGACION_DESALINEAMIENTO_MAPA_0X64_PENDIENTE`.
+
+## Conteos (Phase 2B.2)
+
+| Inventario | Especificadas | Materializadas |
+|---|---:|---:|
+| Obligaciones de contrato Architecture V2 (`qa 2.1.1`) | 198 | 0 (sin cambio) |
+| Corpus piloto `LEGACY_PARITY` (Phase 2A) | 4 | 4 (sin cambio) |
+| Casos de replay `QACaseV2`/`ParityExpectationV1` (Phase 2B.1) | 4 | 4 (sin cambio) |
+| Observaciones `RECORDED_EVIDENCE` | 3 | 3 (sin cambio) |
+| Observaciones `LIVE_ORACLE` frescas | 1 (planeada) | **1** (`PARITY-MONSTER-CORPSE-001`, `PASS`) |
+| Ejecuciones frescas de oracle TVP en este turno | — | 1 |
+
+Ninguna de estas cuentas se combina con otra: replayar paridad legacy no
+materializa ninguna obligacion de contrato Architecture V2.
+
+**Le toca:** (a) si algun turno futuro decide certificar
+`PARITY-DEATH-CORPSE-001`/`PARITY-DEATH-REENTRY-001` en vivo, eso implicaria
+un flujo de muerte/reentrada real, fuera del alcance de este turno; (b)
+investigar el desalineamiento de mapa `0x64` como su propia linea de
+evidencia, ahora con un camino de captura en vivo mas simple (solo god, sin
+duelo) disponible como base.
 
 ## Turno cerrado: Phase 2B.1 — Captura controlada de oracle TVP y replay generico
 
