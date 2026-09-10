@@ -189,23 +189,95 @@ regresion historica aun despues del retiro.
 
 ## Proxima fase exacta
 
-**Phase 1 — freeze domain contracts: CERRADA / GATE APROBADO.** Los ocho
-contratos fundacionales quedaron publicados y coherentes: `modelo-comun
-2.1.0`, `protocolo-red 2.1.0`, `assets 2.0.0`, `servidor 2.1.0`,
-`cliente 2.0.0`, `editor 2.0.0`, `integracion 2.0.1` y `qa 2.0.0`. El detalle
-completo de la revision (grafo de dependencias, invariantes cruzados,
-defectos encontrados) vive en `docs/tibia3d/PHASE1_CLOSURE_REVIEW.md`.
+### Snapshot fundacional del cierre de Phase 1 (historico, no se reescribe)
 
-Este cierre es sobre CONTRATO, no sobre implementacion: ningun carril queda
-`HECHO` por este cierre, `FULL_NATIVE_PLAYABLE` sigue bloqueado
-(Authentication/Application Session, Map/World Rules y otros dominios
-especializados siguen sin publicarse) y QA V2 sigue con 0 fixtures
+**Phase 1 — freeze domain contracts: CERRADA / GATE APROBADO.** Los ocho
+contratos fundacionales quedaron publicados y coherentes en el momento de
+ese cierre: `modelo-comun 2.1.0`, `protocolo-red 2.1.0`, `assets 2.0.0`,
+`servidor 2.1.0`, `cliente 2.0.0`, `editor 2.0.0`, `integracion 2.0.1` y
+`qa 2.0.0`. El detalle completo de la revision (grafo de dependencias,
+invariantes cruzados, defectos encontrados) vive en
+`docs/tibia3d/PHASE1_CLOSURE_REVIEW.md`. Esa version de `qa` (`2.0.0`) es la
+fotografia exacta de ese instante; no se actualiza retroactivamente aca. Ver
+mas abajo el estado vigente de `qa`.
+
+Este cierre es sobre CONTRATO, no sobre implementacion: ningun carril quedo
+`HECHO` por este cierre, y en ese momento QA V2 tenia 0 fixtures
 materializadas.
+
+### Estado vigente de QA / Phase 2 (actual, no historico)
+
+`FULL_NATIVE_PLAYABLE` sigue bloqueado (Authentication/Application Session,
+Map/World Rules y otros dominios especializados siguen sin publicarse).
+
+El contrato `qa` avanzo de forma compatible **despues** del cierre de
+Phase 1, dando soporte a Phase 2; ninguno de estos pasos reabre ni contradice
+ese cierre:
+
+- `qa 2.0.1`: erratum de conteo de la matriz de cobertura (194 -> 198).
+- `qa 2.1.0`: publica el boundary de replay de oracle legacy
+  (`OracleObservationV1`, `ParityExpectationV1`, comparador generico de
+  nueve operadores).
+- `qa 2.1.1`: erratum descriptivo del conteo de operadores (8 -> 9 en una
+  frase de historial; el registro normativo siempre tuvo nueve).
+
+**Contrato `qa` vigente: `2.1.1`.**
+
+Inventarios vigentes, deliberadamente separados (nunca se combinan entre
+si):
+
+| Inventario | Especificadas | Materializadas |
+|---|---:|---:|
+| Obligaciones de contrato Architecture V2 (`qa 2.1.1` seccion 5) | 198 | 0 |
+| Corpus de paridad `LEGACY_PARITY` (Phase 2) | — | 4 fixtures |
+| Casos de replay `QACaseV2`/`ParityExpectationV1` | — | 4 |
+| Observaciones `RECORDED_EVIDENCE` | — | 3 |
+| Observaciones `LIVE_ORACLE` canonicas | — | 1 |
+
+Los cuatro fixtures de paridad, los cuatro casos de replay, las tres
+observaciones grabadas y la observacion en vivo **no** cuentan para las 198
+obligaciones de contrato Architecture V2: son un inventario de Phase 2
+completamente distinto.
+
+**Primer replay de oracle en vivo de extremo a extremo, certificado:**
+
+```text
+PARITY-MONSTER-CORPSE-001
+TVP 7.72 -> OracleObservationV1 LIVE_ORACLE -> replay generico -> PASS 4/4
+```
+
+Commit de la implementacion endurecida/recertificada:
+`191aa88706868edb8bbf49dc4f7e06ed41d9c25e`. Evidencia detallada en
+`docs/qa/PARITY_PHASE2B21_CAPTURE_HARDENING.md`; este roadmap no duplica ese
+detalle.
+
+**Phase 2 sigue EN CURSO.** Un solo fixture certificado en vivo no satisface
+la salida de Phase 2: todavia faltan mas fixtures por dominio, un catalogo
+mas amplio de reglas observadas, casos limite, cobertura de clasificacion de
+diferencias (`MATCH_EXPECTED`/`KNOWN_LEGACY_BUG`/`DELIBERATE_V2_DIFFERENCE`/
+`UNRESOLVED`), y un corpus de oracle suficiente para sostener la migracion de
+Phase 3. Este roadmap no fija un umbral numerico de "fixtures suficientes"
+mas alla del que ya publique un contrato.
+
+Bloqueos conocidos, independientes de este hito y sin resolver por el:
+
+- `AUTHENTICATION_APPLICATION_SESSION_PENDIENTE`
+- `MAP_WORLD_RULES_PENDIENTE`
+- `CASAS_CAMAS_DOCKER_RETEST_PENDIENTE`
+- `INVESTIGACION_DESALINEAMIENTO_MAPA_0X64_PENDIENTE`
+
+**Proxima expansion de paridad recomendada (recomendacion, no una fase nueva
+ni una ejecucion de este turno): reacquisicion de monstruo.** Evidencia ya
+disponible en `docs/qa/PRUEBA_VIVA_REACQUISICION.md`. Motivo: es un
+comportamiento distinto de corpse/loot, no requiere muerte de jugador, el
+oracle historico ya nombra la cave rat atacante exacta, el flujo historico
+incluye su propia limpieza, y probaria que las herramientas de captura/
+replay generalizan mas alla del comportamiento de corpse.
 
 Continuar unicamente con **Phase 2: build parity fixtures against TVP**.
 Objetivo exacto: convertir el comportamiento legacy en fixtures de oracle
-reproducibles (`LEGACY_PARITY`, usando `ParityFixtureV2` ya publicado por
-`qa 2.0.0`), no implementar el servidor Godot nativo. La migracion del
-servidor Godot headless sigue siendo Phase 3. No iniciar refactor de
-`mundo3d.gd`, Monster Domain, Monster3D, Cyclops ni migracion de gameplay
-hasta que Phase 2 entregue fixtures de paridad suficientes.
+reproducibles (`LEGACY_PARITY`, usando `ParityFixtureV2` ya publicado), no
+implementar el servidor Godot nativo. La migracion del servidor Godot
+headless sigue siendo Phase 3. No iniciar refactor de `mundo3d.gd`, Monster
+Domain, Monster3D, Cyclops ni migracion de gameplay hasta que Phase 2
+entregue fixtures de paridad suficientes.
