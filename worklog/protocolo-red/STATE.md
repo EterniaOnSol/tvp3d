@@ -2,9 +2,95 @@
 
 Estado: LISTO_PARA_REVISION
 Ultimo agente: claude
-Ultima actualizacion: 2026-09-09T22:30:00-06:00
+Ultima actualizacion: 2026-09-11T05:00:00-06:00
 Contrato publicado: SI
 Version publicada: 2.1.0
+
+## Turno cerrado: Reparacion de identidades conocidas del legacy TVP 7.72
+
+Turno de reparacion dirigida sobre el parser legacy. **`CONTRATO.md` no se
+modifico: sigue en `2.1.0`.** Es un bug del cliente legacy contra semantica
+de wire 7.72 ya entendida, no una contradiccion del contrato nativo V2.
+
+**Origen de la solicitud:** evidencia en vivo de Phase 2C.2
+(`docs/qa/PARITY_PHASE2C2_MONSTER_REACQUISITION_LIVE.md`), donde el monstruo
+objetivo, el god y el propio personaje aparecieron los tres con `nombre`
+vacio a mitad de una medicion. QA tuvo que compensar memorizando identidad
+por id dentro de su adaptador.
+
+**Causa raiz exacta (verificada, no inferida):**
+
+1. `ProtocolGame::checkCreatureAsKnown` (`protocolgame.cpp:665-698`) mantiene
+   un `knownCreatureSet` que **NO** se vacia cuando una criatura sale de la
+   vista. Solo desaloja al pasar de 150 entradas, y avisa mandando ese id
+   como `removedKnown` dentro de un `0x61`.
+2. `estado_mundo.gd` hacia `criaturas.clear()` en cada `0x64` (mapa
+   completo, por ejemplo tras un teleport `/c`).
+3. El servidor, que seguia considerando conocidas a esas criaturas, las
+   reenviaba como `0x62` **sin nombre**.
+4. La unica recuperacion del cliente era `if nombre == "" and
+   criaturas.has(id)`, contra el diccionario **visible** que acababa de
+   vaciarse. Resultado: nombre vacio.
+5. Ademas `mapa772.gd` **descartaba** el `removedKnown` del `0x61`
+   (`msg.leer_u32()` sin asignar), asi que el cliente no modelaba el
+   conjunto conocido del servidor en absoluto.
+
+**Semantica de wire verificada contra `ProtocolGame::AddCreature`:**
+
+| Forma | Campos |
+|---|---|
+| `0x61` desconocida | marca, `removedKnown` u32, id u32, nombre texto, + estado comun |
+| `0x62` conocida | marca, id u32, + estado comun (**sin nombre**) |
+| `0x63` corta | marca, id u32, direccion u8 (`sendCreatureTurn`, `protocolgame.cpp:1529-1531`) |
+
+**Reparacion:**
+
+- `mapa772.gd`: el `removedKnown` del `0x61` se conserva como
+  `bicho["olvidar_id"]` en vez de descartarse.
+- `estado_mundo.gd`: nuevo `identidades_conocidas` (id -> nombre),
+  explicitamente **separado** de `criaturas`. `criaturas` es lo que se ve
+  ahora; `identidades_conocidas` es lo que el servidor cree que el cliente
+  ya conoce, y por eso sobrevive a `criaturas.clear()` de un `0x64`.
+- El desalojo lo manda el servidor: un `0x61` con `olvidar_id != 0` borra ese
+  id del conjunto, **antes** de registrar el alta nueva. No hay cache
+  eterno ni vida util adivinada por visibilidad.
+- `0x62`/`0x63` resuelven el nombre contra el conjunto conocido, con
+  `criaturas` como respaldo secundario; si el respaldo lo rescata, se
+  promueve al conjunto conocido para no volver a depender de la visibilidad.
+- Si llega una forma conocida cuyo id no esta en el conjunto, **no se
+  inventa un nombre**: se emite la senal `identidad_conocida_ausente` con el
+  id y la forma exactos.
+- `reiniciar_sesion()` vacia el conjunto (el servidor arma un `ProtocolGame`
+  nuevo por login). Un `0x64` **no** lo vacia, igual que el servidor.
+- Comportamiento **generico**: jugadores, monstruos y NPCs por igual. No se
+  copio la estrategia del adaptador de QA ni existe ninguna logica por tipo
+  de criatura.
+
+**Regresion determinista nueva:** `cliente3d/red/identidad_conocida_self_test.gd`
+(ruta de este carril), 21 comprobaciones, sin TVP en vivo. Cubre alta y
+cacheo, perdida de visibilidad sin perdida de identidad, reaparicion `0x62`,
+desalojo por `removedKnown`, no-resurreccion de un id desalojado con
+diagnostico determinista, reinicio de sesion, comportamiento generico
+jugador/monstruo/NPC, forma corta `0x63` (incluida tras perder visibilidad),
+y la forma exacta del fallo vivo de Phase 2C.2 con las tres criaturas.
+
+**Control negativo:** la misma prueba corrida contra el parser previo falla
+(casos 7 y 8), asi que la regresion efectivamente detecta el defecto.
+
+Los siete self-tests existentes del carril siguen en verde:
+`estado_criatura`, `mapa`, `protocolo`, `party`, `mapa_captura`, `comercio`,
+`ventana_texto`.
+
+**Solicitud al carril `qa`:** registrar
+`red/identidad_conocida_self_test.gd` en
+`cliente3d/pruebas/matriz_qa_local.gd`. Ese archivo es ruta de `qa` y este
+turno no lo toco.
+
+**Fuera de alcance y sin tocar:** el desalineamiento de mapa `0x64`
+(`INVESTIGACION_DESALINEAMIENTO_MAPA_0X64_PENDIENTE`) sigue abierto y es
+independiente; ningun fixture, case, observacion, reporte ni adaptador de QA
+se modifico, de modo que los hashes de la certificacion de Phase 2C.2 siguen
+siendo validos.
 
 ## Turno cerrado: Phase 1D.3
 

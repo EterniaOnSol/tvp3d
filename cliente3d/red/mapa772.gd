@@ -321,7 +321,14 @@ func _leer_criatura(msg) -> Dictionary:
 		return bicho
 
 	if marca == CRIATURA_DESCONOCIDA:
-		msg.leer_u32()                   # id de la criatura a olvidar
+		# `removedKnown` de `ProtocolGame::checkCreatureAsKnown`
+		# (protocolgame.cpp:665-698): el servidor mantiene su propio
+		# `knownCreatureSet` y, cuando pasa de 150 entradas, elige una para
+		# desalojar y manda su id aca. `0` significa "no olvides nada".
+		# Se conserva en vez de descartarse: es la UNICA senal de vida util
+		# de una identidad conocida, y sin ella el cliente no puede saber
+		# cuando dejar de confiar en un id reutilizado.
+		bicho["olvidar_id"] = msg.leer_u32()
 		bicho["id"] = msg.leer_u32()
 		bicho["nombre"] = msg.leer_texto()
 		bicho["conocida"] = false

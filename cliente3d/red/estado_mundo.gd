@@ -68,6 +68,11 @@ signal jugador_muerto(posicion: Vector3i)
 ## El mapa leido no cuadra con la posicion confirmada del jugador. Casi siempre
 ## es un item cuyo ancho no esta en el catalogo; la pila local no sirve.
 signal mapa_desalineado(detalle: Dictionary)
+## El servidor mando una criatura en forma conocida (`0x62`/`0x63`, sin
+## nombre) cuyo id no esta en `identidades_conocidas`. No se inventa un
+## nombre: se avisa. Si esto aparece, o el cliente perdio una identidad que
+## debia conservar, o el servidor mando un id que nunca presento con `0x61`.
+signal identidad_conocida_ausente(detalle: Dictionary)
 ## El servidor abrio la ventana de texto de un cartel, carta o etiqueta (0x96).
 signal ventana_texto(datos: Dictionary)
 ## El servidor cancelo el objetivo de combate (0xA3).
@@ -80,6 +85,24 @@ var mapa_alineado := true
 var ultima_ventana_texto := {}
 var casillas := {}     ## Vector3i -> Array de cosas
 var criaturas := {}    ## id -> {pos, nombre, apariencia}
+## Identidades del conjunto "conocido" del protocolo 7.72: id -> nombre.
+##
+## NO es lo mismo que `criaturas`. `criaturas` es lo que se ve AHORA; esto es
+## lo que el SERVIDOR cree que el cliente ya conoce. El servidor mantiene su
+## `knownCreatureSet` (`protocolgame.cpp:665-698`) y NO lo vacia cuando una
+## criatura sale de la vista: solo desaloja cuando pasa de 150 entradas, y
+## avisa mandando ese id en el `removedKnown` de un `0x61`.
+##
+## Por eso las dos cosas tienen vidas distintas: un `0x64` limpia `criaturas`
+## entero, pero el servidor sigue considerando conocidas a esas criaturas y
+## las reenvia como `0x62` SIN nombre. Si la identidad viviera solo en
+## `criaturas`, el nombre se perderia justo ahi (era el defecto observado en
+## vivo en Phase 2C.2, donde el monstruo, el god y el propio personaje
+## quedaron los tres con nombre vacio tras un teleport).
+##
+## Alcance: una sesion de juego. El servidor construye un `ProtocolGame`
+## nuevo por login, asi que `reiniciar_sesion()` lo vacia.
+var identidades_conocidas := {}  ## id -> nombre
 var inventario := {}   ## slot -> cosa
 var contenedores := {} ## id -> {nombre, capacidad, items, tiene_padre}
 var comercio := {
@@ -869,9 +892,40 @@ func _absorber(mundo: Dictionary) -> void:
 		# pertenecer legitimamente a una criatura completa con lookTypeEx, por
 		# eso la ausencia de velocidad distingue el marcador corto sin adivinar.
 		var descripcion_corta: bool = not bicho.has("velocidad")
+
+		# Conjunto conocido del protocolo. Un `0x61` es la UNICA forma que
+		# trae nombre, y es tambien la unica que desaloja: su `removedKnown`
+		# dice que id dejo de estar conocido del lado del servidor. Se
+		# procesa el desalojo ANTES de registrar el alta, porque el id que se
+		# olvida y el que se da de alta son distintos y el orden importa si
+		# alguna vez coincidieran.
+		if not bool(bicho.get("conocida", true)):
+			var olvidar := int(bicho.get("olvidar_id", 0))
+			if olvidar != 0:
+				identidades_conocidas.erase(olvidar)
+			if bicho["nombre"] != "":
+				identidades_conocidas[id] = bicho["nombre"]
+
 		var nombre: String = bicho["nombre"]
-		if nombre == "" and criaturas.has(id):
-			nombre = criaturas[id]["nombre"]
+		if nombre == "":
+			# Forma conocida (`0x62`/`0x63`): el servidor no reenvia el
+			# nombre porque cree que ya lo tenemos. La identidad se resuelve
+			# contra el conjunto conocido, que sobrevive a `criaturas.clear()`
+			# de un `0x64`; `criaturas` queda solo como respaldo.
+			if identidades_conocidas.has(id):
+				nombre = identidades_conocidas[id]
+			elif criaturas.has(id):
+				nombre = criaturas[id]["nombre"]
+			if nombre == "":
+				# No se inventa nada: se avisa con el id exacto.
+				identidad_conocida_ausente.emit({
+					"id": id,
+					"forma": "corta" if descripcion_corta else "conocida",
+				})
+			elif not identidades_conocidas.has(id):
+				# Rescatado del respaldo: se promueve al conjunto conocido
+				# para no depender de la visibilidad la proxima vez.
+				identidades_conocidas[id] = nombre
 		var apariencia: int = bicho.get("apariencia", 0)
 		if descripcion_corta and criaturas.has(id):
 			# El caso corto (0x63) no manda el aspecto; se conserva el que ya
@@ -907,6 +961,11 @@ func reiniciar_sesion() -> void:
 	"""Limpia el estado del personaje antes de volver al login."""
 	casillas.clear()
 	criaturas.clear()
+	# El servidor arma un `ProtocolGame` nuevo por login, con su
+	# `knownCreatureSet` vacio: ninguna identidad puede cruzar de una sesion
+	# a la siguiente. A diferencia de esto, un `0x64` NO vacia el conjunto
+	# conocido, porque del lado del servidor tampoco se vacia.
+	identidades_conocidas.clear()
 	inventario.clear()
 	contenedores.clear()
 	comercio = {"activo": false, "nombre": "", "propio": [],
