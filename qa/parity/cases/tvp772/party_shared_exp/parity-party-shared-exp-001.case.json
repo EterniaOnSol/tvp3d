@@ -1,0 +1,120 @@
+{
+  "schema": "tvp3d.qa.case",
+  "version": "2.0.0",
+  "case_id": "PARITY-PARTY-SHARED-EXP-001",
+  "class": "LEGACY_PARITY",
+  "title": "TVP 7.72 shared experience: leader-only toggle, active vs enabled, and equal formula-based distribution",
+  "owners": ["qa"],
+  "contracts": [
+    {"contract": "qa", "version": "2.1.1"}
+  ],
+  "requirement_refs": [
+    {
+      "contract": "qa",
+      "version": "2.1.1",
+      "section": "16",
+      "source_fixture_id": "PARITY-PARTY-SHARED-EXP-001"
+    }
+  ],
+  "preconditions": [
+    "party de exactamente dos participantes capaces de ganar experiencia",
+    "ambos cumplen la regla de nivel y de rango del servidor",
+    "sin participacion reciente registrada al momento de la primera solicitud"
+  ],
+  "input_fixture": {
+    "logical_path": "qa/parity/fixtures/tvp772/party_shared_exp/parity-party-shared-exp-001.json"
+  },
+  "expected": {
+    "schema": "tvp3d.qa.parity_expectation",
+    "version": "1.0.0",
+    "mode": "SINGLE_OBSERVATION",
+    "assertions": [
+      {
+        "assertion_id": "TRANSPORT-LEADER-CAN-REQUEST",
+        "left_path": "/transport/leader_can_request_enable",
+        "operator": "EQ",
+        "right": {"literal": true}
+      },
+      {
+        "assertion_id": "TRANSPORT-NON-LEADER-REJECTED",
+        "left_path": "/transport/non_leader_request_rejected",
+        "operator": "EQ",
+        "right": {"literal": true}
+      },
+      {
+        "assertion_id": "INACTIVE-REQUESTED-ACTIVE",
+        "left_path": "/inactive_party/requested_active",
+        "operator": "EQ",
+        "right": {"literal": true}
+      },
+      {
+        "assertion_id": "INACTIVE-NOT-ENABLED",
+        "left_path": "/inactive_party/enabled",
+        "operator": "EQ",
+        "right": {"literal": false}
+      },
+      {
+        "assertion_id": "ACTIVITY-GATE-ENFORCED",
+        "left_path": "/activity_gate/enabled_only_after_participation",
+        "operator": "EQ",
+        "right": {"literal": true}
+      },
+      {
+        "assertion_id": "ELIGIBLE-REQUESTED-ACTIVE",
+        "left_path": "/eligible_party/requested_active",
+        "operator": "EQ",
+        "right": {"literal": true}
+      },
+      {
+        "assertion_id": "ELIGIBLE-ENABLED",
+        "left_path": "/eligible_party/enabled",
+        "operator": "EQ",
+        "right": {"literal": true}
+      },
+      {
+        "assertion_id": "DIST-BOTH-GAIN",
+        "left_path": "/distribution/both_participants_gain_experience",
+        "operator": "EQ",
+        "right": {"literal": true}
+      },
+      {
+        "assertion_id": "DIST-EQUAL-SHARES",
+        "left_path": "/distribution/same_share_for_each_participant",
+        "operator": "EQ",
+        "right": {"literal": true}
+      },
+      {
+        "assertion_id": "DIST-MATCHES-FORMULA",
+        "left_path": "/distribution/share_matches_legacy_formula",
+        "operator": "EQ",
+        "right": {"literal": true}
+      },
+      {
+        "assertion_id": "DISABLE-IGNORED-WHILE-IN-FIGHT",
+        "left_path": "/disable_in_fight/request_ignored_while_in_fight",
+        "operator": "EQ",
+        "right": {"literal": true}
+      },
+      {
+        "assertion_id": "DISABLE-REQUESTED-INACTIVE",
+        "left_path": "/disable/requested_active",
+        "operator": "EQ",
+        "right": {"literal": false}
+      },
+      {
+        "assertion_id": "DISABLE-NOT-ENABLED",
+        "left_path": "/disable/enabled",
+        "operator": "EQ",
+        "right": {"literal": false}
+      }
+    ]
+  },
+  "mutates_external_state": false,
+  "requires_network": false,
+  "requires_legacy": false,
+  "requires_secrets": false,
+  "status_policy": {
+    "missing_prerequisite_status": "BLOCKED",
+    "assertion_mismatch_status": "FAIL"
+  }
+}

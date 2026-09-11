@@ -1,0 +1,35 @@
+{
+  "schema": "tvp3d.qa.parity_fixture",
+  "version": "2.0.0",
+  "fixture_id": "PARITY-PARTY-LIFECYCLE-001",
+  "oracle": "TVP_772",
+  "oracle_version": "7.72",
+  "source_evidence": {
+    "logical_path": "docs/qa/PRUEBA_VIVA_PARTY.md"
+  },
+  "preconditions": [
+    "dos sesiones autoritativas simultaneas de la misma cuenta, cada una con su propio personaje, ambas conectadas y vivas",
+    "ambas sesiones se ven mutuamente como criaturas en su estado autoritativo antes de empezar",
+    "ninguno de los dos personajes pertenece a una party al comenzar"
+  ],
+  "input_action": "una sesion invita a la otra a party, la invitada se une, el liderazgo se transfiere al miembro, y finalmente el ultimo miembro sale, deshaciendo la party",
+  "observed_authoritative_result": "el servidor no responde con una lista de miembros: comunica cada cambio de party reenviando el escudo (`PartyShields_t`) de cada criatura a cada sesion. Los escudos de ambas sesiones describen de forma consistente la misma party en cada etapa: sin escudo antes de invitar, invitacion enviada/recibida tras invitar, lider/miembro tras unirse, escudos invertidos tras transferir el liderazgo, y sin escudo otra vez tras deshacerse la party",
+  "normalization_rules": [
+    "los escudos se comparan como los valores del enum cerrado `PartyShields_t` de `servidor/src/const.h:187-193`: 0 sin escudo, 1 invitacion recibida, 2 invitacion enviada, 3 miembro, 4 lider",
+    "los roles se comparan por funcion dentro de la party (quien invita, quien es invitado, quien es lider, quien es miembro), NUNCA por nombre de personaje ni por id de cuenta",
+    "los runtime ids de criatura de ambas sesiones quedan fuera de la comparacion: cada login recibe ids nuevos",
+    "no se compara ninguna lista de miembros: el servidor de esta rama no la envia, y afirmarla seria inventar evidencia",
+    "se ignoran marcas de tiempo de reloj de pared, posiciones y cualquier metadata de host o proceso",
+    "el texto exacto de los mensajes informativos del servidor no forma parte de la comparacion; lo comparado es el estado de escudo autoritativo resultante"
+  ],
+  "determinism_notes": "la evidencia grabada demuestra las siguientes relaciones, no valores volatiles: antes de invitar ninguna de las dos sesiones tiene escudo de party; tras la invitacion quien invita ve al invitado con invitacion enviada y el invitado ve a quien invita con invitacion recibida; tras unirse el lider ve al otro como miembro y a si mismo como lider, mientras el miembro ve al otro como lider y a si mismo como miembro; al transferir el liderazgo los dos escudos se invierten y quien lo cedio pasa a verse como miembro; y al salir el ultimo miembro la party se deshace y ninguna de las dos sesiones conserva escudo. Los runtime ids, nombres de personaje y posiciones quedan como evidencia historica en `source_evidence` y estan excluidos de la comparacion deterministica. Este fixture cubre unicamente el ciclo de vida de la party: la experiencia compartida es un dominio separado y el propio documento fuente registra explicitamente que no fue ejercitada en aquella corrida.",
+  "excluded_nondeterministic_fields": [
+    "creature_runtime_ids",
+    "character_names",
+    "account_id",
+    "positions",
+    "server_message_text",
+    "wall_clock_timestamp"
+  ],
+  "classification": "MATCH_EXPECTED"
+}

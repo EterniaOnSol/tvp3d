@@ -1,0 +1,39 @@
+{
+  "schema": "tvp3d.qa.parity_fixture",
+  "version": "2.0.0",
+  "fixture_id": "PARITY-PARTY-SHARED-EXP-001",
+  "oracle": "TVP_772",
+  "oracle_version": "7.72",
+  "source_evidence": {
+    "logical_path": "docs/qa/PARITY_PHASE2D_PARTY_SHARED_EXP.md"
+  },
+  "preconditions": [
+    "una party de exactamente dos participantes: un lider y un miembro, ambos personajes normales capaces de ganar experiencia (ningun participante con la bandera notgainexperience)",
+    "ambos participantes cumplen la regla de nivel del servidor: nivel >= ceil(nivel_mas_alto_de_la_party * 2 / 3)",
+    "ambos participantes estan dentro del rango espacial que exige el servidor respecto del lider",
+    "ningun participante tiene aun participacion reciente registrada cuando se pide activar la experiencia compartida por primera vez"
+  ],
+  "input_action": "el lider solicita activar la experiencia compartida antes de que exista participacion reciente; luego un no-lider intenta la misma solicitud; despues ambos participantes danan de forma autoritativa a un unico monstruo hostil de prueba hasta matarlo; recien muerto el monstruo, y todavia con el signo de batalla puesto, el lider solicita desactivar; finalmente, ya expirado el signo de batalla, el lider repite la solicitud de desactivar",
+  "observed_authoritative_result": "el servidor distingue solicitado (`sharedExpActive`) de habilitado (`sharedExpEnabled`): acepta la solicitud del lider pero NO habilita el reparto mientras haya participantes sin participacion reciente, y lo informa explicitamente. La solicitud de un no-lider no produce ninguna transicion de estado. Una vez que ambos participantes registran participacion reciente, el reparto queda habilitado sin necesidad de volver a solicitarlo, y al morir el monstruo AMBOS participantes ganan experiencia, en partes iguales, segun la formula de reparto vigente del oracle: las partes individuales proporcionales al dano se juntan primero en un unico pozo de la party y recien despues se reparten, de modo que quien golpeo mas no cobra mas. Mientras el solicitante conserva el signo de batalla fuera de zona protegida, la orden de desactivar se DESCARTA en silencio: no hay mensaje ni cambio de estado. Expirado el signo de batalla, la misma orden se acepta y la desactivacion se confirma de forma explicita.",
+  "normalization_rules": [
+    "los participantes se comparan por ROL dentro de la party (lider y miembro), nunca por nombre de personaje, id de cuenta ni runtime id",
+    "no se compara experiencia total acumulada de ningun personaje: solo la relacion entre la ganancia de cada participante y la parte esperada derivada de la formula vigente del oracle",
+    "la parte esperada se deriva en tiempo de captura desde la experiencia base del monstruo y la composicion de vocaciones base distintas de la party; no se congela ningun numero concreto en este fixture",
+    "el texto exacto de los mensajes del servidor no se compara: se normaliza a hechos semanticos booleanos de solicitado/habilitado",
+    "los escudos de party NO se usan como evidencia del estado de experiencia compartida: `PartyShields_t` de 7.72 no tiene valores para eso",
+    "se ignoran niveles y vocaciones concretas de los personajes, posiciones, marcas de tiempo de reloj de pared y cualquier metadata de host o proceso"
+  ],
+  "determinism_notes": "este fixture afirma unicamente hechos observables desde afuera: los mensajes autoritativos de solicitud/estado y las ganancias de experiencia autoritativas de ambos participantes. NO afirma el valor de ninguna variable interna del servidor: la distincion entre solicitado y habilitado se prueba por comportamiento (se acepta la solicitud pero no hay reparto hasta que existe participacion reciente, y el reparto ocurre despues sin volver a solicitarlo), no por leer estado interno. Las reglas de elegibilidad de nivel y de rango espacial quedan documentadas desde el codigo fuente pero NO se afirman aqui como observaciones: certificarlas exige casos negativos dedicados, previstos como fixtures futuros separados. La composicion de vocaciones de la party de prueba se registra como metadata de la captura, no como literal esperado, para que otra composicion pueda certificarse despues sin reescribir este fixture.",
+  "excluded_nondeterministic_fields": [
+    "character_names",
+    "character_levels",
+    "character_vocations",
+    "total_accumulated_experience",
+    "creature_runtime_ids",
+    "account_id",
+    "positions",
+    "server_message_text",
+    "wall_clock_timestamp"
+  ],
+  "classification": "MATCH_EXPECTED"
+}

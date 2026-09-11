@@ -2,8 +2,109 @@
 
 Estado: LISTO_PARA_REVISION
 Ultimo agente: claude
-Ultima actualizacion: 2026-09-11T07:30:00-06:00
+Ultima actualizacion: 2026-09-11T15:10:00-06:00
 Contrato publicado: SI (`CONTRATO.md` v2.1.1, sin cambios en este turno)
+
+## Turno cerrado: Phase 2D — Party y experiencia compartida (TERCER DOMINIO)
+
+Tercer dominio de paridad, abierto con **dos fixtures independientes**. Los
+**dos quedaron CERTIFICADOS EN VIVO**. Detalle en
+`docs/qa/PARITY_PHASE2D_PARTY_LIFECYCLE.md` y
+`docs/qa/PARITY_PHASE2D_PARTY_SHARED_EXP.md`.
+
+### A. `PARITY-PARTY-LIFECYCLE-001` — certificado
+
+- Fixture, `QACaseV2` (**15 aserciones `EQ`**), observacion
+  `RECORDED_EVIDENCE` y observacion `LIVE_ORACLE`.
+- Replay grabado y replay vivo: **PASS 15/15**, byte-identicos entre dos
+  corridas cada uno.
+- **Exito al primer intento vivo.** Cero muertes, cero combate, cero
+  monstruos invocados.
+- Evidencia grabada tomada de `docs/qa/PRUEBA_VIVA_PARTY.md` (2026-08-29),
+  que documenta las cinco etapas con sus escudos.
+- Se comparan **roles**, nunca identidades.
+
+### B. `PARITY-PARTY-SHARED-EXP-001` — certificado
+
+- Fixture, `QACaseV2` (**13 aserciones `EQ`**) y observacion `LIVE_ORACLE`.
+  Replay vivo **PASS 13/13**, byte-identico entre dos corridas.
+- **Sin observacion `RECORDED_EVIDENCE`, a proposito.**
+  `docs/qa/PRUEBA_VIVA_PARTY.md` (lineas 67-74) prueba que la experiencia
+  compartida **nunca se ejercito** en aquella corrida. Fabricar una
+  observacion grabada habria sido inventar evidencia. Por eso el corpus
+  `RECORDED_EVIDENCE` queda en **5** y no en 6.
+- **Se probo el reparto real de experiencia, no solo el mensaje del toggle**:
+  ambos participantes ganaron, en partes iguales, coincidentes con la formula
+  vigente del oracle.
+- **Hallazgo convertido en evidencia:** `Game::playerEnableSharedPartyExperience`
+  (`servidor/src/game.cpp:5097`) **descarta en silencio** la orden si el
+  solicitante tiene `CONDITION_INFIGHT` fuera de zona protegida: ni mensaje ni
+  cambio de estado. Aparecio como un falso fallo de la captura y termino
+  siendo una asercion propia (`DISABLE-IGNORED-WHILE-IN-FIGHT`).
+- **Semantica clave verificada en `creature.cpp:368-413`:** las partes
+  proporcionales al dano se **juntan primero en un unico pozo de la party** y
+  el pago individual queda suprimido; el pozo se paga **una sola vez** via el
+  lider y recien ahi se divide. **Quien golpeo mas no cobra mas.** Corolario:
+  el dano de un tercero ajeno a la party **le resta** al pozo, por eso el god
+  nunca golpea al monstruo.
+- `enabled` **no viaja por la red** y no se afirma leyendo estado interno: se
+  deriva por comportamiento (ganancias iguales y coincidentes con la formula).
+- **NO se afirman** la regla de nivel (`ceil(nivel_mas_alto*2/3)`) ni la de
+  rango (`areInRange<30,30,1>`): exigen casos negativos dedicados, previstos
+  como fixtures futuros.
+
+### Costo declarado, sin disimular
+
+**Diez intentos en vivo** para el fixture de experiencia compartida, muy por
+encima del maximo de 3 por fixture. Se declara explicitamente. Cada fallo fue
+real y dejo una correccion: personaje inexistente; **una sola sesion por
+cuenta** en cuentas normales (hubo que usar dos cuentas distintas);
+reentrada de `_formar_party` porque `await` no frena `_process`; identidad
+ambigua por fauna silvestre; dano insuficiente de nivel 1; vida baja de
+resaca; y la regla de combate.
+
+### Mutaciones persistentes
+
+El god subio, **solo a los dos personajes de QA creados para esto**, punos
+(+18) y nivel (+12) con `/addSkill`. El nivel se aplica **antes** de la foto
+de experiencia y la medicion es un **delta**, asi que no contamina. Punos no
+toca experiencia. A los dos por igual, para no romper la regla de nivel.
+Ningun personaje del usuario fue tocado. **0 muertes, 1 monstruo invocado, 0
+usos de `/killall`** (no se mato fauna preexistente: la identidad del
+monstruo se resuelve por **id nuevo**, no por nombre).
+
+### Congelamiento verificado
+
+Los cinco hashes congelados antes de la captura viva de experiencia
+compartida quedaron **identicos** despues del wrap y de los dos replays.
+`qa/parity/tools/replay.py` y `wrap_live_observation.py` **no se modificaron**:
+el comparador generico acepto un **tercer** y un **cuarto** dominio de
+comportamiento sin ningun cambio.
+
+### Requisito diferido para el TVP3D nativo
+
+La semantica legacy (`0xA3`/`0xA4`/`0xA6`/`0xA7`/`0xA8`, `PartyShields_t`,
+`party.lua`) **no entra** a los contratos de Architecture V2, que siguen en
+**198 especificadas / 0 materializadas, sin cambio**. La lista completa de lo
+que el servidor nativo debera reproducir esta en
+`docs/qa/PARITY_PHASE2D_PARTY_SHARED_EXP.md`.
+
+## Conteos (Phase 2D)
+
+| Inventario | Especificadas | Materializadas |
+|---|---:|---:|
+| Obligaciones de contrato Architecture V2 (`qa 2.1.1`) | 198 | 0 (sin cambio) |
+| Fixtures `LEGACY_PARITY` | — | **7** (antes 5) |
+| Casos de replay `QACaseV2`/`ParityExpectationV1` | — | **7** (antes 5) |
+| Observaciones `RECORDED_EVIDENCE` | — | **5** (antes 4; +1, no +2, a proposito) |
+| Observaciones `LIVE_ORACLE` canonicas | — | **4** (antes 2) |
+
+Phase 2 sigue **EN CURSO**: este turno amplia el corpus de oracle, no lo
+cierra.
+
+**Le toca:** los casos negativos de elegibilidad de experiencia compartida
+(nivel y rango), que son los unicos huecos declarados de este dominio. **No**
+implementar el sistema de party nativo: eso es Phase 3.
 
 ## Turno cerrado: Regresion QA de identidades conocidas del legacy 7.72
 
@@ -1133,6 +1234,13 @@ contiene aquel cierre; `git push` quedo bloqueado por falta de conexion a
 | La prueba viva de trade normaliza las manos y usa dos server id 2006 | El servidor necesita dos ofertas reales para ejecutar `playerAcceptTrade`; el usuario autorizo alterar los personajes de prueba | si |
 | QA usa el `0x7D` publicado, no bytes armados a mano | La prueba viva debe cubrir el mismo transporte que usa produccion | no |
 | Un golpe de reacquisicion debe nombrar al monstruo invocado | El campo contiene criaturas silvestres; una bajada de vida sola produjo un falso positivo real con un spider | no |
+| El fixture de experiencia compartida NO lleva observacion grabada | `PRUEBA_VIVA_PARTY.md:67-74` prueba que ese dominio nunca se ejercito en vivo antes; inventar la evidencia grabada seria fabricarla | no |
+| El monstruo de la medicion se identifica por id NUEVO, no por nombre | El campo tiene fauna del mismo tipo; por nombre una rata silvestre llego a recibir una invitacion de party. Ademas evita tener que matar fauna preexistente | no |
+| El god queda fuera de la party y nunca golpea al monstruo | Su parte proporcional del dano saldria del pozo de la party (`creature.cpp:375`) y el reparto dejaria de coincidir con la formula; ademas el grupo 6 no gana experiencia | no |
+| El refuerzo de los personajes de QA es deliberadamente moderado | Si uno matara al monstruo de un solo golpe, el otro no registraria participacion y el reparto nunca se habilitaria | si |
+| Se sube nivel a los personajes de QA pese a que el nivel da experiencia | Se aplica antes de la foto y la medicion es un delta; ademas cada avance cura y saca la vida baja de resaca. A los dos por igual para no romper la regla de nivel | si |
+| `sharedExpEnabled` se prueba por comportamiento, no leyendo estado | No viaja por la red: sin habilitar cada atacante cobra proporcional al dano, asi que ganancias iguales y coincidentes con la formula son la evidencia | no |
+| La orden de toggle rechazada en combate se registra como asercion | `game.cpp:5097` la descarta en silencio; aparecio como falso fallo y es una regla real del oracle que el servidor nativo debe reproducir | no |
 
 ## Notas para quien retome
 

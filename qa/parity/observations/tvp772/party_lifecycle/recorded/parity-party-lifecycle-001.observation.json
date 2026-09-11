@@ -1,0 +1,38 @@
+{
+  "schema": "tvp3d.qa.oracle_observation",
+  "version": "1.0.0",
+  "fixture_id": "PARITY-PARTY-LIFECYCLE-001",
+  "oracle": "TVP_772",
+  "oracle_version": "7.72",
+  "capture_origin": "RECORDED_EVIDENCE",
+  "source_evidence": [
+    {"logical_path": "docs/qa/PRUEBA_VIVA_PARTY.md"}
+  ],
+  "payload": {
+    "initial": {
+      "sessions_see_each_other": true,
+      "inviter_sees_invitee_shield": 0,
+      "invitee_sees_inviter_shield": 0
+    },
+    "after_invite": {
+      "inviter_sees_invitee_shield": 2,
+      "invitee_sees_inviter_shield": 1
+    },
+    "after_join": {
+      "leader_sees_member_shield": 3,
+      "member_sees_leader_shield": 4,
+      "leader_self_shield": 4,
+      "member_self_shield": 3
+    },
+    "after_leadership_transfer": {
+      "previous_leader_sees_new_leader_shield": 4,
+      "new_leader_sees_previous_leader_shield": 3,
+      "previous_leader_self_shield": 3
+    },
+    "after_leave": {
+      "former_member_sees_other_shield": 0,
+      "former_member_self_shield": 0,
+      "remaining_player_self_shield": 0
+    }
+  }
+}

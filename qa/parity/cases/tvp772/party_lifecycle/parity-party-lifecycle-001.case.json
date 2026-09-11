@@ -1,0 +1,132 @@
+{
+  "schema": "tvp3d.qa.case",
+  "version": "2.0.0",
+  "case_id": "PARITY-PARTY-LIFECYCLE-001",
+  "class": "LEGACY_PARITY",
+  "title": "TVP 7.72 party lifecycle drives consistent party shields on both sessions",
+  "owners": ["qa"],
+  "contracts": [
+    {"contract": "qa", "version": "2.1.1"}
+  ],
+  "requirement_refs": [
+    {
+      "contract": "qa",
+      "version": "2.1.1",
+      "section": "16",
+      "source_fixture_id": "PARITY-PARTY-LIFECYCLE-001"
+    }
+  ],
+  "preconditions": [
+    "dos sesiones autoritativas simultaneas, cada una con su propio personaje, ambas conectadas y vivas",
+    "ambas sesiones se ven mutuamente como criaturas antes de empezar",
+    "ninguno de los dos personajes pertenece a una party al comenzar"
+  ],
+  "input_fixture": {
+    "logical_path": "qa/parity/fixtures/tvp772/party_lifecycle/parity-party-lifecycle-001.json"
+  },
+  "expected": {
+    "schema": "tvp3d.qa.parity_expectation",
+    "version": "1.0.0",
+    "mode": "SINGLE_OBSERVATION",
+    "assertions": [
+      {
+        "assertion_id": "INITIAL-SEE-EACH-OTHER",
+        "left_path": "/initial/sessions_see_each_other",
+        "operator": "EQ",
+        "right": {"literal": true}
+      },
+      {
+        "assertion_id": "INITIAL-INVITER-SEES-INVITEE-NONE",
+        "left_path": "/initial/inviter_sees_invitee_shield",
+        "operator": "EQ",
+        "right": {"literal": 0}
+      },
+      {
+        "assertion_id": "INITIAL-INVITEE-SEES-INVITER-NONE",
+        "left_path": "/initial/invitee_sees_inviter_shield",
+        "operator": "EQ",
+        "right": {"literal": 0}
+      },
+      {
+        "assertion_id": "INVITE-INVITER-SEES-SENT",
+        "left_path": "/after_invite/inviter_sees_invitee_shield",
+        "operator": "EQ",
+        "right": {"literal": 2}
+      },
+      {
+        "assertion_id": "INVITE-INVITEE-SEES-RECEIVED",
+        "left_path": "/after_invite/invitee_sees_inviter_shield",
+        "operator": "EQ",
+        "right": {"literal": 1}
+      },
+      {
+        "assertion_id": "JOIN-LEADER-SEES-MEMBER",
+        "left_path": "/after_join/leader_sees_member_shield",
+        "operator": "EQ",
+        "right": {"literal": 3}
+      },
+      {
+        "assertion_id": "JOIN-MEMBER-SEES-LEADER",
+        "left_path": "/after_join/member_sees_leader_shield",
+        "operator": "EQ",
+        "right": {"literal": 4}
+      },
+      {
+        "assertion_id": "JOIN-LEADER-SELF",
+        "left_path": "/after_join/leader_self_shield",
+        "operator": "EQ",
+        "right": {"literal": 4}
+      },
+      {
+        "assertion_id": "JOIN-MEMBER-SELF",
+        "left_path": "/after_join/member_self_shield",
+        "operator": "EQ",
+        "right": {"literal": 3}
+      },
+      {
+        "assertion_id": "TRANSFER-PREV-SEES-NEW-LEADER",
+        "left_path": "/after_leadership_transfer/previous_leader_sees_new_leader_shield",
+        "operator": "EQ",
+        "right": {"literal": 4}
+      },
+      {
+        "assertion_id": "TRANSFER-NEW-SEES-PREV-MEMBER",
+        "left_path": "/after_leadership_transfer/new_leader_sees_previous_leader_shield",
+        "operator": "EQ",
+        "right": {"literal": 3}
+      },
+      {
+        "assertion_id": "TRANSFER-PREV-SELF-MEMBER",
+        "left_path": "/after_leadership_transfer/previous_leader_self_shield",
+        "operator": "EQ",
+        "right": {"literal": 3}
+      },
+      {
+        "assertion_id": "LEAVE-FORMER-SEES-OTHER-NONE",
+        "left_path": "/after_leave/former_member_sees_other_shield",
+        "operator": "EQ",
+        "right": {"literal": 0}
+      },
+      {
+        "assertion_id": "LEAVE-FORMER-SELF-NONE",
+        "left_path": "/after_leave/former_member_self_shield",
+        "operator": "EQ",
+        "right": {"literal": 0}
+      },
+      {
+        "assertion_id": "LEAVE-REMAINING-SELF-NONE",
+        "left_path": "/after_leave/remaining_player_self_shield",
+        "operator": "EQ",
+        "right": {"literal": 0}
+      }
+    ]
+  },
+  "mutates_external_state": false,
+  "requires_network": false,
+  "requires_legacy": false,
+  "requires_secrets": false,
+  "status_policy": {
+    "missing_prerequisite_status": "BLOCKED",
+    "assertion_mismatch_status": "FAIL"
+  }
+}
