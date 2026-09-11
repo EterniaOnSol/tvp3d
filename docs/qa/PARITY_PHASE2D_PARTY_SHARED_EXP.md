@@ -8,6 +8,12 @@ Estado: **CERTIFICADO EN VIVO**.
 Es el **segundo fixture** del tercer dominio de paridad, separado a proposito
 del ciclo de vida de party (`docs/qa/PARITY_PHASE2D_PARTY_LIFECYCLE.md`).
 
+> **Leer tambien el addendum Phase 2D.0.1 al final.** El cuerpo de este
+> documento describe la certificacion ORIGINAL, que uso `/addSkill` para
+> reforzar a los personajes de prueba. Ese comportamiento **ya no existe** en
+> el harness: fue recertificado sin ninguna mutacion de progresion. La
+> cronologia original se conserva a proposito.
+
 ## Por que este dominio importa
 
 La experiencia compartida **tiene que existir en el TVP3D final**. Este turno
@@ -241,7 +247,12 @@ La captura anota los ids conocidos **antes** de invocar y exige exactamente
 medir con identidad ambigua. Asi la fauna preexistente no confunde nada y
 **no hace falta matarla**.
 
-### Refuerzo de los personajes de prueba
+### Refuerzo de los personajes de prueba (HISTORICO de Phase 2D)
+
+> **Esto describe la PRIMERA certificacion, no el harness actual.** Phase
+> 2D.0.1 saco por completo el `/addSkill` automatico. La seccion se conserva
+> porque la certificacion original realmente ocurrio asi y la cronologia no se
+> borra. Ver el addendum al final del documento.
 
 Dos personajes de nivel 1 a puno limpio no bajan a un `cave rat` de 30 de
 vida antes de que las ratas los bajen a ellos: una corrida mostro el monstruo
@@ -288,7 +299,7 @@ La secuencia de desactivacion es la prueba viva de la regla de combate: la
 orden se repitio cada 10 s y el servidor la ignoro en silencio hasta que
 expiro el signo de batalla, y recien ahi contesto.
 
-### Costo de la certificacion
+### Costo de la certificacion (HISTORICO de Phase 2D)
 
 **Diez intentos en vivo**, muy por encima del maximo de 3 por fixture. Se
 declara explicitamente en vez de disimularlo. Los fallos fueron reales y cada
@@ -383,3 +394,145 @@ Lo que queda **diferido y pendiente** para el servidor nativo en Godot:
 | Observaciones `LIVE_ORACLE` | 3 | **4** |
 
 Phase 2 sigue **EN CURSO**.
+
+---
+
+# Addendum Phase 2D.0.1 — Endurecimiento del harness reutilizable
+
+Estado: **RECERTIFICADO EN VIVO**, ahora **sin ninguna mutacion de progresion**.
+
+## Que estaba mal
+
+La semantica certificada en Phase 2D **sigue siendo valida**: la observacion
+fue genuina, los hashes estaban congelados alrededor de la corrida final y el
+replay daba `PASS 13/13`. Este addendum **no** dice que Phase 2D fuera
+fabricada.
+
+El defecto era de **higiene del harness, no de evidencia**: la captura subia
+sola `fist +18` y `level +12` a los dos participantes en **cada** corrida.
+Sirvio una vez, pero como pieza reutilizable estaba rota: cada ejecucion
+degradaba el entorno un poco mas.
+
+La prueba de que el problema era real esta en los propios personajes de QA.
+Arrancaron en **nivel 1**; la primera certificacion los dejo en **nivel 13**;
+al abrir este turno estaban en **nivel 25** y **punos 46**, arrastrados por
+los reintentos. Un harness que se reusa no puede escalar a sus propios
+sujetos de prueba.
+
+## Que cambio
+
+La relacion se invirtio: **lo que antes se fabricaba ahora se comprueba.**
+
+- Eliminado **todo** uso automatico de `/addSkill` (punos, nivel, magia,
+  vida, mana, habilidades, experiencia).
+- Eliminadas las constantes `PUNOS_EXTRA` y `NIVELES_EXTRA` y la funcion
+  `_reforzar()`.
+- Los unicos comandos que manda el god son `/gotopos`, `/c`, `/m` y el
+  `omani` de limpieza. Auditable buscando `enviar_hablar` en el adaptador.
+- Corregido el comentario de cabecera que **afirmaba** no editar niveles
+  mientras el codigo los editaba. Ahora la afirmacion es cierta.
+- El estado actual de los dos personajes de QA queda como **precondicion de
+  entorno**, no como algo que la captura pueda manufacturar. No se intento
+  deshacer el `+18/+12` anterior: no existia una instantanea transaccional
+  previa, y adivinar valores viejos habria sido inventar datos. Sin
+  `/addSkill` negativo, sin editar la base, sin SQL manual.
+
+## Preflight
+
+Antes de armar la party y antes de invocar nada, se verifica contra el estado
+autoritativo ya parseado:
+
+| Requisito | Fuente observada |
+|---|---|
+| ambos conectados | `adentro` |
+| ambos vivos | `estadisticas.vida > 0` |
+| vida sobre el piso de seguridad | `vida >= 40` |
+| vida capaz de absorber el combate | `vida >= 40 + 110` |
+| vida maxima suficiente | `vida_max >= 40 + 110` |
+| capaces de pelear | `habilidades.puno.nivel >= 20` |
+| regla de nivel 2/3 del oracle | `min(n) >= ceil(max(n) * 2 / 3)` |
+| regla de rango del oracle | `areInRange<30,30,1>` sobre `mi_pos` |
+
+Si algo falla la captura devuelve **`BLOCKED`** con un motivo no secreto y
+**no toca a nadie**. Nunca se cura ni se recupera subiendo de nivel.
+
+### Por que la holgura es absoluta y no un porcentaje
+
+El primer intento de este turno uso "60% de la vida maxima" y dio
+`BLOCKED participant health below safe fraction of maximum` con un
+participante al **59%**.
+
+El umbral se corrigio, pero **no para que pasara la prueba**: el porcentaje
+medía la cosa equivocada. Escala con la vida maxima, asi que un personaje
+grande al 59% puede tener margen absoluto de sobra mientras uno chico al 100%
+no aguanta ni un combate. Lo que importa es **cuanto dano entra**, que no
+escala con el nivel del participante. Por eso ahora se exige una **holgura
+absoluta** de 110 de vida por encima del piso, tomada del dano observado en
+una corrida completa de Phase 2D.
+
+Se declara explicitamente que el umbral cambio **despues** de un `BLOCKED`.
+Eso no contamina la certificacion: un preflight bloqueado **nunca llego a
+observar al oracle**, asi que ningun resultado del servidor influyo en el
+cambio. El congelamiento se rehizo antes de la corrida viva.
+
+## Resultado de la recertificacion
+
+| Concepto | Valor |
+|---|---|
+| Intentos vivos | **2 de 3** (el 1.o fue el `BLOCKED` del preflight) |
+| Muertes de jugador | **0** |
+| Monstruos invocados | **1** |
+| Muertes colaterales de fauna | **0** |
+| Usos de `/killall` | **0** |
+| Dano del god al monstruo | **0** |
+| Mutaciones de progresion por comandos de QA | **0** |
+| `OBSERVATION_JSON` emitidos | **1** |
+| Replay | **`PASS 13/13`**, byte-identico entre dos corridas |
+
+El payload normalizado quedo **identico** al de Phase 2D: el oracle reprodujo
+la misma semantica con un harness que no modifica a nadie.
+
+### Delta de progresion medido en el archivo persistido
+
+| Magnitud | P1 | P2 |
+|---|---:|---:|
+| Nivel | 25 -> 25 (**0**) | 25 -> 25 (**0**) |
+| Punos | 46 -> 46 (**0**) | 46 -> 46 (**0**) |
+| Experiencia | 204812 -> 204818 (**+6**) | 204812 -> 204818 (**+6**) |
+| Garrote | 10 -> 11 (**+1**) | 11 -> 11 (0) |
+
+Las dos ultimas filas son **efectos legitimos del juego, no mutaciones
+administrativas**, y no se confunden con ellas:
+
+- Los **+6 de experiencia** son exactamente la magnitud que el fixture mide:
+  `ceil(10 * 1.20 / 2) = 6`. Que aparezcan identicos en los dos participantes
+  es evidencia independiente de la formula de reparto.
+- El **+1 de garrote** en un participante es un avance natural por pelear.
+  Ningun comando lo produjo.
+
+Comparar con Phase 2D, donde cada corrida sumaba **+12 niveles y +18 punos**
+por comando administrativo.
+
+## Hashes congelados (identicos antes y despues de la corrida viva)
+
+| Artefacto | SHA-256 |
+|---|---|
+| fixture | `3237d710a954640afc8c33596477484bd7f0ed2fb6487d65b6850345579f5e84` |
+| QACase | `e0bfce2ead6877a90a80b10419361e8ec86633a43ee26d5c87b0c2be4de86943` |
+| captura `.gd` | `16663a03545546425d9f446168802e40c8501331a867119259fca9347479a872` |
+| `replay.py` | `97e3c7e4c1b6cadb65e096999f875f2eaa28b69cbea74e4fef7d5fdf14a26837` |
+| `wrap_live_observation.py` | `920783f023be775696df34e360343e3a38749137a13123bc8ec40cfd735769b1` |
+| `conexion772.gd` | `3767bf53ab900df713373adb8e1f89035522277487151e036d4e1b5b6026fc24` |
+| `estado_mundo.gd` | `bab976ff8de83be9505b9471865da29ecd11f7af36ad313d837c5a73cc432c2f` |
+
+El fixture y el `QACase` son **byte-identicos** a Phase 2D: las **13
+aserciones** no se tocaron, no se agrego la de nivel ni la de rango, y sigue
+sin haber `RECORDED_EVIDENCE` para este fixture.
+
+## Inventarios
+
+**Sin cambio.** Architecture V2 sigue en 198 / 0; `LEGACY_PARITY` 7; casos de
+replay 7; `RECORDED_EVIDENCE` 5; `LIVE_ORACLE` 4.
+`PARITY-PARTY-SHARED-EXP-001` sigue siendo **un** fixture con **una**
+observacion viva canonica: esta recertificacion **reemplaza** esa observacion
+en su ruta canonica, no agrega otra.

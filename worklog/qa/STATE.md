@@ -2,8 +2,99 @@
 
 Estado: LISTO_PARA_REVISION
 Ultimo agente: claude
-Ultima actualizacion: 2026-09-11T15:10:00-06:00
+Ultima actualizacion: 2026-09-11T16:30:00-06:00
 Contrato publicado: SI (`CONTRATO.md` v2.1.1, sin cambios en este turno)
+
+## Turno cerrado: Phase 2D.0.1 — Endurecimiento del harness de experiencia compartida
+
+Turno de **higiene de captura + recertificacion**. La semantica de
+`PARITY-PARTY-SHARED-EXP-001` **no se redisena**. Detalle en el addendum de
+`docs/qa/PARITY_PHASE2D_PARTY_SHARED_EXP.md`.
+
+### El defecto era del harness, no de la evidencia
+
+La certificacion de Phase 2D **sigue siendo valida**: la observacion fue
+genuina y el replay daba `PASS 13/13`. Lo roto era la **reutilizacion**: la
+captura subia sola `fist +18` y `level +12` a los dos participantes en **cada**
+corrida, degradando el entorno un poco mas cada vez.
+
+La prueba de que el problema era real la dan los propios personajes de QA:
+arrancaron en **nivel 1**, la primera certificacion los dejo en **13**, y al
+abrir este turno estaban en **nivel 25 con punos 46**, arrastrados por los
+reintentos.
+
+### Que cambio
+
+- Eliminado **todo** uso automatico de `/addSkill`; eliminadas `PUNOS_EXTRA`,
+  `NIVELES_EXTRA` y `_reforzar()`. Los unicos comandos del god son
+  `/gotopos`, `/c`, `/m` y el `omani` de limpieza.
+- **Corregido el comentario de cabecera que afirmaba no editar niveles
+  mientras el codigo los editaba.** Ahora la afirmacion es cierta y auditable.
+- Nuevo `_preflight()` **antes** de armar la party y de invocar: conectados,
+  vivos, vida sobre el piso, vida capaz de absorber el combate, punos
+  suficientes, regla de nivel 2/3 y regla de rango. Si algo falla devuelve
+  **`BLOCKED`** con motivo no secreto y **no toca a nadie**.
+- El estado actual de los personajes de QA pasa a ser **precondicion de
+  entorno**. No se intento deshacer el `+18/+12`: no habia instantanea
+  transaccional previa y adivinar valores viejos habria sido inventar datos.
+  Sin `/addSkill` negativo, sin editar la base, sin SQL manual.
+
+### Umbral corregido, declarado
+
+El primer intento uso "60% de la vida maxima" y bloqueo con un participante al
+**59%**. El umbral se cambio por una **holgura absoluta** de 110 de vida sobre
+el piso, **no para que pasara**: el porcentaje medía la cosa equivocada, porque
+escala con la vida maxima mientras el dano entrante no escala con el nivel. Se
+declara que el cambio ocurrio despues de un `BLOCKED`; eso no contamina nada
+porque un preflight bloqueado **nunca llego a observar al oracle**. El
+congelamiento se rehizo antes de la corrida viva.
+
+### Resultado
+
+- **2 intentos vivos de 3** (el primero fue el `BLOCKED` del preflight).
+- Replay **`PASS 13/13`**, byte-identico entre dos corridas.
+- Payload normalizado **identico** al de Phase 2D: el oracle reprodujo la
+  misma semantica con un harness que no modifica a nadie.
+- Los **7 hashes congelados** quedaron identicos antes y despues de la corrida
+  viva. Fixture y `QACase` **byte-identicos** a Phase 2D; siguen las **13**
+  aserciones, sin agregar la de nivel ni la de rango, y sigue sin haber
+  `RECORDED_EVIDENCE`.
+- **0 muertes, 1 monstruo invocado, 0 muertes colaterales, 0 `/killall`, 0
+  dano del god al monstruo.**
+
+### Delta de progresion medido en el archivo persistido
+
+| Magnitud | P1 | P2 |
+|---|---:|---:|
+| Nivel | 25 -> 25 (**0**) | 25 -> 25 (**0**) |
+| Punos | 46 -> 46 (**0**) | 46 -> 46 (**0**) |
+| Experiencia | +6 | +6 |
+| Garrote | +1 | 0 |
+
+Las dos ultimas filas son **efectos legitimos del juego, no mutaciones
+administrativas**. Los `+6` son exactamente lo que el fixture mide
+(`ceil(10 * 1.20 / 2)`), y que coincidan en los dos es evidencia independiente
+de la formula. El `+1` de garrote es avance natural por pelear.
+
+**Mutaciones de progresion por comandos de QA: 0.**
+
+## Conteos (Phase 2D.0.1 — sin cambio de inventarios)
+
+| Inventario | Especificadas | Materializadas |
+|---|---:|---:|
+| Obligaciones de contrato Architecture V2 (`qa 2.1.1`) | 198 | 0 (sin cambio) |
+| Fixtures `LEGACY_PARITY` | — | 7 (sin cambio) |
+| Casos de replay `QACaseV2`/`ParityExpectationV1` | — | 7 (sin cambio) |
+| Observaciones `RECORDED_EVIDENCE` | — | 5 (sin cambio) |
+| Observaciones `LIVE_ORACLE` canonicas | — | 4 (sin cambio) |
+| `SHARED_EXP_CAPTURE_HARDENING` | — | **PASS / NO_AUTOMATIC_STAT_MUTATION** |
+
+`PARITY-PARTY-SHARED-EXP-001` sigue siendo **un** fixture con **una**
+observacion viva canonica: esta recertificacion **reemplaza** esa observacion
+en su ruta canonica, no agrega otra.
+
+**Le toca:** los casos negativos de elegibilidad de experiencia compartida
+(nivel y rango). **No** implementar el sistema de party nativo: eso es Phase 3.
 
 ## Turno cerrado: Phase 2D — Party y experiencia compartida (TERCER DOMINIO)
 
@@ -1241,6 +1332,10 @@ contiene aquel cierre; `git push` quedo bloqueado por falta de conexion a
 | Se sube nivel a los personajes de QA pese a que el nivel da experiencia | Se aplica antes de la foto y la medicion es un delta; ademas cada avance cura y saca la vida baja de resaca. A los dos por igual para no romper la regla de nivel | si |
 | `sharedExpEnabled` se prueba por comportamiento, no leyendo estado | No viaja por la red: sin habilitar cada atacante cobra proporcional al dano, asi que ganancias iguales y coincidentes con la formula son la evidencia | no |
 | La orden de toggle rechazada en combate se registra como asercion | `game.cpp:5097` la descarta en silencio; aparecio como falso fallo y es una regla real del oracle que el servidor nativo debe reproducir | no |
+| Una captura reutilizable no puede fabricar sus propias precondiciones | El `/addSkill` automatico servia una vez pero degradaba el entorno en cada corrida: los personajes de QA pasaron de nivel 1 a 25 por reintentos | no |
+| El estado actual de los personajes de QA es precondicion, no algo a revertir | No existia instantanea transaccional previa al `+18/+12`; adivinar valores viejos habria sido inventar datos, peor que dejarlos donde estan | no |
+| La holgura de vida del preflight es absoluta y no un porcentaje | El dano entrante no escala con el nivel: un porcentaje rechaza a un personaje grande con margen de sobra y acepta a uno chico que no aguanta un combate | si |
+| Un requisito que no se cumple se reporta BLOCKED, nunca se fabrica | Es la inversion que define este turno: el harness verifica el entorno en vez de modificarlo para poder pasar | no |
 
 ## Notas para quien retome
 

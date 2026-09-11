@@ -30,7 +30,26 @@ extends Node
 #
 # Mutacion controlada: se invoca UN unico monstruo de prueba, ambos
 # participantes lo danan y muere. Sin `/killall`, sin tocar fauna natural,
-# sin muerte de jugador, sin editar niveles, vocaciones ni persistencia.
+# sin muerte de jugador.
+#
+# ESTA CAPTURA NO MODIFICA LA PROGRESION DE NADIE. No emite `/addSkill` ni
+# ningun otro comando administrativo que suba nivel, habilidades, magia, vida,
+# mana, vocacion ni experiencia. Los unicos comandos que manda el god son
+# `/gotopos`, `/c` y `/m`, y se pueden auditar buscando `enviar_hablar` en
+# este archivo: fuera de este comentario no aparece ningun `/addSkill`.
+#
+# La primera certificacion (Phase 2D) SI reforzo a los personajes de prueba
+# con `/addSkill ... fist, 18` y `/addSkill ... level, 12` para que pudieran
+# completar el combate. Eso quedo registrado en
+# `docs/qa/PARITY_PHASE2D_PARTY_SHARED_EXP.md` y no se borra. El problema no
+# fue el resultado sino la REUTILIZACION: cada corrida volvia a subirlos, de
+# modo que el harness degradaba el entorno un poco mas cada vez.
+#
+# Phase 2D.0.1 invierte la relacion: lo que antes se fabricaba ahora es una
+# PRECONDICION DE ENTORNO que se comprueba. Si los participantes no estan en
+# condiciones (vida, nivel relativo, rango o punos), la captura devuelve
+# BLOCKED con un motivo no secreto y NO toca a nadie. Nunca se cura ni se
+# recupera subiendo de nivel.
 #
 # Credenciales: exclusivamente por entorno, nunca literales, nunca impresas.
 #   TVP772_ACCOUNT            (cuenta de los DOS participantes de la party)
@@ -81,16 +100,32 @@ const ESPERA_SIN_COMBATE := 100.0
 const LIMITE_TOTAL := 420.0
 ## Guarda de seguridad: si un participante baja de esto, se aborta.
 const VIDA_MINIMA_SEGURA := 40
-## Niveles de habilidad de punos que el god suma a cada personaje de QA para
-## que el combate de prueba sea decidible. Moderado a proposito: ver `_reforzar`.
-const PUNOS_EXTRA := 18
-## Niveles que el god suma a cada personaje de QA. Sube la vida maxima y cura
-## por cada avance (`player.cpp:1532-1533`), asi que tambien saca a los
-## personajes de la resaca de vida baja de una corrida anterior. Se aplica
-## ANTES de tomar la foto de experiencia, y la medicion es un delta, asi que
-## no contamina lo que este fixture mide. A los dos por igual, para no romper
-## la regla de nivel de la party.
-const NIVELES_EXTRA := 12
+## Holgura de dano que hay que poder absorber ADEMAS del piso de seguridad.
+##
+## Sale de la evidencia de Phase 2D: en una corrida completa un participante
+## acumulo del orden de 110 de dano recibido de la fauna y del monstruo de
+## prueba antes de que muriera el objetivo. Entrar al combate sin esa holgura
+## por encima del piso significa que la guarda de seguridad va a cortar la
+## corrida a mitad de camino.
+##
+## Se usa una holgura ABSOLUTA y no un porcentaje de la vida maxima a
+## proposito: el porcentaje mide la cosa equivocada. Un personaje grande al
+## 59% puede tener mas que suficiente margen absoluto, y uno chico al 100%
+## puede no aguantar un solo combate. Lo que importa es cuanto dano entra,
+## que no escala con el nivel del participante.
+const HOLGURA_DANO_ESPERADO := 110
+## Piso empirico de habilidad de punos para que el combate controlado sea
+## decidible dentro de `ESPERA_COMBATE`. Sale de la evidencia de Phase 2D: con
+## punos de partida (~10) el monstruo perdio ~3% de vida en 5 s, un ritmo que
+## no lo mata en 90 s; en la corrida certificada, ya con punos reforzados, el
+## mismo monstruo murio en ~35 s. 20 es un piso conservador entre ambos.
+##
+## Esto se VERIFICA, nunca se fabrica: si un participante no llega, el turno
+## devuelve BLOCKED. La captura no sube habilidades (ver cabecera).
+const PUNO_MINIMO := 20
+## Regla de rango del oracle para la experiencia compartida:
+## `Position::areInRange<30,30,1>` en `Party::canUseSharedExperience`.
+const RANGO_PARTY := 30
 
 var _con_login
 var _con_god
@@ -129,8 +164,7 @@ var _id_monstruo_p2 := 0
 var _ids_previos_p1 := {}
 var _ids_previos_p2 := {}
 var _ultimo_reataque := 0.0
-var _reforzado := false
-var _refuerzo_listo := false
+var _preflight_ok := false
 var _desactivacion_en_combate_pedida := false
 var _ultimo_intento_desactivar := 0.0
 
@@ -224,12 +258,11 @@ func _process(delta: float) -> void:
 	if _total > LIMITE_TOTAL:
 		_fallar("FAIL tiempo agotado en la fase '%s'" % _fase)
 		return
-	# Guarda de seguridad continua sobre ambos participantes, activa recien
-	# desde el refuerzo. Antes de esa etapa una vida baja es resaca de una
-	# corrida anterior, no peligro creado por esta prueba, y es justamente el
-	# refuerzo el que la levanta; abortar ahi dejaba la prueba trabada sin
-	# forma de recuperarse.
-	if _refuerzo_listo:
+	# Guarda de seguridad continua sobre ambos participantes, armada recien
+	# cuando el preflight confirmo que los dos entraron en condiciones. Antes
+	# de eso el propio preflight es quien evalua la vida, y lo hace una sola
+	# vez y con un motivo BLOCKED claro en vez de un FAIL generico.
+	if _preflight_ok:
 		for estado in [_estado_p1, _estado_p2]:
 			if estado != null and estado.adentro:
 				var v := int(estado.estadisticas.get("vida", -1))
@@ -257,7 +290,7 @@ func _process(delta: float) -> void:
 		"reunir p1":
 			_reunir(_estado_p1, _nombre_p1, "reunir p2")
 		"reunir p2":
-			_reunir(_estado_p2, _nombre_p2, "formar party")
+			_reunir(_estado_p2, _nombre_p2, "preflight")
 		"formar party":
 			_formar_party()
 		"esperar party":
@@ -270,8 +303,8 @@ func _process(delta: float) -> void:
 			_lider_solicita()
 		"esperar inactivos":
 			_esperar_inactivos()
-		"reforzar":
-			_reforzar()
+		"preflight":
+			_preflight()
 		"invocar":
 			_invocar()
 		"esperar monstruo":
@@ -512,7 +545,7 @@ func _esperar_inactivos() -> void:
 		print("Confirmado: solicitud aceptada pero NO habilitada por participantes inactivos.")
 		_obs["transport"]["leader_can_request_enable"] = true
 		_obs["inactive_party"] = {"requested_active": true, "enabled": false}
-		_pasar_a("reforzar")
+		_pasar_a("invocar")
 		return
 	if _msg_activada_habilitada > 0:
 		_fallar("FAIL quedo habilitada sin participacion reciente; la regla de actividad no se observo")
@@ -524,45 +557,72 @@ func _esperar_inactivos() -> void:
 # -----------------------------------------------------------------
 #  Actividad controlada y medicion
 # -----------------------------------------------------------------
-## Dos personajes de nivel 1 a puno limpio no bajan a un monstruo antes de
-## que el monstruo los baje a ellos: la corrida anterior mostro 97% de vida
-## del monstruo tras 5 s y el piso de seguridad se activo. Se sube SOLO la
-## habilidad de punos de los dos personajes de QA.
+## Preflight: se comprueba contra el estado autoritativo ya parseado que la
+## medicion es posible ANTES de armar la party y ANTES de invocar nada.
 ##
-## Por que punos y no nivel: `/addSkill ... level` suma niveles y por lo tanto
-## EXPERIENCIA, que es justo la magnitud que este fixture mide; contaminaria
-## la medicion. La habilidad de punos no toca la experiencia.
+## La regla del turno es que un requisito que no se cumple se REPORTA, no se
+## fabrica. Ninguna rama de esta funcion manda comandos administrativos ni
+## modifica a los participantes: o devuelve BLOCKED, o deja seguir.
 ##
-## Por que lo hace el god y no un ataque del god: si el god danara al
-## monstruo, su parte proporcional del dano (creature.cpp:375) saldria del
-## pozo de la party, porque el god no es miembro, y el reparto ya no
-## coincidiria con la formula. El god no golpea nunca al monstruo.
-##
-## El refuerzo es deliberadamente moderado para que hagan falta varios
-## golpes: si uno solo matara al monstruo de un golpe, el otro no llegaria a
-## registrar participacion reciente y el reparto no se habilitaria.
-func _reforzar() -> void:
-	if not _reforzado:
-		_reforzado = true
-		print("Reforzando punos y vitalidad de los dos personajes de prueba.")
-		_con_god.enviar_hablar("/addSkill %s, fist, %d" % [_nombre_p1, PUNOS_EXTRA])
-		_con_god.enviar_hablar("/addSkill %s, fist, %d" % [_nombre_p2, PUNOS_EXTRA])
-		_con_god.enviar_hablar("/addSkill %s, level, %d" % [_nombre_p1, NIVELES_EXTRA])
-		_con_god.enviar_hablar("/addSkill %s, level, %d" % [_nombre_p2, NIVELES_EXTRA])
-		return
-	if _espera < 3.0:
-		return
-	# El refuerzo solo se da por bueno cuando los dos estan efectivamente por
-	# encima del piso de seguridad; recien ahi se arma la guarda continua.
-	var v1 := int(_estado_p1.estadisticas.get("vida", -1))
-	var v2 := int(_estado_p2.estadisticas.get("vida", -1))
-	if v1 < VIDA_MINIMA_SEGURA or v2 < VIDA_MINIMA_SEGURA:
+## Los motivos son no secretos: hablan de umbrales y relaciones, nunca de
+## nombres de personaje, cuentas ni valores concretos de nadie.
+func _preflight() -> void:
+	# Las estadisticas (0xA0) y las habilidades (0xA1) llegan solas tras el
+	# login; se les da margen antes de declarar que faltan.
+	var listo: bool = not _estado_p1.estadisticas.is_empty() \
+		and not _estado_p2.estadisticas.is_empty() \
+		and not _estado_p1.habilidades.is_empty() \
+		and not _estado_p2.habilidades.is_empty()
+	if not listo:
 		if _espera > ESPERA_PASO:
-			_fallar("FAIL el refuerzo no dejo a los dos participantes por encima del piso de vida")
+			_fallar("BLOCKED el servidor no publico estadisticas y habilidades de ambos participantes")
 		return
-	print("Refuerzo aplicado: ambos participantes en condiciones de pelear.")
-	_refuerzo_listo = true
-	_pasar_a("invocar")
+
+	for estado in [_estado_p1, _estado_p2]:
+		if estado == null or not estado.adentro:
+			_fallar("BLOCKED un participante no esta conectado")
+			return
+		var vida := int(estado.estadisticas.get("vida", -1))
+		var vida_max := int(estado.estadisticas.get("vida_max", 0))
+		if vida <= 0:
+			_fallar("BLOCKED un participante no esta vivo")
+			return
+		if vida < VIDA_MINIMA_SEGURA:
+			_fallar("BLOCKED participant health below safe threshold")
+			return
+		if vida < VIDA_MINIMA_SEGURA + HOLGURA_DANO_ESPERADO:
+			_fallar("BLOCKED participant cannot absorb expected combat damage above safe floor")
+			return
+		if vida_max > 0 and vida_max < VIDA_MINIMA_SEGURA + HOLGURA_DANO_ESPERADO:
+			_fallar("BLOCKED participant maximum health too low for controlled combat")
+			return
+		var puno := int(estado.habilidades.get("puno", {}).get("nivel", 0))
+		if puno < PUNO_MINIMO:
+			_fallar("BLOCKED participant cannot safely complete controlled combat")
+			return
+
+	# Regla de nivel del oracle: el mas bajo debe alcanzar
+	# ceil(nivel_mas_alto * 2 / 3). Se comprueba, no se corrige.
+	var n1 := int(_estado_p1.estadisticas.get("nivel", 0))
+	var n2 := int(_estado_p2.estadisticas.get("nivel", 0))
+	if n1 <= 0 or n2 <= 0:
+		_fallar("BLOCKED no se pudo leer el nivel de ambos participantes")
+		return
+	var minimo := int(ceil(float(max(n1, n2)) * 2.0 / 3.0))
+	if min(n1, n2) < minimo:
+		_fallar("BLOCKED party level eligibility not satisfied")
+		return
+
+	# Regla de rango del oracle: `areInRange<30,30,1>` respecto del lider.
+	var p1: Vector3i = _estado_p1.mi_pos
+	var p2: Vector3i = _estado_p2.mi_pos
+	if p1.z != p2.z or absi(p1.x - p2.x) > RANGO_PARTY or absi(p1.y - p2.y) > RANGO_PARTY:
+		_fallar("BLOCKED participants outside shared experience range rule")
+		return
+
+	print("Preflight OK: ambos participantes en condiciones, sin modificar a nadie.")
+	_preflight_ok = true
+	_pasar_a("formar party")
 
 
 func _invocar() -> void:
