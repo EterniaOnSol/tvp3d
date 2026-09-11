@@ -1,0 +1,931 @@
+{
+  "tool": "qa/parity/tools/qualify_reacquisition_terrain.py",
+  "purpose": "qualify isolated TVP 7.72 terrain for PARITY-MONSTER-REACQUISITION-001",
+  "derived_rules": {
+    "client_viewport_x": 8,
+    "client_viewport_y": 6,
+    "client_visible_dx_range": [
+      -8,
+      9
+    ],
+    "client_visible_dy_range": [
+      -6,
+      7
+    ],
+    "server_spectator_range": 11,
+    "spawn_roam_bound": "chebyshev box of spawn radius (Spawns::isInZone)",
+    "spawn_safety_margin": 10,
+    "required_spawn_clearance": 21,
+    "required_min_separation_per_axis": 30,
+    "largest_spawn_radius_seen": 50,
+    "source_references": [
+      "servidor/src/map.h:179-182",
+      "servidor/src/protocolgame.cpp:766-767",
+      "servidor/src/map.cpp:434-437",
+      "servidor/src/spawn.cpp:222-231",
+      "servidor/src/monster.cpp:1727-1735",
+      "servidor/config.lua allowMonsterOverspawn"
+    ]
+  },
+  "search": {
+    "center_x": 32082,
+    "center_y": 32145,
+    "radius": 150,
+    "floors": [
+      6,
+      7
+    ],
+    "tiles_in_bounds": 94199,
+    "qualified_tiles": 7076,
+    "pairs_evaluated": 58,
+    "pool_size_for_pairing": 25
+  },
+  "sources": {
+    "map_otbm": {
+      "logical_path": "servidor/data/world/map.otbm",
+      "sha256": "f7f42f6578a0cefac27c34d4e0d542499f043c4cc8c5ca4193f89cd0adfb05ee",
+      "areas": 439038,
+      "areas_scanned_in_bounds": 8116
+    },
+    "map_spawn_xml": {
+      "logical_path": "servidor/data/world/map-spawn.xml",
+      "sha256": "54a19efc35404ff0e79a76d514b8099c04409e41c7e24f91039a2ff7b75d98d8",
+      "monster_spawns": 9614,
+      "npc_spawns": 336
+    },
+    "spawns_dat": {
+      "logical_path": "servidor/data/spawns.dat",
+      "sha256": "775a24939e3c2ffa9f5456d93e688d5bdcac5095e63fec1f47aa85252c0d30c8",
+      "monster_spawns": 9613,
+      "npc_spawns": 337
+    },
+    "map_house_xml": {
+      "logical_path": "servidor/data/world/map-house.xml",
+      "sha256": "05d1dd9cf5c38f5e34640d78eccf5cdad7247dab835c60f11ae02f9ef4388785",
+      "houses": 862
+    },
+    "raids": {
+      "logical_path": "servidor/data/raids/",
+      "files": 38,
+      "areaspawns": 349
+    }
+  },
+  "source_problems": [],
+  "top_candidate_pairs": [
+    {
+      "point_a": {
+        "x": 31980,
+        "y": 31995,
+        "z": 7,
+        "tile_exists": true,
+        "protection_zone": false,
+        "house_id": 0,
+        "nearest_static_monster_spawn": {
+          "distance": 96,
+          "clearance": 46,
+          "radius": 50,
+          "name": "Spider",
+          "source": "spawns.dat"
+        },
+        "nearest_raid_spawn": {
+          "distance": 220,
+          "clearance": 219,
+          "radius": 1,
+          "name": "The Halloween Hare",
+          "source": "raids/halloweenhare.xml"
+        },
+        "nearest_npc_spawn": {
+          "distance": 185,
+          "clearance": 183,
+          "radius": 2,
+          "name": "al dee",
+          "source": "map-spawn.xml"
+        },
+        "rejection_reasons": [],
+        "isolation_score": 46
+      },
+      "point_b": {
+        "x": 31932,
+        "y": 32040,
+        "z": 7,
+        "tile_exists": true,
+        "protection_zone": false,
+        "house_id": 0,
+        "nearest_static_monster_spawn": {
+          "distance": 88,
+          "clearance": 38,
+          "radius": 50,
+          "name": "Bear",
+          "source": "spawns.dat"
+        },
+        "nearest_raid_spawn": {
+          "distance": 175,
+          "clearance": 174,
+          "radius": 1,
+          "name": "The Halloween Hare",
+          "source": "raids/halloweenhare.xml"
+        },
+        "nearest_npc_spawn": {
+          "distance": 140,
+          "clearance": 138,
+          "radius": 2,
+          "name": "al dee",
+          "source": "map-spawn.xml"
+        },
+        "rejection_reasons": [],
+        "isolation_score": 38
+      },
+      "separation_dx": 48,
+      "separation_dy": 45,
+      "visibility_margin_x": 39,
+      "visibility_margin_y": 38,
+      "server_spectator_margin": 34,
+      "pair_isolation_score": 38,
+      "static_qualification": "CANDIDATE"
+    },
+    {
+      "point_a": {
+        "x": 32010,
+        "y": 31995,
+        "z": 7,
+        "tile_exists": true,
+        "protection_zone": false,
+        "house_id": 0,
+        "nearest_static_monster_spawn": {
+          "distance": 96,
+          "clearance": 46,
+          "radius": 50,
+          "name": "Spider",
+          "source": "spawns.dat"
+        },
+        "nearest_raid_spawn": {
+          "distance": 220,
+          "clearance": 219,
+          "radius": 1,
+          "name": "The Halloween Hare",
+          "source": "raids/halloweenhare.xml"
+        },
+        "nearest_npc_spawn": {
+          "distance": 170,
+          "clearance": 168,
+          "radius": 2,
+          "name": "costello",
+          "source": "map-spawn.xml"
+        },
+        "rejection_reasons": [],
+        "isolation_score": 46
+      },
+      "point_b": {
+        "x": 31932,
+        "y": 32040,
+        "z": 7,
+        "tile_exists": true,
+        "protection_zone": false,
+        "house_id": 0,
+        "nearest_static_monster_spawn": {
+          "distance": 88,
+          "clearance": 38,
+          "radius": 50,
+          "name": "Bear",
+          "source": "spawns.dat"
+        },
+        "nearest_raid_spawn": {
+          "distance": 175,
+          "clearance": 174,
+          "radius": 1,
+          "name": "The Halloween Hare",
+          "source": "raids/halloweenhare.xml"
+        },
+        "nearest_npc_spawn": {
+          "distance": 140,
+          "clearance": 138,
+          "radius": 2,
+          "name": "al dee",
+          "source": "map-spawn.xml"
+        },
+        "rejection_reasons": [],
+        "isolation_score": 38
+      },
+      "separation_dx": 78,
+      "separation_dy": 45,
+      "visibility_margin_x": 69,
+      "visibility_margin_y": 38,
+      "server_spectator_margin": 34,
+      "pair_isolation_score": 38,
+      "static_qualification": "CANDIDATE"
+    },
+    {
+      "point_a": {
+        "x": 32040,
+        "y": 31995,
+        "z": 7,
+        "tile_exists": true,
+        "protection_zone": false,
+        "house_id": 0,
+        "nearest_static_monster_spawn": {
+          "distance": 96,
+          "clearance": 46,
+          "radius": 50,
+          "name": "Spider",
+          "source": "spawns.dat"
+        },
+        "nearest_raid_spawn": {
+          "distance": 220,
+          "clearance": 219,
+          "radius": 1,
+          "name": "The Halloween Hare",
+          "source": "raids/halloweenhare.xml"
+        },
+        "nearest_npc_spawn": {
+          "distance": 140,
+          "clearance": 138,
+          "radius": 2,
+          "name": "costello",
+          "source": "map-spawn.xml"
+        },
+        "rejection_reasons": [],
+        "isolation_score": 46
+      },
+      "point_b": {
+        "x": 31932,
+        "y": 32040,
+        "z": 7,
+        "tile_exists": true,
+        "protection_zone": false,
+        "house_id": 0,
+        "nearest_static_monster_spawn": {
+          "distance": 88,
+          "clearance": 38,
+          "radius": 50,
+          "name": "Bear",
+          "source": "spawns.dat"
+        },
+        "nearest_raid_spawn": {
+          "distance": 175,
+          "clearance": 174,
+          "radius": 1,
+          "name": "The Halloween Hare",
+          "source": "raids/halloweenhare.xml"
+        },
+        "nearest_npc_spawn": {
+          "distance": 140,
+          "clearance": 138,
+          "radius": 2,
+          "name": "al dee",
+          "source": "map-spawn.xml"
+        },
+        "rejection_reasons": [],
+        "isolation_score": 38
+      },
+      "separation_dx": 108,
+      "separation_dy": 45,
+      "visibility_margin_x": 99,
+      "visibility_margin_y": 38,
+      "server_spectator_margin": 34,
+      "pair_isolation_score": 38,
+      "static_qualification": "CANDIDATE"
+    }
+  ],
+  "rejected_sample": [
+    {
+      "x": 31932,
+      "y": 32064,
+      "z": 7,
+      "tile_exists": true,
+      "protection_zone": false,
+      "house_id": 0,
+      "nearest_static_monster_spawn": {
+        "distance": 70,
+        "clearance": 20,
+        "radius": 50,
+        "name": "Orc Spearman",
+        "source": "spawns.dat"
+      },
+      "nearest_raid_spawn": {
+        "distance": 151,
+        "clearance": 150,
+        "radius": 1,
+        "name": "The Halloween Hare",
+        "source": "raids/halloweenhare.xml"
+      },
+      "nearest_npc_spawn": {
+        "distance": 126,
+        "clearance": 124,
+        "radius": 2,
+        "name": "loui",
+        "source": "map-spawn.xml"
+      },
+      "rejection_reasons": [
+        "static monster spawn clearance 20 < required 21 (nearest 'Orc Spearman' r=50 at cheb 70)"
+      ]
+    },
+    {
+      "x": 31932,
+      "y": 32065,
+      "z": 7,
+      "tile_exists": true,
+      "protection_zone": false,
+      "house_id": 0,
+      "nearest_static_monster_spawn": {
+        "distance": 69,
+        "clearance": 19,
+        "radius": 50,
+        "name": "Orc Spearman",
+        "source": "spawns.dat"
+      },
+      "nearest_raid_spawn": {
+        "distance": 150,
+        "clearance": 149,
+        "radius": 1,
+        "name": "The Halloween Hare",
+        "source": "raids/halloweenhare.xml"
+      },
+      "nearest_npc_spawn": {
+        "distance": 125,
+        "clearance": 123,
+        "radius": 2,
+        "name": "loui",
+        "source": "map-spawn.xml"
+      },
+      "rejection_reasons": [
+        "static monster spawn clearance 19 < required 21 (nearest 'Orc Spearman' r=50 at cheb 69)"
+      ]
+    },
+    {
+      "x": 31932,
+      "y": 32066,
+      "z": 7,
+      "tile_exists": true,
+      "protection_zone": false,
+      "house_id": 0,
+      "nearest_static_monster_spawn": {
+        "distance": 68,
+        "clearance": 18,
+        "radius": 50,
+        "name": "Orc Spearman",
+        "source": "spawns.dat"
+      },
+      "nearest_raid_spawn": {
+        "distance": 149,
+        "clearance": 148,
+        "radius": 1,
+        "name": "The Halloween Hare",
+        "source": "raids/halloweenhare.xml"
+      },
+      "nearest_npc_spawn": {
+        "distance": 124,
+        "clearance": 122,
+        "radius": 2,
+        "name": "loui",
+        "source": "map-spawn.xml"
+      },
+      "rejection_reasons": [
+        "static monster spawn clearance 18 < required 21 (nearest 'Orc Spearman' r=50 at cheb 68)"
+      ]
+    },
+    {
+      "x": 31932,
+      "y": 32067,
+      "z": 7,
+      "tile_exists": true,
+      "protection_zone": false,
+      "house_id": 0,
+      "nearest_static_monster_spawn": {
+        "distance": 67,
+        "clearance": 17,
+        "radius": 50,
+        "name": "Orc Spearman",
+        "source": "spawns.dat"
+      },
+      "nearest_raid_spawn": {
+        "distance": 148,
+        "clearance": 147,
+        "radius": 1,
+        "name": "The Halloween Hare",
+        "source": "raids/halloweenhare.xml"
+      },
+      "nearest_npc_spawn": {
+        "distance": 123,
+        "clearance": 121,
+        "radius": 2,
+        "name": "loui",
+        "source": "map-spawn.xml"
+      },
+      "rejection_reasons": [
+        "static monster spawn clearance 17 < required 21 (nearest 'Orc Spearman' r=50 at cheb 67)"
+      ]
+    },
+    {
+      "x": 31932,
+      "y": 32068,
+      "z": 7,
+      "tile_exists": true,
+      "protection_zone": false,
+      "house_id": 0,
+      "nearest_static_monster_spawn": {
+        "distance": 66,
+        "clearance": 16,
+        "radius": 50,
+        "name": "Orc Spearman",
+        "source": "spawns.dat"
+      },
+      "nearest_raid_spawn": {
+        "distance": 147,
+        "clearance": 146,
+        "radius": 1,
+        "name": "The Halloween Hare",
+        "source": "raids/halloweenhare.xml"
+      },
+      "nearest_npc_spawn": {
+        "distance": 122,
+        "clearance": 120,
+        "radius": 2,
+        "name": "loui",
+        "source": "map-spawn.xml"
+      },
+      "rejection_reasons": [
+        "static monster spawn clearance 16 < required 21 (nearest 'Orc Spearman' r=50 at cheb 66)"
+      ]
+    },
+    {
+      "x": 31932,
+      "y": 32069,
+      "z": 7,
+      "tile_exists": true,
+      "protection_zone": false,
+      "house_id": 0,
+      "nearest_static_monster_spawn": {
+        "distance": 65,
+        "clearance": 15,
+        "radius": 50,
+        "name": "Orc Spearman",
+        "source": "spawns.dat"
+      },
+      "nearest_raid_spawn": {
+        "distance": 146,
+        "clearance": 145,
+        "radius": 1,
+        "name": "The Halloween Hare",
+        "source": "raids/halloweenhare.xml"
+      },
+      "nearest_npc_spawn": {
+        "distance": 121,
+        "clearance": 119,
+        "radius": 2,
+        "name": "loui",
+        "source": "map-spawn.xml"
+      },
+      "rejection_reasons": [
+        "static monster spawn clearance 15 < required 21 (nearest 'Orc Spearman' r=50 at cheb 65)"
+      ]
+    },
+    {
+      "x": 31932,
+      "y": 32070,
+      "z": 7,
+      "tile_exists": true,
+      "protection_zone": false,
+      "house_id": 0,
+      "nearest_static_monster_spawn": {
+        "distance": 64,
+        "clearance": 14,
+        "radius": 50,
+        "name": "Orc Spearman",
+        "source": "spawns.dat"
+      },
+      "nearest_raid_spawn": {
+        "distance": 145,
+        "clearance": 144,
+        "radius": 1,
+        "name": "The Halloween Hare",
+        "source": "raids/halloweenhare.xml"
+      },
+      "nearest_npc_spawn": {
+        "distance": 120,
+        "clearance": 118,
+        "radius": 2,
+        "name": "loui",
+        "source": "map-spawn.xml"
+      },
+      "rejection_reasons": [
+        "static monster spawn clearance 14 < required 21 (nearest 'Orc Spearman' r=50 at cheb 64)"
+      ]
+    },
+    {
+      "x": 31932,
+      "y": 32071,
+      "z": 7,
+      "tile_exists": true,
+      "protection_zone": false,
+      "house_id": 0,
+      "nearest_static_monster_spawn": {
+        "distance": 63,
+        "clearance": 13,
+        "radius": 50,
+        "name": "Orc Spearman",
+        "source": "spawns.dat"
+      },
+      "nearest_raid_spawn": {
+        "distance": 144,
+        "clearance": 143,
+        "radius": 1,
+        "name": "The Halloween Hare",
+        "source": "raids/halloweenhare.xml"
+      },
+      "nearest_npc_spawn": {
+        "distance": 119,
+        "clearance": 117,
+        "radius": 2,
+        "name": "loui",
+        "source": "map-spawn.xml"
+      },
+      "rejection_reasons": [
+        "static monster spawn clearance 13 < required 21 (nearest 'Orc Spearman' r=50 at cheb 63)"
+      ]
+    },
+    {
+      "x": 31932,
+      "y": 32072,
+      "z": 7,
+      "tile_exists": true,
+      "protection_zone": false,
+      "house_id": 0,
+      "nearest_static_monster_spawn": {
+        "distance": 62,
+        "clearance": 12,
+        "radius": 50,
+        "name": "Orc Spearman",
+        "source": "spawns.dat"
+      },
+      "nearest_raid_spawn": {
+        "distance": 143,
+        "clearance": 142,
+        "radius": 1,
+        "name": "The Halloween Hare",
+        "source": "raids/halloweenhare.xml"
+      },
+      "nearest_npc_spawn": {
+        "distance": 118,
+        "clearance": 116,
+        "radius": 2,
+        "name": "loui",
+        "source": "map-spawn.xml"
+      },
+      "rejection_reasons": [
+        "static monster spawn clearance 12 < required 21 (nearest 'Orc Spearman' r=50 at cheb 62)"
+      ]
+    },
+    {
+      "x": 31932,
+      "y": 32073,
+      "z": 7,
+      "tile_exists": true,
+      "protection_zone": false,
+      "house_id": 0,
+      "nearest_static_monster_spawn": {
+        "distance": 61,
+        "clearance": 11,
+        "radius": 50,
+        "name": "Orc Spearman",
+        "source": "spawns.dat"
+      },
+      "nearest_raid_spawn": {
+        "distance": 142,
+        "clearance": 141,
+        "radius": 1,
+        "name": "The Halloween Hare",
+        "source": "raids/halloweenhare.xml"
+      },
+      "nearest_npc_spawn": {
+        "distance": 117,
+        "clearance": 115,
+        "radius": 2,
+        "name": "loui",
+        "source": "map-spawn.xml"
+      },
+      "rejection_reasons": [
+        "static monster spawn clearance 11 < required 21 (nearest 'Orc Spearman' r=50 at cheb 61)"
+      ]
+    },
+    {
+      "x": 31932,
+      "y": 32074,
+      "z": 7,
+      "tile_exists": true,
+      "protection_zone": false,
+      "house_id": 0,
+      "nearest_static_monster_spawn": {
+        "distance": 60,
+        "clearance": 10,
+        "radius": 50,
+        "name": "Orc Spearman",
+        "source": "spawns.dat"
+      },
+      "nearest_raid_spawn": {
+        "distance": 141,
+        "clearance": 140,
+        "radius": 1,
+        "name": "The Halloween Hare",
+        "source": "raids/halloweenhare.xml"
+      },
+      "nearest_npc_spawn": {
+        "distance": 116,
+        "clearance": 114,
+        "radius": 2,
+        "name": "loui",
+        "source": "map-spawn.xml"
+      },
+      "rejection_reasons": [
+        "static monster spawn clearance 10 < required 21 (nearest 'Orc Spearman' r=50 at cheb 60)"
+      ]
+    },
+    {
+      "x": 31932,
+      "y": 32075,
+      "z": 7,
+      "tile_exists": true,
+      "protection_zone": false,
+      "house_id": 0,
+      "nearest_static_monster_spawn": {
+        "distance": 59,
+        "clearance": 9,
+        "radius": 50,
+        "name": "Orc Spearman",
+        "source": "spawns.dat"
+      },
+      "nearest_raid_spawn": {
+        "distance": 140,
+        "clearance": 139,
+        "radius": 1,
+        "name": "The Halloween Hare",
+        "source": "raids/halloweenhare.xml"
+      },
+      "nearest_npc_spawn": {
+        "distance": 115,
+        "clearance": 113,
+        "radius": 2,
+        "name": "loui",
+        "source": "map-spawn.xml"
+      },
+      "rejection_reasons": [
+        "static monster spawn clearance 9 < required 21 (nearest 'Orc Spearman' r=50 at cheb 59)"
+      ]
+    },
+    {
+      "x": 31932,
+      "y": 32076,
+      "z": 7,
+      "tile_exists": true,
+      "protection_zone": false,
+      "house_id": 0,
+      "nearest_static_monster_spawn": {
+        "distance": 58,
+        "clearance": 8,
+        "radius": 50,
+        "name": "Orc Spearman",
+        "source": "spawns.dat"
+      },
+      "nearest_raid_spawn": {
+        "distance": 139,
+        "clearance": 138,
+        "radius": 1,
+        "name": "The Halloween Hare",
+        "source": "raids/halloweenhare.xml"
+      },
+      "nearest_npc_spawn": {
+        "distance": 114,
+        "clearance": 112,
+        "radius": 2,
+        "name": "loui",
+        "source": "map-spawn.xml"
+      },
+      "rejection_reasons": [
+        "static monster spawn clearance 8 < required 21 (nearest 'Orc Spearman' r=50 at cheb 58)"
+      ]
+    },
+    {
+      "x": 31932,
+      "y": 32077,
+      "z": 7,
+      "tile_exists": true,
+      "protection_zone": false,
+      "house_id": 0,
+      "nearest_static_monster_spawn": {
+        "distance": 57,
+        "clearance": 7,
+        "radius": 50,
+        "name": "Orc Spearman",
+        "source": "spawns.dat"
+      },
+      "nearest_raid_spawn": {
+        "distance": 139,
+        "clearance": 138,
+        "radius": 1,
+        "name": "The Halloween Hare",
+        "source": "raids/halloweenhare.xml"
+      },
+      "nearest_npc_spawn": {
+        "distance": 113,
+        "clearance": 111,
+        "radius": 2,
+        "name": "loui",
+        "source": "map-spawn.xml"
+      },
+      "rejection_reasons": [
+        "static monster spawn clearance 7 < required 21 (nearest 'Orc Spearman' r=50 at cheb 57)"
+      ]
+    },
+    {
+      "x": 31932,
+      "y": 32078,
+      "z": 7,
+      "tile_exists": true,
+      "protection_zone": false,
+      "house_id": 0,
+      "nearest_static_monster_spawn": {
+        "distance": 56,
+        "clearance": 6,
+        "radius": 50,
+        "name": "Orc Spearman",
+        "source": "spawns.dat"
+      },
+      "nearest_raid_spawn": {
+        "distance": 139,
+        "clearance": 138,
+        "radius": 1,
+        "name": "The Halloween Hare",
+        "source": "raids/halloweenhare.xml"
+      },
+      "nearest_npc_spawn": {
+        "distance": 112,
+        "clearance": 110,
+        "radius": 2,
+        "name": "loui",
+        "source": "map-spawn.xml"
+      },
+      "rejection_reasons": [
+        "static monster spawn clearance 6 < required 21 (nearest 'Orc Spearman' r=50 at cheb 56)"
+      ]
+    },
+    {
+      "x": 31932,
+      "y": 32079,
+      "z": 7,
+      "tile_exists": true,
+      "protection_zone": false,
+      "house_id": 0,
+      "nearest_static_monster_spawn": {
+        "distance": 55,
+        "clearance": 5,
+        "radius": 50,
+        "name": "Orc Spearman",
+        "source": "spawns.dat"
+      },
+      "nearest_raid_spawn": {
+        "distance": 139,
+        "clearance": 138,
+        "radius": 1,
+        "name": "The Halloween Hare",
+        "source": "raids/halloweenhare.xml"
+      },
+      "nearest_npc_spawn": {
+        "distance": 111,
+        "clearance": 109,
+        "radius": 2,
+        "name": "loui",
+        "source": "map-spawn.xml"
+      },
+      "rejection_reasons": [
+        "static monster spawn clearance 5 < required 21 (nearest 'Orc Spearman' r=50 at cheb 55)"
+      ]
+    },
+    {
+      "x": 31932,
+      "y": 32080,
+      "z": 7,
+      "tile_exists": true,
+      "protection_zone": false,
+      "house_id": 0,
+      "nearest_static_monster_spawn": {
+        "distance": 54,
+        "clearance": 4,
+        "radius": 50,
+        "name": "Orc Spearman",
+        "source": "spawns.dat"
+      },
+      "nearest_raid_spawn": {
+        "distance": 139,
+        "clearance": 138,
+        "radius": 1,
+        "name": "The Halloween Hare",
+        "source": "raids/halloweenhare.xml"
+      },
+      "nearest_npc_spawn": {
+        "distance": 110,
+        "clearance": 108,
+        "radius": 2,
+        "name": "loui",
+        "source": "map-spawn.xml"
+      },
+      "rejection_reasons": [
+        "static monster spawn clearance 4 < required 21 (nearest 'Orc Spearman' r=50 at cheb 54)"
+      ]
+    },
+    {
+      "x": 31932,
+      "y": 32081,
+      "z": 7,
+      "tile_exists": true,
+      "protection_zone": false,
+      "house_id": 0,
+      "nearest_static_monster_spawn": {
+        "distance": 53,
+        "clearance": 3,
+        "radius": 50,
+        "name": "Orc Spearman",
+        "source": "spawns.dat"
+      },
+      "nearest_raid_spawn": {
+        "distance": 139,
+        "clearance": 138,
+        "radius": 1,
+        "name": "The Halloween Hare",
+        "source": "raids/halloweenhare.xml"
+      },
+      "nearest_npc_spawn": {
+        "distance": 109,
+        "clearance": 107,
+        "radius": 2,
+        "name": "loui",
+        "source": "map-spawn.xml"
+      },
+      "rejection_reasons": [
+        "static monster spawn clearance 3 < required 21 (nearest 'Orc Spearman' r=50 at cheb 53)"
+      ]
+    },
+    {
+      "x": 31932,
+      "y": 32082,
+      "z": 7,
+      "tile_exists": true,
+      "protection_zone": false,
+      "house_id": 0,
+      "nearest_static_monster_spawn": {
+        "distance": 52,
+        "clearance": 2,
+        "radius": 50,
+        "name": "Orc Spearman",
+        "source": "spawns.dat"
+      },
+      "nearest_raid_spawn": {
+        "distance": 139,
+        "clearance": 138,
+        "radius": 1,
+        "name": "The Halloween Hare",
+        "source": "raids/halloweenhare.xml"
+      },
+      "nearest_npc_spawn": {
+        "distance": 108,
+        "clearance": 106,
+        "radius": 2,
+        "name": "loui",
+        "source": "map-spawn.xml"
+      },
+      "rejection_reasons": [
+        "static monster spawn clearance 2 < required 21 (nearest 'Orc Spearman' r=50 at cheb 52)"
+      ]
+    },
+    {
+      "x": 31932,
+      "y": 32083,
+      "z": 7,
+      "tile_exists": true,
+      "protection_zone": false,
+      "house_id": 0,
+      "nearest_static_monster_spawn": {
+        "distance": 51,
+        "clearance": 1,
+        "radius": 50,
+        "name": "Orc Spearman",
+        "source": "spawns.dat"
+      },
+      "nearest_raid_spawn": {
+        "distance": 139,
+        "clearance": 138,
+        "radius": 1,
+        "name": "The Halloween Hare",
+        "source": "raids/halloweenhare.xml"
+      },
+      "nearest_npc_spawn": {
+        "distance": 107,
+        "clearance": 105,
+        "radius": 2,
+        "name": "loui",
+        "source": "map-spawn.xml"
+      },
+      "rejection_reasons": [
+        "static monster spawn clearance 1 < required 21 (nearest 'Orc Spearman' r=50 at cheb 51)"
+      ]
+    }
+  ]
+}

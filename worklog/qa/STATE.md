@@ -2,8 +2,74 @@
 
 Estado: BLOQUEADO
 Ultimo agente: claude
-Ultima actualizacion: 2026-09-10T08:30:00-06:00
+Ultima actualizacion: 2026-09-11T02:40:00-06:00
 Contrato publicado: SI (`CONTRATO.md` v2.1.1, sin cambios en este turno)
+
+## Turno cerrado: Phase 2C.1 — Calificacion de terreno aislado para reacquisicion
+
+Turno de calificacion de terreno. **No certifica**
+`PARITY-MONSTER-REACQUISITION-001`; solo habilita el intento de Phase 2C.2.
+Detalle completo en `docs/qa/PARITY_PHASE2C1_TERRAIN_QUALIFICATION.md`.
+
+- **Herramienta nueva** `qa/parity/tools/qualify_reacquisition_terrain.py`
+  (QA-owned, solo libreria estandar). Reutiliza **en modo lectura**
+  `herramientas/leer_otbm.py` (su `Stream`, escapes y constantes); el parser
+  no se reescribio. Se agrego un filtro de bounds a nivel de area porque
+  `recorrer` decodifica los atributos de todos los items de un mundo
+  65000x65000 y no termina en tiempo practico.
+- **Reglas derivadas del codigo fuente, no adivinadas:** visibilidad de
+  cliente asimetrica `dx ∈ [-8,+9]` / `dy ∈ [-6,+7]`
+  (`map.h:181-182` + `protocolgame.cpp:766-767`); rango de espectadores del
+  servidor 11 (`map.h:179-180` + `map.cpp:434-437`), que es el mas ancho y
+  por eso el usado para la matematica de seguridad; limite de movimiento de
+  monstruo = caja de Chebyshev del radio de spawn (`spawn.cpp:222-231`),
+  efectivamente aplicado porque `allowMonsterOverspawn = true`
+  (`monster.cpp:1727-1735` + `config.lua`). **No se reutilizo el "39 SQM"**
+  del documento historico.
+- **Buffer de seguridad derivado:** `clearance > radio_spawn + 11 + 10`, es
+  decir 21 por encima del radio. Radio de spawn maximo en los datos: 50.
+  Separacion exigida entre los dos puntos: 30 en **ambos** ejes.
+- **Fuentes parseadas sin huecos:** `map.otbm` (94.199 casillas en ventana),
+  `map-spawn.xml` (9.950 entradas), `spawns.dat` (9.613 spawns + 337 NPCs,
+  con radios distintos y a veces mayores que el XML, por eso se usa la
+  union), `map-house.xml`, y los 38 archivos de `raids/` (349 `areaspawn`).
+  **`source_problems` = 0**; se verifico que los raids solo usan
+  `raid/raids/announce/areaspawn/monster/loot`, sin `singlespawn` ni otro
+  elemento de spawn ignorado.
+- **Resultado estatico:** 7.076 casillas calificadas, 58 pares evaluados,
+  top 3 reportados. Reporte determinista
+  `qa/parity/reports/reacquisition_terrain_candidates.json`, byte-identico
+  entre dos corridas.
+- **Sonda en vivo solo god** (`cliente3d/pruebas/prueba_parity_terrain_probe.gd`
+  + `.tscn`, nuevos): solo `/gotopos` y observacion pasiva; sin `/m`, sin
+  ataque, sin `/killall`, sin `/c`, sin personaje normal. Ventana de 60 s por
+  punto. El par #1 paso al primer intento: el god llego a ambas casillas y
+  **no aparecio ninguna criatura natural** en ninguna de las dos.
+- **Par seleccionado:** `A=(31980,31995,7)` / `B=(31932,32040,7)`.
+  `REACQUISITION_TEST_TERRAIN: QUALIFIED`.
+- **0 sesiones del personaje normal, 0 muertes de jugador, 0 monstruos
+  invocados, 0 monstruos matados, 0 usos de `/killall`.**
+- Las coordenadas calificadas **no** entraron en ningun fixture, case,
+  expectation ni observacion: son detalle de implementacion de captura y
+  viven solo en el documento operativo. El adaptador de reacquisicion
+  **no se modifico** (eso es Phase 2C.2).
+- Desalineamiento de mapa `0x64` no investigado ni tocado.
+
+## Conteos (Phase 2C.1)
+
+| Inventario | Especificadas | Materializadas |
+|---|---:|---:|
+| Obligaciones de contrato Architecture V2 (`qa 2.1.1`) | 198 | 0 (sin cambio) |
+| Fixtures `LEGACY_PARITY` | — | 5 (sin cambio) |
+| Casos de replay `QACaseV2`/`ParityExpectationV1` | — | 5 (sin cambio) |
+| Observaciones `RECORDED_EVIDENCE` | — | 4 (sin cambio) |
+| Observaciones `LIVE_ORACLE` canonicas | — | 1 (sin cambio) |
+| Certificacion en vivo de reacquisicion | — | sigue **BLOCKED** hasta Phase 2C.2 |
+| `REACQUISITION_TEST_TERRAIN` | — | **QUALIFIED** (`A=(31980,31995,7)`, `B=(31932,32040,7)`) |
+
+**Le toca:** Phase 2C.2 — adaptar el adaptador de captura de reacquisicion al
+par calificado y ejecutar una unica certificacion en vivo congelada contra
+`PARITY-MONSTER-REACQUISITION-001`.
 
 ## Turno cerrado: Phase 2C.0.1 — Higiene de normalizacion del fixture de reacquisicion
 
