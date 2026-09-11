@@ -71,6 +71,11 @@ func _init() -> void:
 				"--script", "red/mapa_self_test.gd"]),
 		},
 		{
+			"nombre": "identidad_conocida_protocolo",
+			"argumentos": PackedStringArray(["--headless", "--path", _raiz(),
+				"--script", "red/identidad_conocida_self_test.gd"]),
+		},
+		{
 			"nombre": "eventos_visuales",
 			"argumentos": PackedStringArray(["--headless", "--path", _raiz(),
 				"pruebas/prueba_eventos_visuales.tscn"]),

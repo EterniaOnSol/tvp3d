@@ -2,8 +2,69 @@
 
 Estado: LISTO_PARA_REVISION
 Ultimo agente: claude
-Ultima actualizacion: 2026-09-11T03:45:00-06:00
+Ultima actualizacion: 2026-09-11T07:30:00-06:00
 Contrato publicado: SI (`CONTRATO.md` v2.1.1, sin cambios en este turno)
+
+## Turno cerrado: Regresion QA de identidades conocidas del legacy 7.72
+
+Turno estrecho de regresion. **No** cambia `PARITY-MONSTER-REACQUISITION-001`
+ni ningun artefacto de paridad, y **no** crea una tercera observacion
+`LIVE_ORACLE`. Detalle en
+`docs/qa/KNOWN_CREATURE_IDENTITY_LIVE_REGRESSION.md`.
+
+- **Solicitud aceptada de `protocolo-red`:** registrado el caso
+  `identidad_conocida_protocolo` en `cliente3d/pruebas/matriz_qa_local.gd`
+  (ruta de este carril), apuntando a
+  `red/identidad_conocida_self_test.gd`. El self-test en si **no se toco**.
+- **Self-test determinista: 20/20 OK, codigo 0.** Correccion de un dato mal
+  reportado en el cierre de `protocolo-red`: alli se dijo "21/21". El conteo
+  correcto es **20**; el 21 salia de contar tambien la linea de definicion
+  `func _comprobar(...)`. La prueba no cambio, solo la cifra.
+- **Matriz QA local completa: 18/18 OK.** Los 17 casos previos siguen verdes
+  mas el nuevo; no se removio ni salteo ninguno.
+- **Regresion viva nueva:**
+  `cliente3d/pruebas/prueba_known_creature_identity_live.gd` + `.tscn`
+  (QA-owned). No es oracle de paridad: no emite `OBSERVATION_JSON`, no usa
+  `wrap_live_observation.py` y no crea artefactos de paridad. Solo dos
+  sesiones (god + personaje), y como mutacion unicamente `/gotopos` y `/c`.
+- **Resultado vivo: 11/11 OK, codigo 0.** El personaje aprendio al god con
+  la forma completa (`0x61` con nombre), luego un `/c` forzo refrescos de
+  mapa completo (**5 mapas contra 2 al aprender**, es decir 3 refrescos que
+  vacian el mundo visible), y tras eso el **mismo runtime id** volvio con el
+  **nombre exacto**, no vacio. El propio personaje tampoco perdio su nombre.
+- **La transicion fue realmente de forma conocida**, no una llegada `0x61`
+  de primera vez: se verifico que el conjunto conocido nunca se acerco al
+  tope de 150 del servidor y que nunca encogio, asi que no pudo haber
+  desalojo y el reenvio tuvo que ser `0x62`.
+- `identidad_conocida_ausente`: **0 avisos**. Identidades verificadas con
+  nombre vacio: **0**.
+- **0 muertes de jugador, 0 monstruos invocados, 0 acciones de combate, 0
+  usos de `/killall`.**
+- La prueba **solo lee** `identidades_conocidas`; verificado por `grep` que
+  no hay ninguna escritura ni `clear`/`erase` desde QA. No se fabrico un
+  PASS tocando internals del parser.
+- **Artefactos de Phase 2C.2 sin tocar**, verificado por hash: el adaptador
+  de captura conserva su hash certificado `caa969e6...` y su workaround
+  `_ids_cave_rat` (ahora defensa en profundidad); fixtures, cases,
+  observaciones y reportes de paridad byte-identicos.
+- `worklog/qa/CONTRATO.md` sigue en `2.1.1` y `worklog/protocolo-red/` no se
+  toco (ni contrato ni estado ni implementacion).
+- El desalineamiento de mapa `0x64` sigue abierto y separado: aca `0x64` se
+  usa solo como disparador legitimo del refresco de mundo visible.
+
+## Conteos (regresion, sin cambio de inventarios)
+
+| Inventario | Especificadas | Materializadas |
+|---|---:|---:|
+| Obligaciones de contrato Architecture V2 (`qa 2.1.1`) | 198 | 0 (sin cambio) |
+| Fixtures `LEGACY_PARITY` | — | 5 (sin cambio) |
+| Casos de replay `QACaseV2`/`ParityExpectationV1` | — | 5 (sin cambio) |
+| Observaciones `RECORDED_EVIDENCE` | — | 4 (sin cambio) |
+| Observaciones `LIVE_ORACLE` canonicas | — | 2 (sin cambio) |
+| `LEGACY_KNOWN_CREATURE_IDENTITY` | — | **PASS** (determinista 20/20, matriz 18/18, viva 11/11) |
+
+**Le toca:** abrir un **tercer dominio de paridad**. No volver a modificar la
+reacquisicion de monstruo salvo que aparezca una regresion nueva.
 
 ## Turno cerrado: Phase 2C.2 — Certificacion en vivo de reacquisicion (EXITO)
 
