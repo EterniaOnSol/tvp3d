@@ -37,19 +37,36 @@ const ESTADO := preload("res://red/estado_mundo.gd")
 
 const HOST_DEFECTO := "127.0.0.1"
 const PUERTO_LOGIN_DEFECTO := 7171
-## Mismas casillas ya certificadas por docs/qa/PRUEBA_VIVA_REACQUISICION.md:
-## mismo piso, fuera de casa/PZ, 39 SQM de distancia. Son detalles internos
-## de navegacion del capturador; NUNCA entran al payload normalizado.
-## Roles invertidos respecto a docs/qa/PRUEBA_VIVA_REACQUISICION.md: se usa
-## (32083,32184,6) como campo de invocacion/medicion y (32082,32145,6) como
-## posicion lejana. Ambas casillas siguen siendo las mismas dos ya
-## certificadas (mismo piso, fuera de casa/PZ, 39 SQM de distancia); el
-## intercambio de roles es solo un detalle de implementacion de esta
-## corrida, elegido porque el campo original tenia densidad de fauna
-## silvestre (spiders y cave rats salvajes) demasiado alta para una
-## identificacion sin ambiguedad en corridas repetidas.
-const POS_CAMPO := Vector3i(32083, 32184, 6)
-const POS_LEJOS := Vector3i(32082, 32145, 6)
+## Terreno operativo calificado por Phase 2C.1 y corregido en Phase 2C.2; ver
+## `docs/qa/PARITY_PHASE2C2_MONSTER_REACQUISITION_LIVE.md`. Aislamiento
+## estatico contra spawns y raids con
+## `qa/parity/tools/qualify_reacquisition_terrain.py`, confirmado con una
+## sonda pasiva solo-god de 60 s por punto que no observo ninguna criatura
+## natural, y ademas comprobado en vivo que el servidor si acepta colocar al
+## personaje en ambos puntos con `/c`.
+##
+##   POS_CAMPO = punto A: aca se reune al personaje, se invoca la rata de
+##               prueba, se mide el primer golpe y se mide la reaparicion.
+##   POS_LEJOS = punto B: destino temporal del hueco de visibilidad.
+##
+## El par preseleccionado por Phase 2C.1 resulto NO colocable: aquellas
+## casillas estaban aisladas justamente porque son terreno inhabitable, y
+## `/c` (`getClosestFreePosition`) no encuentra casilla libre ahi. Este par
+## si acepta al personaje. Separacion dy = 61: basta con que UN eje quede
+## fuera de la ventana de visibilidad (`dx in [-8,+9]`, `dy in [-6,+7]`,
+## `protocolgame.cpp:766-767`) y del rango de espectadores del servidor (11),
+## asi que 61 deja 50 de margen. Aun asi la desaparicion real del objetivo se
+## exige en runtime; la separacion nunca se usa como prueba por si sola.
+##
+## Reemplazan al campo historico de `docs/qa/PRUEBA_VIVA_REACQUISICION.md`
+## (que sigue siendo evidencia historica intacta) porque aquel estaba dentro
+## de actividad natural de cave rats: en Phase 2C eso produjo ambiguedad de
+## identidad del atacante y muertes del personaje de prueba.
+##
+## Son detalles internos de navegacion del capturador: NUNCA entran al
+## payload normalizado ni al fixture/case/expectation.
+const POS_CAMPO := Vector3i(32008, 32400, 7)
+const POS_LEJOS := Vector3i(32008, 32339, 7)
 const RADIO_LLEGADA := 2
 const MONSTRUO := "cave rat"
 
@@ -84,6 +101,10 @@ var _golpes_cave_rat := 0
 var _golpes_al_salir := 0
 var _intentos_limpieza := 0
 var _intentos_invocar := 0
+## Ids que alguna vez llegaron identificados como `cave rat`, para sobrevivir
+## a la perdida de nombre de las criaturas ya conocidas (ver
+## `_registrar_cave_rats`).
+var _ids_cave_rat := {}
 var _codigo_salida := 0
 var _limpieza_emergencia_intentada := false
 
@@ -141,6 +162,11 @@ func _process(delta: float) -> void:
 	if _total > LIMITE_TOTAL:
 		_fallar("FAIL tiempo agotado en la fase '%s'" % _fase)
 		return
+	## Se memoriza la identidad de cualquier cave rat en cuanto llega con
+	## nombre, en cada frame: el nombre puede perderse despues (ver
+	## `_registrar_cave_rats`) y entonces ya no habria forma de reconocerlo.
+	if _estado_jugador != null:
+		_registrar_cave_rats(_estado_jugador)
 	# Guarda de seguridad continua: si alguna vez la vida del personaje llega
 	# a cero, se aborta de inmediato. Este capturador nunca debe dejar morir
 	# al personaje normal. Se dispara UNA sola vez (_codigo_salida == 0
@@ -309,14 +335,36 @@ func _verificar_campo_libre() -> void:
 	_pasar_a("invocar")
 
 
+## `cliente3d/red/estado_mundo.gd` puede perder el nombre de una criatura ya
+## conocida: cuando el servidor la reenvia en forma corta y la entrada previa
+## ya no esta en el diccionario, la reconstruye con `nombre` vacio. Se
+## observo en vivo que el objetivo, el god y el propio personaje quedaban los
+## tres con nombre vacio a mitad de la medicion. Ese parser pertenece al
+## carril `protocolo-red` y este turno no lo toca.
+##
+## Por eso la identidad de "cave rat" se memoriza por id la primera vez que
+## SI llega con nombre, y a partir de ahi la desambiguacion trabaja sobre ese
+## conjunto de ids. No se debilita nada: el objetivo sigue identificandose
+## por un runtime id nuevo y unico, el atacante sigue exigiendo el mensaje
+## autoritativo que nombre al cave rat, y la ambiguedad sigue rechazandose si
+## hay mas de un cave rat conocido vivo a la vista.
+func _registrar_cave_rats(estado) -> void:
+	for id in estado.criaturas:
+		var criatura: Dictionary = estado.criaturas[id]
+		if str(criatura.get("nombre", "")).to_lower() == MONSTRUO:
+			_ids_cave_rat[int(id)] = true
+
+
 func _cave_rats_vivos(estado) -> int:
+	_registrar_cave_rats(estado)
 	var cantidad := 0
 	for id in estado.criaturas:
+		if not _ids_cave_rat.has(int(id)):
+			continue
 		var criatura: Dictionary = estado.criaturas[id]
 		if int(criatura.get("vida", 100)) <= 0:
 			continue
-		if str(criatura.get("nombre", "")).to_lower() == MONSTRUO:
-			cantidad += 1
+		cantidad += 1
 	return cantidad
 
 
@@ -343,6 +391,11 @@ func _esperar_monstruo() -> void:
 		return
 	if candidatos.size() == 1:
 		_id_monstruo = candidatos[0]
+		## Se memoriza la identidad AHORA, que es cuando el servidor si
+		## entrega el nombre. Mas adelante `estado_mundo.gd` puede reenviar la
+		## criatura en forma corta y dejar `nombre` vacio; a partir de ese
+		## momento el nombre ya no sirve para desambiguar y solo vale el id.
+		_ids_cave_rat[_id_monstruo] = true
 		print("Cave rat nuevo id %d visto por el personaje." % _id_monstruo)
 		_pasar_a("esperar primer golpe")
 		return
@@ -370,6 +423,17 @@ func _esperar_golpe(es_primero: bool) -> void:
 			# visibles): no se acepta esta evidencia todavia, se sigue
 			# esperando en vez de adivinar.
 			if _espera > ESPERA_GOLPE:
+				var diag: Array = []
+				for id2 in _estado_jugador.criaturas:
+					var c2: Dictionary = _estado_jugador.criaturas[id2]
+					diag.append("id=%d '%s' vida=%s pos=%s" % [
+						int(id2), str(c2.get("nombre", "?")),
+						str(c2.get("vida", "?")), str(c2.get("pos", "?"))])
+				diag.sort()
+				print("DIAG objetivo=%d presente=%s | cave_rats_vivos=%d | jugador_pos=%s" % [
+					_id_monstruo, str(_estado_jugador.criaturas.has(_id_monstruo)),
+					_cave_rats_vivos(_estado_jugador), str(_estado_jugador.mi_pos)])
+				print("DIAG criaturas visibles del jugador: %s" % str(diag))
 				_fallar("FAIL identidad del atacante ambigua: mas de un cave rat visible o el objetivo esperado no es el que esta vivo")
 			return
 		if es_primero:
@@ -389,8 +453,8 @@ func _confirmar_salida_de_vista() -> void:
 	## Prueba directa, no inferida por distancia: el objetivo debe
 	## desaparecer realmente del diccionario de criaturas del personaje
 	## (estado_mundo.gd borra la entrada cuando el servidor retira la
-	## criatura de la vista, opcode 0x6C). No basta con haber caminado
-	## 39 SQM: se exige la confirmacion real.
+	## criatura de la vista, opcode 0x6C). La separacion entre A y B no
+	## alcanza por si sola como evidencia: se exige la confirmacion real.
 	if _estado_jugador.criaturas.has(_id_monstruo):
 		if _espera > ESPERA_PASO:
 			_fallar("FAIL el cave rat objetivo nunca desaparecio del conjunto visible del personaje")
@@ -406,10 +470,13 @@ func _confirmar_salida_de_vista() -> void:
 
 
 func _esperar_reaparicion() -> void:
+	_registrar_cave_rats(_estado_jugador)
+	## La identidad exigida es el runtime id, no el nombre: el id del objetivo
+	## se fijo cuando el servidor si lo mandaba con nombre, y `_ids_cave_rat`
+	## lo conserva aunque una reenvio corto posterior deje el nombre vacio.
 	if _estado_jugador.criaturas.has(_id_monstruo):
 		var criatura: Dictionary = _estado_jugador.criaturas[_id_monstruo]
-		if str(criatura.get("nombre", "")).to_lower() == MONSTRUO \
-				and int(criatura.get("vida", 0)) > 0:
+		if int(criatura.get("vida", 0)) > 0:
 			print("El mismo cave rat (id %d) reaparecio en el conjunto visible del personaje." % _id_monstruo)
 			_pasar_a("esperar segundo golpe")
 			return
@@ -419,12 +486,13 @@ func _esperar_reaparicion() -> void:
 	for id in _estado_jugador.criaturas:
 		if int(id) == _id_monstruo:
 			continue
+		if not _ids_cave_rat.has(int(id)):
+			continue
 		var criatura2: Dictionary = _estado_jugador.criaturas[id]
 		if int(criatura2.get("vida", 100)) <= 0:
 			continue
-		if str(criatura2.get("nombre", "")).to_lower() == MONSTRUO:
-			_fallar("FAIL reaparecio un cave rat con id distinto al objetivo original; no es la misma instancia")
-			return
+		_fallar("FAIL reaparecio un cave rat con id distinto al objetivo original; no es la misma instancia")
+		return
 	if _espera > ESPERA_PASO:
 		_fallar("FAIL el cave rat objetivo (mismo id) no reaparecio a tiempo")
 

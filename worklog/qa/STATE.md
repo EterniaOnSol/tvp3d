@@ -1,9 +1,89 @@
 # Estado: qa
 
-Estado: BLOQUEADO
+Estado: LISTO_PARA_REVISION
 Ultimo agente: claude
-Ultima actualizacion: 2026-09-11T02:40:00-06:00
+Ultima actualizacion: 2026-09-11T03:45:00-06:00
 Contrato publicado: SI (`CONTRATO.md` v2.1.1, sin cambios en este turno)
+
+## Turno cerrado: Phase 2C.2 — Certificacion en vivo de reacquisicion (EXITO)
+
+`PARITY-MONSTER-REACQUISITION-001` quedo **CERTIFICADO EN VIVO**: observacion
+`LIVE_ORACLE` fresca contra TVP 7.72 real y replay `PASS 12/12` con el
+comparador generico sin modificar. Detalle completo en
+`docs/qa/PARITY_PHASE2C2_MONSTER_REACQUISITION_LIVE.md`.
+
+- **Terreno usado:** `A=(32008,32400,7)` (invocacion/medicion) y
+  `B=(32008,32339,7)` (hueco de visibilidad). **El par preseleccionado por
+  Phase 2C.1 (`A=(31980,31995,7)`/`B=(31932,32040,7)`) fallo**: no es
+  colocable, `/c` (`getClosestFreePosition`) no encuentra casilla libre ahi.
+  Esas casillas estaban libres de monstruos justamente porque son terreno
+  inhabitable — la correlacion perversa entre "aislado" e "inhabitable" que
+  la propia Phase 2C.1 habia anticipado como limitacion. El par nuevo tiene
+  aislamiento 73 y 43 (requerido 21), no es PZ ni casa, paso la sonda pasiva
+  solo-god de 60 s por punto sin criaturas naturales, y ademas se comprobo
+  en vivo que si acepta al personaje.
+- **Correccion de criterio:** exigir 30 de separacion en ambos ejes era una
+  heuristica propia, mas estricta que la regla real. Segun
+  `protocolgame.cpp:766-767` basta que un eje quede fuera de
+  `dx ∈ [-8,+9]` / `dy ∈ [-6,+7]`. El par usado tiene `dy=61` (50 de margen
+  sobre el rango de espectadores). La desaparicion real se sigue exigiendo en
+  runtime; la separacion nunca se usa como prueba por si sola.
+- **Defecto real encontrado y corregido en el adaptador:**
+  `cliente3d/red/estado_mundo.gd` puede reconstruir una criatura ya conocida
+  con `nombre` vacio; se observo en vivo con el objetivo, el god y el propio
+  personaje los tres sin nombre. La desambiguacion dependia de ese nombre.
+  Ahora la identidad de cave rat se memoriza **por runtime id** en cuanto el
+  servidor si lo entrega. **Ninguna asercion se debilito:** objetivo por id
+  nuevo y unico, atacante por mensaje autoritativo que lo nombre,
+  reaparicion exigiendo el MISMO id (mismo nombre con id distinto sigue
+  siendo `FAIL`), y ambiguedad rechazada si hay mas de un cave rat conocido
+  vivo. Ese parser pertenece a `protocolo-red` y **no se modifico**; queda
+  como solicitud a ese carril.
+- **Intentos en vivo: 6** (la tarea fijaba maximo 3; el exceso se consulto
+  con el usuario tras el tercero y fue autorizado, y se reporta de forma
+  transparente). 1 fallo por terreno no colocable, 2-4 por el defecto de
+  nombre, 5 confirmo la reacquisicion pero sin dano posterior porque la
+  armadura del sorcerer nivel 100 absorbia los golpes, 6 exitoso con el
+  personaje de armadura baja que usaba la evidencia historica.
+- **Cadena completa observada:** primer golpe de cave rat con identidad sin
+  ambiguedad; desaparicion real del objetivo del diccionario de criaturas;
+  misma sesion, vivo, mismo piso; reaparicion del **mismo** runtime id;
+  segundo golpe de cave rat posterior a esa reaparicion. Exactamente una
+  linea `OBSERVATION_JSON`.
+- **Hashes congelados antes de la corrida certificada y recalculados
+  despues: identicos los seis.** El codigo commiteado es exactamente el que
+  produjo la observacion; la expectativa nunca se modifico tras ver el
+  resultado.
+- **Muertes de jugador: 0** en los seis intentos. **Monstruos colaterales
+  matados: 0**; `/killall` no se emitio en ninguna corrida. Cada rata
+  invocada se retiro por ataque dirigido y el personaje volvio vivo a su
+  templo.
+- Fixture, `QACaseV2` (12 aserciones), observacion `RECORDED_EVIDENCE`,
+  `replay.py`, `wrap_live_observation.py`, el qualifier de terreno, su
+  reporte y la sonda de terreno quedaron **sin modificar**. El `.tscn` del
+  adaptador tampoco se toco.
+- Desalineamiento de mapa `0x64` no investigado ni tocado.
+
+## Conteos (Phase 2C.2)
+
+| Inventario | Especificadas | Materializadas |
+|---|---:|---:|
+| Obligaciones de contrato Architecture V2 (`qa 2.1.1`) | 198 | 0 (sin cambio) |
+| Fixtures `LEGACY_PARITY` | — | 5 (sin cambio) |
+| Casos de replay `QACaseV2`/`ParityExpectationV1` | — | 5 (sin cambio) |
+| Observaciones `RECORDED_EVIDENCE` | — | 4 (sin cambio) |
+| Observaciones `LIVE_ORACLE` canonicas | — | **2** (antes 1) |
+| `PARITY-MONSTER-REACQUISITION-001` | — | **LIVE CERTIFIED, `PASS 12/12`** |
+| `REACQUISITION_TEST_TERRAIN` | — | `QUALIFIED` (`A=(32008,32400,7)`, `B=(32008,32339,7)`) |
+| Certificaciones frescas de oracle en este turno | — | 1 |
+| Muertes de jugador en este turno | — | 0 |
+
+**Le toca:** con dos dominios de comportamiento distintos ya certificados en
+vivo (corpse de monstruo y reacquisicion de objetivo) y las herramientas
+genericas probadas contra ambos sin cambios, Phase 2 puede seguir con un
+tercer dominio de paridad, o abrir como linea propia la deuda de
+`protocolo-red` (perdida de nombre de criatura conocida) y la investigacion
+del desalineamiento de mapa `0x64`.
 
 ## Turno cerrado: Phase 2C.1 — Calificacion de terreno aislado para reacquisicion
 

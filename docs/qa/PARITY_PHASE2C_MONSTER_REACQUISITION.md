@@ -337,3 +337,34 @@ vivo de TVP**. La cronologia original de Phase 2C de arriba no se reescribe.
   `LEGACY_PARITY`, 5 casos de replay, 4 observaciones `RECORDED_EVIDENCE`,
   1 observacion `LIVE_ORACLE` (la de monster-corpse; reacquisicion sigue
   `BLOCKED`).
+
+## Addendum (Phase 2C.2) — el bloqueo en vivo quedo resuelto
+
+La cronologia de arriba no se reescribe: en su momento la certificacion en
+vivo estaba genuinamente bloqueada y reportarla como tal fue correcto.
+
+**Ese bloqueo era ambiental y ya esta resuelto.** Phase 2C.1 califico terreno
+aislado de forma independiente y Phase 2C.2 certifico en vivo
+`PARITY-MONSTER-REACQUISITION-001`: observacion `LIVE_ORACLE` fresca y replay
+`PASS 12/12` con el comparador generico sin modificar. Cero muertes de
+jugador. Detalle completo en
+`docs/qa/PARITY_PHASE2C2_MONSTER_REACQUISITION_LIVE.md`.
+
+Dos matices que conviene leer junto con este documento:
+
+- El par preseleccionado por Phase 2C.1 (`A=(31980,31995,7)` /
+  `B=(31932,32040,7)`) resulto **no colocable**: `/c` no encuentra casilla
+  libre ahi. Esas casillas estaban libres de monstruos justamente porque son
+  terreno inhabitable. El par finalmente usado fue `A=(32008,32400,7)` /
+  `B=(32008,32339,7)`, tambien calificado y ademas comprobado colocable en
+  vivo.
+- Los 13 abortos originales por "ambiguedad de identidad del atacante" tenian
+  **dos** causas, no una: la densidad de fauna del campo historico (resuelta
+  por el terreno aislado) y ademas un defecto del propio adaptador de captura
+  — `cliente3d/red/estado_mundo.gd` puede dejar el `nombre` de una criatura
+  ya conocida en vacio, y la desambiguacion dependia de ese nombre. El
+  adaptador ahora memoriza la identidad por runtime id en cuanto el nombre
+  llega. Ninguna asercion se debilito.
+
+Las 12 aserciones, el fixture, el case y la observacion `RECORDED_EVIDENCE`
+siguen byte-identicos a como los dejo Phase 2C.0.1.
