@@ -2,8 +2,155 @@
 
 Estado: LISTO_PARA_REVISION
 Ultimo agente: claude
-Ultima actualizacion: 2026-09-12T15:10:00-06:00
+Ultima actualizacion: 2026-09-12T17:45:00-06:00
 Contrato publicado: SI (`CONTRATO.md` v2.1.1, sin cambios en este turno)
+
+## Turno cerrado: `PARITY-HOUSE-OWNER-ACCESS-001` — Acceso del dueno
+
+**CERTIFICADO EN VIVO.** Replay vivo **`PASS 5/5`**, byte-identico entre dos
+corridas, al **primer** intento. Detalle completo en
+`docs/qa/PARITY_HOUSE_OWNER_ACCESS.md`.
+
+Fixture `LEGACY_PARITY` **dentro de Phase 2**. No abre fase ni sub-fase nueva y
+**no toca** `docs/tibia3d/MASTER_PLAN.md`.
+
+### Que certifica
+
+Sobre el **mismo jugador normal** y la **misma casilla limite**: sin ser dueno
+el servidor le niega la entrada y se queda afuera; **siendo dueno**, el mismo
+desplazamiento ordinario hacia la misma casilla es aceptado.
+
+Es el **positivo** que le faltaba a `PARITY-HOUSE-ACCESS-001`, que solo habia
+certificado la denegacion.
+
+**La comparacion ES el fixture.** Ninguna mitad prueba nada sola: "no entro" lo
+da igual una pared y "entro" lo da cualquier casilla que no sea de casa. Lo que
+se afirma es que, fijos el jugador, la casilla, el camino y los objetos de esa
+casilla, **lo unico que cambio fue la propiedad**.
+
+### El hallazgo que decidio el diseno
+
+**El control de casa esta arriba de todo en `Tile::queryAdd`**, antes de
+cualquier chequeo de objeto que bloquee. De ahi una asimetria que, ignorada,
+habria dado un resultado falso: al **no invitado** lo frena la regla de casa
+(que corre primero, aunque la casilla ademas este tapada), pero al **dueno** lo
+frenaria la **puerta cerrada**, que es un bloqueo de objeto sin relacion con la
+propiedad. Se habria leido como "el dueno tampoco entra".
+
+Se reconocieron **734 casillas** con `/tileinfo` antes de disenar nada: en este
+mapa **no existe ninguna casa con un limite abierto**. Por eso el operador abre
+la puerta **una vez, antes de la medicion negativa, y la deja abierta durante
+las dos**. Estado identico en ambas mitades, asi que no puede explicar la
+diferencia. Verificado por `/tileinfo` en tres momentos: `1221 closed door`,
+`1222 open door`, `1221 closed door`.
+
+Abrir la puerta **no es medir la puerta**: `Door::canUse` queda expresamente
+fuera de lo afirmado.
+
+### Herramienta nueva: calificar antes de conectar
+
+Se agrego `cliente3d/pruebas/prueba_casa_reconocer_limite.gd`, de **solo
+lectura**, que pregunta al servidor con `/tileinfo` a que casa pertenece cada
+casilla, si es zona de proteccion y que objetos tiene. **0 mutaciones.**
+
+Es la respuesta a un tropiezo repetido: Phase 2E gasto dos lanzamientos
+aprendiendo que una casilla historica no era caminable, y
+`PARITY-HOUSE-ACCESS-001` gasto uno buscando el limite vecina por vecina. Aca
+la geometria se pregunto **antes** de conectar a nadie, y la captura salio a la
+primera.
+
+### Casa de sandbox
+
+Sin dueno, listas vacias, pujas en cero, zona de proteccion, **sin un solo
+objeto recogible ni contenedor adentro** —se recorrio entera con `/tileinfo`—,
+y **no** es la casa contaminada del audit de camas ni ninguna del usuario. Lo
+ultimo importa: al devolverla, `House::transferToDepot` manda al deposito del
+dueno saliente los recogibles que haya sobre la casa, y aca no habia nada.
+
+### Restauracion de la casa: exacta
+
+La fila quedo **identica byte a byte**: `83|0|0|1400|1|0|0|0|0|35|2`. En el
+mundo: **862** casas, **860** sin dueno, **2** con dueno, **los mismos dos**, y
+`house_lists` con **0 filas** antes y despues.
+
+**0 listas de invitados, subduenos o puertas modificadas; 0 entradas comodin;
+0 segunda casa tocada; 0 premium; 0 cuentas; 0 progresion; 0 camas usadas;
+0 muertes, combate, monstruos o comandos amplios; 0 objetos creados por QA.**
+
+### Residuo declarado: el turno NO cierra en cero
+
+`House::setOwner` deja una **carta de bienvenida** en el deposito del nuevo
+dueno (`house.cpp:104-131`), dentro de `if (updateDatabase)`, y `/owner` **no
+expone** forma de pasar `false`. Era inevitable por la unica via autorizada.
+
+Delta exacto del deposito del participante, y no hay otro:
+`{2594 Content={}}` -> `{2594 Content={}, 2598 Text="Welcome!..."}`.
+
+**No se intento borrarla a proposito.** La unica via sin tocar `servidor/` deja
+la carta en el suelo y la elimina con `/r`, que actua sobre la casilla que el
+operador tiene **enfrente**; si ese paso falla, el residuo pasa de una carta
+inerte en un deposito de QA a **un objeto tirado en la via publica**. Cambiar un
+residuo acotado por uno mayor no es limpiar.
+
+**La restauracion de la CASA es exacta; el turno no cierra con residuo cero.**
+Los archivos de jugador no estan versionados (`.gitignore:25`).
+
+### Cinco aserciones, y por que no mas
+
+Se preserva la granularidad de `PARITY-HOUSE-ACCESS-001`, que ya separaba el
+**mensaje** de denegacion de la **posicion** que no cambio. **No** se agrego
+`authoritative_inside_transition_observed`: saldria de la misma lectura que
+`entry_allowed`, asi que seria restatear una observacion como dos — el mismo
+criterio de 10 y no 11 en deposito, 7 y no 8 en comercio, 4 y no 5 en acceso.
+**No** se agrego `ownership_relationship_established`: el cliente no puede
+observarlo; se verifico en la DB como **guarda del turno**, no como asercion.
+
+### Sin `RECORDED_EVIDENCE`, verificado antes de congelar
+
+`PRUEBA_VIVA_CASA_CAMA.md` menciona una casa y una entrada pero **no observa
+ninguna entrada**: su unica observacion de runtime es un fallo al usar una
+cama. Ninguna corrida historica vio a un jugador entrar por ser dueno.
+**`LIVE_ORACLE` unicamente**; el corpus grabado queda en **9**.
+
+### Lo que NO se afirma
+
+**No se certifica exclusividad**: que *solo* el dueno pueda entrar exigiria un
+segundo participante normal contra la misma casilla, y no se midio. Tampoco
+compra, venta, alquiler, subasta ni transferencia; ni persistencia de la
+propiedad entre reinicios; ni invitado, subdueno o puertas; ni precedencia; ni
+expulsar; ni premium; ni camas.
+
+## Conteos (`PARITY-HOUSE-OWNER-ACCESS-001`)
+
+| Inventario | Especificadas | Materializadas |
+|---|---:|---:|
+| Obligaciones de contrato Architecture V2 (`qa 2.1.1`) | 198 | 0 (sin cambio) |
+| Fixtures `LEGACY_PARITY` | — | **16** (antes 15) |
+| Casos de replay `QACaseV2`/`ParityExpectationV1` | — | **16** (antes 15) |
+| Observaciones `RECORDED_EVIDENCE` | — | **9** (sin cambio, a proposito) |
+| Observaciones `LIVE_ORACLE` canonicas | — | **13** (antes 12) |
+| `PARITY-HOUSE-OWNER-ACCESS-001` | — | **LIVE CERTIFIED, `PASS 5/5`** |
+
+Phase 2 sigue **EN CURSO**.
+
+### Bloqueos, los dos abiertos y sin cambio
+
+- **`HOUSE_GUEST_LIST_SIN_TRANSPORTE_DE_PRODUCCION`**: certificar al dueno no
+  acerca la lista de invitados. Este fixture pudo hacerse **justamente porque
+  no necesita ninguna lista de acceso**; el hueco sigue siendo el par
+  `0x97` / `0x8A` del transporte, y es de `protocolo-red`.
+- **`CASAS_CAMAS_SIN_PARTICIPANTE_QA_PREMIUM_CON_CASA`**: no se concedio
+  premium y no se uso ninguna cama. El acceso no consulta `isPremium()`, pero
+  `BedItem::canUse` si.
+
+**Le toca:** con el par negativo/positivo del acceso ya cerrado, lo de mayor
+valor y menor riesgo es **`PARITY-HOUSE-OWNER-EXCLUSIVITY-001`**: un segundo
+participante normal medido contra la misma casilla mientras el primero es
+dueno, para certificar que la propiedad habilita **solo** al dueno. Usa el
+mismo montaje ya probado, no toca ninguna lista y cierra la limitacion que este
+turno declara. Alternativas fuera del dominio, todas sin evidencia historica:
+borde del alcance de comercio, cancelacion implicita por desconexion, baja y
+duplicado de contactos.
 
 ## Turno cerrado: `PARITY-HOUSE-GUEST-ACCESS-001` — BLOQUEADO
 

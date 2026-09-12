@@ -1,0 +1,55 @@
+{
+  "schema": "tvp3d.qa.parity_fixture",
+  "version": "2.0.0",
+  "fixture_id": "PARITY-HOUSE-OWNER-ACCESS-001",
+  "oracle": "TVP_772",
+  "oracle_version": "7.72",
+  "source_evidence": {
+    "logical_path": "docs/qa/PARITY_HOUSE_OWNER_ACCESS.md"
+  },
+  "preconditions": [
+    "un unico participante medido: un jugador normal, vivo y conectado, sin ninguna bandera de privilegio que lo exima del control de acceso a casas",
+    "una casa del mundo que al empezar NO tiene dueno, con su lista de invitados vacia y su lista de subduenos vacia",
+    "el participante NO es dueno, ni subdueno, ni invitado de esa casa cuando se hace la primera medicion",
+    "el participante esta parado en una casilla exterior contigua a una casilla que pertenece a esa casa",
+    "la casilla de la casa que se intenta pisar es LA MISMA en las dos mediciones, y su estado de objetos no cambia entre una y otra",
+    "la via de movimiento ordinaria del participante funciona en el momento de medir, demostrado con un desplazamiento autoritativo previo entre casillas que no pertenecen a ninguna casa",
+    "entre la primera y la segunda medicion lo UNICO que cambia es la relacion de propiedad de esa casa, que pasa a resolver al participante medido",
+    "no se modifica ninguna lista de acceso: ni invitados, ni subduenos, ni listas por puerta",
+    "no se modifica el estado premium de ninguna cuenta, no se usa ninguna cama y no se altera la progresion de ningun personaje"
+  ],
+  "input_action": "el participante intenta DOS veces el mismo desplazamiento ordinario, por la via de movimiento normal del juego, desde la misma casilla exterior hacia la misma casilla de la casa: la primera vez sin ser dueno y la segunda siendo dueno",
+  "observed_authoritative_result": "sin propiedad el servidor rechaza la entrada con su respuesta especifica de falta de autorizacion para esa casa, distinta de cualquier rechazo generico de terreno o colision, y la posicion autoritativa del participante despues del intento sigue siendo la de afuera. Con la propiedad resuelta al mismo participante, el mismo desplazamiento hacia la misma casilla es aceptado y la posicion autoritativa posterior es la casilla de la casa. La sesion no se cae en ningun momento.",
+  "normalization_rules": [
+    "el participante se compara por ROL (el que intenta entrar, primero sin propiedad y despues con ella), nunca por nombre de personaje, id de cuenta, guid ni runtime id",
+    "no se serializa ninguna identidad de la casa: ni su id, ni su nombre, ni su pueblo, ni su dueno, ni el guid al que quedo asignada",
+    "no se serializa ninguna coordenada: ni la casilla exterior, ni la casilla de la casa, ni la interior, ni la entrada",
+    "no se serializa el texto exacto de la respuesta del servidor: el rechazo especifico de acceso se normaliza al hecho booleano de haberse observado",
+    "no se serializa ningun numero de opcode del protocolo legacy",
+    "no se serializa el mecanismo de montaje usado para asignar o devolver la propiedad, ni el estado de ninguna puerta",
+    "la permanencia afuera y la entrada se normalizan a hechos booleanos derivados de la posicion AUTORITATIVA reportada por el servidor, sin publicar ninguna posicion",
+    "se ignoran marcas de tiempo de reloj de pared y cualquier metadata de host o proceso"
+  ],
+  "determinism_notes": "la COMPARACION es el fixture. Ninguna de las dos mitades prueba nada por separado: 'no entro' lo produce igual una pared, un borde de mapa, una casilla ocupada o una peticion perdida, y 'entro' lo produce cualquier casilla que no sea de una casa. Lo que se afirma es que, manteniendo fijos el jugador, la casilla, el camino y el estado de los objetos de esa casilla, lo UNICO que cambio entre el rechazo y la aceptacion fue la relacion de propiedad. Por eso se exigen tres cosas independientes. Primero, un CONTROL POSITIVO inmediatamente antes de medir: el participante realiza un desplazamiento ordinario que el servidor confirma sobre casillas que no son de ninguna casa, lo que descarta que la via de movimiento estuviera rota. Segundo, la respuesta ESPECIFICA de falta de autorizacion de casa en la mitad sin propiedad, que en este oracle solo puede originarse en el control de acceso de casas y nunca en una colision comun; observarla prueba a la vez que la casilla de destino pertenece de verdad a una casa y que el participante no estaba autorizado. Tercero, que en la mitad con propiedad esa respuesta especifica NO vuelva a aparecer y la posicion autoritativa pase a ser la casilla de la casa. Las dos posiciones se leen del estado AUTORITATIVO reportado por el servidor, nunca de la prediccion local del cliente, porque un cliente puede dibujar un paso que el servidor rechazo; y la entrada medida se produce por una orden de movimiento ordinaria, sin ningun teletransporte sobre el participante durante esa fase. ALCANCE DECLARADO: este fixture certifica UNICAMENTE que la relacion de propiedad habilita la entrada por la via de movimiento ejercitada, sobre un limite que a ese mismo jugador le estaba negado. NO certifica EXCLUSIVIDAD, es decir que solo el dueno pueda entrar, porque no se midio ningun segundo participante. NO certifica el acceso del subdueno ni del invitado, ni la precedencia entre esos niveles, ni la semantica de invitar, desinvitar o expulsar, ni el comportamiento de las puertas ni sus listas, ni la compra, venta, alquiler, subasta o transferencia de casas, ni la persistencia de la propiedad entre reinicios del servidor o ciclos del contenedor, ni ningun requisito de cuenta premium, ni el uso de camas, ni dormir, ni la regeneracion, ni el comportamiento de todos los tipos de casilla de una casa, ni todas las direcciones de entrada posibles.",
+  "excluded_nondeterministic_fields": [
+    "character_names",
+    "account_id",
+    "player_guid",
+    "creature_runtime_ids",
+    "house_id",
+    "house_name",
+    "house_owner",
+    "house_town",
+    "house_access_lists",
+    "house_door_state",
+    "setup_commands",
+    "legacy_protocol_opcodes",
+    "server_message_text",
+    "positions",
+    "tile_coordinates",
+    "wall_clock_timestamp",
+    "host_metadata",
+    "process_id"
+  ],
+  "classification": "MATCH_EXPECTED"
+}

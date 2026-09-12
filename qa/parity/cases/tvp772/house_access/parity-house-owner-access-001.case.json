@@ -1,0 +1,73 @@
+{
+  "schema": "tvp3d.qa.case",
+  "version": "2.0.0",
+  "case_id": "PARITY-HOUSE-OWNER-ACCESS-001",
+  "class": "LEGACY_PARITY",
+  "title": "TVP 7.72 houses: the house owner may enter a boundary that denied that same normal player while they were not the owner",
+  "owners": ["qa"],
+  "contracts": [
+    {"contract": "qa", "version": "2.1.1"}
+  ],
+  "requirement_refs": [
+    {
+      "contract": "qa",
+      "version": "2.1.1",
+      "section": "16",
+      "source_fixture_id": "PARITY-HOUSE-OWNER-ACCESS-001"
+    }
+  ],
+  "preconditions": [
+    "un jugador normal, vivo y conectado, sin banderas de privilegio, medido dos veces contra la misma casilla limite de la misma casa",
+    "la casa empieza sin dueno y con sus listas de invitados y subduenos vacias",
+    "la via de movimiento ordinaria funciona, demostrado inmediatamente antes de medir",
+    "entre las dos mediciones lo unico que cambia es la relacion de propiedad; no se modifica ninguna lista de acceso, ni premium, ni progresion"
+  ],
+  "input_fixture": {
+    "logical_path": "qa/parity/fixtures/tvp772/house_access/parity-house-owner-access-001.json"
+  },
+  "expected": {
+    "schema": "tvp3d.qa.parity_expectation",
+    "version": "1.0.0",
+    "mode": "SINGLE_OBSERVATION",
+    "assertions": [
+      {
+        "assertion_id": "HOUSE-OWNER-ORDINARY-MOVEMENT-CONFIRMED",
+        "left_path": "/precondition/ordinary_movement_confirmed",
+        "operator": "EQ",
+        "right": {"literal": true}
+      },
+      {
+        "assertion_id": "HOUSE-OWNER-SESSION-REMAINED-CONNECTED",
+        "left_path": "/precondition/session_remained_connected",
+        "operator": "EQ",
+        "right": {"literal": true}
+      },
+      {
+        "assertion_id": "HOUSE-OWNER-DENIAL-WITHOUT-OWNERSHIP",
+        "left_path": "/without_ownership/house_access_denial_observed",
+        "operator": "EQ",
+        "right": {"literal": true}
+      },
+      {
+        "assertion_id": "HOUSE-OWNER-REMAINED-OUTSIDE-WITHOUT-OWNERSHIP",
+        "left_path": "/without_ownership/participant_remained_outside",
+        "operator": "EQ",
+        "right": {"literal": true}
+      },
+      {
+        "assertion_id": "HOUSE-OWNER-ENTRY-ALLOWED-WITH-OWNERSHIP",
+        "left_path": "/with_ownership/entry_allowed",
+        "operator": "EQ",
+        "right": {"literal": true}
+      }
+    ]
+  },
+  "mutates_external_state": false,
+  "requires_network": false,
+  "requires_legacy": false,
+  "requires_secrets": false,
+  "status_policy": {
+    "missing_prerequisite_status": "BLOCKED",
+    "assertion_mismatch_status": "FAIL"
+  }
+}
