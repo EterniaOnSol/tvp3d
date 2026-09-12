@@ -2,8 +2,121 @@
 
 Estado: LISTO_PARA_REVISION
 Ultimo agente: claude
-Ultima actualizacion: 2026-09-12T11:30:00-06:00
+Ultima actualizacion: 2026-09-12T12:30:00-06:00
 Contrato publicado: SI (`CONTRATO.md` v2.1.1, sin cambios en este turno)
+
+## Turno cerrado: Auditoria de evidencia de casa y cama — `NO_VALID_FIXTURE`
+
+Turno de **auditoria**, dentro de Phase 2. **No se materializo ningun fixture,
+`QACase`, `RECORDED_EVIDENCE` ni `LIVE_ORACLE`.** Inventarios **sin cambio**.
+Detalle completo en `docs/qa/AUDITORIA_CASA_CAMA_PARIDAD.md`.
+
+### El resultado no es el esperado, y esta bien que no lo sea
+
+Se esperaba convertir `PRUEBA_VIVA_CASA_CAMA.md` —la unica evidencia historica
+sin fixture— en cobertura de paridad. **No se pudo, por dos motivos
+independientes**, cada uno suficiente por si solo.
+
+### 1. El documento no tiene ninguna observacion positiva
+
+De sus 21 lineas: **1** `RUNTIME_OBSERVATION`, 0 `SOURCE_OR_API_FACT`, 4
+`TEST_SETUP`, 1 `CLEANUP`, 2 `INFERENCE`, 1 `UNRESOLVED`, 2
+`ENVIRONMENTAL_DEPENDENCY`.
+
+Y esa **unica** observacion es un **fallo**: `You cannot use this object`. El
+documento dice de si mismo que *"no se puede afirmar todavia el ciclo de
+despertar ni la persistencia"*.
+
+**No se creo `RECORDED_EVIDENCE`**, y no por formalismo: ese rechazo era un
+**defecto del servidor ya corregido**. Congelarlo habria metido un **bug** en
+el corpus como paridad esperada, habria sido **falso** sobre el TVP actual y
+habria garantizado una regresion.
+
+### 2. El bloqueo historico estaba MAL ETIQUETADO
+
+Este es el hallazgo de mayor valor del turno.
+
+`CASAS_CAMAS_DOCKER_RETEST_PENDIENTE` venia arrastrandose en el campo
+`blockers` de casi todos los cierres de QA desde Phase 1H **sin que nadie
+reevaluara su contenido**. Su nombre dice **Docker**. La causa real **no era
+Docker**.
+
+Las dos hipotesis del documento historico —zona de proteccion, permiso de
+casa— eran **incorrectas**. La causa real esta documentada **en el propio
+codigo**, en el comentario de la guarda de uso de `servidor/src/game.cpp`:
+
+> *"Beds are the same story... Without this exception every bed use was
+> rejected right here, before `BedItem::canUse` ever ran."*
+
+Es la **misma familia de defecto** que bloqueaba el correo en Phase 2F, y la
+correccion (`&& !item->getBed()`) **ya esta aplicada**.
+
+### Por que igual NO se certifico en vivo
+
+Que la causa original este resuelta **no** habilita certificar.
+`BedItem::canUse` (`bed.cpp:79-102`) exige **premium** y que la cama este en
+una **casa**. Con `freePremium = false` y `housesOnlyPremium = true`, ningun
+participante de QA es premium ni posee casa.
+
+Las tres vias posibles estan **prohibidas**: conceder premium a una cuenta de
+QA, asignar una casa a un personaje de QA, o usar el operador —que si cumple,
+pero vive en la **cuenta personal del usuario**, y dormir mutaria la cama, su
+posicion, su vida/mana y lo forzaria a desconectarse—.
+
+**Motivo adicional y de peso:** la casa que el operador figura poseyendo es
+**exactamente la que el documento historico dice haberle asignado
+temporalmente**, prometiendo restaurarla. **Sigue asignada.** Construir un
+fixture sobre ella seria construir evidencia **encima de un residuo de QA sin
+restaurar**: pareceria verde mientras el residuo existiera y se caeria en
+silencio al limpiarlo.
+
+### Tratamiento del bloqueo: reemplazo, no cierre
+
+- `CASAS_CAMAS_DOCKER_RETEST_PENDIENTE` → **superado en su causa tecnica**: era
+  un defecto de `game.cpp`, ya corregido, **no** una cuestion de Docker.
+- **`CASAS_CAMAS_SIN_PARTICIPANTE_QA_PREMIUM_CON_CASA`** → bloqueo **nuevo y
+  preciso**: no existe participante dedicado de QA que sea premium y posea una
+  casa, y crearlo exige una mutacion prohibida.
+
+**La historia no se reescribe**: los eventos previos quedan intactos y esto se
+registra como evento compensatorio append-only.
+
+### Cero de todo
+
+**0 fixtures creados, 0 mutaciones, 0 casas asignadas, 0 premium concedido, 0
+camas usadas, 0 durmientes desalojados, 0 cuentas creadas, 0 muertes, 0
+combate, 0 monstruos, 0 comandos amplios, 0 contenedores Docker tocados, 0
+archivos de `servidor/` modificados.** `PRUEBA_VIVA_CASA_CAMA.md` **no se
+reescribio**: es evidencia historica.
+
+## Conteos (auditoria — sin cambio)
+
+| Inventario | Especificadas | Materializadas |
+|---|---:|---:|
+| Obligaciones de contrato Architecture V2 (`qa 2.1.1`) | 198 | 0 (sin cambio) |
+| Fixtures `LEGACY_PARITY` | — | 14 (sin cambio) |
+| Casos de replay `QACaseV2`/`ParityExpectationV1` | — | 14 (sin cambio) |
+| Observaciones `RECORDED_EVIDENCE` | — | 9 (sin cambio) |
+| Observaciones `LIVE_ORACLE` canonicas | — | 11 (sin cambio) |
+
+Phase 2 sigue **EN CURSO**.
+
+### Propiedades de casa y cama sin certificar
+
+**Todas.** El dominio no tiene ninguna cobertura: acceso a la casa, uso de
+cama, dormir, despertar, regeneracion, persistencia en cualquiera de sus cuatro
+fronteras, dependencia de propiedad, cama ya ocupada y diferencia entre mitades.
+
+**Le toca:** **`PARITY-HOUSE-ACCESS-001`**. La restriccion de acceso a una casa
+se puede probar **sin poseer ninguna y sin premium**: un participante de QA
+intenta entrar a una casa ajena y el servidor lo impide, con el control
+positivo de que la casilla **si** es alcanzable para quien corresponde. Es la
+unica parte del dominio que no exige ninguna mutacion prohibida. **No** tiene
+evidencia historica, asi que seria `LIVE_ORACLE` unicamente, como ya lo son
+`PARITY-TRADE-CANCEL-001` y los negativos de experiencia compartida.
+
+Conseguir un participante de QA premium y con casa es una peticion para
+`integracion`/`servidor`; **QA no debe resolverla mutando estado ajeno**.
 
 ## Turno cerrado: `PARITY-VIP-PRESENCE-001` — Presencia en la lista de contactos
 
