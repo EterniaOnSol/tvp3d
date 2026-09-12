@@ -1,0 +1,23 @@
+{
+  "schema": "tvp3d.qa.oracle_observation",
+  "version": "1.0.0",
+  "fixture_id": "PARITY-HOUSE-ACCESS-001",
+  "oracle": "TVP_772",
+  "oracle_version": "7.72",
+  "capture_origin": "LIVE_ORACLE",
+  "source_evidence": [
+    {
+      "logical_path": "docs/qa/PARITY_HOUSE_ACCESS.md"
+    }
+  ],
+  "payload": {
+    "access_attempt": {
+      "house_access_denial_observed": true,
+      "participant_remained_outside": true,
+      "session_remained_connected": true
+    },
+    "precondition": {
+      "ordinary_movement_confirmed": true
+    }
+  }
+}

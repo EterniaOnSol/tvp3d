@@ -2,8 +2,131 @@
 
 Estado: LISTO_PARA_REVISION
 Ultimo agente: claude
-Ultima actualizacion: 2026-09-12T12:30:00-06:00
+Ultima actualizacion: 2026-09-12T13:30:00-06:00
 Contrato publicado: SI (`CONTRATO.md` v2.1.1, sin cambios en este turno)
+
+## Turno cerrado: `PARITY-HOUSE-ACCESS-001` — Restriccion de acceso a una casa
+
+**CERTIFICADO EN VIVO.** Replay vivo **`PASS 4/4`**, byte-identico entre dos
+corridas. Detalle completo en `docs/qa/PARITY_HOUSE_ACCESS.md`.
+
+Fixture `LEGACY_PARITY` **dentro de Phase 2**. No abre fase ni sub-fase nueva y
+**no toca** `docs/tibia3d/MASTER_PLAN.md`.
+
+### Que certifica, y con que limite
+
+Que a un jugador normal **sin autorizacion** el servidor le **impide entrar** a
+una casa por la via de movimiento ordinaria, y que **permanece afuera**. Nada
+mas.
+
+### Es independiente de camas y de premium — verificado en el codigo
+
+El turno anterior dejo abierto `CASAS_CAMAS_SIN_PARTICIPANTE_QA_PREMIUM_CON_CASA`
+porque `BedItem::canUse` exige `isPremium()`. **El control de acceso vive en
+otra rama y no consulta premium**: `Tile::queryAdd` (`tile.cpp:481-489`) llama a
+`House::isInvited`, que resuelve por dueno, subdueno o invitado
+(`house.cpp:154-183`), y **ninguna de esas ramas mira `isPremium()`**.
+
+**Esta certificacion NO resuelve el bloqueo de camas**, que sigue **abierto y
+sin modificar**. Demuestra justamente lo contrario de lo que podria parecer:
+que la parte del dominio que **no** depende de premium ni de propiedad **si** se
+podia certificar sin mutar nada.
+
+### El problema real no era provocar el rechazo, era distinguirlo
+
+Que un jugador no se mueva es **trivial**: lo produce igual una pared, un borde
+de mapa, una casilla ocupada o una peticion perdida. Por eso se exigieron dos
+cosas independientes:
+
+1. **Control positivo**: un desplazamiento ordinario **confirmado por el
+   servidor** justo antes de medir.
+2. **El discriminador**: se verifico que `RETURNVALUE_PLAYERISNOTINVITED` tiene
+   exactamente **nueve** productores en todo el servidor y **todos** son
+   controles de acceso a casas; para una accion de **movimiento** el unico
+   origen posible es `tile.cpp:484`. Observarlo prueba **de una sola vez** que
+   la casilla es de una casa **y** que el participante no estaba autorizado.
+
+La posicion final se lee del **estado autoritativo**, nunca de la prediccion
+local del cliente.
+
+Que la guarda de fase era necesaria **no es teorico**: en la corrida real el
+mensaje **aparecio durante el control positivo**, y correctamente **no se
+conto**.
+
+### Casa sin dueno: cero contaminacion
+
+De las 862 casas, **860 no tienen dueno**. Se eligio una de esas: **no** es la
+casa contaminada por el residuo del audit de camas, **no** tiene relacion con
+ninguna cuenta del usuario, y la tabla de listas de acceso esta **vacia** para
+todas. Que no tenga dueno **no debilita** nada: `getHouseAccessLevel` devuelve
+`HOUSE_NOT_INVITED` igual y el rechazo recorre el mismo camino de codigo.
+
+El operador **no** puede ser participante: su bandera `CanEditHouses` lo haria
+pasar por dueno, y el adaptador **lo rechaza explicitamente**. Solo posiciona en
+la casilla **exterior** y se aparta; nunca cruza el limite.
+
+### Sin `RECORDED_EVIDENCE`, verificado antes de decidir
+
+Se busco en todo `docs/qa/`. La unica coincidencia es **el documento de
+auditoria del turno anterior**, que no es observacion de runtime.
+`PRUEBA_VIVA_CASA_CAMA.md` no observa este comportamiento. **`LIVE_ORACLE`
+unicamente**; el corpus grabado queda en **9**.
+
+### Cuatro aserciones, y por que no mas
+
+Cada una cierra un falso positivo **distinto**: via de movimiento rota,
+colision generica, entro igual, y desconexion. **No** se agrego "se intento
+entrar" ni "no estaba autorizado": no se puede recibir el rechazo sin intentar,
+y el servidor solo lo emite a no invitados — seria **restatear** la misma
+observacion, el mismo criterio que llevo a congelar siete y no ocho en
+`PARITY-TRADE-EXCHANGE-001`.
+
+### Dos intentos, el primero fallo por un defecto mio
+
+El indice de vecinas se reiniciaba en **cada** regreso, asi que la busqueda
+repetia la primera vecina indefinidamente y nunca llegaba a medir. Defecto de
+recorrido, no de semantica. **La expectativa nunca se modifico**, verificado por
+hash en los dos intentos.
+
+### Cero mutacion
+
+**0 cambios de propiedad, 0 listas de acceso tocadas, 0 premium, 0 camas, 0
+items, 0 cuentas creadas, 0 progresion, 0 muertes, 0 combate, 0 monstruos, 0
+comandos amplios.** Verificado despues de la corrida: siguen habiendo **2**
+casas con dueno y **0** entradas en listas de acceso, igual que antes. Lo unico
+que cambio fue la **posicion del propio participante de QA**. **Residuo
+persistente: ninguno.** Los **10 hashes congelados** —incluidos `tile.cpp` y
+`house.cpp`— quedaron identicos.
+
+## Conteos (`PARITY-HOUSE-ACCESS-001`)
+
+| Inventario | Especificadas | Materializadas |
+|---|---:|---:|
+| Obligaciones de contrato Architecture V2 (`qa 2.1.1`) | 198 | 0 (sin cambio) |
+| Fixtures `LEGACY_PARITY` | — | **15** (antes 14) |
+| Casos de replay `QACaseV2`/`ParityExpectationV1` | — | **15** (antes 14) |
+| Observaciones `RECORDED_EVIDENCE` | — | **9** (sin cambio, a proposito) |
+| Observaciones `LIVE_ORACLE` canonicas | — | **12** (antes 11) |
+| `PARITY-HOUSE-ACCESS-001` | — | **LIVE CERTIFIED, `PASS 4/4`** |
+
+Phase 2 sigue **EN CURSO**.
+
+### Bloqueos
+
+**`CASAS_CAMAS_SIN_PARTICIPANTE_QA_PREMIUM_CON_CASA`: sigue ABIERTO y sin
+modificar.** Su condicion de salida no cambio: conseguir un participante
+dedicado de QA que sea premium y posea una casa, sin tocar cuentas ni casas del
+usuario — peticion para `integracion` / `servidor`.
+
+**Le toca:** cerrar huecos con evidencia o abrir un dominio nuevo. Dentro del
+dominio de casas, lo que sigue sin certificar es: acceso del dueno, del
+subdueno y del invitado y su precedencia; invitar, desinvitar y expulsar;
+puertas; compra, venta y alquiler; deposito dentro de casas; el
+redireccionamiento de `queryDestination`; y todo el recorrido de camas, que
+sigue bloqueado. **Ninguno de esos tiene evidencia historica**, y varios exigen
+mutar listas de acceso o propiedad, asi que antes de tomarlos conviene decidir
+si QA puede hacerlo sobre una casa **sin dueno** —donde no hay estado de
+usuario que dañar— o si eso tambien queda fuera de alcance.
 
 ## Turno cerrado: Auditoria de evidencia de casa y cama — `NO_VALID_FIXTURE`
 

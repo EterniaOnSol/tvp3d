@@ -1,0 +1,67 @@
+{
+  "schema": "tvp3d.qa.case",
+  "version": "2.0.0",
+  "case_id": "PARITY-HOUSE-ACCESS-001",
+  "class": "LEGACY_PARITY",
+  "title": "TVP 7.72 houses: an unauthorized normal player is prevented from entering a house through ordinary movement",
+  "owners": ["qa"],
+  "contracts": [
+    {"contract": "qa", "version": "2.1.1"}
+  ],
+  "requirement_refs": [
+    {
+      "contract": "qa",
+      "version": "2.1.1",
+      "section": "16",
+      "source_fixture_id": "PARITY-HOUSE-ACCESS-001"
+    }
+  ],
+  "preconditions": [
+    "un jugador normal, vivo y conectado, sin autorizacion sobre la casa elegida y sin banderas de privilegio",
+    "el participante esta en una casilla exterior contigua al limite de la casa",
+    "la via de movimiento ordinaria funciona, demostrado inmediatamente antes de medir",
+    "no se modifica ninguna configuracion de acceso ni de propiedad de la casa"
+  ],
+  "input_fixture": {
+    "logical_path": "qa/parity/fixtures/tvp772/house_access/parity-house-access-001.json"
+  },
+  "expected": {
+    "schema": "tvp3d.qa.parity_expectation",
+    "version": "1.0.0",
+    "mode": "SINGLE_OBSERVATION",
+    "assertions": [
+      {
+        "assertion_id": "HOUSE-ORDINARY-MOVEMENT-CONFIRMED",
+        "left_path": "/precondition/ordinary_movement_confirmed",
+        "operator": "EQ",
+        "right": {"literal": true}
+      },
+      {
+        "assertion_id": "HOUSE-ACCESS-DENIAL-OBSERVED",
+        "left_path": "/access_attempt/house_access_denial_observed",
+        "operator": "EQ",
+        "right": {"literal": true}
+      },
+      {
+        "assertion_id": "HOUSE-PARTICIPANT-REMAINED-OUTSIDE",
+        "left_path": "/access_attempt/participant_remained_outside",
+        "operator": "EQ",
+        "right": {"literal": true}
+      },
+      {
+        "assertion_id": "HOUSE-SESSION-REMAINED-CONNECTED",
+        "left_path": "/access_attempt/session_remained_connected",
+        "operator": "EQ",
+        "right": {"literal": true}
+      }
+    ]
+  },
+  "mutates_external_state": false,
+  "requires_network": false,
+  "requires_legacy": false,
+  "requires_secrets": false,
+  "status_policy": {
+    "missing_prerequisite_status": "BLOCKED",
+    "assertion_mismatch_status": "FAIL"
+  }
+}

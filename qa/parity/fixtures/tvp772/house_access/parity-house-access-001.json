@@ -1,0 +1,47 @@
+{
+  "schema": "tvp3d.qa.parity_fixture",
+  "version": "2.0.0",
+  "fixture_id": "PARITY-HOUSE-ACCESS-001",
+  "oracle": "TVP_772",
+  "oracle_version": "7.72",
+  "source_evidence": {
+    "logical_path": "docs/qa/PARITY_HOUSE_ACCESS.md"
+  },
+  "preconditions": [
+    "un unico participante: un jugador normal, vivo y conectado, que NO es dueno de la casa elegida, ni subdueno, ni invitado, y que no tiene ninguna bandera de privilegio que lo exima del control de acceso",
+    "el participante esta parado en una casilla exterior contigua al limite de una casa existente del mundo",
+    "la via de movimiento ordinaria del participante funciona en el momento de la medicion, demostrado con un desplazamiento autoritativo previo entre casillas que no pertenecen a ninguna casa",
+    "no se modifica la propiedad de la casa, ni su lista de invitados, ni su lista de subduenos, ni ninguna otra configuracion de acceso"
+  ],
+  "input_action": "el participante intenta UN desplazamiento ordinario, por la via de movimiento normal del juego, desde su casilla exterior hacia una casilla que pertenece a la casa",
+  "observed_authoritative_result": "el servidor rechaza la entrada con su respuesta especifica de falta de autorizacion para esa casa, que es distinta de cualquier rechazo generico de terreno o colision. El participante NO entra: su posicion autoritativa despues del intento sigue siendo la de afuera. La sesion no se cae y la configuracion de acceso de la casa no cambia.",
+  "normalization_rules": [
+    "el participante se compara por ROL (el que intenta entrar sin autorizacion), nunca por nombre de personaje, id de cuenta, guid ni runtime id",
+    "no se serializa ninguna identidad de la casa: ni su id, ni su nombre, ni su pueblo, ni su dueno",
+    "no se serializa ninguna coordenada: ni la casilla exterior, ni la casilla de la casa, ni la entrada",
+    "no se serializa el texto exacto de la respuesta del servidor: el rechazo especifico de acceso se normaliza al hecho booleano de haberse observado",
+    "no se serializa ningun numero de opcode del protocolo legacy",
+    "la permanencia afuera se normaliza al hecho booleano de que la posicion autoritativa posterior al intento sigue siendo la de partida, sin publicar esa posicion",
+    "se ignoran marcas de tiempo de reloj de pared y cualquier metadata de host o proceso"
+  ],
+  "determinism_notes": "este fixture afirma unicamente hechos observables desde afuera, y su dificultad real no es provocar el rechazo sino DISTINGUIRLO de un rechazo cualquiera. Que un jugador no se mueva es un resultado trivial: lo produciria igual una pared, un borde de mapa, una casilla ocupada, una coordenada mal elegida, una peticion de movimiento perdida o una sesion caida. Por eso el fixture no se conforma con no-me-movi y exige dos cosas independientes. Primero, un CONTROL POSITIVO inmediatamente antes de medir: el participante realiza un desplazamiento ordinario que el servidor confirma, lo que descarta que la via de movimiento estuviera rota. Segundo, y decisivo, exige la respuesta ESPECIFICA de falta de autorizacion de casa, que en este oracle solo puede originarse en el control de acceso de casas y nunca en una colision comun; observarla prueba a la vez que la casilla de destino pertenece de verdad a una casa y que el participante no estaba autorizado, sin necesidad de publicar ni el identificador de la casa ni las listas de acceso. La permanencia afuera se afirma contra la posicion AUTORITATIVA reportada por el servidor, nunca contra la prediccion local del cliente, porque un cliente puede dibujar un paso que el servidor rechazo. ALCANCE DECLARADO: este fixture certifica UNICAMENTE que a un jugador sin autorizacion se le impide entrar por la via de movimiento ejercitada. NO certifica el acceso del dueno, del subdueno ni del invitado, ni la precedencia entre esas listas, ni la semantica de invitar o expulsar, ni el comportamiento de las puertas, ni la compra, venta o alquiler de casas, ni ningun requisito de cuenta premium, ni el uso de camas, ni dormir, ni la persistencia de nada de eso, ni el comportamiento de todos los tipos de casilla de una casa, ni todas las direcciones de entrada posibles.",
+  "excluded_nondeterministic_fields": [
+    "character_names",
+    "account_id",
+    "player_guid",
+    "creature_runtime_ids",
+    "house_id",
+    "house_name",
+    "house_owner",
+    "house_town",
+    "house_access_lists",
+    "legacy_protocol_opcodes",
+    "server_message_text",
+    "positions",
+    "tile_coordinates",
+    "wall_clock_timestamp",
+    "host_metadata",
+    "process_id"
+  ],
+  "classification": "MATCH_EXPECTED"
+}
