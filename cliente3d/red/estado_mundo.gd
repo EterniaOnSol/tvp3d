@@ -75,6 +75,11 @@ signal mapa_desalineado(detalle: Dictionary)
 signal identidad_conocida_ausente(detalle: Dictionary)
 ## El servidor abrio la ventana de texto de un cartel, carta o etiqueta (0x96).
 signal ventana_texto(datos: Dictionary)
+## El servidor abrio la ventana de una lista de acceso de casa (0x97 ENTRANTE).
+##
+## La misma ventana sirve para invitados, subduenos y puertas: el mensaje NO
+## dice cual, porque esa eleccion la guarda el servidor. Ver el parser.
+signal ventana_casa(datos: Dictionary)
 ## El servidor cancelo el objetivo de combate (0xA3).
 signal objetivo_cancelado()
 signal voz_recibida(orador_id: int, trama: PackedByteArray)
@@ -83,6 +88,10 @@ signal voz_recibida(orador_id: int, trama: PackedByteArray)
 var mapa_alineado := true
 ## Ultima ventana de texto que abrio el servidor, tal cual llego.
 var ultima_ventana_texto := {}
+## Ultima ventana de lista de acceso de casa, tal cual llego (0x97 entrante).
+## Su `id` es el que hay que devolver en el 0x8A: el servidor exige que
+## coincida con el suyo (`Game::playerUpdateHouseWindow`, game.cpp:2852).
+var ultima_ventana_casa := {}
 var casillas := {}     ## Vector3i -> Array de cosas
 var criaturas := {}    ## id -> {pos, nombre, apariencia}
 ## Identidades del conjunto "conocido" del protocolo 7.72: id -> nombre.
@@ -627,6 +636,40 @@ func _leer_mensajes(msg) -> void:
 					"maximo": maximo,
 				}
 				ventana_texto.emit(ultima_ventana_texto.duplicate())
+				hubo_cambio = true
+
+			0x97:   # ventana de lista de acceso de una casa
+				# `ProtocolGame::sendHouseWindow` (protocolgame.cpp:2129-2137):
+				#
+				#   0x97, u8 0x00, u32 id de ventana, string texto
+				#
+				# OJO CON LA DIRECCION: saliente, 0x97 es "pedir la lista de
+				# canales" (`enviar_pedir_canales`). Entrante es esto. Son dos
+				# mensajes distintos que comparten numero, igual que el 0x96,
+				# que saliendo es hablar y entrando es la ventana de texto.
+				#
+				# El byte 0x00 no es un id de lista: el servidor lo manda
+				# SIEMPRE en cero y nunca dice cual de las tres listas se esta
+				# editando. Eso lo guarda el servidor en `editListId`
+				# (`Player::setEditHouse`, player.cpp:868-873); el cliente no
+				# lo sabe ni lo necesita.
+				if msg.sin_leer() < 8:
+					return
+				msg.leer_u8()
+				msg.leer_u8()       # relleno, siempre 0
+				var id_casa: int = msg.leer_u32()
+				if not msg.puede_leer_texto():
+					return
+				var texto_casa: String = msg.leer_texto()
+				# El texto llega con una linea de encabezado que empieza con
+				# '#' (`Player::sendHouseWindow`, player.cpp:875-892). El
+				# servidor vuelve a descartar las lineas '#' al recibir el
+				# 0x8A, asi que se conserva tal cual y no se recorta aca.
+				ultima_ventana_casa = {
+					"id": id_casa,
+					"texto": texto_casa,
+				}
+				ventana_casa.emit(ultima_ventana_casa.duplicate())
 				hubo_cambio = true
 
 			# ---------------------------------------------------------

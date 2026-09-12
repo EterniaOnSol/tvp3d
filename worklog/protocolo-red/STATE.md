@@ -2,9 +2,104 @@
 
 Estado: LISTO_PARA_REVISION
 Ultimo agente: claude
-Ultima actualizacion: 2026-09-11T05:00:00-06:00
+Ultima actualizacion: 2026-09-12T19:30:00-06:00
 Contrato publicado: SI
-Version publicada: 2.1.0
+Version publicada: 2.2.0
+
+## Turno cerrado: transporte de lista de acceso de casa (TVP 7.72)
+
+**`CONTRATO.md` sube de `2.1.0` a `2.2.0`.** Extension **minor** y **solo del
+perfil legacy**: Protocol V2 no cambia en nada y **no** hace falta tocar
+`modelo-comun`.
+
+Este turno **no certifica ninguna paridad**. Publica el transporte que faltaba;
+el carril `qa` lo ejercitara en un turno aparte.
+
+### Por que hubo cambio de contrato
+
+El perfil legacy documenta **cada** transporte con sus bytes exactos (ventana
+de texto, comercio, party). Agregar un par de opcodes sin documentarlo habria
+sido publicar una API fuera de contrato. La regla de versionado del propio
+adaptador dice que agregar un opcode documentado es compatible **dentro de una
+version menor** si un consumidor antiguo puede rechazarlo sin desalinear el
+frame — y es el caso: el `0x97` entrante caia en la rama de opcode desconocido,
+que lo cuenta y **corta la lectura**, sin reinterpretar bytes.
+
+No fue un bump cosmetico: sin la seccion nueva, el contrato no describiria el
+mensaje que el cliente ahora parsea.
+
+### Bloqueo atendido
+
+**`HOUSE_GUEST_LIST_SIN_TRANSPORTE_DE_PRODUCCION`: RESUELTO.** Las dos mitades
+existen, coinciden con la fuente y son usables sin rearmar paquetes.
+
+### El formato, derivado del codigo
+
+| Direccion | Opcode | Payload |
+|---|---:|---|
+| servidor -> cliente | `0x97` | `u8` relleno (siempre 0), `u32` id de ventana, `string` lista actual |
+| cliente -> servidor | `0x8A` | `u8` id de lista, `u32` id de ventana, `string` texto nuevo |
+
+Tres reglas del servidor, verificadas y no supuestas:
+
+1. **El `u8` de lista DEBE ser 0.** `listId == 0` es estricta y **silenciosa**:
+   con otro valor el servidor descarta el envio sin avisar. Por eso **no es un
+   parametro** de la API: seria ofrecer una eleccion que no existe.
+2. **Que lista se edita lo decide el servidor.** Guarda su `editListId` al
+   abrir la ventana y usa ese. **Una sola ventana sirve para invitados,
+   subduenos y puertas**, asi que hay **una sola** funcion: separarla por rol
+   inventaria una distincion que el protocolo no tiene. El byte de relleno del
+   `0x97` **no** dice cual es.
+3. **El id de ventana DEBE ser el que llego.** Es la unica correlacion del par,
+   y el cliente la conserva tal cual en vez de inventarla.
+
+El texto llega con un encabezado `#` que el servidor vuelve a descartar al
+recibirlo, asi que se devuelve entero y **no** se recorta. Una lista vacia es
+normal, no un error. La ventana sirve **una sola vez**.
+
+### La colision de direccion, ahora normativa
+
+`0x97` **saliente** es *pedir canales*; **entrante** es esta ventana. Y no es
+un caso aislado: el `0x96` **saliente** es *hablar* y **entrante** es la
+ventana de texto. El dispatch del servidor lo confirma en los dos casos.
+
+**La direccion es parte del significado de un opcode 7.72.** Queda escrito en
+el contrato que ningun consumidor puede unificar las dos direcciones en una
+tabla semantica unica. El `0x97` saliente **no se toco**, y el self-test nuevo
+incluye su regresion a proposito.
+
+### Verificacion
+
+`red/casa_lista_acceso_self_test.gd`, **17/17 OK**, sin sockets ni servidor:
+lista normal, lista vacia, truncada en el id, **texto con largo mentiroso**
+(prefijo que promete 40 bytes con 4 presentes), no quedar corrido frente a un
+mensaje pegado detras, bytes exactos del `0x8A`, vaciar la lista, sin ventana
+no se manda nada, y las dos regresiones de direccion.
+
+Los **7** self-tests previos del carril siguen en **exit 0**.
+
+Un fallo del primer intento fue **mio y del test, no del codigo**: escribi a
+mano `0x26` como largo del texto cuando son 39 bytes (`0x27`). El serializador
+habia producido lo correcto.
+
+### Limites respetados
+
+**0 UI**, 0 pantallas de casa, 0 controles de dueno. **0 autoridad de
+gameplay**: el cliente no resuelve propiedad, invitacion, precedencia ni
+legalidad de la lista. **0 mutaciones de runtime**: no se uso `/owner`, no se
+asigno ninguna casa, no se toco ninguna lista viva y no se concedio premium.
+**0 artefactos de QA.** No se agregaron opcodes vecinos por oportunismo
+(comprar, alquilar, expulsar, puertas, camas).
+
+`CASAS_CAMAS_SIN_PARTICIPANTE_QA_PREMIUM_CON_CASA` **no se toco**.
+
+**Le toca:** el carril **`qa`**, que puede volver al dominio de listas de
+acceso de casas y disenar el fixture vivo mas chico posible **sin rearmar
+paquetes**, usando `ventana_casa` / `ultima_ventana_casa` y
+`enviar_lista_acceso_casa`. Conviene que sepa de antemano que la ventana solo
+se abre con el hechizo estando **dentro** de la casa y que **caduca en un solo
+uso**, asi que la captura tiene que mandar el `0x8A` en la misma ventana que
+recibio.
 
 ## Turno cerrado: Reparacion de identidades conocidas del legacy TVP 7.72
 

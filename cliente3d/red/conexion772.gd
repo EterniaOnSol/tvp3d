@@ -465,6 +465,47 @@ func enviar_texto_ventana(id_ventana: int, texto: String) -> void:
 	enviar_juego(mensaje.datos)
 
 
+func enviar_lista_acceso_casa(id_ventana: int, texto: String) -> void:
+	"""Envia la lista de acceso editada de una casa (0x8A).
+
+	`ProtocolGame::parseHouseWindow` (protocolgame.cpp:1102-1108) lee:
+
+	    u8 id de lista, u32 id de ventana, string texto
+
+	y se lo pasa a `Game::playerUpdateHouseWindow` (game.cpp:2841-2872).
+
+	TRES REGLAS DEL SERVIDOR, verificadas en ese codigo, que explican por que
+	esta funcion tiene la forma que tiene:
+
+	1. El primer byte DEBE ser 0. La guarda es `listId == 0` y es estricta:
+	   con cualquier otro valor el servidor descarta el envio en silencio. Por
+	   eso no es un parametro: seria ofrecer una eleccion que no existe.
+	2. QUE lista se edita lo decide el SERVIDOR, no el cliente. Guarda su
+	   `editListId` al abrir la ventana (`Player::setEditHouse`) y usa ese, no
+	   el del mensaje. La misma ventana sirve para invitados, subduenos y
+	   puertas, asi que una sola funcion cubre las tres: separarlas seria
+	   inventar una distincion que el protocolo no tiene.
+	3. El id de ventana DEBE ser el que llego en el 0x97 entrante
+	   (`internalWindowTextId == windowTextId`). Vive en
+	   `EstadoMundo.ultima_ventana_casa`.
+
+	El servidor descarta las lineas que empiezan con '#', que son las que el
+	mismo manda como encabezado, asi que devolver el texto entero es correcto.
+
+	Quien decide si esta permitido editar es el servidor: exige una ventana
+	abierta y vuelve a comprobar `canEditAccessList`. El cliente solo
+	transporta la intencion, y una ventana solo sirve UNA vez porque el
+	servidor la cierra al terminar, haya aplicado el cambio o no."""
+	if id_ventana <= 0:
+		return
+	var mensaje := MENSAJE.new()
+	mensaje.escribir_u8(0x8A)
+	mensaje.escribir_u8(0)          # id de lista: el servidor exige 0
+	mensaje.escribir_u32(id_ventana)
+	mensaje.escribir_texto(texto)
+	enviar_juego(mensaje.datos)
+
+
 func enviar_solicitar_comercio(origen: Vector3i, client_id: int,
 		stackpos: int, id_jugador: int) -> void:
 	"""Ofrece un objeto a otro jugador (0x7D).

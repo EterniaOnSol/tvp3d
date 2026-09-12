@@ -1,11 +1,22 @@
 # Contrato: protocolo-red
 
-Version: 2.1.0
+Version: 2.2.0
 Estado: PUBLICADO
 Propietario: protocolo-red
 Depende de: modelo-comun 2.0.0 (obligatorio, envelopes/refs core) y
 modelo-comun 2.1.0 (negociable por sesion, payloads neutrales de
 replicacion referenciados sin copiar)
+
+Extension minor `2.2.0`: publica la ventana de lista de acceso de casa del
+**perfil legacy TVP 7.72** (`0x97` entrante, `0x8A` saliente), que faltaba para
+que un cliente pudiera editar invitados, subduenos o puertas sin rearmar bytes
+a mano. **No cambia Protocol V2 en absoluto**: frame, registro cerrado de
+kinds, handshake, envelopes, maquina de estados, errores y la dependencia de
+modelo-comun quedan exactamente como en `2.1.0`, y **no requiere ningun cambio
+en modelo-comun**, porque el adaptador legacy es un perfil separado que no
+consume sus schemas. Es compatible dentro de una version menor segun la regla
+del propio adaptador: agrega un opcode documentado que un consumidor antiguo
+rechaza sin desalinear el frame.
 
 ## Proposito y alcance normativo
 
@@ -523,6 +534,7 @@ exigiria un major nuevo, no otra minor.
 |---|---|
 | `2.0.0` | Frame TVP2 de 16 bytes, registro cerrado de kinds, handshake, roles, maquina de estados, sync por snapshot y errores propios sobre modelo-comun 2.0.0 |
 | `2.1.0` | Handshake capaz de negociar explicitamente modelo-comun 2.0.0 o 2.1.0 con seleccion exacta sin inferencia SemVer, gate de registro neutral de replicacion por sesion (`COMMON_DOMAIN_REGISTRY_MISMATCH`); ningun frame, kind, envelope o estado de 2.0.0 cambio |
+| `2.2.0` | **Solo perfil legacy TVP 7.72**: documenta la ventana de lista de acceso de casa, `0x97` entrante y `0x8A` saliente, y declara normativa la colision de direccion del `0x97`. **Protocol V2 no cambia en nada**: ni frame, ni kinds, ni envelopes, ni handshake, ni estados, ni errores, ni la dependencia de modelo-comun. Es una extension minor segun la regla de versionado del propio adaptador legacy (`Compatibilidad y versionado del adaptador legacy`), porque agrega un opcode documentado que un consumidor antiguo rechaza sin desalinear el frame: el `0x97` entrante caia en la rama de opcode desconocido, que lo cuenta y corta la lectura sin reinterpretar bytes |
 
 Migracion:
 
@@ -804,6 +816,76 @@ El adaptador conserva la ultima ventana en `ultima_ventana_texto` y la emite
 por `ventana_texto(datos)`. Una ventana truncada no se emite.
 
 Self-test con bytes exactos en `red/ventana_texto_self_test.gd`.
+
+### Ventana de lista de acceso de casa (agregado en 2.2.0)
+
+El servidor la abre cuando el dueno o un subdueno lanza el hechizo
+correspondiente parado dentro de la casa. Es la **unica** via por la que se
+puede editar una lista de acceso desde un cliente.
+
+`0x97` servidor -> cliente (`protocolgame.cpp:2129-2137`):
+
+```text
+uint8   relleno, siempre 0x00
+uint32  id de ventana
+string  texto de la lista actual
+```
+
+`0x8A` cliente -> servidor (`protocolgame.cpp:1102-1108`):
+
+```text
+uint8   id de lista
+uint32  id de ventana
+string  texto nuevo
+```
+
+Tres reglas del servidor gobiernan este par, verificadas en
+`Game::playerUpdateHouseWindow` (`game.cpp:2841-2872`) y
+`Player::setEditHouse` (`player.cpp:868-873`):
+
+1. **El `uint8` de lista DEBE ser 0.** La guarda `listId == 0` es estricta y
+   silenciosa: con cualquier otro valor el servidor descarta el envio sin
+   avisar. No es un parametro de la API del cliente, porque seria ofrecer una
+   eleccion que no existe.
+2. **Que lista se edita lo decide el servidor, no el cliente.** El servidor
+   guarda su `editListId` al abrir la ventana y usa ese, no el del mensaje.
+   **Una misma ventana sirve para invitados, subduenos y puertas**, asi que el
+   transporte es uno solo: separarlo por rol seria inventar una distincion que
+   el protocolo no tiene. El byte de relleno del `0x97` **no** dice cual es:
+   siempre llega en cero.
+3. **El id de ventana DEBE ser el que llego en el `0x97`.** El servidor compara
+   contra su propio contador (`internalWindowTextId == windowTextId`), que
+   incrementa en cada apertura. Es la unica correlacion del par, y el cliente
+   no la inventa: la conserva tal como llego.
+
+El texto llega con una linea de encabezado que empieza con `#`
+(`Player::sendHouseWindow`, `player.cpp:875-892`). El servidor vuelve a
+descartar las lineas `#` al recibir el `0x8A`, asi que devolver el texto entero
+es correcto y el adaptador **no** lo recorta.
+
+Una lista vacia es un caso normal, no un error: una casa sin invitados manda
+solo el encabezado, y devolver un texto vacio es como se desinvita a todos.
+
+La ventana sirve **una sola vez**: el servidor la cierra al terminar de
+procesar el `0x8A`, haya aplicado el cambio o no.
+
+El adaptador conserva la ultima ventana en `ultima_ventana_casa` y la emite por
+`ventana_casa(datos)`. Una ventana truncada no se emite. Quien decide si la
+edicion esta permitida es el servidor, que exige una ventana abierta y vuelve a
+comprobar `canEditAccessList`; el cliente **no** resuelve propiedad, invitacion,
+precedencia ni legalidad de la lista.
+
+**Colision de direccion, normativa.** `0x97` saliente es *pedir la lista de
+canales* y entrante es esta ventana: son dos mensajes distintos que comparten
+numero. No es una rareza aislada — el `0x96` saliente es *hablar* y entrante es
+la ventana de texto, y el dispatch del servidor
+(`protocolgame.cpp:521-526`) lo confirma en ambos casos. **La direccion es
+parte del significado de un opcode 7.72.** Ningun consumidor puede unificar las
+dos direcciones en una sola tabla semantica.
+
+Self-test con bytes exactos en `red/casa_lista_acceso_self_test.gd`, que
+incluye a proposito la regresion del `0x97` saliente y la distincion frente al
+`0x89`.
 
 ### Comercio entre jugadores
 
