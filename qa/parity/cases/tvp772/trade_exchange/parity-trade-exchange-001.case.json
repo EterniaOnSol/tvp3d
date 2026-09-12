@@ -1,0 +1,85 @@
+{
+  "schema": "tvp3d.qa.case",
+  "version": "2.0.0",
+  "case_id": "PARITY-TRADE-EXCHANGE-001",
+  "class": "LEGACY_PARITY",
+  "title": "TVP 7.72 trade: two players offer, both see both offers, both accept, and the server completes the two-sided authoritative exchange",
+  "owners": ["qa"],
+  "contracts": [
+    {"contract": "qa", "version": "2.1.1"}
+  ],
+  "requirement_refs": [
+    {
+      "contract": "qa",
+      "version": "2.1.1",
+      "section": "16",
+      "source_fixture_id": "PARITY-TRADE-EXCHANGE-001"
+    }
+  ],
+  "preconditions": [
+    "dos participantes distintos con sesiones simultaneas",
+    "los dos dentro del alcance de comercio que exige el servidor, en el mismo piso",
+    "cada participante posee un objeto real propio y los dos objetos son distinguibles entre si",
+    "este caso cubre unicamente el camino EXITOSO: no afirma atomicidad bajo fallo"
+  ],
+  "input_fixture": {
+    "logical_path": "qa/parity/fixtures/tvp772/trade_exchange/parity-trade-exchange-001.json"
+  },
+  "expected": {
+    "schema": "tvp3d.qa.parity_expectation",
+    "version": "1.0.0",
+    "mode": "SINGLE_OBSERVATION",
+    "assertions": [
+      {
+        "assertion_id": "TRADE-PARTICIPANTS-WITHIN-RANGE",
+        "left_path": "/preconditions/participants_within_trade_range",
+        "operator": "EQ",
+        "right": {"literal": true}
+      },
+      {
+        "assertion_id": "TRADE-EACH-OFFERED-A-REAL-ITEM",
+        "left_path": "/preconditions/each_participant_offered_a_real_item",
+        "operator": "EQ",
+        "right": {"literal": true}
+      },
+      {
+        "assertion_id": "TRADE-BOTH-SAW-OWN-AND-COUNTERPART-OFFER",
+        "left_path": "/offers/both_participants_saw_own_and_counterpart_offer",
+        "operator": "EQ",
+        "right": {"literal": true}
+      },
+      {
+        "assertion_id": "TRADE-BOTH-ACCEPTED",
+        "left_path": "/completion/both_participants_accepted",
+        "operator": "EQ",
+        "right": {"literal": true}
+      },
+      {
+        "assertion_id": "TRADE-CLOSED-FOR-BOTH",
+        "left_path": "/completion/trade_closed_for_both_participants",
+        "operator": "EQ",
+        "right": {"literal": true}
+      },
+      {
+        "assertion_id": "TRADE-NO-ERROR-OBSERVED",
+        "left_path": "/completion/no_trade_error_observed",
+        "operator": "EQ",
+        "right": {"literal": true}
+      },
+      {
+        "assertion_id": "TRADE-BOTH-ITEMS-TRANSFERRED",
+        "left_path": "/completion/both_offered_items_transferred",
+        "operator": "EQ",
+        "right": {"literal": true}
+      }
+    ]
+  },
+  "mutates_external_state": false,
+  "requires_network": false,
+  "requires_legacy": false,
+  "requires_secrets": false,
+  "status_policy": {
+    "missing_prerequisite_status": "BLOCKED",
+    "assertion_mismatch_status": "FAIL"
+  }
+}

@@ -1,0 +1,28 @@
+{
+  "schema": "tvp3d.qa.oracle_observation",
+  "version": "1.0.0",
+  "fixture_id": "PARITY-TRADE-EXCHANGE-001",
+  "oracle": "TVP_772",
+  "oracle_version": "7.72",
+  "capture_origin": "RECORDED_EVIDENCE",
+  "source_evidence": [
+    {
+      "logical_path": "docs/qa/PRUEBA_VIVA_TRADE_VIP.md"
+    }
+  ],
+  "payload": {
+    "preconditions": {
+      "participants_within_trade_range": true,
+      "each_participant_offered_a_real_item": true
+    },
+    "offers": {
+      "both_participants_saw_own_and_counterpart_offer": true
+    },
+    "completion": {
+      "both_participants_accepted": true,
+      "trade_closed_for_both_participants": true,
+      "no_trade_error_observed": true,
+      "both_offered_items_transferred": true
+    }
+  }
+}

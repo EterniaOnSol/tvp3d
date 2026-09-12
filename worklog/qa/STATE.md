@@ -2,8 +2,140 @@
 
 Estado: LISTO_PARA_REVISION
 Ultimo agente: claude
-Ultima actualizacion: 2026-09-12T03:30:00-06:00
+Ultima actualizacion: 2026-09-12T04:20:00-06:00
 Contrato publicado: SI (`CONTRATO.md` v2.1.1, sin cambios en este turno)
+
+## Turno cerrado: Phase 2G — Paridad de intercambio entre jugadores
+
+`PARITY-TRADE-EXCHANGE-001`: **CERTIFICADO EN VIVO** al **primer** intento.
+Replay grabado **`PASS 7/7`** y replay vivo **`PASS 7/7`**, los dos
+byte-identicos entre corridas. Detalle completo en
+`docs/qa/PARITY_PHASE2G_TRADE_EXCHANGE.md`.
+
+**Sexto dominio de comportamiento.** El correo mueve un objeto en un solo
+sentido y sin que el destinatario participe; el comercio es lo primero que
+exige **dos voluntades concurrentes**: dos jugadores presentes, cada uno
+viendo lo que ofrece el otro, y un cruce de propiedad que solo ocurre cuando
+**los dos** aceptan.
+
+### Lo que se afirma, y lo que deliberadamente NO
+
+Se afirma el camino **exitoso**. **NO** se afirma atomicidad bajo fallo, es
+decir **AMBOS O NINGUNO**, y el motivo sale del codigo, no de la cautela:
+`Game::playerAcceptTrade` (`game.cpp:3024-3135`) **no tiene deshacer
+transaccional**. Consigue la consistencia **probando en seco** con
+`internalAddItem(..., test = true)` los dos destinos, y **solo si las dos
+pruebas dan bien** ejecuta los movimientos reales; si algo falla despues, manda
+cancelacion pero **no revierte**. Un exito observado desde el cliente **no
+puede distinguir** un rollback real de una validacion previa afortunada.
+
+Tampoco se afirma nada por cercania temporal de los paquetes: la evidencia
+decisiva es el **estado final de propiedad**, no el orden de los mensajes.
+
+### La regla, verificada en el codigo
+
+- **Alcance:** `Position::areInRange<2, 2, 0>` — dos casillas por eje y **mismo
+  piso**, sin tolerancia de `z`. Es **distinto** del `<30, 30, 1>` de party
+  certificado en Phase 2D.1; conviene no confundirlos.
+- `playerRequestTrade` valida contraparte distinta, linea de tiro, objeto
+  `isPickupable()` sin `UNIQUEID`, coincidencia de client id, y rechaza objetos
+  ya reservados en otro comercio **en los dos sentidos de anidamiento**.
+- `internalStartTrade` emite las ofertas de forma **asimetrica en el tiempo**:
+  el primer oferente solo ve la suya y la contraparte recibe un aviso; la
+  oferta cruzada aparece **recien cuando el segundo ofrece**. Se confirmo en
+  vivo.
+- `internalCloseTrade` no hace nada si alguno esta en `TRADE_TRANSFER`: no se
+  puede cancelar en mitad de la transferencia.
+- **El grupo del jugador no interviene** en ninguna funcion de comercio. Aun
+  asi se usaron **dos jugadores normales**, con el operador **fuera**, para que
+  no quede duda de que un privilegio influyo.
+
+### Opcodes: el mismo numero, significados opuestos por direccion
+
+`0x7D` entrante es *solicitar*, saliente es *mi oferta*. `0x7E` entrante es
+*mirar*, saliente es *oferta de la contraparte*. **`0x7F` entrante es
+*aceptar*, saliente es *cerrar*.** Quedan documentados como metadata de origen
+y **ninguno entra al payload**.
+
+### Deuda historica saldada: transporte de produccion
+
+La evidencia historica decia que `Conexion772` no exponia la solicitud inicial
+y que QA armaba el payload a mano. **Ya no es cierto**: hoy se publican
+`enviar_solicitar_comercio` y `enviar_solicitar_comercio_inventario`, y este
+adaptador usa el **metodo de produccion** sin duplicar el formato del paquete
+dentro de QA.
+
+### Siete aserciones, no ocho — y por que
+
+Era tentador partir `ambos clientes reciben oferta propia y contraparte` en
+**cuatro** vistas y llegar a ocho. **No se hizo.** El documento historico
+registra **un solo assert combinado**; partirlo seria **fabricar granularidad**
+que la corrida historica no midio por separado. El hecho combinado tiene la
+misma fuerza de deteccion y no inventa precision que no existio. El adaptador
+vivo **si** distingue las cuatro vistas y aborta si falta alguna: queda como
+guarda viva.
+
+### VIP, excluido a proposito
+
+La evidencia historica mezcla VIP y comercio en un mismo archivo. **Ningun**
+hecho de VIP entra al fixture. Merece el suyo propio,
+`PARITY-VIP-PRESENCE-001`, no un anexo del contrato del comercio.
+
+### Objetos de prueba, y por que no se reusaron
+
+Los dos participantes tienen **exactamente el mismo juego** de objetos
+iniciales, asi que reusarlos habria dejado la propiedad **ambigua**. Se crearon
+**2** objetos frescos de tipos distintos que **ninguno** de los dos poseia,
+verificados contra los datos del oracle: movibles, no apilables, no
+contenedores, sin cargas y **sin `duration` ni `decayto`**.
+
+**No se desplazo ningun equipo ajeno.** El arnes historico "normalizaba las
+manos" vaciando ranuras; este usa ranuras que los dos tenian **vacias**, y si
+alguna no lo estuviera devuelve `BLOCKED` en vez de mover algo del personaje.
+Tampoco se uso el comercio para aprovisionar: seria usar el mecanismo que se
+esta midiendo.
+
+### Corroboracion independiente en la persistencia
+
+Con **los dos participantes ya desconectados**, leido fuera del camino del
+cliente: cada uno quedo con el objeto **del otro** equipado y **cero** unidades
+del propio. El cruce es exacto en las dos direcciones y **sobrevive al cierre
+de sesion**.
+
+### Seguridad y residuo
+
+**0 muertes, 0 combate, 0 monstruos, 0 `/killall`, 0 objetos del usuario
+tocados, 0 equipo preexistente desplazado, 0 cuentas o personajes creados, 0
+credenciales cambiadas, 1 `OBSERVATION_JSON`, 0 salidas de preflight, 1 intento
+vivo de 3.** Los **9 hashes congelados** quedaron identicos.
+
+**Residuo declarado:** los dos objetos frescos quedan con los participantes de
+QA, cruzados. Es el resultado del fixture. **No** se hizo comercio inverso de
+limpieza: correspondia solo si se hubieran reusado objetos preexistentes.
+
+## Conteos (Phase 2G)
+
+| Inventario | Especificadas | Materializadas |
+|---|---:|---:|
+| Obligaciones de contrato Architecture V2 (`qa 2.1.1`) | 198 | 0 (sin cambio) |
+| Fixtures `LEGACY_PARITY` | — | **12** (antes 11) |
+| Casos de replay `QACaseV2`/`ParityExpectationV1` | — | **12** (antes 11) |
+| Observaciones `RECORDED_EVIDENCE` | — | **8** (antes 7) |
+| Observaciones `LIVE_ORACLE` canonicas | — | **9** (antes 8) |
+| `PARITY-TRADE-EXCHANGE-001` | — | **LIVE CERTIFIED, `PASS 7/7`** |
+
+Phase 2 sigue **EN CURSO**.
+
+**Le toca:** evaluado contra el codigo, **Phase 2G.1 solo con la cancelacion
+explicita**. `internalCloseTrade` es un camino normal y observable —un
+participante cancela, los dos reciben el aviso, las dos ventanas cierran y
+ningun objeto cambia de dueno— y da un fixture negativo honesto sin montaje
+artificial. El **fallo de transferencia real** queda como **hueco declarado**:
+forzarlo exige llenar el inventario de un personaje de QA, y como el servidor
+**no deshace**, lo que se certificaria es que la validacion previa evita el
+estado inconsistente, que es una afirmacion mas debil y distinta de
+"rollback". Alternativa de igual valor y menor riesgo:
+`PARITY-VIP-PRESENCE-001`, con evidencia historica fuerte ya disponible.
 
 ## Turno cerrado: Phase 2F — Paridad de entrega de correo
 
