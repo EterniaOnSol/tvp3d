@@ -1,0 +1,42 @@
+{
+  "schema": "tvp3d.qa.parity_fixture",
+  "version": "2.0.0",
+  "fixture_id": "PARITY-PARTY-SHARED-EXP-RANGE-001",
+  "oracle": "TVP_772",
+  "oracle_version": "7.72",
+  "source_evidence": {
+    "logical_path": "docs/qa/PARITY_PHASE2D1_PARTY_SHARED_EXP_RANGE.md"
+  },
+  "preconditions": [
+    "una party de exactamente dos participantes: un lider y un miembro, ambos personajes normales capaces de ganar experiencia (ningun participante con la bandera notgainexperience)",
+    "ambos participantes cumplen la regla de nivel del servidor durante toda la corrida: nivel >= ceil(nivel_mas_alto_de_la_party * 2 / 3)",
+    "la experiencia compartida quedo solicitada por el lider y efectivamente habilitada, demostrado por un reparto real observado mientras ambos estaban dentro del rango permitido",
+    "ambos participantes conservan participacion reciente vigente en el momento de la medicion negativa: el miembro conserva observablemente su condicion de combate, que es la misma condicion cuyo fin hace que el servidor le limpie los puntos de participacion",
+    "el unico requisito de elegibilidad que deja de cumplirse entre la medicion positiva y la negativa es el espacial"
+  ],
+  "input_action": "con la experiencia compartida ya demostrada activa y habilitada por un reparto real, se separa al miembro del lider a una distancia claramente mayor que la ventana espacial permitida, manteniendo el mismo piso, la misma party y las dos sesiones conectadas; despues el LIDER, y solo el lider, dana de forma autoritativa a un segundo monstruo hostil de prueba hasta matarlo, lo que fuerza al servidor a reevaluar la elegibilidad de todos los participantes de la party",
+  "observed_authoritative_result": "mientras los dos participantes estan dentro del rango permitido el reparto ocurre y ambos ganan partes iguales. Una vez que el miembro queda fuera de ese rango, la siguiente reevaluacion de elegibilidad deshabilita el reparto aunque la experiencia compartida siga SOLICITADA y aunque el miembro conserve participacion reciente: al morir el segundo monstruo el lider gana experiencia y el miembro distante NO gana ninguna. La party sigue formada, ninguna sesion se desconecta y el piso no cambia.",
+  "normalization_rules": [
+    "los participantes se comparan por ROL dentro de la party (lider y miembro distante), nunca por nombre de personaje, id de cuenta ni runtime id",
+    "no se serializa ninguna coordenada ni distancia: la separacion se normaliza al hecho booleano de estar fuera del rango permitido, y la permanencia de piso al hecho booleano de que el piso no cambio",
+    "no se compara experiencia total acumulada de ningun personaje ni ninguna magnitud absoluta de ganancia: solo se compara la RELACION de que el lider gano algo y el miembro distante no gano nada",
+    "el limite exacto de la ventana espacial NO se congela como numero en este fixture: la geometria concreta es metadata del harness",
+    "el texto exacto de los mensajes del servidor no se compara",
+    "se ignoran niveles y vocaciones concretas, marcas de tiempo de reloj de pared y cualquier metadata de host o proceso"
+  ],
+  "determinism_notes": "este fixture afirma unicamente hechos observables desde afuera. `sharedExpEnabled` no viaja por la red y NO se afirma leyendo estado interno del servidor: la supresion del reparto se prueba POR COMPORTAMIENTO, comparando una medicion positiva de control y una medicion negativa dentro de la misma corrida, donde lo unico que cambio entre ambas fue la separacion espacial. La frescura de participacion del miembro se aisla de forma explicita para que el resultado negativo no pueda atribuirse a un vencimiento de actividad: el miembro conserva observablemente su condicion de combate, que es la misma condicion cuyo fin hace que el servidor le limpie los puntos de participacion, y ademas la medicion negativa se completa dentro de un presupuesto de tiempo estricto por debajo de la ventana de frescura configurada del oracle; si ese presupuesto se excede la captura devuelve BLOCKED en vez de declarar un resultado de rango. Tampoco puede atribuirse a que la party se deshizo, a una desconexion, a un cambio de piso, a una muerte de jugador, a un tercero que se quedara con la experiencia ni a identidad ambigua del monstruo: todas esas condiciones se verifican como controladas y cada monstruo de prueba se identifica por un runtime id NUEVO, nunca por nombre. ALCANCE DECLARADO: este fixture prueba la SUPRESION FUERA DE RANGO. NO certifica el borde exacto de la ventana espacial (por ejemplo 30 contra 31 casillas), porque la geometria viva usada esta claramente fuera del limite y no lo roza; certificar el borde exige un fixture dedicado que ejercite exactamente esa frontera.",
+  "excluded_nondeterministic_fields": [
+    "character_names",
+    "character_levels",
+    "character_vocations",
+    "total_accumulated_experience",
+    "experience_gain_magnitudes",
+    "creature_runtime_ids",
+    "account_id",
+    "positions",
+    "tile_distances",
+    "server_message_text",
+    "wall_clock_timestamp"
+  ],
+  "classification": "MATCH_EXPECTED"
+}

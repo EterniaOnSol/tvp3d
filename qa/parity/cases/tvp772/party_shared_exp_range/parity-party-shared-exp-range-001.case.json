@@ -1,0 +1,92 @@
+{
+  "schema": "tvp3d.qa.case",
+  "version": "2.0.0",
+  "case_id": "PARITY-PARTY-SHARED-EXP-RANGE-001",
+  "class": "LEGACY_PARITY",
+  "title": "TVP 7.72 shared experience: distribution is suppressed while a party participant is outside the allowed spatial range",
+  "owners": ["qa"],
+  "contracts": [
+    {"contract": "qa", "version": "2.1.1"}
+  ],
+  "requirement_refs": [
+    {
+      "contract": "qa",
+      "version": "2.1.1",
+      "section": "16",
+      "source_fixture_id": "PARITY-PARTY-SHARED-EXP-RANGE-001"
+    }
+  ],
+  "preconditions": [
+    "party de exactamente dos participantes capaces de ganar experiencia",
+    "ambos cumplen la regla de nivel del servidor durante toda la corrida",
+    "reparto de experiencia compartida ya demostrado en la misma corrida con ambos participantes dentro del rango permitido",
+    "el miembro conserva participacion reciente vigente durante la medicion negativa",
+    "la separacion espacial es el unico requisito de elegibilidad que deja de cumplirse"
+  ],
+  "input_fixture": {
+    "logical_path": "qa/parity/fixtures/tvp772/party_shared_exp_range/parity-party-shared-exp-range-001.json"
+  },
+  "expected": {
+    "schema": "tvp3d.qa.parity_expectation",
+    "version": "1.0.0",
+    "mode": "SINGLE_OBSERVATION",
+    "assertions": [
+      {
+        "assertion_id": "CONTROL-IN-RANGE-SHARED-DISTRIBUTION",
+        "left_path": "/positive_control/in_range_shared_distribution_observed",
+        "operator": "EQ",
+        "right": {"literal": true}
+      },
+      {
+        "assertion_id": "RANGE-MEMBER-OUTSIDE-ALLOWED-RANGE",
+        "left_path": "/range_transition/member_outside_allowed_range",
+        "operator": "EQ",
+        "right": {"literal": true}
+      },
+      {
+        "assertion_id": "RANGE-SAME-FLOOR-PRESERVED",
+        "left_path": "/range_transition/same_floor_preserved",
+        "operator": "EQ",
+        "right": {"literal": true}
+      },
+      {
+        "assertion_id": "RANGE-PARTY-REMAINED-FORMED",
+        "left_path": "/range_transition/party_remained_formed",
+        "operator": "EQ",
+        "right": {"literal": true}
+      },
+      {
+        "assertion_id": "RANGE-SESSIONS-REMAINED-CONNECTED",
+        "left_path": "/range_transition/both_sessions_remained_connected",
+        "operator": "EQ",
+        "right": {"literal": true}
+      },
+      {
+        "assertion_id": "OUT-OF-RANGE-LEADER-GAINED",
+        "left_path": "/out_of_range_distribution/leader_gained_experience",
+        "operator": "EQ",
+        "right": {"literal": true}
+      },
+      {
+        "assertion_id": "OUT-OF-RANGE-DISTANT-MEMBER-DID-NOT-GAIN",
+        "left_path": "/out_of_range_distribution/distant_member_gained_experience",
+        "operator": "EQ",
+        "right": {"literal": false}
+      },
+      {
+        "assertion_id": "OUT-OF-RANGE-SHARED-DISTRIBUTION-SUPPRESSED",
+        "left_path": "/out_of_range_distribution/shared_distribution_suppressed",
+        "operator": "EQ",
+        "right": {"literal": true}
+      }
+    ]
+  },
+  "mutates_external_state": false,
+  "requires_network": false,
+  "requires_legacy": false,
+  "requires_secrets": false,
+  "status_policy": {
+    "missing_prerequisite_status": "BLOCKED",
+    "assertion_mismatch_status": "FAIL"
+  }
+}

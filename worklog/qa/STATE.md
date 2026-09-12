@@ -2,8 +2,128 @@
 
 Estado: LISTO_PARA_REVISION
 Ultimo agente: claude
-Ultima actualizacion: 2026-09-11T16:30:00-06:00
+Ultima actualizacion: 2026-09-11T18:05:00-06:00
 Contrato publicado: SI (`CONTRATO.md` v2.1.1, sin cambios en este turno)
+
+## Turno cerrado: Phase 2D.1 — Paridad de RANGO de experiencia compartida
+
+`PARITY-PARTY-SHARED-EXP-RANGE-001`: **CERTIFICADO EN VIVO**, replay
+**`PASS 8/8`** al **primer** intento. Detalle completo en
+`docs/qa/PARITY_PHASE2D1_PARTY_SHARED_EXP_RANGE.md`.
+
+Primer fixture **negativo** del dominio. `PARITY-PARTY-SHARED-EXP-001` quedo
+**byte-identico**: fixture, `QACase`, observacion viva y adaptador sin tocar,
+verificado contra HEAD.
+
+### La regla, verificada en el codigo, no supuesta
+
+`Party::canUseSharedExperience` (`party.cpp:356`) exige
+`Position::areInRange<30, 30, 1>(leader, player)`, y la plantilla
+(`position.h:32-35`) es `getDistanceX <= 30 && getDistanceY <= 30 &&
+getDistanceZ <= 1`: distancias absolutas **por eje**, limite **inclusivo**,
+tolerancia de **un piso** en Z. No es euclidiana ni Chebyshev.
+
+**Moverse no reevalua nada.** `updateSharedExperience()` tiene exactamente
+cinco llamadores (`party.cpp:113/146/197/392/401`) y ninguno cuelga del
+movimiento. Por eso la reevaluacion se fuerza con dano del LIDER a un segundo
+monstruo hostil, que via `updatePlayerTicks` recorre **todos** los
+participantes.
+
+### El aislamiento es lo que hace honesto al fixture
+
+Un 0 del miembro tambien lo produciria un vencimiento de actividad. Se aisla
+por dos vias: el **signo de batalla** del miembro (`ICON_SWORDS`, la misma
+`CONDITION_INFIGHT` cuyo fin dispara `clearPlayerPoints`) latcheado en el
+instante exacto de la muerte del objetivo, y un **presupuesto de tiempo**
+conservador por construccion. Consumido: **14.4 s de 55**, con `pzLocked` = 60.
+
+Dos decisiones de diseno produjeron ese margen: el miembro **entra tarde** al
+primer combate (al 50 % de vida del objetivo) y el segundo objetivo es una
+**`snake`**, elegida midiendo los datos del oracle — 15 de vida (el minimo
+hostil con experiencia), no huye, y con `runAwayHealth = 0` **sigue siendo
+hostil hasta el ultimo punto de vida**, asi que cada golpe reevalua. Sin esas
+dos decisiones el presupuesto proyectado rondaba los 80 s y la corrida habria
+dado `BLOCKED`.
+
+### Corroboracion independiente del archivo persistido
+
+Fuera del camino de observacion del cliente:
+
+| Magnitud | Lider | Miembro |
+|---|---:|---:|
+| Nivel | 25 -> 25 (**0**) | 25 -> 25 (**0**) |
+| Punos | 46 -> 46 (**0**) | 46 -> 46 (**0**) |
+| Experiencia | **+16** | **+6** |
+
+**+6 a cada uno** por el control en rango (`ceil(10 * 1.20 / 2)`), y **+10 solo
+al lider** por la `snake`: su experiencia base **completa**. Ese ultimo numero
+es mas fuerte que "el miembro no cobro": si el reparto siguiera habilitado
+excluyendo al miembro, el lider habria cobrado 6, no 10. Cobrar el total sin
+dividir demuestra que la via de reparto quedo **suprimida por completo**.
+
+### Sin evidencia grabada, a proposito
+
+Se busco antes de decidir. `PRUEBA_VIVA_PARTY.md` (67-74) prueba que la
+experiencia compartida nunca se ejercito, y `PARITY_PHASE2D_PARTY_SHARED_EXP.md`
+(147) declara explicitamente la regla de rango como **no afirmada**. Ninguna
+corrida historica midio experiencia con un participante fuera de rango.
+Fabricarla habria sido inventar evidencia: `RECORDED_EVIDENCE` queda en **5**.
+
+### Decisiones declaradas
+
+- **No se heredo `PUNO_MINIMO`.** Era una heuristica operativa de combate a
+  puno limpio y mide la cosa equivocada si se pelea con arma — la propia
+  evidencia de Phase 2D.0.1 muestra garrote avanzando. La capacidad de combate
+  ahora se establece de forma **empirica**: el objetivo tiene que morir y el
+  reparto tiene que salir en partes iguales. No entra al payload.
+- **Se restablecio la contrasena de las dos cuentas de QA** (700001 y 700002,
+  que contienen **solo** personajes de QA) para poder ejecutar la captura. Es
+  un cambio de **credencial**, no de progresion: la tabla de arriba prueba que
+  nivel y habilidades quedaron intactos. Ninguna credencial entro a un archivo
+  versionado.
+- **El arbol tenia modificaciones sin commitear del carril `servidor`**
+  (`creature.cpp`, `monster.cpp`, `player.cpp`: persistencia de objetivo y
+  chase). Estan en **funciones distintas** de las verificadas; `party.cpp` y
+  `position.h` estan limpios contra HEAD. No se tocaron ni se commitearon.
+
+### Alcance, dicho sin adornos
+
+Este fixture prueba la **supresion fuera de rango**. **NO** certifica el borde
+exacto de la ventana (30 contra 31): la geometria usada tiene `dy = 61`, mas
+del doble del limite, y no lo roza. Tampoco afirma `sharedExpEnabled` leyendo
+estado interno: la supresion se prueba **por comportamiento**, comparando
+control positivo y medicion negativa en la **misma corrida**, donde lo unico
+que cambio fue la separacion espacial.
+
+### Seguridad
+
+**1 intento vivo de 3. 0 muertes de jugador. 2 monstruos invocados (el maximo).
+0 muertes colaterales. 0 usos de `/killall`. 0 dano del god. 0 mutaciones de
+progresion. 1 `OBSERVATION_JSON`.**
+
+Los **7 hashes congelados** antes de la corrida quedaron **identicos** despues
+del wrap y de los dos replays. `replay.py` y `wrap_live_observation.py` **no se
+modificaron**: aceptaron un **cuarto** dominio de comportamiento sin cambios.
+
+## Conteos (Phase 2D.1)
+
+| Inventario | Especificadas | Materializadas |
+|---|---:|---:|
+| Obligaciones de contrato Architecture V2 (`qa 2.1.1`) | 198 | 0 (sin cambio) |
+| Fixtures `LEGACY_PARITY` | — | **8** (antes 7) |
+| Casos de replay `QACaseV2`/`ParityExpectationV1` | — | **8** (antes 7) |
+| Observaciones `RECORDED_EVIDENCE` | — | **5** (sin cambio, a proposito) |
+| Observaciones `LIVE_ORACLE` canonicas | — | **5** (antes 4) |
+| `PARITY-PARTY-SHARED-EXP-RANGE-001` | — | **LIVE CERTIFIED, `PASS 8/8`** |
+
+Phase 2 sigue **EN CURSO**: este turno amplia el corpus de oracle, no lo cierra.
+
+**Le toca:** Phase 2D.2 — certificar la regla de elegibilidad de **NIVEL** de
+la experiencia compartida (`minLevel = ceil(nivel_mas_alto * 2 / 3)`,
+`party.cpp:344-354`) usando un participante de QA dedicado cuyo nivel este
+**naturalmente** por debajo del umbral, **sin** modificar el nivel de ninguno
+de los dos participantes para fabricar el caso negativo. Es el ultimo hueco
+declarado de este dominio.
 
 ## Turno cerrado: Phase 2D.0.1 — Endurecimiento del harness de experiencia compartida
 
