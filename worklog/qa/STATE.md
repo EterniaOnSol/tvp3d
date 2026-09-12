@@ -2,8 +2,102 @@
 
 Estado: LISTO_PARA_REVISION
 Ultimo agente: claude
-Ultima actualizacion: 2026-09-11T18:05:00-06:00
+Ultima actualizacion: 2026-09-11T18:40:00-06:00
 Contrato publicado: SI (`CONTRATO.md` v2.1.1, sin cambios en este turno)
+
+## Turno cerrado: Phase 2D.1.1 — Higiene de identificadores de autenticacion
+
+Turno de **higiene de documentacion y gobernanza**. Sin TVP en vivo, sin
+gameplay en Docker, sin captura de oracle, sin cambio de semantica de paridad.
+
+`PARITY-PARTY-SHARED-EXP-RANGE-001` **sigue certificado y valido**
+(commit `5ac123e`, `PASS 8/8`). Su fixture, `QACase`, observacion
+`LIVE_ORACLE`, reporte de replay y adaptador quedan **byte-identicos**.
+
+### Que se encontro y que se redacto
+
+El identificador numerico de login de 7.72 es parte del juego de credenciales
+de autenticacion y no debe publicarse literal en documentacion operativa
+versionada.
+
+Ocurrencias en material **de QA actualmente trackeado**:
+
+| Ubicacion | Que tenia | Accion |
+|---|---|---|
+| `worklog/qa/STATE.md` (cierre de Phase 2D.1) | Los dos identificadores de login de QA | **Redactado** a `QA_PARTICIPANT_1`/`QA_PARTICIPANT_2` |
+| `worklog/qa/STATE.md` (nota operativa historica) | Identificador de login del god | **Redactado** a `QA_GOD_OPERATOR` |
+| `qa/parity/` (fixtures, cases, observaciones, reportes) | Nada | Sin cambios: **limpios** |
+| `docs/qa/` | Nada | Sin cambios: **limpios** |
+| Los **5** adaptadores de captura de paridad | Nada; solo `OS.get_environment` | Sin cambios: **limpios** |
+
+Se conservaron **todos** los hechos tecnicos: que hacen falta cuentas
+separadas, que se restablecieron contrasenas de forma operativa, que ningun
+personaje del usuario fue tocado y que la progresion quedo intacta. Se quitaron
+identificadores de autenticacion, **no se reescribio la historia**.
+
+### Hallazgo abierto, declarado sin disimular
+
+La verificacion de los scripts de captura **no** dio limpia del todo. **20
+scripts de prueba viva LEGACY** de `cliente3d/pruebas/` (los previos al trabajo
+de paridad: `prueba_login.gd`, `prueba_mapa.gd`, `prueba_party_viva.gd`, etc.)
+contienen **un numero de cuenta Y una contrasena literales** en constantes del
+codigo.
+
+Este turno los **verifico pero no los modifico**, porque su alcance era
+documentacion mutable y rediseñar adaptadores estaba explicitamente fuera de
+el. Queda como **deuda de higiene abierta**, no como algo resuelto.
+
+Lo que si esta limpio es todo el corpus de paridad: los **5** adaptadores
+`prueba_parity_*_capture.gd` leen credenciales **solo** por entorno.
+
+Las tres coincidencias de "password" en `qa/parity/tools/` son el literal falso
+canonico `hunter2` usado como **dato de prueba negativo** para verificar que el
+escaner de secretos las **rechaza**. No son credenciales.
+
+### Regla operativa registrada
+
+`LIVE_CAPTURE_CREDENTIAL_MUTATION: REQUIRES_EXPLICIT_USER_AUTHORIZATION`
+
+Un agente de paridad **NO debe** restablecer ni cambiar credenciales de
+autenticacion solo para que una prueba viva pueda correr. Si las credenciales
+de entorno faltan o son invalidas, el resultado correcto es **`BLOCKED`** con
+pedido de configuracion valida. Cambiar credenciales exige autorizacion
+explicita del usuario **fuera** de la captura.
+
+El restablecimiento de contrasena de Phase 2D.1 queda como **hecho historico**
+y no se reescribe: ocurrio con autorizacion explicita del usuario en ese turno.
+
+### Historia intacta
+
+- `worklog/EVENTS.jsonl` sigue **append-only**. Ninguna linea historica se
+  reescribio, **incluidas las dos lineas historicas ya malformadas** y
+  cualquier evento previo que pudiera contener un identificador de login.
+- **No se reescribio la historia de Git.** Quitar un identificador de HEAD
+  **no** lo borra de los commits historicos: sigue estando en el historial
+  publicado. Revertirlo de ahi exigiria `filter-repo`/force push sobre historia
+  ya publicada, que es una decision de gobernanza y seguridad **separada** y
+  que este turno **no** toma.
+
+## Conteos (Phase 2D.1.1 — sin cambio de inventarios)
+
+| Inventario | Especificadas | Materializadas |
+|---|---:|---:|
+| Obligaciones de contrato Architecture V2 (`qa 2.1.1`) | 198 | 0 (sin cambio) |
+| Fixtures `LEGACY_PARITY` | — | 8 (sin cambio) |
+| Casos de replay `QACaseV2`/`ParityExpectationV1` | — | 8 (sin cambio) |
+| Observaciones `RECORDED_EVIDENCE` | — | 5 (sin cambio) |
+| Observaciones `LIVE_ORACLE` canonicas | — | 5 (sin cambio) |
+| `PARITY-PARTY-SHARED-EXP-RANGE-001` | — | **LIVE CERTIFIED, `PASS 8/8`** |
+| `QA_AUTH_IDENTIFIER_HYGIENE` | — | **PASS** |
+| `LIVE_CAPTURE_CREDENTIAL_MUTATION` | — | **REQUIRES_EXPLICIT_USER_AUTHORIZATION** |
+| Ejecuciones vivas de TVP en este turno | — | **0** |
+| Mutaciones de credenciales en este turno | — | **0** |
+
+**Le toca:** Phase 2D.2 — certificar la regla de elegibilidad de **NIVEL** de
+la experiencia compartida con un participante de QA dedicado y **naturalmente**
+de nivel bajo, sin cambiar niveles ni credenciales para fabricar el caso.
+Aparte, como linea propia: sacar las credenciales literales de los 20 scripts
+de prueba viva legacy.
 
 ## Turno cerrado: Phase 2D.1 — Paridad de RANGO de experiencia compartida
 
@@ -76,11 +170,14 @@ Fabricarla habria sido inventar evidencia: `RECORDED_EVIDENCE` queda en **5**.
   evidencia de Phase 2D.0.1 muestra garrote avanzando. La capacidad de combate
   ahora se establece de forma **empirica**: el objetivo tiene que morir y el
   reparto tiene que salir en partes iguales. No entra al payload.
-- **Se restablecio la contrasena de las dos cuentas de QA** (700001 y 700002,
-  que contienen **solo** personajes de QA) para poder ejecutar la captura. Es
-  un cambio de **credencial**, no de progresion: la tabla de arriba prueba que
+- **Se restablecio la contrasena de las dos cuentas dedicadas de QA**
+  (`QA_PARTICIPANT_1` y `QA_PARTICIPANT_2`, que contienen **solo** personajes
+  de QA y ningun personaje del usuario) para poder ejecutar la captura. Es un
+  cambio de **credencial**, no de progresion: la tabla de arriba prueba que
   nivel y habilidades quedaron intactos. Ninguna credencial entro a un archivo
-  versionado.
+  versionado. Los identificadores de login concretos **no se publican aqui**
+  (ver Phase 2D.1.1); los participantes siguen necesitando **cuentas
+  separadas** porque una cuenta normal no admite dos sesiones simultaneas.
 - **El arbol tenia modificaciones sin commitear del carril `servidor`**
   (`creature.cpp`, `monster.cpp`, `player.cpp`: persistencia de objetivo y
   chase). Estan en **funciones distintas** de las verificadas; `party.cpp` y
@@ -1264,7 +1361,8 @@ contiene aquel cierre; `git push` quedo bloqueado por falta de conexion a
   restaurados a `0`. Accion concreta: ejecutar una corrida limpia con el servidor
   recien iniciado y sin sesiones residuales.
 - Atención operativa: la última preparación de la prueba dejó pendiente
-  confirmar/restaurar `houses.id=6.owner` y `accounts.id=123456.premium_ends_at`
+  confirmar/restaurar `houses.id=6.owner` y el `premium_ends_at` de la cuenta
+  del `QA_GOD_OPERATOR`
   porque el motor Docker cayó antes de la limpieza. Restaurar ambos a `0` antes
   de cualquier otra prueba.
 
