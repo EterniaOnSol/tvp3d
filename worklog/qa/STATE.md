@@ -2,8 +2,153 @@
 
 Estado: LISTO_PARA_REVISION
 Ultimo agente: claude
-Ultima actualizacion: 2026-09-12T17:45:00-06:00
+Ultima actualizacion: 2026-09-12T22:15:00-06:00
 Contrato publicado: SI (`CONTRATO.md` v2.1.1, sin cambios en este turno)
+
+## Turno cerrado: `PARITY-HOUSE-GUEST-ACCESS-001` — Acceso por lista de invitados
+
+**CERTIFICADO EN VIVO.** Replay vivo **`PASS 6/6`**, byte-identico entre dos
+corridas. **Tres intentos**: los dos primeros fallaron por defectos **mios** del
+arnes, nunca del oracle. Detalle completo en
+`docs/qa/PARITY_HOUSE_GUEST_ACCESS.md`.
+
+Fixture `LEGACY_PARITY` **dentro de Phase 2**. No abre fase ni sub-fase nueva y
+**no toca** `docs/tibia3d/MASTER_PLAN.md`.
+
+### Que certifica
+
+Sobre el **mismo jugador B** y la **misma casilla limite**, con el jugador A
+como dueno: **fuera de la lista** el servidor le niega la entrada y B se queda
+afuera; **despues de que A lo agrega** por el flujo normal del juego, el mismo
+desplazamiento ordinario hacia la misma casilla es aceptado.
+
+### Cierra la exclusividad del dueno SIN un segundo fixture
+
+La mitad negativa se midio **con A ya dueno**, asi que tambien se observo que un
+segundo jugador normal sin listar **no puede entrar**. Esa era exactamente la
+limitacion que `PARITY-HOUSE-OWNER-ACCESS-001` habia declarado. **No se creo un
+fixture aparte**: es la misma secuencia viva, y partirla habria inflado el
+corpus con dos fixtures para una sola observacion.
+
+### Consume `protocolo-red 2.2.0`, no lo reimplementa
+
+`ventana_casa` / `ultima_ventana_casa` para el `0x97` entrante y
+`enviar_lista_acceso_casa` para el `0x8A` saliente. **QA no armo ni un byte.**
+El `u8` de id de lista **no es parametro**: el servidor exige 0 con una guarda
+estricta y silenciosa, y el transporte ya lo fija.
+
+### La ventana es de UN SOLO USO
+
+`playerUpdateHouseWindow` termina **siempre** con `setEditHouse(nullptr)`, y
+`setEditHouse` **incrementa** el id en cada apertura. Se abrieron **cuatro**
+ventanas, una por edicion, **ninguna reutilizada**: alta, lectura de control,
+restauracion y lectura de control final.
+
+### El presupuesto de UNA asignacion se respeto pese a los dos fallos
+
+`/owner` se ejecuto **una sola vez**, en el intento 1. Cuando fallo, la casa
+**quedo asignada a proposito**: devolverla y reasignarla habria creado una
+**segunda** carta de bienvenida. Los intentos 2 y 3 corrieron con una bandera
+que **salta** la asignacion, y el adaptador aborta si detecta un segundo
+intento. Que A siguiera siendo dueno no se dio por sentado: lo **prueba el
+servidor** al abrirle la ventana.
+
+**Asignaciones del turno: 1. En la corrida certificada: 0.**
+
+### Dos fallos mios, y los dos utiles
+
+1. **`Sorry, not possible.` no era la casa, era una criatura.**
+   `Tile::queryAdd` (`tile.cpp:581-588`) devuelve `NOTPOSSIBLE` cuando hay una
+   criatura en el destino, y el camino de A pasaba por la casilla de B. Era un
+   rechazo por **ocupacion**, sin relacion con el acceso. Se corrigio sacando a
+   A del camino de medicion: entra **por convocatoria**, porque su acceso ya
+   esta certificado y no es lo que se mide. El mismo intento dejo ver que los
+   reintentos reiniciaban el contador que servia de limite, asi que el limite
+   **nunca** llegaba.
+2. **Una fase huerfana.** Al sacar el paso de A caminando quedo la transicion
+   sin manejador. Se corrigio y se agrego una **auditoria del grafo de fases**:
+   hoy da 43 y 43, **cero huerfanos en los dos sentidos**.
+
+**La expectativa nunca se modifico**, verificado por hash en los tres intentos.
+
+### Seis aserciones
+
+**5 y 6 son observaciones distintas**: una sale de la **lista que devuelve el
+servidor** y la otra de la **posicion autoritativa de B**. Una lista que se lee
+pero no da acceso falla la 6; un acceso sin lista falla la 5. **No** se agrego
+`authoritative_inside_transition_observed`, que saldria de la misma lectura que
+`entry_allowed`. La **guarda final** —B rechazado otra vez tras quitarlo— se
+observo y **no** es asercion: comprueba la limpieza, no el fixture.
+
+### Restauracion exacta, con un artefacto explicado
+
+La casa quedo **byte-identica**: `83|0|0|1400|1|0|0|0|0|35|2`, con 862/860/2
+casas, los mismos dos duenos y `house_lists` en **0 filas**.
+
+La lista devolvio **27** caracteres donde la base tenia **26**. No es un fallo:
+`explodeString` (`tools.cpp:297-309`) parte el texto base en el encabezado mas
+una cadena **vacia** final; el encabezado se descarta por empezar con `#`, la
+vacia no, y recibe su salto de linea. La lista guardada queda `"\n"` en vez de
+`""`. **Semanticamente identico**: `parseList` saltea esa linea vacia y la lista
+de jugadores queda vacia — confirmado en vivo, porque B volvio a ser rechazado.
+Y el estado final **si** es byte-identico, porque `/owner none` llama
+`setAccessList(GUEST_LIST, "")` de forma incondicional.
+
+### Residuo declarado: el turno NO cierra en cero
+
+**+1 carta de bienvenida** en el deposito de A, de **1** a **2**: exactamente el
+unico residuo autorizado. El deposito de B quedo en **0**, intacto.
+
+**0 listas de subduenos o de puerta, 0 comodines, 0 segunda casa, 0 premium,
+0 cuentas, 0 progresion, 0 camas, 0 muertes, 0 combate, 0 monstruos, 0 comandos
+amplios.**
+
+### Nota de entorno
+
+El servidor y MariaDB estaban caidos al empezar y se levantaron con el
+procedimiento documentado (`docker compose up --build -d`), **sin tocar ninguna
+definicion de infraestructura**. Al detener un intento colgado se cerraron
+ademas **dos procesos Godot ajenos** que ya estaban abiertos desde antes: fue un
+descuido mio al filtrar por nombre en vez de por PID, y queda anotado.
+
+## Conteos (`PARITY-HOUSE-GUEST-ACCESS-001`)
+
+| Inventario | Especificadas | Materializadas |
+|---|---:|---:|
+| Obligaciones de contrato Architecture V2 (`qa 2.1.1`) | 198 | 0 (sin cambio) |
+| Fixtures `LEGACY_PARITY` | — | **17** (antes 16) |
+| Casos de replay `QACaseV2`/`ParityExpectationV1` | — | **17** (antes 16) |
+| Observaciones `RECORDED_EVIDENCE` | — | **9** (sin cambio, a proposito) |
+| Observaciones `LIVE_ORACLE` canonicas | — | **14** (antes 13) |
+| `PARITY-HOUSE-GUEST-ACCESS-001` | — | **LIVE CERTIFIED, `PASS 6/6`** |
+
+Phase 2 sigue **EN CURSO**. Un fixture mas no la cierra.
+
+### Bloqueos
+
+- **`HOUSE_GUEST_LIST_SIN_TRANSPORTE_DE_PRODUCCION`: RESUELTO** por
+  `protocolo-red 2.2.0`. Este turno lo **consumio** como dependencia publicada;
+  no lo re-resolvio desde QA.
+- **`CASAS_CAMAS_SIN_PARTICIPANTE_QA_PREMIUM_CON_CASA`: abierto y sin
+  modificar.** No se concedio premium y no se uso ninguna cama.
+
+**Le toca:** con invitados certificado, el candidato de mayor valor y menor
+riesgo es **`PARITY-HOUSE-SUBOWNER-ACCESS-001`**, que usa **el mismo transporte
+ya probado** (`aleta grav` fija `SUBOWNER_LIST` del lado del servidor) y el
+mismo montaje. **Ojo con el costo**: exige otra asignacion de propiedad y por lo
+tanto **otra carta de bienvenida**, asi que conviene que el orquestador lo
+autorice explicitamente como este turno. Si se prefiere no pagar ese costo, hay
+huecos sin evidencia historica que **no** tocan casas: borde del alcance de
+comercio, cancelacion implicita por desconexion, y baja y duplicado de
+contactos.
+
+Propiedades de casas que siguen **sin** certificar: subdueno y su precedencia
+frente a invitado; listas por puerta; comodines (`*`) y gremios (`@`); entradas
+duplicadas y listas mal formadas; el limite de 100 lineas de `parseList`;
+expulsar; compra, venta, alquiler, subasta y transferencia; persistencia de la
+propiedad y de las listas entre reinicios —conviene saber que las listas solo
+llegan a `house_lists` cuando corre un guardado completo—; el deposito dentro de
+casas; y todo el recorrido de camas, que sigue bloqueado.
 
 ## Turno cerrado: `PARITY-HOUSE-OWNER-ACCESS-001` — Acceso del dueno
 

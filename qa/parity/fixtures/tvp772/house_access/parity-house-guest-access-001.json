@@ -1,0 +1,59 @@
+{
+  "schema": "tvp3d.qa.parity_fixture",
+  "version": "2.0.0",
+  "fixture_id": "PARITY-HOUSE-GUEST-ACCESS-001",
+  "oracle": "TVP_772",
+  "oracle_version": "7.72",
+  "source_evidence": {
+    "logical_path": "docs/qa/PARITY_HOUSE_GUEST_ACCESS.md"
+  },
+  "preconditions": [
+    "dos jugadores normales distintos, vivos y conectados, en cuentas distintas, sin ninguna bandera de privilegio que los exima del control de acceso a casas",
+    "uno de ellos (el dueno) posee la casa bajo prueba durante toda la medicion; el otro (el medido) nunca es dueno ni subdueno de esa casa",
+    "la casa bajo prueba empieza el turno sin dueno, con su lista de invitados vacia y su lista de subduenos vacia",
+    "en la primera medicion el jugador medido NO figura en la lista de invitados de esa casa",
+    "entre la primera y la segunda medicion lo UNICO que cambia es que el jugador medido pasa a figurar en la lista de invitados, agregado por el dueno mediante el flujo normal de edicion del juego",
+    "la casilla de la casa que se intenta pisar es LA MISMA en las dos mediciones, y el estado de sus objetos no cambia entre una y otra",
+    "el jugador medido parte de la misma casilla exterior contigua en las dos mediciones, y usa el mismo desplazamiento ordinario",
+    "la via de movimiento ordinaria del jugador medido funciona en el momento de medir, demostrado con un desplazamiento autoritativo previo entre casillas que no pertenecen a ninguna casa",
+    "no se modifica la lista de subduenos, ni ninguna lista por puerta, ni el estado premium de ninguna cuenta; no se usa ninguna cama y no se altera la progresion de ningun personaje"
+  ],
+  "input_action": "el jugador medido intenta DOS veces el mismo desplazamiento ordinario, por la via de movimiento normal del juego, desde la misma casilla exterior hacia la misma casilla de la casa: la primera vez estando fuera de la lista de invitados y la segunda despues de que el dueno lo agrego a esa lista",
+  "observed_authoritative_result": "fuera de la lista, el servidor rechaza la entrada con su respuesta especifica de falta de autorizacion para esa casa, distinta de cualquier rechazo generico de terreno o colision, y la posicion autoritativa del jugador medido despues del intento sigue siendo la de afuera. Despues de que el dueno lo agrega a la lista, el propio servidor devuelve al dueno una lista que incluye al jugador medido, y el mismo desplazamiento hacia la misma casilla es aceptado: la posicion autoritativa posterior es la casilla de la casa. La sesion del jugador medido no se cae en ningun momento.",
+  "normalization_rules": [
+    "los participantes se comparan por ROL (el dueno de la casa y el jugador medido), nunca por nombre de personaje, id de cuenta, guid ni runtime id",
+    "no se serializa ninguna identidad de la casa: ni su id, ni su nombre, ni su pueblo, ni su dueno",
+    "no se serializa ninguna coordenada: ni la casilla exterior, ni la casilla de la casa, ni las interiores",
+    "no se serializa el texto de la lista de acceso, ni su encabezado, ni el nombre agregado: la aceptacion de la relacion se normaliza al hecho booleano de que el servidor devolvio al jugador medido dentro de la lista",
+    "no se serializa ningun identificador de ventana de edicion",
+    "no se serializa el texto exacto de la respuesta del servidor: el rechazo especifico de acceso se normaliza al hecho booleano de haberse observado",
+    "no se serializa ningun numero de opcode del protocolo legacy",
+    "no se serializa el mecanismo de montaje usado para asignar o devolver la propiedad, ni el estado de ninguna puerta",
+    "la permanencia afuera y la entrada se normalizan a hechos booleanos derivados de la posicion AUTORITATIVA reportada por el servidor, sin publicar ninguna posicion",
+    "se ignoran marcas de tiempo de reloj de pared y cualquier metadata de host o proceso"
+  ],
+  "determinism_notes": "la COMPARACION es el fixture. Ninguna de las dos mitades prueba nada por separado: 'no entro' lo produce igual una pared, un borde de mapa, una casilla ocupada o una peticion perdida, y 'entro' lo produce cualquier casilla que no sea de una casa. Lo que se afirma es que, manteniendo fijos el jugador medido, la casilla, el camino, el dueno de la casa y el estado de los objetos de esa casilla, lo UNICO que cambio entre el rechazo y la aceptacion fue la pertenencia del jugador medido a la lista de invitados. Por eso se exigen cuatro cosas independientes. Primero, un CONTROL POSITIVO inmediatamente antes de medir: el jugador medido realiza un desplazamiento ordinario que el servidor confirma sobre casillas que no son de ninguna casa, lo que descarta que la via de movimiento estuviera rota. Segundo, la respuesta ESPECIFICA de falta de autorizacion de casa en la mitad sin lista, que en este oracle solo puede originarse en el control de acceso de casas y nunca en una colision comun; observarla prueba a la vez que la casilla de destino pertenece de verdad a una casa y que el jugador medido no estaba autorizado. Tercero, que la relacion de invitado la confirme EL SERVIDOR y no una variable del arnes: despues de enviar la edicion se abre una ventana NUEVA y se comprueba que la lista que el servidor devuelve incluye al jugador medido; una lista construida localmente no probaria que el servidor la acepto. Cuarto, que en la mitad con lista la respuesta especifica NO vuelva a aparecer y la posicion autoritativa pase a ser la casilla de la casa. Las dos posiciones se leen del estado AUTORITATIVO reportado por el servidor, nunca de la prediccion local del cliente, y la entrada medida se produce por una orden de movimiento ordinaria, sin ningun teletransporte sobre el jugador medido durante esa fase. La mitad negativa sirve ademas como control de EXCLUSIVIDAD DEL DUENO dentro de la misma secuencia, porque se mide con la casa ya en poder del otro jugador normal. ALCANCE DECLARADO: este fixture certifica UNICAMENTE que la pertenencia a la lista de invitados habilita la entrada por la via de movimiento ejercitada, sobre un limite que a ese mismo jugador le estaba negado mientras otro jugador normal era dueno. NO certifica la semantica de subdueno, ni la precedencia entre niveles de acceso, ni las listas por puerta, ni los comodines de lista, ni las entradas duplicadas, ni el comportamiento ante listas mal formadas, ni expulsar, ni la compra, venta, alquiler, subasta o transferencia de casas, ni la persistencia de la propiedad o de la lista entre reinicios del servidor o ciclos del contenedor, ni ningun requisito de cuenta premium, ni el uso de camas, ni dormir, ni la regeneracion, ni el comportamiento de todos los tipos de casilla de una casa, ni todas las direcciones de entrada posibles.",
+  "excluded_nondeterministic_fields": [
+    "character_names",
+    "account_id",
+    "player_guid",
+    "creature_runtime_ids",
+    "house_id",
+    "house_name",
+    "house_owner",
+    "house_town",
+    "house_access_list_text",
+    "house_access_list_header",
+    "house_edit_window_id",
+    "house_door_state",
+    "setup_commands",
+    "legacy_protocol_opcodes",
+    "server_message_text",
+    "positions",
+    "tile_coordinates",
+    "wall_clock_timestamp",
+    "host_metadata",
+    "process_id"
+  ],
+  "classification": "MATCH_EXPECTED"
+}

@@ -1,0 +1,27 @@
+{
+  "schema": "tvp3d.qa.oracle_observation",
+  "version": "1.0.0",
+  "fixture_id": "PARITY-HOUSE-GUEST-ACCESS-001",
+  "oracle": "TVP_772",
+  "oracle_version": "7.72",
+  "capture_origin": "LIVE_ORACLE",
+  "source_evidence": [
+    {
+      "logical_path": "docs/qa/PARITY_HOUSE_GUEST_ACCESS.md"
+    }
+  ],
+  "payload": {
+    "precondition": {
+      "ordinary_movement_confirmed": true,
+      "session_remained_connected": true
+    },
+    "with_guest_listing": {
+      "entry_allowed": true,
+      "guest_relationship_accepted_by_server": true
+    },
+    "without_guest_listing": {
+      "house_access_denial_observed": true,
+      "participant_remained_outside": true
+    }
+  }
+}

@@ -1,0 +1,80 @@
+{
+  "schema": "tvp3d.qa.case",
+  "version": "2.0.0",
+  "case_id": "PARITY-HOUSE-GUEST-ACCESS-001",
+  "class": "LEGACY_PARITY",
+  "title": "TVP 7.72 houses: a normal non-owner player is denied while absent from the guest list and permitted after being added to it",
+  "owners": ["qa"],
+  "contracts": [
+    {"contract": "qa", "version": "2.1.1"}
+  ],
+  "requirement_refs": [
+    {
+      "contract": "qa",
+      "version": "2.1.1",
+      "section": "16",
+      "source_fixture_id": "PARITY-HOUSE-GUEST-ACCESS-001"
+    }
+  ],
+  "preconditions": [
+    "dos jugadores normales distintos en cuentas distintas, sin banderas de privilegio; uno es dueno de la casa bajo prueba y el otro es el medido",
+    "la casa empieza sin dueno y con sus listas de invitados y subduenos vacias",
+    "el jugador medido no figura en la lista de invitados durante la primera medicion",
+    "la via de movimiento ordinaria funciona, demostrado inmediatamente antes de medir",
+    "entre las dos mediciones lo unico que cambia es la pertenencia del jugador medido a la lista de invitados; no se modifica la lista de subduenos, ni listas por puerta, ni premium, ni progresion"
+  ],
+  "input_fixture": {
+    "logical_path": "qa/parity/fixtures/tvp772/house_access/parity-house-guest-access-001.json"
+  },
+  "expected": {
+    "schema": "tvp3d.qa.parity_expectation",
+    "version": "1.0.0",
+    "mode": "SINGLE_OBSERVATION",
+    "assertions": [
+      {
+        "assertion_id": "HOUSE-GUEST-ORDINARY-MOVEMENT-CONFIRMED",
+        "left_path": "/precondition/ordinary_movement_confirmed",
+        "operator": "EQ",
+        "right": {"literal": true}
+      },
+      {
+        "assertion_id": "HOUSE-GUEST-SESSION-REMAINED-CONNECTED",
+        "left_path": "/precondition/session_remained_connected",
+        "operator": "EQ",
+        "right": {"literal": true}
+      },
+      {
+        "assertion_id": "HOUSE-GUEST-DENIAL-WHILE-UNLISTED",
+        "left_path": "/without_guest_listing/house_access_denial_observed",
+        "operator": "EQ",
+        "right": {"literal": true}
+      },
+      {
+        "assertion_id": "HOUSE-GUEST-REMAINED-OUTSIDE-WHILE-UNLISTED",
+        "left_path": "/without_guest_listing/participant_remained_outside",
+        "operator": "EQ",
+        "right": {"literal": true}
+      },
+      {
+        "assertion_id": "HOUSE-GUEST-RELATIONSHIP-ACCEPTED-BY-SERVER",
+        "left_path": "/with_guest_listing/guest_relationship_accepted_by_server",
+        "operator": "EQ",
+        "right": {"literal": true}
+      },
+      {
+        "assertion_id": "HOUSE-GUEST-ENTRY-ALLOWED-WHILE-LISTED",
+        "left_path": "/with_guest_listing/entry_allowed",
+        "operator": "EQ",
+        "right": {"literal": true}
+      }
+    ]
+  },
+  "mutates_external_state": false,
+  "requires_network": false,
+  "requires_legacy": false,
+  "requires_secrets": false,
+  "status_policy": {
+    "missing_prerequisite_status": "BLOCKED",
+    "assertion_mismatch_status": "FAIL"
+  }
+}
