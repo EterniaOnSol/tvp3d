@@ -5,11 +5,12 @@ extends Node
 
 const CONEXION := preload("res://red/conexion772.gd")
 const ESTADO := preload("res://red/estado_mundo.gd")
-const HOST := "127.0.0.1"
-const CUENTA := 123456
-const CLAVE := "123456"
-const GOD := "GOD VALENTINO"
-const JUGADOR := GOD
+const CREDENCIALES := preload("res://pruebas/credenciales_qa.gd")
+var HOST := CREDENCIALES.HOST_DEFECTO
+var CUENTA := 0
+var CLAVE := ""
+var GOD := ""
+var JUGADOR := ""
 const CASA := 6
 const ENTRADA := Vector3i(32333, 32232, 7)
 const INTERIOR := Vector3i(32331, 32230, 7)
@@ -36,6 +37,15 @@ var _cama_esperando := false
 var _sleep_reconnect_started := false
 
 func _ready() -> void:
+	# Credenciales e identidades de prueba: SOLO por entorno, nunca literales.
+	# Si falta alguna, corta aca y no intenta ninguna conexion.
+	if not CREDENCIALES.exigir(self, ["TVP772_ACCOUNT", "TVP772_PASSWORD", "TVP772_GOD_CHARACTER"]):
+		return
+	HOST = CREDENCIALES.host()
+	CUENTA = CREDENCIALES.entero("TVP772_ACCOUNT")
+	CLAVE = CREDENCIALES.texto("TVP772_PASSWORD")
+	GOD = CREDENCIALES.texto("TVP772_GOD_CHARACTER")
+	JUGADOR = GOD
 	_abrir_login(GOD)
 
 func _process(delta: float) -> void:

@@ -6,12 +6,13 @@ extends Node
 
 const CONEXION := preload("res://red/conexion772.gd")
 const ESTADO := preload("res://red/estado_mundo.gd")
+const CREDENCIALES := preload("res://pruebas/credenciales_qa.gd")
 
-const HOST := "127.0.0.1"
-const PUERTO_LOGIN := 7171
-const CUENTA := 123456
-const CLAVE := "123456"
-const PERSONAJE := "Guuille"
+var HOST := CREDENCIALES.HOST_DEFECTO
+var PUERTO_LOGIN := CREDENCIALES.PUERTO_LOGIN_DEFECTO
+var CUENTA := 0
+var CLAVE := ""
+var PERSONAJE := ""
 const RANURA_ANILLO := 9
 const TIEMPO_MEDICION := 7.0
 
@@ -28,6 +29,15 @@ var _medicion_iniciada := false
 
 
 func _ready() -> void:
+	# Credenciales e identidades de prueba: SOLO por entorno, nunca literales.
+	# Si falta alguna, corta aca y no intenta ninguna conexion.
+	if not CREDENCIALES.exigir(self, ["TVP772_ACCOUNT", "TVP772_PASSWORD", "TVP772_LIFE_RING_CHARACTER"]):
+		return
+	HOST = CREDENCIALES.host()
+	PUERTO_LOGIN = CREDENCIALES.puerto_login()
+	CUENTA = CREDENCIALES.entero("TVP772_ACCOUNT")
+	CLAVE = CREDENCIALES.texto("TVP772_PASSWORD")
+	PERSONAJE = CREDENCIALES.texto("TVP772_LIFE_RING_CHARACTER")
 	print("=========================================")
 	print(" TVP3D - prueba real del life ring")
 	print("=========================================")

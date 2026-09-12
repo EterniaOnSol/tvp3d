@@ -2,8 +2,147 @@
 
 Estado: LISTO_PARA_REVISION
 Ultimo agente: claude
-Ultima actualizacion: 2026-09-11T20:15:00-06:00
+Ultima actualizacion: 2026-09-12T00:45:00-06:00
 Contrato publicado: SI (`CONTRATO.md` v2.1.1, sin cambios en este turno)
+
+## Turno cerrado: Higiene de credenciales legacy + inspeccion del estado del juego
+
+Turno de **dos partes**, sin fixture de paridad nuevo, sin implementacion de
+Architecture V2 y sin Phase 3. **Inventarios de paridad sin cambio.**
+
+| Resultado | Valor |
+|---|---|
+| `LEGACY_LIVE_TEST_CREDENTIAL_HYGIENE` | **PASS** |
+| `CURRENT_GAME_STATE_SMOKE` | **PASS** |
+| Clasificacion de jugabilidad | **`PLAYABLE_WITH_MINOR_DEFECTS`** |
+
+Informe completo del estado del juego en
+`docs/qa/CURRENT_GAME_STATE_2026-09-12.md`, con cuatro capturas de la ventana
+real en `docs/qa/capturas/`.
+
+### A. Higiene de credenciales
+
+La deuda declarada en Phase 2D.1.1 queda **saldada**. Se verifico de forma
+independiente el conteo previo: **20** scripts de prueba viva legacy traian el
+identificador numerico de login y la contrasena como constantes literales en
+codigo versionado. Los 20 quedaron migrados a `OS.get_environment(...)`.
+
+**Un archivo mas que la auditoria previa no habia encontrado.**
+`prueba_muerte_reentrada.gd` guardaba el **numero de cuenta real** en una
+prueba **offline** que usa conexion falsa y nunca autentica nada. Ahi no
+correspondia `BLOCKED` por entorno —romperia una prueba determinista de la
+matriz local— asi que se reemplazo por una identidad de **relleno** explicita,
+documentada en el propio archivo. La clave que ya tenia (`clave-de-prueba`) era
+un placeholder y no se toco.
+
+Se creo **un** helper QA-owned, `cliente3d/pruebas/credenciales_qa.gd`, para no
+duplicar veinte veces la misma validacion. Vive en `cliente3d/pruebas/` a
+proposito y **no** en `cliente3d/red/`, que es de `protocolo-red`.
+
+**Falla cerrada, y probado que falla cerrada.** Sin la variable requerida, la
+prueba imprime `BLOCKED missing environment variable <NOMBRE>`, sale con codigo
+**2** y **no abre ningun socket** (verificado: 0 lineas de conexion en el log).
+Nunca hay vuelta silenciosa al literal anterior.
+
+Nombres de personaje tambien migrados a entorno, porque eran configuracion de
+identidad y no datos de juego: el operador (`TVP772_GOD_CHARACTER`), el
+personaje normal (`TVP772_PLAYER_CHARACTER`) y un rol propio y descriptivo
+(`TVP772_LIFE_RING_CHARACTER`) para la unica prueba que exige un personaje con
+un item concreto en el inventario. **No** se tocaron nombres de monstruo, NPC,
+pueblo ni item: eso es dato de juego.
+
+`TVP772_HOST` y `TVP772_LOGIN_PORT` quedaron **opcionales con el mismo
+defecto de siempre** (`127.0.0.1`, `7171`), asi que sin definirlas el
+comportamiento es identico al anterior. No son credenciales.
+
+| Verificacion | Resultado |
+|---|---:|
+| Scripts afectados antes | **20** |
+| Scripts afectados despues | **0** |
+| Identificadores de login literales reales en fuente QA ejecutable | **0** |
+| Contrasenas literales reales en fuente QA ejecutable | **0** |
+| Scripts que parsean (`--check-only`) | **21 / 21** |
+| Matriz QA local | **18 / 18 OK** |
+| Mutaciones de credenciales | **0** |
+| Cuentas/personajes creados | **0** |
+| Artefactos de paridad modificados | **0** |
+
+La unica coincidencia que queda en el escaneo es un **falso positivo**
+declarado: `test_voz_proximidad.gd:27` usa un id de criatura en hexadecimal
+(`0x…`) cuyos digitos contienen por casualidad los de la contrasena. No es una
+credencial.
+
+### B. Estado actual del juego
+
+**Servidor `RUNNING`.** Arranque canonico verificado leyendo el repositorio, no
+suponiendo: Docker Compose en `servidor/`. **Ya estaba corriendo, asi que no se
+reinicio**, no se reconstruyo imagen, no se borro volumen, no se toco la base y
+no se cambio configuracion para hacerlo arrancar. **7171 y 7172 escuchan y
+aceptan conexion.** Mapa 65000x65000 cargado, 23063 monstruos, 336 NPCs. **0**
+errores fatales, **0** crash loop, **0** migraciones destructivas, **0** errores
+durante la sesion.
+
+**Cliente abierto con ventana real, no headless.** Punto de entrada normal
+(`main.tscn`, el mismo de `JUGAR.bat`), ventana `TVP3D (DEBUG)` con
+renderizador OpenGL sobre GPU real. **Inspeccion visual: SI.**
+
+Entro un personaje **dedicado de QA**; **0** personajes del usuario usados y
+**0** credenciales cambiadas para lograrlo.
+
+Funciona: login, carga del mundo, terreno, edificios, agua, escaleras, items,
+criaturas con nombre y vida, movimiento, cambio de piso `z=7 <-> z=8`, camara
+que sigue al jugador, minimapa, lista de batalla, panel de objetivo,
+inventario, chat y mensajes autoritativos del servidor.
+
+**Coherencia cliente/servidor probada fuera del camino del cliente:** al cerrar
+sesion el servidor persistio exactamente la misma posicion que mostraba el HUD.
+
+**0** errores de runtime en el cliente (stderr vacio), **0** advertencias del
+parser, **0** errores del servidor.
+
+### Defectos encontrados, registrados y NO corregidos
+
+Son de otros carriles. Este turno **no** los toca; quedan como solicitudes.
+
+| # | Defecto | Carril |
+|---|---|---|
+| 1 | Items sin perfil 3D: el cliente los dibuja con su placeholder magenta `__unmapped_item__` (`mundo3d.gd:3682-3690`) y los cuenta en el HUD (`unmapped 3` en una zona) | `assets` / `editor` |
+| 2 | `Speed`, `Food` y `Stamina` muestran 0 siempre: el `0xA0` de 7.72 trae once campos y **ninguno** es stamina, comida ni velocidad (`estado_mundo.gd:636-652`), pero la UI pinta esas filas (`interfaz.gd:1296-1299`). Probado: el personaje tiene `Stamina = 2530` y la UI dice `0%` | `cliente` |
+| 3 | `ARRANCAR SERVIDOR.bat` y `web/LEEME.md` publican **en texto plano** la cuenta y la clave de desarrollo, en archivos versionados. Es el mismo problema que este turno resolvio dentro de `cliente3d/pruebas/`, pero fuera de este carril | `integracion` |
+
+### Dicho sin adornos
+
+**El usuario estuvo jugando en la misma ventana durante la inspeccion**
+(combate, uso de objetos, movimiento propio). Por eso la muestra de movimiento
+**no** se puede atribuir limpiamente a las teclas enviadas por QA, y no se
+afirma haber medido un paso aislado. Lo que si queda probado, y no depende de
+quien apreto la tecla, es que la posicion cambia de forma coherente, que el
+cambio de piso funciona y que la posicion final del cliente **coincide exacto**
+con la que persistio el servidor.
+
+La sesion fue **una sola y corta**, en Thais y sus cuevas. No es una
+certificacion de jugabilidad ni un barrido del mundo, y **nada de lo observado
+se convierte en evidencia de paridad**.
+
+## Conteos (sin cambio de inventarios)
+
+| Inventario | Especificadas | Materializadas |
+|---|---:|---:|
+| Obligaciones de contrato Architecture V2 (`qa 2.1.1`) | 198 | 0 (sin cambio) |
+| Fixtures `LEGACY_PARITY` | — | 9 (sin cambio) |
+| Casos de replay `QACaseV2`/`ParityExpectationV1` | — | 9 (sin cambio) |
+| Observaciones `RECORDED_EVIDENCE` | — | 5 (sin cambio) |
+| Observaciones `LIVE_ORACLE` canonicas | — | 6 (sin cambio) |
+| `LEGACY_LIVE_TEST_CREDENTIAL_HYGIENE` | — | **PASS** |
+| `CURRENT_GAME_STATE_SMOKE` | — | **PASS / `PLAYABLE_WITH_MINOR_DEFECTS`** |
+| Capturas de oracle en este turno | — | **0** |
+
+Phase 2 sigue **EN CURSO**.
+
+**Le toca:** el juego llega a mejor que `BASIC_PLAYABLE`, asi que corresponde
+**Phase 2E — paridad de persistencia de depot**. Antes no hace falta ninguna
+investigacion de carril bloqueante: los tres defectos de arriba son de
+cobertura y de presentacion, ninguno impide jugar.
 
 ## Turno cerrado: Phase 2D.2 — Paridad de NIVEL de experiencia compartida
 

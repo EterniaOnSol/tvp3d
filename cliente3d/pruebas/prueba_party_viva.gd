@@ -19,13 +19,14 @@ extends Node
 
 const CONEXION := preload("res://red/conexion772.gd")
 const ESTADO := preload("res://red/estado_mundo.gd")
+const CREDENCIALES := preload("res://pruebas/credenciales_qa.gd")
 
-const HOST := "127.0.0.1"
-const PUERTO_LOGIN := 7171
-const CUENTA := 123456
-const CLAVE := "123456"
-const PERSONAJE_GOD := "GOD VALENTINO"
-const PERSONAJE := "Valentino"
+var HOST := CREDENCIALES.HOST_DEFECTO
+var PUERTO_LOGIN := CREDENCIALES.PUERTO_LOGIN_DEFECTO
+var CUENTA := 0
+var CLAVE := ""
+var PERSONAJE_GOD := ""
+var PERSONAJE := ""
 
 ## `Ban::acceptConnection` (servidor/src/ban.cpp:13-45) bloquea a quien abre
 ## mas de cinco conexiones en cinco segundos desde la misma IP.
@@ -56,6 +57,16 @@ var _id_god := 0
 
 
 func _ready() -> void:
+	# Credenciales e identidades de prueba: SOLO por entorno, nunca literales.
+	# Si falta alguna, corta aca y no intenta ninguna conexion.
+	if not CREDENCIALES.exigir(self, ["TVP772_ACCOUNT", "TVP772_PASSWORD", "TVP772_GOD_CHARACTER", "TVP772_PLAYER_CHARACTER"]):
+		return
+	HOST = CREDENCIALES.host()
+	PUERTO_LOGIN = CREDENCIALES.puerto_login()
+	CUENTA = CREDENCIALES.entero("TVP772_ACCOUNT")
+	CLAVE = CREDENCIALES.texto("TVP772_PASSWORD")
+	PERSONAJE_GOD = CREDENCIALES.texto("TVP772_GOD_CHARACTER")
+	PERSONAJE = CREDENCIALES.texto("TVP772_PLAYER_CHARACTER")
 	print("=================================================")
 	print(" TVP3D - prueba viva de party con dos clientes")
 	print("=================================================")

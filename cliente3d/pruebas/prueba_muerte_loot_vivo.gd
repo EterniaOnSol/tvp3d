@@ -32,13 +32,14 @@ extends Node
 
 const CONEXION := preload("res://red/conexion772.gd")
 const ESTADO := preload("res://red/estado_mundo.gd")
+const CREDENCIALES := preload("res://pruebas/credenciales_qa.gd")
 
-const HOST := "127.0.0.1"
-const PUERTO_LOGIN := 7171
-const CUENTA := 123456
-const CLAVE := "123456"
-const PERSONAJE := "Valentino"
-const PERSONAJE_GOD := "GOD VALENTINO"
+var HOST := CREDENCIALES.HOST_DEFECTO
+var PUERTO_LOGIN := CREDENCIALES.PUERTO_LOGIN_DEFECTO
+var CUENTA := 0
+var CLAVE := ""
+var PERSONAJE := ""
+var PERSONAJE_GOD := ""
 ## Mata rapido y de forma reproducible a un personaje de nivel bajo.
 const VERDUGO := "demon"
 ## Deja corpse y loot sin poner en riesgo a nadie.
@@ -127,6 +128,16 @@ var _mapas_desalineados: Array = []
 
 
 func _ready() -> void:
+	# Credenciales e identidades de prueba: SOLO por entorno, nunca literales.
+	# Si falta alguna, corta aca y no intenta ninguna conexion.
+	if not CREDENCIALES.exigir(self, ["TVP772_ACCOUNT", "TVP772_PASSWORD", "TVP772_PLAYER_CHARACTER", "TVP772_GOD_CHARACTER"]):
+		return
+	HOST = CREDENCIALES.host()
+	PUERTO_LOGIN = CREDENCIALES.puerto_login()
+	CUENTA = CREDENCIALES.entero("TVP772_ACCOUNT")
+	CLAVE = CREDENCIALES.texto("TVP772_PASSWORD")
+	PERSONAJE = CREDENCIALES.texto("TVP772_PLAYER_CHARACTER")
+	PERSONAJE_GOD = CREDENCIALES.texto("TVP772_GOD_CHARACTER")
 	print("=================================================")
 	print(" TVP3D - prueba viva de muerte, corpse y loot")
 	print("=================================================")

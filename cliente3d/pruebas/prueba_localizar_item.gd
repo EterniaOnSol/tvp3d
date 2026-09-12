@@ -5,11 +5,12 @@ extends Node
 
 const CONEXION := preload("res://red/conexion772.gd")
 const ESTADO := preload("res://red/estado_mundo.gd")
+const CREDENCIALES := preload("res://pruebas/credenciales_qa.gd")
 
-const HOST := "127.0.0.1"
-const PUERTO_LOGIN := 7171
-const CUENTA := 123456
-const CLAVE := "123456"
+var HOST := CREDENCIALES.HOST_DEFECTO
+var PUERTO_LOGIN := CREDENCIALES.PUERTO_LOGIN_DEFECTO
+var CUENTA := 0
+var CLAVE := ""
 const BARRIL_CLIENT_ID := 2523
 
 var _con
@@ -18,6 +19,14 @@ var _reloj := 0.0
 
 
 func _ready() -> void:
+	# Credenciales e identidades de prueba: SOLO por entorno, nunca literales.
+	# Si falta alguna, corta aca y no intenta ninguna conexion.
+	if not CREDENCIALES.exigir(self, ["TVP772_ACCOUNT", "TVP772_PASSWORD"]):
+		return
+	HOST = CREDENCIALES.host()
+	PUERTO_LOGIN = CREDENCIALES.puerto_login()
+	CUENTA = CREDENCIALES.entero("TVP772_ACCOUNT")
+	CLAVE = CREDENCIALES.texto("TVP772_PASSWORD")
 	_estado = ESTADO.new()
 	_con = CONEXION.new()
 	add_child(_con)

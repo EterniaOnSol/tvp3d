@@ -161,7 +161,11 @@ func _probar_consumo_en_cliente() -> void:
 	mundo._login = login
 	mundo._muerte = pantalla_muerte
 	mundo._voz = VozFalsa.new()
-	mundo._cuenta_login = 123456
+	# Identidad de RELLENO, a proposito. Esta prueba es offline y usa
+	# `ConexionFalsa`, asi que no se autentica nada; `mundo3d` solo exige que
+	# los dos campos no esten vacios (`mundo3d.gd:812,967`). Ninguna credencial
+	# real vive en codigo versionado.
+	mundo._cuenta_login = 1
 	mundo._clave_login = "clave-de-prueba"
 	estado.mi_id = 7
 	estado.adentro = true

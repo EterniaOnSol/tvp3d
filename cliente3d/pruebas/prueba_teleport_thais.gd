@@ -2,11 +2,12 @@ extends Node
 
 const CONEXION := preload("res://red/conexion772.gd")
 const ESTADO := preload("res://red/estado_mundo.gd")
+const CREDENCIALES := preload("res://pruebas/credenciales_qa.gd")
 
-const HOST := "127.0.0.1"
-const CUENTA := 123456
-const CLAVE := "123456"
-const PERSONAJE := "GOD VALENTINO"
+var HOST := CREDENCIALES.HOST_DEFECTO
+var CUENTA := 0
+var CLAVE := ""
+var PERSONAJE := ""
 const PREPARACION := Vector3i(32097, 32219, 7)
 const THAIS := Vector3i(32369, 32241, 7)
 
@@ -22,6 +23,14 @@ var _tiempo := 0.0
 
 
 func _ready() -> void:
+	# Credenciales e identidades de prueba: SOLO por entorno, nunca literales.
+	# Si falta alguna, corta aca y no intenta ninguna conexion.
+	if not CREDENCIALES.exigir(self, ["TVP772_ACCOUNT", "TVP772_PASSWORD", "TVP772_GOD_CHARACTER"]):
+		return
+	HOST = CREDENCIALES.host()
+	CUENTA = CREDENCIALES.entero("TVP772_ACCOUNT")
+	CLAVE = CREDENCIALES.texto("TVP772_PASSWORD")
+	PERSONAJE = CREDENCIALES.texto("TVP772_GOD_CHARACTER")
 	_estado.entramos.connect(_al_entramos)
 	_estado.mapa_recibido.connect(_al_mapa)
 	_estado.cambio.connect(_al_cambio)
