@@ -1,0 +1,52 @@
+{
+  "schema": "tvp3d.qa.parity_fixture",
+  "version": "2.0.0",
+  "fixture_id": "PARITY-TRADE-CANCEL-001",
+  "oracle": "TVP_772",
+  "oracle_version": "7.72",
+  "source_evidence": {
+    "logical_path": "docs/qa/PARITY_PHASE2G1_TRADE_CANCEL.md"
+  },
+  "preconditions": [
+    "dos participantes distintos, cada uno con su propia sesion de juego simultanea",
+    "los dos estan dentro del alcance espacial que el servidor exige para comerciar, y en el mismo piso",
+    "cada participante posee un objeto autoritativo real, propio, y los dos objetos son distinguibles entre si",
+    "el comercio llega a quedar EFECTIVAMENTE ABIERTO: los dos participantes ven su propia oferta y la de la contraparte antes de que se cancele nada",
+    "ninguno de los dos ha aceptado todavia"
+  ],
+  "input_action": "con el comercio ya abierto y las dos ofertas visibles en las dos sesiones, UN SOLO participante cancela el comercio; el otro participante no cancela, no acepta y no hace nada",
+  "observed_authoritative_result": "la cancelacion de un solo participante termina el comercio para LOS DOS: el servidor cierra la ventana de comercio tanto en la sesion del que cancelo como en la del que no hizo nada. Ningun objeto cambia de dueno: cada participante conserva exactamente el objeto que ofrecia, y ninguno recibe el del otro.",
+  "normalization_rules": [
+    "los participantes se comparan por ROL (el que cancela y el que no cancela), nunca por nombre de personaje, id de cuenta, guid ni runtime id",
+    "no se serializa ninguna identidad de objeto: ni id de servidor, ni id de cliente, ni especie, ni ranura de inventario. Lo que se compara es la RELACION de que cada objeto sigue con su dueno original",
+    "no se serializa ninguna coordenada ni distancia: la cercania se normaliza al hecho booleano de estar dentro del alcance permitido",
+    "no se serializa ningun numero de opcode del protocolo legacy ni nada de la ventana de comercio del cliente",
+    "el texto exacto del aviso de cancelacion no se compara: se normaliza al hecho booleano de que la ventana se cerro en cada sesion",
+    "cual de los dos participantes cancela es una eleccion del harness y NO es semantica de paridad: el rol se normaliza a 'el que cancela' y 'el que no cancela'",
+    "no se incluye ningun hecho de la lista VIP",
+    "se ignoran marcas de tiempo de reloj de pared y cualquier metadata de host o proceso"
+  ],
+  "determinism_notes": "este fixture es el NEGATIVO de `PARITY-TRADE-EXCHANGE-001` y afirma unicamente hechos observables desde afuera. Lo que congela es que una cancelacion UNILATERAL termina el comercio para los DOS participantes y no mueve ningun objeto. El control que lo hace honesto es que el comercio tiene que haber estado EFECTIVAMENTE ABIERTO antes de cancelar: se exige que las dos sesiones hayan recibido su oferta propia y la de la contraparte, porque sin ese control la afirmacion 'no se movio nada' seria trivialmente cierta -tambien se cumpliria si el comercio nunca hubiera empezado, si el alcance hubiera fallado o si el objeto hubiera sido rechazado- y no probaria nada sobre la cancelacion. ALCANCE DECLARADO: este fixture certifica la CANCELACION EXPLICITA POR PETICION DE UN PARTICIPANTE. NO certifica la propiedad AMBOS O NINGUNO ante un FALLO DE TRANSFERENCIA, que es un camino distinto del servidor: en la cancelacion explicita no hay transferencia en curso que revertir, porque el propio servidor se niega a cancelar si alguno de los dos ya esta transfiriendo. Tampoco certifica la cancelacion implicita por desconexion, por alejarse, por soltar el objeto ofrecido ni por ninguna otra invalidacion sobrevenida.",
+  "excluded_nondeterministic_fields": [
+    "character_names",
+    "account_id",
+    "player_guid",
+    "creature_runtime_ids",
+    "item_server_ids",
+    "item_client_ids",
+    "item_species",
+    "inventory_slot_ids",
+    "container_runtime_ids",
+    "legacy_protocol_opcodes",
+    "client_trade_window_implementation",
+    "which_participant_cancelled",
+    "positions",
+    "tile_distances",
+    "server_message_text",
+    "vip_state",
+    "wall_clock_timestamp",
+    "host_metadata",
+    "process_id"
+  ],
+  "classification": "MATCH_EXPECTED"
+}

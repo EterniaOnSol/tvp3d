@@ -2,8 +2,108 @@
 
 Estado: LISTO_PARA_REVISION
 Ultimo agente: claude
-Ultima actualizacion: 2026-09-12T04:20:00-06:00
+Ultima actualizacion: 2026-09-12T05:00:00-06:00
 Contrato publicado: SI (`CONTRATO.md` v2.1.1, sin cambios en este turno)
+
+## Turno cerrado: Phase 2G.1 — Paridad de cancelacion de comercio
+
+`PARITY-TRADE-CANCEL-001`: **CERTIFICADO EN VIVO**, replay **`PASS 7/7`**
+byte-identico entre dos corridas. Detalle completo en
+`docs/qa/PARITY_PHASE2G1_TRADE_CANCEL.md`.
+
+Es el **negativo** de `PARITY-TRADE-EXCHANGE-001`, que quedo **byte-identico**
+contra HEAD.
+
+### Que certifica
+
+Que una cancelacion **unilateral** de un comercio abierto (1) termina el
+comercio para **los dos** participantes, no solo para el que cancelo, y (2)
+**no mueve ningun objeto**.
+
+### El control es lo que lo hace honesto
+
+**"No se movio nada" es trivialmente cierto si el comercio nunca se abrio.**
+Tambien se cumpliria si el alcance hubiera fallado o si el objeto hubiera sido
+rechazado. Por eso se exige, **antes** de cancelar, que las dos sesiones hayan
+recibido su oferta propia **y** la de la contraparte. Sin ese control este
+fixture no probaria nada.
+
+### La regla, verificada en el codigo
+
+Entrante `0x80` -> `Game::playerCloseTrade` (`game.cpp:3204-3212`) ->
+`internalCloseTrade` (`game.cpp:3214-3260`), que es **simetrico**: sobre el que
+cancela **y** sobre su contraparte libera la reserva, dispara
+`ON_TRADE_CANCEL`, resetea estado y manda aviso y cierre. **Alcanza con que uno
+cancele** para cerrar a los dos, y **no mueve ningun objeto**: solo libera
+reservas.
+
+**Guarda que delimita el alcance:** la funcion **se niega a actuar** si alguno
+esta en `TRADE_TRANSFER`. Es decir que en la cancelacion explicita **nunca hay
+una transferencia en curso que revertir**, asi que este camino **no demuestra
+nada sobre deshacer**. Certifica algo real y util, pero **distinto** de AMBOS O
+NINGUNO ante un fallo de transferencia.
+
+### Sin `RECORDED_EVIDENCE`, a proposito
+
+Se busco en todo `docs/qa/` antes de decidir. La **unica** mencion de
+cancelacion es `PRUEBA_VIVA_TRADE_VIP.md:70`, que dice que `Conexion772`
+**expone** el metodo: es un hecho sobre **la API del cliente**, no una
+observacion de comportamiento del servidor. **Ninguna corrida historica cancelo
+un comercio abierto.** Fabricarla habria sido inventar evidencia.
+`RECORDED_EVIDENCE` queda en **8**, igual que en Phase 2D.1 y 2D.2.
+
+### Cero creacion y cero mutacion
+
+`test_items_created = 0`. Los dos objetos que Phase 2G dejo **cruzados** como
+residuo declarado se convirtieron aca en la **linea base ideal**: distinguibles
+y sin duplicados. Y como una cancelacion correcta no transfiere, el entorno
+quedo **exactamente como estaba**, verificado en los archivos persistidos: cada
+participante con **1** unidad de lo suyo y **0** de lo del otro.
+
+Es el unico fixture del corpus cuyo resultado correcto es **no cambiar nada**.
+
+### El primer intento fallo por un defecto MIO, no del oracle
+
+Se declara con precision porque el oracle hizo **exactamente** lo que el
+fixture predice y aun asi la corrida dio `FAIL`: tras la cancelacion llegaron
+`Trade cancelled.` a las dos sesiones, y mi guarda de "no debe haber cierre
+previo" —mal ubicada al principio de la funcion, sin condicion— capturo el
+cierre que producia **mi propia cancelacion exitosa**. Error de ordenamiento
+del arnes, corregido moviendo la guarda adentro de la rama que corre una sola
+vez antes de mandar la orden. El intento fallido **no dejo residuo**.
+
+**La expectativa nunca se modifico**, verificado por hash en los dos intentos.
+
+### Seguridad
+
+**2 intentos completos de 3, 0 salidas de preflight. 0 muertes, 0 combate, 0
+monstruos, 0 `/killall`, 0 objetos creados, 0 objetos movidos, 0 aceptaciones
+enviadas, 0 objetos del usuario tocados, 1 `OBSERVATION_JSON`.** Los **8 hashes
+congelados** quedaron identicos.
+
+## Conteos (Phase 2G.1)
+
+| Inventario | Especificadas | Materializadas |
+|---|---:|---:|
+| Obligaciones de contrato Architecture V2 (`qa 2.1.1`) | 198 | 0 (sin cambio) |
+| Fixtures `LEGACY_PARITY` | — | **13** (antes 12) |
+| Casos de replay `QACaseV2`/`ParityExpectationV1` | — | **13** (antes 12) |
+| Observaciones `RECORDED_EVIDENCE` | — | **8** (sin cambio, a proposito) |
+| Observaciones `LIVE_ORACLE` canonicas | — | **10** (antes 9) |
+| `PARITY-TRADE-CANCEL-001` | — | **LIVE CERTIFIED, `PASS 7/7`** |
+
+Phase 2 sigue **EN CURSO**.
+
+**Le toca:** el dominio de comercio queda cerrado salvo huecos declarados. La
+opcion mas fuerte disponible es **`PARITY-VIP-PRESENCE-001`**, que tiene
+evidencia historica explicita en `PRUEBA_VIVA_TRADE_VIP.md` (alta por nombre
+con GUID real, aparece offline, transicion online -> offline) y que quedo
+deliberadamente **fuera** de los dos fixtures de comercio. Huecos declarados
+del dominio de comercio, todos sin evidencia historica: **AMBOS O NINGUNO ante
+un fallo de transferencia** (exige montaje destructivo y, como el servidor no
+deshace, certificaria algo mas debil), borde del alcance de dos casillas,
+cancelacion implicita por desconexion o por alejarse, y cancelacion despues de
+que uno ya acepto.
 
 ## Turno cerrado: Phase 2G — Paridad de intercambio entre jugadores
 

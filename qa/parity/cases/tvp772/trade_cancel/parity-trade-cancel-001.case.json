@@ -1,0 +1,85 @@
+{
+  "schema": "tvp3d.qa.case",
+  "version": "2.0.0",
+  "case_id": "PARITY-TRADE-CANCEL-001",
+  "class": "LEGACY_PARITY",
+  "title": "TVP 7.72 trade: a single participant cancelling an open trade closes it for both and transfers nothing",
+  "owners": ["qa"],
+  "contracts": [
+    {"contract": "qa", "version": "2.1.1"}
+  ],
+  "requirement_refs": [
+    {
+      "contract": "qa",
+      "version": "2.1.1",
+      "section": "16",
+      "source_fixture_id": "PARITY-TRADE-CANCEL-001"
+    }
+  ],
+  "preconditions": [
+    "dos participantes distintos con sesiones simultaneas, dentro del alcance de comercio y en el mismo piso",
+    "cada uno posee un objeto real propio y los dos objetos son distinguibles entre si",
+    "el comercio queda efectivamente abierto y las dos sesiones ven las dos ofertas antes de cancelar",
+    "ninguno acepta"
+  ],
+  "input_fixture": {
+    "logical_path": "qa/parity/fixtures/tvp772/trade_cancel/parity-trade-cancel-001.json"
+  },
+  "expected": {
+    "schema": "tvp3d.qa.parity_expectation",
+    "version": "1.0.0",
+    "mode": "SINGLE_OBSERVATION",
+    "assertions": [
+      {
+        "assertion_id": "CANCEL-PARTICIPANTS-WITHIN-RANGE",
+        "left_path": "/open_trade/participants_within_trade_range",
+        "operator": "EQ",
+        "right": {"literal": true}
+      },
+      {
+        "assertion_id": "CANCEL-EACH-OFFERED-A-REAL-ITEM",
+        "left_path": "/open_trade/each_participant_offered_a_real_item",
+        "operator": "EQ",
+        "right": {"literal": true}
+      },
+      {
+        "assertion_id": "CANCEL-BOTH-SAW-OWN-AND-COUNTERPART-OFFER",
+        "left_path": "/open_trade/both_participants_saw_own_and_counterpart_offer",
+        "operator": "EQ",
+        "right": {"literal": true}
+      },
+      {
+        "assertion_id": "CANCEL-NOBODY-ACCEPTED",
+        "left_path": "/cancellation/no_participant_accepted",
+        "operator": "EQ",
+        "right": {"literal": true}
+      },
+      {
+        "assertion_id": "CANCEL-CLOSED-FOR-CANCELLING-PARTICIPANT",
+        "left_path": "/cancellation/trade_closed_for_cancelling_participant",
+        "operator": "EQ",
+        "right": {"literal": true}
+      },
+      {
+        "assertion_id": "CANCEL-CLOSED-FOR-OTHER-PARTICIPANT",
+        "left_path": "/cancellation/trade_closed_for_other_participant",
+        "operator": "EQ",
+        "right": {"literal": true}
+      },
+      {
+        "assertion_id": "CANCEL-NO-ITEM-CHANGED-OWNER",
+        "left_path": "/no_transfer/offered_items_kept_original_owners",
+        "operator": "EQ",
+        "right": {"literal": true}
+      }
+    ]
+  },
+  "mutates_external_state": false,
+  "requires_network": false,
+  "requires_legacy": false,
+  "requires_secrets": false,
+  "status_policy": {
+    "missing_prerequisite_status": "BLOCKED",
+    "assertion_mismatch_status": "FAIL"
+  }
+}
