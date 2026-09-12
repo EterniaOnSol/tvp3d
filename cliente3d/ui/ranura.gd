@@ -21,8 +21,6 @@ var _cantidad: Label
 var _duracion: Label
 var _duracion_fondo: PanelContainer
 var _vacia: Texture2D
-var _boton_izquierdo := false
-var _boton_derecho := false
 var _combo_mirar := false
 var _derecho_shift := false
 var _duracion_ms := 0
@@ -249,15 +247,24 @@ func _drop_data(_pos: Vector2, datos: Variant) -> void:
 	_interfaz.mover_a_ranura(datos, _tipo, _id_contenedor, _slot)
 
 
+func _otro_boton_apretado(boton: int) -> bool:
+	"""Si el otro boton esta apretado DE VERDAD, ahora mismo.
+
+	Antes esto se llevaba en dos banderas propias, y bastaba con que un soltar
+	se perdiera fuera del slot —al arrastrar, al abrir una ventana o al salir
+	del control— para que quedaran trabadas: desde ahi, cada clic derecho se
+	interpretaba como el combo de mirar y ya no se podia usar nada."""
+	return Input.is_mouse_button_pressed(boton)
+
+
 func _gui_input(evento: InputEvent) -> void:
 	if not (evento is InputEventMouseButton):
 		return
 
 	if evento.button_index == MOUSE_BUTTON_LEFT:
-		_boton_izquierdo = evento.pressed
 		if _objeto.is_empty():
 			return
-		if evento.pressed and _boton_derecho:
+		if evento.pressed and _otro_boton_apretado(MOUSE_BUTTON_RIGHT):
 			# Tibia usa ambos botones a la vez para mirar el objeto. Se
 			# comprueba en los dos sentidos: izquierdo->derecho y
 			# derecho->izquierdo.
@@ -275,7 +282,6 @@ func _gui_input(evento: InputEvent) -> void:
 		return
 
 	if evento.pressed:
-		_boton_derecho = true
 		if _interfaz.cancelar_uso_con():
 			# El derecho cancela Use with incluso si el cursor esta sobre
 			# otra runa o sobre el mismo slot.
@@ -285,13 +291,12 @@ func _gui_input(evento: InputEvent) -> void:
 		if _objeto.is_empty():
 			return
 		_derecho_shift = evento.shift_pressed
-		if _boton_izquierdo:
+		if _otro_boton_apretado(MOUSE_BUTTON_LEFT):
 			_combo_mirar = true
 			_interfaz.mirar_ranura(_tipo, _id_contenedor, _slot, _objeto)
 		accept_event()
 		return
 
-	_boton_derecho = false
 	if not _objeto.is_empty() and not _combo_mirar:
 		if _derecho_shift and bool(_objeto.get("contenedor", false)):
 			_interfaz.abrir_contenedor_desde_ranura(
