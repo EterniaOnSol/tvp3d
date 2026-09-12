@@ -2,8 +2,141 @@
 
 Estado: LISTO_PARA_REVISION
 Ultimo agente: claude
-Ultima actualizacion: 2026-09-12T02:45:00-06:00
+Ultima actualizacion: 2026-09-12T03:30:00-06:00
 Contrato publicado: SI (`CONTRATO.md` v2.1.1, sin cambios en este turno)
+
+## Turno cerrado: Phase 2F — Paridad de entrega de correo
+
+`PARITY-PARCEL-DELIVERY-001`: **CERTIFICADO EN VIVO**. Replay grabado
+**`PASS 6/6`** y replay vivo **`PASS 6/6`**, los dos byte-identicos entre
+corridas. Detalle completo en
+`docs/qa/PARITY_PHASE2F_PARCEL_DELIVERY.md`.
+
+**Quinto dominio de comportamiento.** La ventana de texto, el contenedor y la
+persistencia del deposito son mecanismos de apoyo ya cubiertos; lo nuevo es el
+**ruteo autoritativo de correo**: que el servidor **lea una direccion escrita
+por un jugador y lleve el objeto hasta el deposito de OTRO jugador**, incluso
+si ese otro **no esta conectado**. Es la primera vez que el corpus mide una
+decision de ruteo entre dos identidades.
+
+### La regla, verificada en el codigo, no supuesta
+
+- **`Mailbox::getReceiver`** busca dentro del contenedor un item con id de
+  etiqueta y parte su texto **POR LINEAS**: linea 1 destinatario, linea 2
+  **nombre del pueblo**. No es "nombre / pueblo" en una sola linea; con una
+  sola linea el pueblo queda vacio y el envio falla en silencio.
+- **`Mailbox::sendItem`** resuelve el pueblo **por nombre** (`strcasecmp`),
+  entrega al deposito **del pueblo direccionado**, y transforma la encomienda
+  con `getID() + 1`, asi que lo que llega es la **sellada**. El destino del
+  movimiento es el **locker**, no el cofre: la entregada queda **hermana** del
+  cofre, y por eso la medicion se hace al nivel del locker.
+- Con el destinatario **offline**, arma un `Player` temporal, lo carga por
+  nombre, inserta y **vuelve a guardar su archivo**.
+- **`sendItem` no consulta NADA del remitente**: ni grupo ni permisos. Eso es
+  lo que autoriza usar al operador como remitente sin cambiar la semantica.
+- **`trashableMailbox` esta en `true`**, asi que el residuo historico de la
+  casilla **no** bloquea el envio. Se verifico antes de disenar la corrida.
+- **El arreglo historico del servidor sigue puesto**: la guarda de `game.cpp`
+  conserva `&& !useItemType.canReadText`. Si hubiera regresado, `BLOCKED`: QA
+  no repara el oracle para poder certificarlo.
+
+### Seis aserciones, auditadas linea por linea
+
+Se congelaron **seis**, una por hecho que `PRUEBA_VIVA_PARCEL.md` demuestra de
+forma explicita. Cinco son lineas de salida del arnes historico; la sexta, la
+entrega en el deposito, es una **confirmacion del usuario sobre el recorrido
+vivo** corroborada por los datos persistidos, y se dice asi de claro para que
+un revisor sepa que clase de evidencia sostiene cada una.
+
+### La corrida viva probo mas de lo que el fixture afirma
+
+Remitente distinto del destinatario, cuentas distintas, destinatario
+**desconectado** durante el envio, sesion nueva despues, deposito **+1** contra
+linea base, deposito personal identificado en las dos sesiones, casilla del
+buzon medida contra linea base, y la encomienda entregada **con la etiqueta
+adentro**. **Ninguna de esas entro al payload**: son guardas del arnes, y que
+la prueba nueva sea mejor no convierte esos hechos en historia.
+
+### Corroboracion independiente con el destinatario desconectado
+
+Leido fuera del camino del cliente, despues del despacho y **antes** de su
+regreso: el archivo del destinatario ya tenia la encomienda **sellada** con la
+etiqueta adentro y la direccion en **dos lineas**. Prueba de una sola vez que
+el servidor persistio el ruteo antes del regreso, que transformo el item, y que
+el formato de dos lineas es el real.
+
+### Tres lanzamientos, clasificados con honestidad
+
+1. **Salida de preflight.** El destinatario **no podia desconectarse**: un
+   `CONDITION_POISON` **persistido** refrescaba `CONDITION_INFIGHT`, y
+   `ProtocolGame::logout` rechaza el logout con signo de batalla **aunque se
+   este en zona de proteccion**. Se resolvio **eligiendo otro personaje de QA**
+   sin condiciones persistidas. **No se toco el servidor.**
+2. **Intento completo 1 de 3.** El operador lleva un **arma de dos manos**, asi
+   que no hay mano libre. Desequiparla habria sido tocar equipo que este turno
+   no debe modificar; la encomienda pasa a apoyarse en el **suelo**.
+3. **Intento completo 2 de 3: exito.**
+
+**Intentos completos usados: 2 de 3.** La expectativa **nunca se modifico**,
+verificado por hash en los tres lanzamientos.
+
+### Residuos declarados
+
+**No se ejecuto ninguna limpieza**, y `/limpiarpruebas` **no se uso**: no se
+emplea una herramienta de limpieza sin poder demostrar que su alcance se limita
+exactamente a lo que esta corrida creo.
+
+1. La **encomienda entregada** en el deposito del destinatario de QA: es el
+   resultado del fixture.
+2. **Una encomienda vacia** en la mochila del operador, del intento fallido.
+3. **Un cofre de deposito vacio**, creado por el propio servidor, igual que en
+   Phase 2E.
+
+### Seguridad
+
+**0 muertes, 0 ataques, 0 monstruos, 0 `/killall`, 0 objetos del usuario
+tocados, 0 equipo modificado, 0 cuentas o personajes creados, 0 cambios de
+credenciales, 1 `OBSERVATION_JSON`.** Los **9 hashes congelados** quedaron
+identicos despues de la corrida, del wrap y de los cuatro replays.
+
+## Solicitud abierta para el carril `servidor`
+
+**`LOGOUT_INMEDIATO_EN_ZONA_DE_PROTECCION`: registrada, NO implementada.**
+
+El usuario pidio que un personaje pueda desconectarse de inmediato dentro de
+una zona de proteccion. Este turno **no toco `servidor/`**.
+
+- La guarda vive en `ProtocolGame::logout`
+  (`servidor/src/protocolgame.cpp:311-322`): rechaza el logout con
+  `CONDITION_INFIGHT` **sin** consultar la zona; solo `isAccessPlayer()` exime.
+- Es el comportamiento de TFS y del Tibia original, asi que quitarlo es una
+  **divergencia deliberada respecto de 7.72**, no una correccion de defecto.
+  Conviene declararlo como tal para que no se lea despues como paridad.
+- Cambio minimo sugerido: permitir el logout cuando el jugador esta en
+  `ZONE_PROTECTION`, dejando intacta la guarda fuera de ella.
+- **Impacto sobre el corpus: ninguno.** Ningun fixture actual afirma nada sobre
+  el logout en combate, asi que no invalida ninguna certificacion.
+
+## Conteos (Phase 2F)
+
+| Inventario | Especificadas | Materializadas |
+|---|---:|---:|
+| Obligaciones de contrato Architecture V2 (`qa 2.1.1`) | 198 | 0 (sin cambio) |
+| Fixtures `LEGACY_PARITY` | — | **11** (antes 10) |
+| Casos de replay `QACaseV2`/`ParityExpectationV1` | — | **11** (antes 10) |
+| Observaciones `RECORDED_EVIDENCE` | — | **7** (antes 6) |
+| Observaciones `LIVE_ORACLE` canonicas | — | **8** (antes 7) |
+| `PARITY-PARCEL-DELIVERY-001` | — | **LIVE CERTIFIED, `PASS 6/6`** |
+
+Phase 2 sigue **EN CURSO**.
+
+**Le toca:** **Phase 2G — paridad de intercambio atomico (trade)**, usando
+`docs/qa/PRUEBA_VIVA_TRADE_VIP.md` pero eligiendo **trade** como dominio
+semantico primario: dos jugadores presentan ofertas, cada uno observa la propia
+y la de la contraparte, los dos aceptan, el servidor transfiere **de forma
+atomica** los dos objetos autoritativos, y las dos ventanas se cierran de forma
+consistente. Las transiciones de presencia de VIP convienen como **fixture
+aparte**, no mezcladas en el contrato semantico del trade.
 
 ## Turno cerrado: Phase 2E — Paridad de persistencia del deposito
 

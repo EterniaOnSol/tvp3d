@@ -1,0 +1,79 @@
+{
+  "schema": "tvp3d.qa.case",
+  "version": "2.0.0",
+  "case_id": "PARITY-PARCEL-DELIVERY-001",
+  "class": "LEGACY_PARITY",
+  "title": "TVP 7.72 mail: an addressed parcel submitted to a mailbox is routed by the server into the addressed recipient's personal depot",
+  "owners": ["qa"],
+  "contracts": [
+    {"contract": "qa", "version": "2.1.1"}
+  ],
+  "requirement_refs": [
+    {
+      "contract": "qa",
+      "version": "2.1.1",
+      "section": "16",
+      "source_fixture_id": "PARITY-PARCEL-DELIVERY-001"
+    }
+  ],
+  "preconditions": [
+    "un remitente y un destinatario distinto, con deposito personal alcanzable",
+    "un buzon del mundo visible desde una casilla contigua",
+    "una etiqueta de direccion en blanco escribible y legible, y una encomienda vacia",
+    "los objetos legibles y escribibles llegan al camino que abre la ventana de texto"
+  ],
+  "input_fixture": {
+    "logical_path": "qa/parity/fixtures/tvp772/parcel_delivery/parity-parcel-delivery-001.json"
+  },
+  "expected": {
+    "schema": "tvp3d.qa.parity_expectation",
+    "version": "1.0.0",
+    "mode": "SINGLE_OBSERVATION",
+    "assertions": [
+      {
+        "assertion_id": "PARCEL-TEXT-WINDOW-OPENED",
+        "left_path": "/addressing/text_window_opened",
+        "operator": "EQ",
+        "right": {"literal": true}
+      },
+      {
+        "assertion_id": "PARCEL-ADDRESS-ROUNDTRIP-MATCHES",
+        "left_path": "/addressing/address_roundtrip_matches",
+        "operator": "EQ",
+        "right": {"literal": true}
+      },
+      {
+        "assertion_id": "PARCEL-WRITTEN-LABEL-INSERTED",
+        "left_path": "/parcel/written_label_inserted",
+        "operator": "EQ",
+        "right": {"literal": true}
+      },
+      {
+        "assertion_id": "PARCEL-MAILBOX-PRESENT",
+        "left_path": "/mailbox/mailbox_present",
+        "operator": "EQ",
+        "right": {"literal": true}
+      },
+      {
+        "assertion_id": "PARCEL-SUBMITTED-PARCEL-CONSUMED",
+        "left_path": "/mailbox/submitted_parcel_consumed",
+        "operator": "EQ",
+        "right": {"literal": true}
+      },
+      {
+        "assertion_id": "PARCEL-RECIPIENT-DEPOT-RECEIVED",
+        "left_path": "/delivery/recipient_depot_received_parcel",
+        "operator": "EQ",
+        "right": {"literal": true}
+      }
+    ]
+  },
+  "mutates_external_state": false,
+  "requires_network": false,
+  "requires_legacy": false,
+  "requires_secrets": false,
+  "status_policy": {
+    "missing_prerequisite_status": "BLOCKED",
+    "assertion_mismatch_status": "FAIL"
+  }
+}

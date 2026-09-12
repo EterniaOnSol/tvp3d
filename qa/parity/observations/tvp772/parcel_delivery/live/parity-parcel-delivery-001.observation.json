@@ -1,0 +1,29 @@
+{
+  "schema": "tvp3d.qa.oracle_observation",
+  "version": "1.0.0",
+  "fixture_id": "PARITY-PARCEL-DELIVERY-001",
+  "oracle": "TVP_772",
+  "oracle_version": "7.72",
+  "capture_origin": "LIVE_ORACLE",
+  "source_evidence": [
+    {
+      "logical_path": "docs/qa/PARITY_PHASE2F_PARCEL_DELIVERY.md"
+    }
+  ],
+  "payload": {
+    "addressing": {
+      "address_roundtrip_matches": true,
+      "text_window_opened": true
+    },
+    "delivery": {
+      "recipient_depot_received_parcel": true
+    },
+    "mailbox": {
+      "mailbox_present": true,
+      "submitted_parcel_consumed": true
+    },
+    "parcel": {
+      "written_label_inserted": true
+    }
+  }
+}

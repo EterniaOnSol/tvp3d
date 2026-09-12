@@ -1,0 +1,51 @@
+{
+  "schema": "tvp3d.qa.parity_fixture",
+  "version": "2.0.0",
+  "fixture_id": "PARITY-PARCEL-DELIVERY-001",
+  "oracle": "TVP_772",
+  "oracle_version": "7.72",
+  "source_evidence": {
+    "logical_path": "docs/qa/PRUEBA_VIVA_PARCEL.md"
+  },
+  "preconditions": [
+    "un remitente capaz de sostener y mover objetos, y un destinatario distinto que posee un deposito personal alcanzable",
+    "existe un buzon del mundo, puesto por el mapa, que el cliente puede ver desde una casilla contigua",
+    "existe una etiqueta de direccion en blanco, escribible y legible, y una encomienda vacia capaz de contenerla",
+    "el remitente puede abrir la ventana de texto de la etiqueta: los objetos legibles y escribibles llegan al camino que la abre"
+  ],
+  "input_action": "se usa una etiqueta de direccion en blanco, lo que hace que el servidor abra su ventana de texto; se escribe en ella el destinatario y el pueblo de destino y se la vuelve a leer para confirmar que el servidor guardo exactamente ese texto; se mete esa MISMA etiqueta escrita dentro de una encomienda; y despues se deja esa encomienda sobre la casilla del buzon del mundo",
+  "observed_authoritative_result": "el buzon se queda con la encomienda entregada: deja de estar sobre su casilla en vez de quedar apoyada ahi como un objeto mas, y el remitente deja de tenerla. El servidor resuelve el destinatario y el pueblo leyendo la etiqueta de adentro y deposita la encomienda en el deposito personal que corresponde a ese destinatario en ese pueblo, donde el destinatario la encuentra.",
+  "normalization_rules": [
+    "los participantes se comparan por ROL (remitente y destinatario), nunca por nombre de personaje, id de cuenta ni runtime id",
+    "no se serializa el texto de la direccion: el ida y vuelta se normaliza al hecho booleano de que lo leido coincide exactamente con lo escrito",
+    "no se serializa ningun nombre ni id de pueblo, ni ningun id de deposito: el ruteo se normaliza al hecho de que el deposito del destinatario direccionado recibio la encomienda",
+    "no se serializa ninguna coordenada: ni la del buzon, ni la del deposito, ni la de ningun participante",
+    "no se serializa ningun id de item ni ninguna cantidad absoluta de ningun contenedor ni de ninguna casilla: solo relaciones",
+    "no se serializa ningun indice de ventana de contenedor del cliente ni ningun id de ventana de texto",
+    "no se serializa ninguna ruta ni forma del archivo de persistencia del servidor",
+    "se ignoran marcas de tiempo de reloj de pared y cualquier metadata de host o proceso"
+  ],
+  "determinism_notes": "este fixture afirma unicamente hechos observables desde afuera, y su propiedad semantica nueva no es la ventana de texto ni el contenedor ni la persistencia del deposito, que son mecanismos de apoyo ya cubiertos por otros dominios: lo nuevo es el RUTEO AUTORITATIVO DE CORREO, es decir que el servidor lea una direccion escrita y lleve el objeto hasta el deposito del destinatario direccionado. La direccion no se da por escrita porque se haya mandado el paquete de texto: se vuelve a LEER del servidor y se exige coincidencia exacta, porque sin texto guardado el servidor no tiene a quien mandar nada. La aceptacion del buzon no se da por buena porque el movimiento no diera error: se exige que la encomienda entregada DEJE de estar sobre la casilla, y la medicion se hace contra una linea base tomada antes, de modo que una encomienda vieja de otra corrida apoyada en la misma casilla no pueda pasar por un resultado nuevo. La entrega tampoco se da por buena por ver una encomienda cualquiera en el deposito: se compara contra una linea base del deposito del destinatario tomada antes del envio. ALCANCE DECLARADO: este fixture prueba UN recorrido de correo completo hacia UN destinatario en UN pueblo. NO certifica todos los pueblos, NO certifica que el correo sea utilizable en toda ciudad, NO certifica el rechazo de una direccion invalida, NO certifica que pasa con un destinatario inexistente, NO certifica las cartas por separado de las encomiendas, NO congela ningun id de pueblo, NO congela ningun indice de ventana del cliente y NO congela la forma interna con que el servidor serializa a un jugador desconectado.",
+  "excluded_nondeterministic_fields": [
+    "character_names",
+    "account_id",
+    "address_text",
+    "town_name",
+    "town_id",
+    "depot_id",
+    "item_server_ids",
+    "item_client_ids",
+    "creature_runtime_ids",
+    "container_runtime_ids",
+    "client_container_window_index",
+    "text_window_id",
+    "absolute_container_counts",
+    "absolute_tile_counts",
+    "positions",
+    "server_persistence_file_path",
+    "wall_clock_timestamp",
+    "host_metadata",
+    "process_id"
+  ],
+  "classification": "MATCH_EXPECTED"
+}
