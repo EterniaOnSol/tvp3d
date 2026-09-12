@@ -1,0 +1,103 @@
+{
+  "schema": "tvp3d.qa.case",
+  "version": "2.0.0",
+  "case_id": "PARITY-DEPOT-PERSISTENCE-001",
+  "class": "LEGACY_PARITY",
+  "title": "TVP 7.72 depot: an item stored in the player's personal depot survives a real session boundary and can be recovered",
+  "owners": ["qa"],
+  "contracts": [
+    {"contract": "qa", "version": "2.1.1"}
+  ],
+  "requirement_refs": [
+    {
+      "contract": "qa",
+      "version": "2.1.1",
+      "section": "16",
+      "source_fixture_id": "PARITY-DEPOT-PERSISTENCE-001"
+    }
+  ],
+  "preconditions": [
+    "un unico sujeto de prueba dedicado con rol DEPOT_SUBJECT",
+    "el sujeto entra a la baldosa de activacion en vez de estar ya parado en ella",
+    "el deposito operado es el personal del sujeto y no el mueble del mapa abierto como contenedor comun",
+    "el objeto de prueba es entero, identificable y propiedad del sujeto"
+  ],
+  "input_fixture": {
+    "logical_path": "qa/parity/fixtures/tvp772/depot_persistence/parity-depot-persistence-001.json"
+  },
+  "expected": {
+    "schema": "tvp3d.qa.parity_expectation",
+    "version": "1.0.0",
+    "mode": "SINGLE_OBSERVATION",
+    "assertions": [
+      {
+        "assertion_id": "DEPOT-PERSONAL-DEPOT-LOADED",
+        "left_path": "/initial_session/personal_depot_loaded",
+        "operator": "EQ",
+        "right": {"literal": true}
+      },
+      {
+        "assertion_id": "DEPOT-CHEST-OPENED",
+        "left_path": "/initial_session/depot_chest_opened",
+        "operator": "EQ",
+        "right": {"literal": true}
+      },
+      {
+        "assertion_id": "DEPOT-TEST-ITEM-PRESENT-BEFORE-STORE",
+        "left_path": "/store/test_item_present_before_store",
+        "operator": "EQ",
+        "right": {"literal": true}
+      },
+      {
+        "assertion_id": "DEPOT-STORE-INCREASES-DEPOT-COUNT-BY-ONE",
+        "left_path": "/store/depot_test_item_count_increased_by_one",
+        "operator": "EQ",
+        "right": {"literal": true}
+      },
+      {
+        "assertion_id": "DEPOT-FIRST-SESSION-CLOSED",
+        "left_path": "/session_boundary/first_session_closed",
+        "operator": "EQ",
+        "right": {"literal": true}
+      },
+      {
+        "assertion_id": "DEPOT-NEW-SESSION-ESTABLISHED",
+        "left_path": "/session_boundary/new_session_established",
+        "operator": "EQ",
+        "right": {"literal": true}
+      },
+      {
+        "assertion_id": "DEPOT-PERSONAL-DEPOT-RELOADED",
+        "left_path": "/after_relogin/personal_depot_reloaded",
+        "operator": "EQ",
+        "right": {"literal": true}
+      },
+      {
+        "assertion_id": "DEPOT-STORED-ITEM-STILL-PRESENT",
+        "left_path": "/after_relogin/stored_test_item_still_present",
+        "operator": "EQ",
+        "right": {"literal": true}
+      },
+      {
+        "assertion_id": "DEPOT-RECOVERY-DECREASES-DEPOT-COUNT-BY-ONE",
+        "left_path": "/recovery/depot_test_item_count_decreased_by_one",
+        "operator": "EQ",
+        "right": {"literal": true}
+      },
+      {
+        "assertion_id": "DEPOT-RECOVERY-INCREASES-INVENTORY-COUNT-BY-ONE",
+        "left_path": "/recovery/inventory_test_item_count_increased_by_one",
+        "operator": "EQ",
+        "right": {"literal": true}
+      }
+    ]
+  },
+  "mutates_external_state": false,
+  "requires_network": false,
+  "requires_legacy": false,
+  "requires_secrets": false,
+  "status_policy": {
+    "missing_prerequisite_status": "BLOCKED",
+    "assertion_mismatch_status": "FAIL"
+  }
+}

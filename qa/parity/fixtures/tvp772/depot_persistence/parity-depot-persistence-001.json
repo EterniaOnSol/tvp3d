@@ -1,0 +1,47 @@
+{
+  "schema": "tvp3d.qa.parity_fixture",
+  "version": "2.0.0",
+  "fixture_id": "PARITY-DEPOT-PERSISTENCE-001",
+  "oracle": "TVP_772",
+  "oracle_version": "7.72",
+  "source_evidence": {
+    "logical_path": "docs/qa/PRUEBA_VIVA_DEPOT.md"
+  },
+  "preconditions": [
+    "un unico personaje de prueba dedicado, con rol DEPOT_SUBJECT, capaz de entrar al mundo y de mover objetos",
+    "el sujeto NO esta parado sobre la baldosa de activacion del depot cuando empieza la secuencia: tiene que ENTRAR a ella, porque el evento del servidor es de entrada y no de permanencia",
+    "existe un objeto de prueba identificable y entero (no apilable, no contenedor) que pertenece al propio sujeto",
+    "el deposito sobre el que se opera es el deposito PERSONAL del sujeto, no el mueble del mapa abierto como contenedor comun"
+  ],
+  "input_action": "con el sujeto fuera de la baldosa de activacion, se lo hace ENTRAR a esa baldosa, lo que provoca que el servidor cargue su deposito personal; se abre el mueble y, dentro de el, el cofre de deposito que es el contenedor donde vive lo guardado; se mueve exactamente UN objeto de prueba propio del sujeto hacia ese cofre; despues se cierra la sesion de juego de verdad, con el cierre normal del protocolo legacy, y se establece una sesion de login y de juego COMPLETAMENTE NUEVA; en la sesion nueva se repite la activacion (salir de la baldosa si hiciera falta, entrar de nuevo, reabrir el mueble y el cofre) y se vuelve a inspeccionar el contenido; por ultimo se mueve exactamente UN objeto de prueba de vuelta desde el cofre hacia el inventario del sujeto",
+  "observed_authoritative_result": "entrar a la baldosa carga el deposito PERSONAL del sujeto, y eso se comprueba porque al abrir el mueble aparece adentro el cofre de deposito, que es la forma que solo toma el deposito cargado de ese jugador. Al guardar, la cantidad de objetos del cofre sube en exactamente uno. Despues de cerrar la sesion y de establecer una sesion nueva, el deposito personal vuelve a cargarse y el objeto guardado SIGUE ESTANDO en el cofre, con la misma cantidad que habia quedado. Al recuperarlo, la cantidad del cofre baja en exactamente uno y la del contenedor de inventario del sujeto sube en exactamente uno.",
+  "normalization_rules": [
+    "el sujeto se compara por ROL (DEPOT_SUBJECT), nunca por nombre de personaje, id de cuenta ni runtime id",
+    "no se serializa ninguna coordenada: ni la de la baldosa de activacion, ni la del mueble, ni la del sujeto. La geometria concreta es metadata del harness",
+    "no se serializa la especie ni el id del objeto de prueba: se comparan RELACIONES de cantidad antes y despues, no identidades de item",
+    "no se serializan cantidades absolutas de ningun contenedor: solo las relaciones +1, -1 y 'sigue estando'",
+    "no se serializa ningun indice de ventana de contenedor del cliente: en que ventana se abre cada contenedor es decision del cliente y no semantica del oracle",
+    "no se serializa ninguna ruta ni forma del archivo de persistencia del servidor",
+    "el texto exacto de los mensajes del servidor no se compara",
+    "se ignoran marcas de tiempo de reloj de pared y cualquier metadata de host o proceso"
+  ],
+  "determinism_notes": "este fixture afirma unicamente hechos observables desde afuera. La distincion que lo hace honesto es la que separa el DEPOSITO PERSONAL del MUEBLE DEL MAPA: abrir el mueble sin haber activado el deposito del jugador expone un contenedor comun que TAMBIEN acepta objetos, y guardar ahi no probaria nada sobre persistencia personal. Por eso 'se abrio un contenedor' NO se acepta como prueba: se exige la forma que solo aparece con el deposito personal cargado, es decir el cofre de deposito dentro del mueble. La frontera de sesion tambien es real y no simulada: no alcanza con vaciar el estado local, reabrir el contenedor ni reconstruir la interfaz; se exige que la sesion de juego se cierre de verdad y que se establezca una sesion de login y de juego nueva, y que la activacion del deposito se repita desde esa sesion nueva, porque el servidor no conserva la activacion entre sesiones. La identidad del objeto se maneja por RELACIONES DE CANTIDAD antes y despues, nunca por nombre suelto, de modo que la presencia de copias viejas del mismo tipo de objeto no puede producir un falso positivo. ALCANCE DECLARADO: este fixture prueba la PERSISTENCIA DE UN OBJETO ENTERO EN EL DEPOSITO PERSONAL A TRAVES DE UNA FRONTERA DE SESION. NO certifica el particionado de pilas, NO certifica el tope de capacidad del deposito, NO certifica mas de un pueblo, NO certifica la entrega por correo ni por parcel, y NO congela ninguna semantica de indices de ventana de contenedor del cliente.",
+  "excluded_nondeterministic_fields": [
+    "character_names",
+    "account_id",
+    "creature_runtime_ids",
+    "container_runtime_ids",
+    "client_container_window_index",
+    "item_server_ids",
+    "item_client_ids",
+    "item_species",
+    "absolute_container_counts",
+    "positions",
+    "server_message_text",
+    "server_persistence_file_path",
+    "wall_clock_timestamp",
+    "host_metadata",
+    "process_id"
+  ],
+  "classification": "MATCH_EXPECTED"
+}

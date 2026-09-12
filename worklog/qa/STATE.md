@@ -2,8 +2,131 @@
 
 Estado: LISTO_PARA_REVISION
 Ultimo agente: claude
-Ultima actualizacion: 2026-09-12T00:45:00-06:00
+Ultima actualizacion: 2026-09-12T02:45:00-06:00
 Contrato publicado: SI (`CONTRATO.md` v2.1.1, sin cambios en este turno)
+
+## Turno cerrado: Phase 2E — Paridad de persistencia del deposito
+
+`PARITY-DEPOT-PERSISTENCE-001`: **CERTIFICADO EN VIVO**. Replay grabado
+**`PASS 10/10`** y replay vivo **`PASS 10/10`**, los dos byte-identicos entre
+corridas. Detalle completo en
+`docs/qa/PARITY_PHASE2E_DEPOT_PERSISTENCE.md`.
+
+**Cuarto dominio de comportamiento** del corpus, y el primero que **cruza una
+frontera de sesion**: los tres anteriores miden cosas que pasan dentro de una
+sesion; este prueba que **el servidor guarda estado de jugador y lo devuelve
+intacto en una sesion nueva**.
+
+### La regla, verificada en el codigo, no supuesta
+
+- **Activacion por ENTRADA.** `data/scripts/movements/other/tiles.lua` carga el
+  deposito en `onStepIn`, solo en zona de proteccion y con un item de tipo
+  depot en el 3x3. **No se dispara si el personaje ya estaba parado ahi**, y el
+  `onStepOut` correspondiente llama `unloadDepotLocker`, asi que salir
+  **desactiva de verdad**.
+- **Deposito personal contra mueble del mapa.** `actions.cpp:221-234`: sin
+  `currentDepotItem` puesto, el servidor abre **el mueble del mapa como
+  contenedor comun**, que se ve igual y **tambien acepta objetos**. Es la
+  trampa del dominio y por eso "se abrio un contenedor" **no se acepta** como
+  prueba.
+- **Persistencia por jugador.** `iologindata.cpp:767-784` serializa el deposito
+  **dentro del archivo del propio jugador** (`Depot = (<id>, {...})`) y
+  `467-495` lo reconstruye al leerlo.
+- **El god no cambia la semantica.** Lo unico que depende del grupo es la
+  capacidad, y `groups.xml` la tiene en 0 para **todos**, asi que todos caen al
+  limite de `config.lua`. Por eso el sujeto es un **personaje normal** de QA y
+  el operador solo lo posiciona.
+
+### Como se cierra la trampa
+
+Se exigen **dos** senales externas e independientes, ninguna de estado interno:
+el aviso autoritativo `"Your depot contains ..."`, que sale dentro de la
+**misma rama** que llama a `loadDepotLocker`, y que al abrir el mueble aparezca
+adentro el **cofre de deposito**, que solo se crea sobre el locker personal.
+
+La frontera de sesion tampoco se simula: logout legacy, socket cerrado, y
+recien entonces conexion de login y de juego **nuevas** con su propio
+`EstadoMundo`. Y como el personaje queda parado sobre la baldosa al
+desconectarse, en la sesion nueva **sale y vuelve a entrar**.
+
+### Diez aserciones, no once — y por que
+
+La propuesta traia **once**. Se congelaron **diez**. La que se saco es
+`source_test_item_count_decreased_by_one`: la evidencia historica
+**no la demuestra**, porque `PRUEBA_VIVA_DEPOT.md` solo midio y publico la
+cuenta del cofre. Como el `QACase` se replaya contra **las dos** observaciones
+con el **mismo** juego congelado, incluirla habria obligado a fabricar un hecho
+grabado que nadie observo. La captura viva **si** comprueba que el objeto salio
+de su origen, pero como **guarda del harness**, no como asercion congelada.
+
+### Objeto de prueba: se reuso, no se creo
+
+`test_items_created = 0`. El sujeto ya tenia un objeto **entero** (no apilable,
+no contenedor, movible, restituible). Se descarto el otro candidato del equipo
+inicial por ser **apilable**: el servidor puede partir o juntar pilas y eso
+mediria otra cosa. **Delta neto de inventario: 0** — el objeto volvio a su
+ranura original, verificado en el archivo persistido.
+
+### Los tres lanzamientos, sin maquillaje
+
+Se lanzaron **tres** corridas. Las dos primeras murieron en el
+**posicionamiento**, antes de tocar el deposito y antes de cualquier medicion:
+son **salidas de preflight**, no intentos de oracle completados, y cada una
+encontro un defecto real del harness.
+
+1. El operador seguia parado en la casilla de salida.
+2. **La casilla de salida historica no es caminable para un personaje normal.**
+   Es el mismo tropiezo que Phase 2C.1 ya habia documentado: **aislado no es lo
+   mismo que habitable**. La evidencia historica llegaba ahi con `/gotopos` de
+   un god, que teletransporta a cualquier lado. Ahora la casilla de salida se
+   **descubre empiricamente** entre las vecinas.
+
+**La expectativa NUNCA se modifico**, verificado por hash: fixture, `QACase` y
+observacion grabada byte-identicos antes del primer lanzamiento y despues del
+tercero. Lo unico que cambio fue el adaptador, recongelado cada vez.
+
+### Corroboracion independiente desde el archivo de persistencia
+
+Leido **fuera** del camino del cliente, con la primera sesion ya cerrada y la
+segunda todavia inexistente: `Depot = (1, {2594 Content={2382}})`, es decir el
+cofre de deposito conteniendo el objeto, mientras el equipo del sujeto ya no lo
+tenia. Es **evidencia de apoyo documental**: no se agrego ningun campo al
+fixture por esto y no se congelo ninguna forma de archivo.
+
+### Residuo declarado
+
+El deposito del sujeto queda con un **cofre vacio** que antes no existia. No lo
+creo QA: lo crea el servidor al abrir por primera vez un deposito personal
+cargado. Es el estado normal de cualquier jugador que haya abierto su deposito
+una vez, es solo del sujeto de QA, y no se intento borrarlo porque no hay
+mecanismo probado y inventar uno seria peor que declararlo.
+
+### Seguridad
+
+**0 muertes, 0 ataques, 0 monstruos invocados, 0 `/killall`, 0 objetos creados,
+0 objetos del usuario tocados, 0 cuentas o personajes creados, 0 cambios de
+credenciales, 1 `OBSERVATION_JSON`.** Los **8 hashes congelados** quedaron
+identicos despues de la corrida, del wrap y de los cuatro replays.
+
+## Conteos (Phase 2E)
+
+| Inventario | Especificadas | Materializadas |
+|---|---:|---:|
+| Obligaciones de contrato Architecture V2 (`qa 2.1.1`) | 198 | 0 (sin cambio) |
+| Fixtures `LEGACY_PARITY` | — | **10** (antes 9) |
+| Casos de replay `QACaseV2`/`ParityExpectationV1` | — | **10** (antes 9) |
+| Observaciones `RECORDED_EVIDENCE` | — | **6** (antes 5) |
+| Observaciones `LIVE_ORACLE` canonicas | — | **7** (antes 6) |
+| `PARITY-DEPOT-PERSISTENCE-001` | — | **LIVE CERTIFIED, `PASS 10/10`** |
+
+Phase 2 sigue **EN CURSO**.
+
+**Le toca:** **Phase 2F — paridad de entrega por correo / parcel**, usando
+`docs/qa/PRUEBA_VIVA_PARCEL.md` para congelar el recorrido distinto de punta a
+punta: etiqueta de destino escrita, la parcel entra al mailbox, sale del mundo
+y del inventario del remitente, el servidor la rutea por pueblo y el deposito
+del destinatario la recibe de forma persistente. Es la otra mitad del bloque
+que este turno deja abierta a proposito.
 
 ## Turno cerrado: Higiene de credenciales legacy + inspeccion del estado del juego
 

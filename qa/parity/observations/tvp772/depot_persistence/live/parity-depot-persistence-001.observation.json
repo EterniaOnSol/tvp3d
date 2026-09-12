@@ -1,0 +1,35 @@
+{
+  "schema": "tvp3d.qa.oracle_observation",
+  "version": "1.0.0",
+  "fixture_id": "PARITY-DEPOT-PERSISTENCE-001",
+  "oracle": "TVP_772",
+  "oracle_version": "7.72",
+  "capture_origin": "LIVE_ORACLE",
+  "source_evidence": [
+    {
+      "logical_path": "docs/qa/PARITY_PHASE2E_DEPOT_PERSISTENCE.md"
+    }
+  ],
+  "payload": {
+    "after_relogin": {
+      "personal_depot_reloaded": true,
+      "stored_test_item_still_present": true
+    },
+    "initial_session": {
+      "depot_chest_opened": true,
+      "personal_depot_loaded": true
+    },
+    "recovery": {
+      "depot_test_item_count_decreased_by_one": true,
+      "inventory_test_item_count_increased_by_one": true
+    },
+    "session_boundary": {
+      "first_session_closed": true,
+      "new_session_established": true
+    },
+    "store": {
+      "depot_test_item_count_increased_by_one": true,
+      "test_item_present_before_store": true
+    }
+  }
+}
