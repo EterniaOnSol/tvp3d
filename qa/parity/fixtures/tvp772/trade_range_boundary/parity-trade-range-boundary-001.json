@@ -1,0 +1,52 @@
+{
+  "schema": "tvp3d.qa.parity_fixture",
+  "version": "2.0.0",
+  "fixture_id": "PARITY-TRADE-RANGE-BOUNDARY-001",
+  "oracle": "TVP_772",
+  "oracle_version": "7.72",
+  "source_evidence": {
+    "logical_path": "docs/qa/PARITY_TRADE_RANGE_BOUNDARY.md"
+  },
+  "preconditions": [
+    "dos jugadores normales distintos, vivos y conectados, en cuentas distintas, sin ninguna bandera de privilegio",
+    "los dos participantes permanecen en el MISMO piso durante las tres mediciones",
+    "el jugador que ofrece conserva su posicion fija durante las tres mediciones; solo se mueve la contraparte",
+    "el objeto ofrecido es el MISMO en las tres mediciones, pertenece al que ofrece desde antes de empezar, es transferible por la via normal y no fue creado para esta prueba",
+    "ninguna de las tres solicitudes se acepta: el intercambio nunca se completa",
+    "el comercio que se abre en el borde inclusivo se cancela por la via de cancelacion normal antes de medir cualquier rechazo, y el cierre se confirma en los dos participantes",
+    "el terreno de las tres posiciones es del mismo piso, transitable, sin escaleras, sin teletransportes y sin obstaculos entre los participantes"
+  ],
+  "input_action": "el mismo jugador solicita el mismo comercio, con el mismo objeto y hacia la misma contraparte, en tres geometrias relativas consecutivas que difieren en UNA sola casilla sobre un solo eje: primero en el borde inclusivo, despues una casilla mas alla sobre el eje X, y despues una casilla mas alla sobre el eje Y",
+  "observed_authoritative_result": "en el borde inclusivo el servidor ACEPTA la solicitud y abre una sesion de comercio, confirmada porque devuelve al solicitante su propia oferta. Una casilla mas alla sobre cualquiera de los dos ejes, el servidor RECHAZA la solicitud con su respuesta especifica de destino fuera de alcance, distinta de la respuesta de falta de linea de tiro, y NO abre ninguna sesion de comercio. El objeto ofrecido sigue en poder de quien lo ofrecio y ninguna sesion se cae.",
+  "normalization_rules": [
+    "los participantes se comparan por ROL (el que ofrece y la contraparte), nunca por nombre de personaje, id de cuenta, guid ni runtime id",
+    "no se serializa ninguna coordenada: las geometrias se normalizan al hecho booleano de que la separacion autoritativa medida coincide con la esperada",
+    "no se serializan los valores de separacion en si: viven en el nombre del grupo del payload, no en sus datos",
+    "no se serializa la identidad del objeto ofrecido: ni su nombre, ni su id de servidor, ni su id de cliente, ni su ranura",
+    "no se serializa el texto exacto de la respuesta del servidor: el rechazo especifico por alcance se normaliza al hecho booleano de haberse observado",
+    "no se serializa ningun numero de opcode del protocolo legacy",
+    "no se serializa ningun identificador de sesion de comercio",
+    "se ignoran marcas de tiempo de reloj de pared y cualquier metadata de host o proceso"
+  ],
+  "determinism_notes": "la regla de origen es `Position::areInRange<2, 2, 0>` en `Game::playerRequestTrade` (`servidor/src/game.cpp:2888-2891`), y su implementacion (`servidor/src/position.h:32-35`) compara `getDistanceX(p1,p2) <= deltax && getDistanceY(p1,p2) <= deltay && getDistanceZ(p1,p2) <= deltaz` sobre deltas ABSOLUTOS. De ahi salen cuatro propiedades que este fixture convierte en geometria medible: las comparaciones son `<=`, asi que el borde es INCLUSIVO; los dos ejes se comparan POR SEPARADO y se combinan con AND, de modo que la region aceptada es un RECTANGULO y NO una distancia euclidea ni Manhattan, y por eso la esquina se acepta aunque su distancia euclidea sea mayor que 2 y su distancia Manhattan sea 4; los deltas son absolutos, asi que el signo no importa; y el tercer parametro en cero exige MISMO PISO exacto. LA ESQUINA COMO POSITIVO ES DELIBERADA: probar la esquina demuestra que los dos ejes pueden estar SIMULTANEAMENTE en su maximo inclusivo, que es precisamente lo que una regla de distancia euclidea o Manhattan prohibiria. Y cada negativo se aleja UNA casilla sobre UN solo eje, dejando el otro en su maximo, de modo que cada rechazo se atribuye a un eje concreto. EL CONTROL POSITIVO ES OBLIGATORIO y no decorativo: en el codigo la comprobacion de alcance es la SEGUNDA guarda de la funcion, antes de la linea de tiro y antes de validar el objeto, asi que un rechazo por alcance NO prueba que el objeto fuera valido ni que el transporte funcionara; sin abrir el comercio en el borde inclusivo con EL MISMO objeto, un 'no se abrio' seria compatible con un objeto invalido, un transporte roto, una sesion caida, una contraparte inexistente o una peticion perdida. Ademas, el rechazo exigido es el ESPECIFICO por alcance y no cualquiera: la guarda inmediatamente siguiente rechaza por falta de linea de tiro con otra respuesta, y observar esa otra respuesta invalida la medicion en vez de contarla. El mensaje de alcance tiene varios productores en el servidor, asi que no es univoco por si solo; lo que lo vuelve univoco es la ACCION, porque en la ventana de medicion se envia UNA solicitud de comercio y nada mas, y dentro de esa funcion el unico origen posible de esa respuesta es la guarda de alcance. Todas las separaciones se calculan a partir de las posiciones AUTORITATIVAS que reporta el servidor, nunca de la prediccion local del cliente. ALCANCE DECLARADO: este fixture certifica UNICAMENTE el borde HORIZONTAL de la iniciacion del comercio sobre los dos ejes, en el mismo piso. NO certifica el borde VERTICAL ni ningun comportamiento entre pisos distintos, porque todas las mediciones ocurren con separacion vertical cero. NO certifica el intercambio en si, ni AMBOS O NINGUNO ante un fallo de transferencia, ni rollback transaccional, ni la cancelacion implicita por desconexion o por alejarse despues de abrir, ni la cancelacion despues de que un participante acepto, ni ninguna otra razon de rechazo del comercio distinta del alcance entre participantes, ni la distancia permitida entre el jugador y el objeto cuando ese objeto no esta en su propio equipo.",
+  "excluded_nondeterministic_fields": [
+    "character_names",
+    "account_id",
+    "player_guid",
+    "creature_runtime_ids",
+    "item_name",
+    "item_server_id",
+    "item_client_id",
+    "inventory_slot",
+    "trade_session_id",
+    "legacy_protocol_opcodes",
+    "server_message_text",
+    "positions",
+    "tile_coordinates",
+    "distance_values",
+    "wall_clock_timestamp",
+    "host_metadata",
+    "process_id"
+  ],
+  "classification": "MATCH_EXPECTED"
+}

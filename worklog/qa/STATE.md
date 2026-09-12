@@ -2,8 +2,145 @@
 
 Estado: LISTO_PARA_REVISION
 Ultimo agente: claude
-Ultima actualizacion: 2026-09-12T22:15:00-06:00
+Ultima actualizacion: 2026-09-13T01:40:00-06:00
 Contrato publicado: SI (`CONTRATO.md` v2.1.1, sin cambios en este turno)
+
+## Turno cerrado: `PARITY-TRADE-RANGE-BOUNDARY-001` — Borde de alcance del comercio
+
+**CERTIFICADO EN VIVO.** Replay vivo **`PASS 10/10`**, byte-identico entre dos
+corridas. **Dos intentos**: el primero fallo por un defecto **mio** del arnes.
+Detalle completo en `docs/qa/PARITY_TRADE_RANGE_BOUNDARY.md`.
+
+Fixture `LEGACY_PARITY` **dentro de Phase 2**. No abre fase ni sub-fase nueva y
+**no toca** `docs/tibia3d/MASTER_PLAN.md`.
+
+### Que certifica
+
+Con el mismo jugador, el mismo objeto, la misma contraparte y el mismo piso,
+moviendo **una casilla sobre un solo eje**: `2,2,0` **abre** el comercio;
+`3,2,0` y `2,3,0` lo **rechazan por alcance**. Cierra el hueco que
+`PARITY-TRADE-EXCHANGE-001` habia declarado en su linea 429.
+
+### Regla de origen y geometria certificada, separadas a proposito
+
+`areInRange<2,2,0>` (`game.cpp:2888`) implementado en `position.h:32-35` como
+`getDistanceX <= deltax && getDistanceY <= deltay && getDistanceZ <= deltaz`
+sobre deltas **absolutos**: comparador **`<=`** (borde **inclusivo**), ejes
+**independientes** unidos por AND, es decir un **rectangulo**, y `deltaz = 0`
+significa **mismo piso exacto**.
+
+**La metrica no es un detalle.** En la esquina `(2,2)` la distancia euclidea es
+**2.83** y la Manhattan es **4**: las dos aproximaciones intuitivas habrian
+**rechazado** ese punto. Que el servidor lo acepte es lo que las falsea, y por
+eso la esquina es el positivo elegido.
+
+**Lo certificado en vivo es mas chico que la regla**: solo el borde
+**horizontal**, sobre los dos ejes, con `dz = 0` en las tres mediciones. El
+borde **vertical no se certifica**: afirmarlo por simetria del codigo seria
+convertir una lectura en una observacion.
+
+### El control positivo no es decorativo
+
+La comprobacion de alcance es la **segunda** guarda de la funcion: **antes** de
+la linea de tiro y **antes** de validar el objeto. Un rechazo por alcance **no
+prueba** que el objeto fuera valido ni que el transporte anduviera, asi que sin
+abrir el comercio con **el mismo objeto** un "no se abrio" seria compatible con
+media docena de causas ajenas.
+
+### El discriminador, con su limite dicho
+
+`"Destination is out of range."` **no es univoco**: tiene productores en mover
+criaturas, mover objetos, usar objetos y hechizos. A diferencia del rechazo de
+casas, el mensaje no alcanza. Lo vuelve univoco la **accion**: en la ventana de
+medicion se manda **una solicitud de comercio y nada mas**. Ademas se vigila la
+guarda siguiente: si el rechazo fuera por linea de tiro, el adaptador
+**invalida** la medicion en vez de contarla.
+
+### Diez aserciones
+
+La **geometria** se congela como asercion y no como guarda porque es la
+**variable independiente**: lo afirmado no es "hubo un rechazo" sino "a ESTA
+separacion exacta hubo ESTE resultado". El **mensaje** y la **ausencia de
+sesion** se separan porque vienen de fuentes distintas, el mismo criterio con
+el que `PARITY-HOUSE-ACCESS-001` separo el mensaje de la posicion.
+
+### Cero mutacion, y por construccion
+
+**Nunca se envia una aceptacion**, asi que una transferencia es **imposible**,
+no solo improbable. El equipo de **los dos** participantes quedo
+**byte-identico** a la linea base congelada.
+
+**0 comercios completados, 0 aceptaciones, 0 objetos transferidos, 0 creados,
+0 borrados, 0 residuo persistente, 0 casas, 0 listas de acceso, 0 premium,
+0 camas, 0 muertes, 0 combate, 0 monstruos, 0 comandos amplios, 0 cuentas,
+0 progresion.**
+
+El objeto se eligio **del equipo que el ofertante ya tenia**: el adaptador
+recorre las ranuras y toma la primera levantable y no contenedor. Que sirva de
+verdad lo prueba el control positivo, no la heuristica.
+
+### El fallo del intento 1 fue mio, y ya habia pasado
+
+El ofertante no llegaba a su casilla: `Sorry, not possible.`. Causa: el
+operador se habia quedado **en su camino**, y una criatura en el destino da
+`RETURNVALUE_NOTPOSSIBLE` (`tile.cpp:581-588`) — rechazo por **ocupacion**, sin
+relacion con lo medido.
+
+Es **la misma causa** que costo un intento en
+`PARITY-HOUSE-GUEST-ACCESS-001`. Que se repitiera prueba que la leccion se
+habia aplicado a aquel adaptador y no al metodo. Por eso la correccion fue en
+**dos niveles**: el operador se aparta **antes** de cada caminata y las
+convocatorias se serializan; y el caminante detecta que su posicion
+autoritativa no avanza y **rodea con un paso lateral**, de modo que un bloqueo
+por ocupacion se resuelve solo en vez de costar un intento.
+
+**La expectativa nunca se modifico**, verificado por hash en los dos intentos.
+
+### Seguridad de procesos: 0 ajenos terminados
+
+Cada proceso lanzado registro su **PID exacto**. El unico terminado a mano fue
+una herramienta de analisis **propia** que entro en bucle, identificada por PID
+tras confirmar su linea de comandos. **Procesos ajenos terminados: 0**, que es
+la correccion del descuido del turno anterior.
+
+### Entorno
+
+El stack legacy ya estaba sano: **no** hizo falta arrancarlo, y no se toco
+ninguna definicion de infraestructura.
+
+## Conteos (`PARITY-TRADE-RANGE-BOUNDARY-001`)
+
+| Inventario | Especificadas | Materializadas |
+|---|---:|---:|
+| Obligaciones de contrato Architecture V2 (`qa 2.1.1`) | 198 | 0 (sin cambio) |
+| Fixtures `LEGACY_PARITY` | — | **18** (antes 17) |
+| Casos de replay `QACaseV2`/`ParityExpectationV1` | — | **18** (antes 17) |
+| Observaciones `RECORDED_EVIDENCE` | — | **9** (sin cambio, a proposito) |
+| Observaciones `LIVE_ORACLE` canonicas | — | **15** (antes 14) |
+| `PARITY-TRADE-RANGE-BOUNDARY-001` | — | **LIVE CERTIFIED, `PASS 10/10`** |
+
+Phase 2 sigue **EN CURSO**. Llegar a 18 fixtures no la cierra.
+
+### Bloqueos
+
+- `HOUSE_GUEST_LIST_SIN_TRANSPORTE_DE_PRODUCCION`: **resuelto**, sin reabrir.
+- **`CASAS_CAMAS_SIN_PARTICIPANTE_QA_PREMIUM_CON_CASA`: abierto y sin
+  modificar.** Este turno no toco casas ni camas.
+
+Ningun bloqueo nuevo.
+
+**Le toca:** dentro del dominio de comercio, el hueco de mayor valor y **sin
+mutacion** es la **cancelacion implicita por desconexion**: un participante
+abre el comercio y se desconecta, y se observa que el servidor cierra la sesion
+del otro sin mover ningun objeto. Usa el mismo montaje de dos jugadores, no
+crea nada y no transfiere nada. Los otros huecos de comercio son mas caros:
+AMBOS O NINGUNO exige llenar un inventario, y la cancelacion tras aceptar exige
+una aceptacion real.
+
+Fuera de comercio, sin evidencia historica y sin tocar casas: baja y duplicado
+de contactos. En casas, lo siguiente natural seria el acceso de **subdueno**,
+que reutiliza el transporte ya probado pero **cuesta otra carta de bienvenida**
+y conviene que el orquestador lo autorice explicitamente.
 
 ## Turno cerrado: `PARITY-HOUSE-GUEST-ACCESS-001` — Acceso por lista de invitados
 

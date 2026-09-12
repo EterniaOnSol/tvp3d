@@ -1,0 +1,35 @@
+{
+  "schema": "tvp3d.qa.oracle_observation",
+  "version": "1.0.0",
+  "fixture_id": "PARITY-TRADE-RANGE-BOUNDARY-001",
+  "oracle": "TVP_772",
+  "oracle_version": "7.72",
+  "capture_origin": "LIVE_ORACLE",
+  "source_evidence": [
+    {
+      "logical_path": "docs/qa/PARITY_TRADE_RANGE_BOUNDARY.md"
+    }
+  ],
+  "payload": {
+    "inclusive_boundary": {
+      "geometry_verified": true,
+      "trade_initiation_accepted": true
+    },
+    "integrity": {
+      "offered_item_stayed_with_owner": true
+    },
+    "outside_x_by_one": {
+      "geometry_verified": true,
+      "no_trade_session_opened": true,
+      "range_rejection_observed": true
+    },
+    "outside_y_by_one": {
+      "geometry_verified": true,
+      "no_trade_session_opened": true,
+      "range_rejection_observed": true
+    },
+    "precondition": {
+      "session_remained_connected": true
+    }
+  }
+}

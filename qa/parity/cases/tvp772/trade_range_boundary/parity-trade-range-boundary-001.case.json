@@ -1,0 +1,103 @@
+{
+  "schema": "tvp3d.qa.case",
+  "version": "2.0.0",
+  "case_id": "PARITY-TRADE-RANGE-BOUNDARY-001",
+  "class": "LEGACY_PARITY",
+  "title": "TVP 7.72 trade: participant range is an inclusive per-axis rectangle; one tile beyond on either horizontal axis is rejected as out of range",
+  "owners": ["qa"],
+  "contracts": [
+    {"contract": "qa", "version": "2.1.1"}
+  ],
+  "requirement_refs": [
+    {
+      "contract": "qa",
+      "version": "2.1.1",
+      "section": "16",
+      "source_fixture_id": "PARITY-TRADE-RANGE-BOUNDARY-001"
+    }
+  ],
+  "preconditions": [
+    "dos jugadores normales distintos en cuentas distintas, sin banderas de privilegio, en el mismo piso durante las tres mediciones",
+    "el que ofrece mantiene su posicion fija; solo se mueve la contraparte, una casilla y un eje por vez",
+    "el mismo objeto propio se ofrece en las tres mediciones y no fue creado para la prueba",
+    "ninguna solicitud se acepta y el comercio del borde inclusivo se cancela, con cierre confirmado en los dos lados, antes de medir los rechazos"
+  ],
+  "input_fixture": {
+    "logical_path": "qa/parity/fixtures/tvp772/trade_range_boundary/parity-trade-range-boundary-001.json"
+  },
+  "expected": {
+    "schema": "tvp3d.qa.parity_expectation",
+    "version": "1.0.0",
+    "mode": "SINGLE_OBSERVATION",
+    "assertions": [
+      {
+        "assertion_id": "TRADE-RANGE-SESSION-REMAINED-CONNECTED",
+        "left_path": "/precondition/session_remained_connected",
+        "operator": "EQ",
+        "right": {"literal": true}
+      },
+      {
+        "assertion_id": "TRADE-RANGE-INCLUSIVE-GEOMETRY",
+        "left_path": "/inclusive_boundary/geometry_verified",
+        "operator": "EQ",
+        "right": {"literal": true}
+      },
+      {
+        "assertion_id": "TRADE-RANGE-INCLUSIVE-ACCEPTED",
+        "left_path": "/inclusive_boundary/trade_initiation_accepted",
+        "operator": "EQ",
+        "right": {"literal": true}
+      },
+      {
+        "assertion_id": "TRADE-RANGE-OUTSIDE-X-GEOMETRY",
+        "left_path": "/outside_x_by_one/geometry_verified",
+        "operator": "EQ",
+        "right": {"literal": true}
+      },
+      {
+        "assertion_id": "TRADE-RANGE-OUTSIDE-X-REJECTED",
+        "left_path": "/outside_x_by_one/range_rejection_observed",
+        "operator": "EQ",
+        "right": {"literal": true}
+      },
+      {
+        "assertion_id": "TRADE-RANGE-OUTSIDE-X-NO-SESSION",
+        "left_path": "/outside_x_by_one/no_trade_session_opened",
+        "operator": "EQ",
+        "right": {"literal": true}
+      },
+      {
+        "assertion_id": "TRADE-RANGE-OUTSIDE-Y-GEOMETRY",
+        "left_path": "/outside_y_by_one/geometry_verified",
+        "operator": "EQ",
+        "right": {"literal": true}
+      },
+      {
+        "assertion_id": "TRADE-RANGE-OUTSIDE-Y-REJECTED",
+        "left_path": "/outside_y_by_one/range_rejection_observed",
+        "operator": "EQ",
+        "right": {"literal": true}
+      },
+      {
+        "assertion_id": "TRADE-RANGE-OUTSIDE-Y-NO-SESSION",
+        "left_path": "/outside_y_by_one/no_trade_session_opened",
+        "operator": "EQ",
+        "right": {"literal": true}
+      },
+      {
+        "assertion_id": "TRADE-RANGE-ITEM-STAYED-WITH-OWNER",
+        "left_path": "/integrity/offered_item_stayed_with_owner",
+        "operator": "EQ",
+        "right": {"literal": true}
+      }
+    ]
+  },
+  "mutates_external_state": false,
+  "requires_network": false,
+  "requires_legacy": false,
+  "requires_secrets": false,
+  "status_policy": {
+    "missing_prerequisite_status": "BLOCKED",
+    "assertion_mismatch_status": "FAIL"
+  }
+}
