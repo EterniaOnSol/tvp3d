@@ -48,7 +48,12 @@ func _probar() -> void:
 		_ok("escala real de todas las poses %d" % tipo, is_equal_approx(maxf(total_bounds.size.x,total_bounds.size.z),objetivo))
 	_ok("experimentos no habilitados", not catalogo.es_monstruo(0x40000001, 25))
 	_ok("tipo desconocido", catalogo.malla(999999) == null)
-	_ok("ID jugador", not catalogo.es_monstruo(123,21))
+	_ok("apariencia 3D registrada prevalece en ID refrescado",
+		catalogo.es_monstruo(123,21))
+	_ok("Demon por apariencia en refresco real", catalogo.es_monstruo(123,35))
+	_ok("Dragon por apariencia en refresco real", catalogo.es_monstruo(123,34))
+	_ok("Dragon Lord por apariencia en refresco real", catalogo.es_monstruo(123,39))
+	_ok("NPC con apariencia registrada no es monster", not catalogo.es_monstruo(0x80000001,34))
 	_ok("ID NPC", not catalogo.es_monstruo(0x80000001,21))
 	var mundo := MundoPrueba.new()
 	root.add_child(mundo)
@@ -62,14 +67,15 @@ func _probar() -> void:
 	var id := 0x40000001
 	mundo._estado.criaturas = {
 		id: {"pos":Vector3i(101,100,7),"apariencia":21,"direccion":2,"nombre":"Rat"},
-		2: {"pos":Vector3i(99,100,7),"apariencia":21,"direccion":2,"nombre":"Player"},
+		2: {"pos":Vector3i(99,100,7),"apariencia":128,"direccion":2,"nombre":"Player"},
 		0x80000001: {"pos":Vector3i(100,101,7),"apariencia":21,"direccion":2,"nombre":"NPC"},
 	}
 	var confirmado: Dictionary = mundo._estado.criaturas.duplicate(true)
 	mundo._dibujar_criaturas()
 	var nodo: MeshInstance3D = mundo._nodos_criaturas[id]
 	_ok("monster usa volumen", nodo.mesh is ArrayMesh and nodo.position.is_equal_approx(Vector3(1,.02,0)))
-	_ok("jugador conserva sprite", mundo._nodos_criaturas[2].mesh is QuadMesh)
+	_ok("jugador conserva modelo humano",
+		mundo._nodos_criaturas[2].get_node_or_null("OutfitHumano3D") != null)
 	_ok("NPC conserva sprite", mundo._nodos_criaturas[0x80000001].mesh is QuadMesh)
 	mundo._reloj_animacion = 1.0 / mundo.FOTOGRAMAS_POR_SEGUNDO
 	var quieta := nodo.mesh

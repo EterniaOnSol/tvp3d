@@ -4001,9 +4001,16 @@ func _dibujar_criaturas() -> void:
 		if es_monstruo:
 			volumen = _modelos_monstruos.malla(tipo,
 				int(_reloj_animacion * FOTOGRAMAS_POR_SEGUNDO))
+			# Un refresh nunca debe degradar un modelo ya confirmado a lámina.
+			# Si una pose no estuviera disponible durante ese frame, conservamos
+			# la última malla válida de la misma apariencia.
+			if volumen == null and int(m.get_meta("tipo_volumen_valido", -1)) == tipo:
+				volumen = m.get_meta("ultimo_volumen_valido", null) as ArrayMesh
 		m.set_meta("volumen_monstruo", volumen != null)
 		m.set_meta("volumen_personaje",es_personaje_3d)
 		if volumen != null:
+			m.set_meta("tipo_volumen_valido", tipo)
+			m.set_meta("ultimo_volumen_valido", volumen)
 			_vaciar_outfit_humano(m)
 			if _modelos_monstruos.tiene_clips(tipo):
 				_modelos_monstruos.animar_confirmado(m,tipo,_reloj_animacion,c["pos"])

@@ -27,8 +27,12 @@ func tiene(tipo: int) -> bool:
 
 
 func es_monstruo(id: int, tipo: int) -> bool:
-	return id >= 0x40000000 and id < 0x80000000 and tiene(tipo) \
-		and bool(fichas[str(tipo)].get("anatomia", false))
+	if not tiene(tipo) or not bool(fichas[str(tipo)].get("anatomia", false)):
+		return false
+	# En un refresh 7.72 la apariencia puede llegar antes de que el estado local
+	# recupere el rango autoritativo del ID. La ficha 3D es estable y debe mandar
+	# para todas las criaturas registradas; solo se excluye el rango de NPCs.
+	return id > 0 and id < 0x80000000
 
 
 func fases(tipo: int) -> int:
