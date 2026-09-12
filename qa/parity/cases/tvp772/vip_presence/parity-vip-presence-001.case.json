@@ -1,0 +1,73 @@
+{
+  "schema": "tvp3d.qa.case",
+  "version": "2.0.0",
+  "case_id": "PARITY-VIP-PRESENCE-001",
+  "class": "LEGACY_PARITY",
+  "title": "TVP 7.72 contacts: an offline character added by name resolves to the intended identity and its online and offline transitions reach the observer",
+  "owners": ["qa"],
+  "contracts": [
+    {"contract": "qa", "version": "2.1.1"}
+  ],
+  "requirement_refs": [
+    {
+      "contract": "qa",
+      "version": "2.1.1",
+      "section": "16",
+      "source_fixture_id": "PARITY-VIP-PRESENCE-001"
+    }
+  ],
+  "preconditions": [
+    "un observador con sesion activa durante toda la medicion y un objetivo distinto que existe en el mundo",
+    "el objetivo esta desconectado cuando se lo agrega",
+    "la lista de contactos del observador no contiene ya al objetivo",
+    "todas las afirmaciones se observan desde la sesion del observador"
+  ],
+  "input_fixture": {
+    "logical_path": "qa/parity/fixtures/tvp772/vip_presence/parity-vip-presence-001.json"
+  },
+  "expected": {
+    "schema": "tvp3d.qa.parity_expectation",
+    "version": "1.0.0",
+    "mode": "SINGLE_OBSERVATION",
+    "assertions": [
+      {
+        "assertion_id": "VIP-TARGET-ENTRY-CREATED",
+        "left_path": "/vip_add/target_entry_created",
+        "operator": "EQ",
+        "right": {"literal": true}
+      },
+      {
+        "assertion_id": "VIP-TARGET-IDENTITY-RESOLVED",
+        "left_path": "/vip_add/target_identity_resolved",
+        "operator": "EQ",
+        "right": {"literal": true}
+      },
+      {
+        "assertion_id": "VIP-TARGET-INITIALLY-OFFLINE",
+        "left_path": "/vip_add/target_initially_offline",
+        "operator": "EQ",
+        "right": {"literal": true}
+      },
+      {
+        "assertion_id": "VIP-ONLINE-TRANSITION-OBSERVED",
+        "left_path": "/presence/online_transition_observed",
+        "operator": "EQ",
+        "right": {"literal": true}
+      },
+      {
+        "assertion_id": "VIP-OFFLINE-TRANSITION-OBSERVED",
+        "left_path": "/presence/offline_transition_observed",
+        "operator": "EQ",
+        "right": {"literal": true}
+      }
+    ]
+  },
+  "mutates_external_state": false,
+  "requires_network": false,
+  "requires_legacy": false,
+  "requires_secrets": false,
+  "status_policy": {
+    "missing_prerequisite_status": "BLOCKED",
+    "assertion_mismatch_status": "FAIL"
+  }
+}

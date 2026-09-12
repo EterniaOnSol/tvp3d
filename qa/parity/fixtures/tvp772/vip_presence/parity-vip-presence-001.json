@@ -1,0 +1,47 @@
+{
+  "schema": "tvp3d.qa.parity_fixture",
+  "version": "2.0.0",
+  "fixture_id": "PARITY-VIP-PRESENCE-001",
+  "oracle": "TVP_772",
+  "oracle_version": "7.72",
+  "source_evidence": {
+    "logical_path": "docs/qa/PRUEBA_VIVA_TRADE_VIP.md"
+  },
+  "preconditions": [
+    "dos personajes distintos que existen en el mundo: un OBSERVADOR, que es el dueno de la lista de contactos, y un OBJETIVO, que va a ser agregado a esa lista",
+    "el observador tiene una sesion de juego activa durante toda la medicion",
+    "el objetivo esta DESCONECTADO en el momento en que se lo agrega",
+    "la lista de contactos del observador NO contiene ya al objetivo, de modo que la entrada observada no pueda confundirse con una preexistente"
+  ],
+  "input_action": "el observador agrega al objetivo a su lista de contactos indicando unicamente su NOMBRE de personaje; despues el objetivo abre una sesion de juego normal; y por ultimo el objetivo cierra esa sesion de forma limpia",
+  "observed_authoritative_result": "el servidor resuelve el nombre a la identidad real del personaje objetivo y crea la entrada en la lista del observador, que la recibe con esa identidad resuelta y marcada como desconectada. Cuando el objetivo abre su sesion, el observador recibe la transicion de presencia a conectado para esa misma identidad. Cuando el objetivo cierra su sesion, el observador recibe la transicion de vuelta a desconectado.",
+  "normalization_rules": [
+    "los participantes se comparan por ROL (observador y objetivo), nunca por nombre de personaje, id de cuenta ni runtime id",
+    "NO se serializa la identidad concreta del personaje objetivo: la resolucion de identidad se normaliza al hecho booleano de que el servidor devolvio la identidad esperada, sin publicar su valor",
+    "no se serializa ningun numero de opcode del protocolo legacy ni ningun detalle de la ventana de contactos del cliente",
+    "no se serializan otras entradas de la lista de contactos ni su cantidad",
+    "el estado de presencia se normaliza a hechos booleanos, no al valor numerico que usa el protocolo legacy",
+    "el texto exacto de los mensajes del servidor no se compara",
+    "no se incluye ningun hecho de comercio: aunque la corrida historica ejercito comercio y contactos en el mismo archivo, son dominios distintos y el comercio ya tiene sus propios fixtures",
+    "se ignoran marcas de tiempo de reloj de pared y cualquier metadata de host o proceso"
+  ],
+  "determinism_notes": "este fixture afirma unicamente hechos observables desde afuera, y todos ellos desde la sesion del OBSERVADOR. La sesion del objetivo es solo el estimulo: que el objetivo se conecte NO es prueba de que el observador se haya enterado, asi que las transiciones se afirman leyendo lo que el observador realmente recibe y nunca deduciendolas de conocer el estado de la otra sesion. La resolucion de identidad se distingue a proposito del simple eco de un texto: no alcanza con que aparezca una entrada con el nombre tecleado, porque eso lo produciria cualquier implementacion que devolviera lo que se le mando; se exige que la identidad que trae la entrada sea la del personaje objetivo real. El servidor refuerza esa separacion por su cuenta, porque la notificacion de presencia se resuelve buscando la identidad del que entra dentro de la lista del observador: si el nombre se hubiera resuelto a otro personaje, el observador nunca recibiria la transicion. ALCANCE DECLARADO: este fixture cubre AGREGAR POR NOMBRE A UN OBJETIVO DESCONECTADO Y OBSERVAR SUS DOS TRANSICIONES DE PRESENCIA. NO cubre el dominio completo de la lista de contactos: no afirma limites de capacidad, ni el alta duplicada, ni la baja, ni el auto-agregado, ni personajes inexistentes, ni presencia por cuenta, ni visibilidad de personajes ocultos, ni listas de bloqueo, ni grupos o comentarios, ni orden de las entradas, ni persistencia entre sesiones del observador, ni el comportamiento ante formas de desconexion distintas del cierre limpio.",
+  "excluded_nondeterministic_fields": [
+    "character_names",
+    "account_id",
+    "player_guid",
+    "creature_runtime_ids",
+    "legacy_protocol_opcodes",
+    "legacy_presence_status_values",
+    "client_contact_window_implementation",
+    "other_contact_entries",
+    "contact_list_size",
+    "server_message_text",
+    "trade_state",
+    "positions",
+    "wall_clock_timestamp",
+    "host_metadata",
+    "process_id"
+  ],
+  "classification": "MATCH_EXPECTED"
+}

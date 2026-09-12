@@ -2,8 +2,135 @@
 
 Estado: LISTO_PARA_REVISION
 Ultimo agente: claude
-Ultima actualizacion: 2026-09-12T05:00:00-06:00
+Ultima actualizacion: 2026-09-12T11:30:00-06:00
 Contrato publicado: SI (`CONTRATO.md` v2.1.1, sin cambios en este turno)
+
+## Turno cerrado: `PARITY-VIP-PRESENCE-001` — Presencia en la lista de contactos
+
+**CERTIFICADO EN VIVO.** Replay grabado **`PASS 5/5`** y replay vivo
+**`PASS 5/5`**, los dos byte-identicos entre corridas. Detalle completo en
+`docs/qa/PARITY_VIP_PRESENCE.md`.
+
+Fixture `LEGACY_PARITY` **dentro de Phase 2**. No se abrio ninguna fase ni
+sub-fase nueva y **no se toco** `docs/tibia3d/MASTER_PLAN.md`.
+
+### Que certifica
+
+Que un personaje existente puede agregarse a la lista de contactos de otro
+**indicando solo su nombre**, que el servidor **resuelve ese nombre a la
+identidad real**, que la entrada nace **desconectada**, y que el observador
+recibe las **transiciones de presencia** cuando ese personaje entra y sale.
+
+### La regla, verificada en el codigo
+
+- `Game::playerRequestAddVip` (`game.cpp:3417-3456`): con el objetivo
+  desconectado resuelve contra la persistencia con `getGuidByNameEx`, que
+  devuelve la **identidad real** y ademas **canoniza el nombre**; si no existe,
+  no crea nada; la entrada nace en `VIPSTATUS_OFFLINE`.
+- **La propagacion es lo que hace fuerte al fixture.** `addList`/`removeList`
+  (`player.cpp:1987-2003`) recorren a **todos** los conectados y llaman a
+  `notifyStatusChange`, que **solo** notifica si la identidad esta en la lista
+  del observador. Eso convierte a cada transicion en una **prueba independiente
+  de que el nombre se resolvio al personaje correcto**.
+- Por eso mismo la presencia **no depende de la posicion**: esta captura **no
+  usa operador**, no mueve a nadie y no crea nada. Dos sesiones y nada mas.
+- `specialvip` solo aparece en grupos elevados, asi que el objetivo **tiene** que
+  ser un jugador normal: usar al operador habria sido rechazado.
+
+### Opcodes: la trampa mas filosa vista hasta ahora
+
+`0xD2` y `0xD3` **entrantes son de APARIENCIA**, no de contactos; salientes si
+son de contactos (entrada, conectado). El alta es `0xDC` y la baja `0xDD`.
+Ninguno entra al payload. QA usa el **transporte y el parser de produccion**,
+sin rearmar paquetes.
+
+### Cinco aserciones, con criterio consistente
+
+Las dos transiciones **si** se congelaron por separado, a diferencia de las
+ofertas en `PARITY-TRADE-EXCHANGE-001`. La diferencia es estructural: alli el
+recorrido historico registraba **un solo paso** combinado; aca registra **dos
+pasos numerados distintos** (3 y 8), separados por todo el bloque de comercio y
+**cada uno con su propio opcode**.
+
+**No** se congelaron: que la entrada sobreviva al ciclo (se **deduciria**, pero
+deducir no es observar) ni que el nombre sea canonico (el codigo lo hace, la
+evidencia no lo midio). Las dos quedan como **guardas vivas**, y las dos dieron
+`true`.
+
+### Tres intentos, dos fallos honestos
+
+1. **Entorno, no fixture.** Observo los **tres** hechos del alta y despues el
+   login del objetivo fue rechazado con `Server is currently closed.`: el
+   servidor se estaba reiniciando, confirmado por marcas de tiempo del log
+   (`10:30:07` rechazo, `10:37:43` arranque). Dejo residuo, porque la limpieza
+   nunca llego a correr.
+2. **Defecto mio, y util.** Mi reparacion de la linea base esperaba ver
+   desaparecer la entrada, pero **la baja es silenciosa por diseno**: verificado
+   que `removeVIP` no manda nada al cliente y que **no existe** opcode saliente
+   de baja. Se reemplazo por una comprobacion **mas fuerte**: como `addVIP`
+   rechaza duplicados **sin emitir entrada**, recibir una entrada fresca prueba
+   por si solo que el objetivo no estaba ya en la lista.
+3. **Exito.**
+
+Al preparar el intento 2 aparecio ademas un falso positivo real: al conectarse,
+el servidor manda las entradas **preexistentes** por la **misma senal** que una
+nueva. Se cerro con una **puerta de medicion** que solo cuenta despues de pedir
+el alta.
+
+**La expectativa nunca se modifico**, verificado por hash en los tres intentos.
+
+### Limpieza total, cero residuo
+
+Verificado en persistencia: la lista del observador volvio a **`VIP = ()`**,
+exactamente su estado original. **0 contactos ajenos tocados.** La baja se hizo
+con el mecanismo de produccion y **no** es una asercion del fixture.
+
+### Seguridad
+
+**3 intentos completos de 3, 0 preflight. 0 cuentas creadas, 0 personajes
+creados, 0 personajes del usuario, 0 mutaciones de progresion, 0 muertes, 0
+combate, 0 monstruos, 0 `/killall`, 0 objetos creados o movidos, 1
+`OBSERVATION_JSON`.** Los **9 hashes congelados** quedaron identicos.
+
+## Conteos (`PARITY-VIP-PRESENCE-001`)
+
+| Inventario | Especificadas | Materializadas |
+|---|---:|---:|
+| Obligaciones de contrato Architecture V2 (`qa 2.1.1`) | 198 | 0 (sin cambio) |
+| Fixtures `LEGACY_PARITY` | — | **14** (antes 13) |
+| Casos de replay `QACaseV2`/`ParityExpectationV1` | — | **14** (antes 13) |
+| Observaciones `RECORDED_EVIDENCE` | — | **9** (antes 8) |
+| Observaciones `LIVE_ORACLE` canonicas | — | **11** (antes 10) |
+| `PARITY-VIP-PRESENCE-001` | — | **LIVE CERTIFIED, `PASS 5/5`** |
+
+Phase 2 sigue **EN CURSO**.
+
+**Le toca:** se audito cual evidencia historica queda sin convertir, contando
+referencias reales desde `qa/parity/`, en vez de proponer un dominio de
+memoria:
+
+| Evidencia historica | Artefactos de paridad que la referencian |
+|---|---:|
+| `PRUEBA_VIVA_MUERTE_LOOT.md` | 8 |
+| `PRUEBA_VIVA_TRADE_VIP.md` | 4 |
+| `PRUEBA_VIVA_DEPOT.md` | 2 |
+| `PRUEBA_VIVA_PARCEL.md` | 2 |
+| `PRUEBA_VIVA_PARTY.md` | 2 |
+| `PRUEBA_VIVA_REACQUISICION.md` | 2 |
+| **`PRUEBA_VIVA_CASA_CAMA.md`** | **0** |
+
+**`PRUEBA_VIVA_CASA_CAMA.md` es la unica evidencia historica sin convertir.**
+Es el candidato natural: dominio de **casas y camas** —propiedad de casa,
+dormir, y el ciclo de sesion asociado—, con evidencia propia ya existente. El
+primer paso de ese turno debe ser la **auditoria linea por linea** de ese
+documento, igual que aca, para decidir que califica como `RECORDED_EVIDENCE` y
+que no.
+
+Huecos declarados que **no** conviene tomar sin mas, todos **sin evidencia
+historica**: los del dominio de comercio (AMBOS O NINGUNO ante fallo de
+transferencia, borde de alcance, cancelacion implicita) y los del dominio de
+contactos (capacidad, duplicado, baja, auto-agregado, persistencia entre
+sesiones).
 
 ## Turno cerrado: Phase 2G.1 — Paridad de cancelacion de comercio
 
