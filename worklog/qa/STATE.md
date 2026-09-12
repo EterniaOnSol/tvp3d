@@ -2,8 +2,104 @@
 
 Estado: LISTO_PARA_REVISION
 Ultimo agente: claude
-Ultima actualizacion: 2026-09-12T13:30:00-06:00
+Ultima actualizacion: 2026-09-12T15:10:00-06:00
 Contrato publicado: SI (`CONTRATO.md` v2.1.1, sin cambios en este turno)
+
+## Turno cerrado: `PARITY-HOUSE-GUEST-ACCESS-001` — BLOQUEADO
+
+**`BLOCKED`. No se materializo ningun fixture, `QACase`, `RECORDED_EVIDENCE` ni
+`LIVE_ORACLE`. Inventarios sin cambio.** Detalle completo en
+`docs/qa/BLOQUEO_HOUSE_GUEST_ACCESS.md`.
+
+Turno dentro de Phase 2. No abre fase ni sub-fase nueva y **no toca**
+`docs/tibia3d/MASTER_PLAN.md`.
+
+### El bloqueo no es de permiso, es de capacidad ausente
+
+El orquestador **autorizo** mutar una casa sandbox sin dueno. Esa autorizacion
+**era usable**: `/owner` (`data/scripts/talkactions/god/owner.lua`) actua solo
+sobre la casa donde el operador esta parado y `/owner none` la devuelve a sin
+dueno; y de las 862 casas, **860** no tienen dueno.
+
+**Aun asi no se ejecuto ni un paso de mutacion**, porque el fixture es
+**imposible de completar** por otra razon.
+
+### La lista de invitados no se puede editar desde el cliente de produccion
+
+`House::setAccessList` (`house.cpp:207-213`) tiene **un solo** llamador de
+juego: `Game::playerUpdateHouseWindow` (`game.cpp:2841-2872`), que exige una
+**ventana de edicion abierta**. Esa ventana la abre el hechizo `aleta sio`
+(`invite_guests.lua`) parado dentro de la casa, y el recorrido se cierra con
+dos pasos de protocolo:
+
+| Paso | Direccion | Opcode | Estado en `cliente3d/red/` |
+|---|---|---|---|
+| ventana de lista | servidor -> cliente | `0x97` | **no se parsea** |
+| respuesta con la lista | cliente -> servidor | `0x8A` | **no existe** |
+
+Sin el segundo paso la lista **nunca puede cambiar**. Metodos de casas en el
+transporte de produccion: **cero**.
+
+**Trampa de direccion, documentada para quien lo implemente:** `0x97` **ya se
+usa saliente** en el cliente (`conexion772.gd:317-318`) para *pedir canales*.
+El mismo numero significa cosas distintas segun la direccion, igual que `0x7F`
+en comercio y `0xD2`/`0xD3` en contactos.
+
+### Por que verificar antes de mutar fue lo correcto
+
+Asignar la casa habria dejado el mundo mutado para un fixture que no puede
+completarse, y habria obligado a una restauracion que solo existe para deshacer
+algo que nunca debio empezar. Es exactamente la leccion del **residuo de casa
+sin restaurar** del audit de camas.
+
+### Cero mutacion, cero residuo
+
+**0 cambios de propiedad, 0 listas de invitados, 0 listas de subduenos, 0
+listas de puertas, 0 cuentas creadas o modificadas, 0 premium, 0 estado
+persistente de jugadores, 0 camas, 0 muertes, 0 combate, 0 monstruos, 0
+comandos amplios.** No hubo nada que restaurar porque no hubo nada que mutar.
+
+### Sin `RECORDED_EVIDENCE`
+
+Se busco en todo `docs/qa/`. No hay observacion historica de runtime de acceso
+por invitado; las unicas menciones son los documentos producidos por los dos
+turnos previos, que no son observaciones historicas.
+
+## Conteos (`PARITY-HOUSE-GUEST-ACCESS-001` — sin cambio)
+
+| Inventario | Especificadas | Materializadas |
+|---|---:|---:|
+| Obligaciones de contrato Architecture V2 (`qa 2.1.1`) | 198 | 0 (sin cambio) |
+| Fixtures `LEGACY_PARITY` | — | 15 (sin cambio) |
+| Casos de replay `QACaseV2`/`ParityExpectationV1` | — | 15 (sin cambio) |
+| Observaciones `RECORDED_EVIDENCE` | — | 9 (sin cambio) |
+| Observaciones `LIVE_ORACLE` canonicas | — | 12 (sin cambio) |
+| `PARITY-HOUSE-GUEST-ACCESS-001` | — | **BLOCKED, no materializado** |
+
+Phase 2 sigue **EN CURSO**.
+
+### Bloqueos
+
+- **`HOUSE_GUEST_LIST_SIN_TRANSPORTE_DE_PRODUCCION`: NUEVO, abierto.** Salida:
+  que `protocolo-red` publique el parseo del `0x97` entrante y la emision del
+  `0x8A` saliente. **QA no lo implementa**: `cliente3d/red/` es de otro carril,
+  y ademas el fixture terminaria certificando codigo escrito por el mismo turno
+  que lo mide.
+- **`CASAS_CAMAS_SIN_PARTICIPANTE_QA_PREMIUM_CON_CASA`: sigue abierto y sin
+  modificar.** Este turno no toco premium ni camas. Son independientes: uno es
+  de transporte ausente, el otro de precondicion de estado.
+
+**Le toca:** **`PARITY-HOUSE-OWNER-ACCESS-001`**, el positivo del dueno. Es el
+unico candidato del dominio que **no** depende del transporte faltante: usa
+`/owner` como setup acotado y reversible sobre una casa sin dueno, mide contra
+el control de entrada ya certificado, y da la comparacion A/B que este turno
+buscaba —sin propiedad denegado, con propiedad permitido, `/owner none`
+restaura—. **No toca ninguna lista de acceso.**
+
+Todo lo demas del dominio que involucra listas —invitado, subdueno, puertas,
+expulsar— queda bloqueado por el mismo hueco. Alternativas fuera del dominio,
+todas sin evidencia historica: borde del alcance de comercio, cancelacion
+implicita por desconexion, baja y duplicado de contactos.
 
 ## Turno cerrado: `PARITY-HOUSE-ACCESS-001` — Restriccion de acceso a una casa
 
