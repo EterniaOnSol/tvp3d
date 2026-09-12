@@ -1,0 +1,93 @@
+{
+  "schema": "tvp3d.qa.case",
+  "version": "2.0.0",
+  "case_id": "PARITY-PARTY-SHARED-EXP-LEVEL-001",
+  "class": "LEGACY_PARITY",
+  "title": "TVP 7.72 shared experience: distribution is suppressed while a party participant is below the required minimum level",
+  "owners": ["qa"],
+  "contracts": [
+    {"contract": "qa", "version": "2.1.1"}
+  ],
+  "requirement_refs": [
+    {
+      "contract": "qa",
+      "version": "2.1.1",
+      "section": "16",
+      "source_fixture_id": "PARITY-PARTY-SHARED-EXP-LEVEL-001"
+    }
+  ],
+  "preconditions": [
+    "party de exactamente dos participantes capaces de ganar experiencia",
+    "el participante de nivel bajo esta naturalmente por debajo del minimo exigido por el servidor y ningun nivel se modifico para fabricar la condicion",
+    "los dos participantes permanecen dentro del rango espacial permitido y en el mismo piso durante toda la corrida",
+    "los dos participantes adquieren participacion reciente contra un primer monstruo hostil controlado y la conservan vigente durante la medicion negativa",
+    "la experiencia compartida quedo solicitada por el lider",
+    "la regla de NIVEL es el unico requisito de elegibilidad que no se cumple"
+  ],
+  "input_fixture": {
+    "logical_path": "qa/parity/fixtures/tvp772/party_shared_exp_level/parity-party-shared-exp-level-001.json"
+  },
+  "expected": {
+    "schema": "tvp3d.qa.parity_expectation",
+    "version": "1.0.0",
+    "mode": "SINGLE_OBSERVATION",
+    "assertions": [
+      {
+        "assertion_id": "LEVEL-LOW-PARTICIPANT-BELOW-REQUIRED",
+        "left_path": "/level_condition/low_participant_below_required_level",
+        "operator": "EQ",
+        "right": {"literal": true}
+      },
+      {
+        "assertion_id": "CONTROL-PARTY-REMAINED-FORMED",
+        "left_path": "/controls/party_remained_formed",
+        "operator": "EQ",
+        "right": {"literal": true}
+      },
+      {
+        "assertion_id": "CONTROL-SESSIONS-REMAINED-CONNECTED",
+        "left_path": "/controls/both_sessions_remained_connected",
+        "operator": "EQ",
+        "right": {"literal": true}
+      },
+      {
+        "assertion_id": "CONTROL-WITHIN-ALLOWED-RANGE",
+        "left_path": "/controls/within_allowed_range",
+        "operator": "EQ",
+        "right": {"literal": true}
+      },
+      {
+        "assertion_id": "CONTROL-BOTH-PARTICIPANTS-FRESH-ACTIVITY",
+        "left_path": "/controls/both_participants_had_fresh_activity",
+        "operator": "EQ",
+        "right": {"literal": true}
+      },
+      {
+        "assertion_id": "LEVEL-INELIGIBLE-HIGH-GAINED",
+        "left_path": "/level_ineligible_distribution/high_participant_gained_experience",
+        "operator": "EQ",
+        "right": {"literal": true}
+      },
+      {
+        "assertion_id": "LEVEL-INELIGIBLE-LOW-DID-NOT-GAIN",
+        "left_path": "/level_ineligible_distribution/low_participant_gained_experience",
+        "operator": "EQ",
+        "right": {"literal": false}
+      },
+      {
+        "assertion_id": "LEVEL-INELIGIBLE-SHARED-DISTRIBUTION-SUPPRESSED",
+        "left_path": "/level_ineligible_distribution/shared_distribution_suppressed",
+        "operator": "EQ",
+        "right": {"literal": true}
+      }
+    ]
+  },
+  "mutates_external_state": false,
+  "requires_network": false,
+  "requires_legacy": false,
+  "requires_secrets": false,
+  "status_policy": {
+    "missing_prerequisite_status": "BLOCKED",
+    "assertion_mismatch_status": "FAIL"
+  }
+}

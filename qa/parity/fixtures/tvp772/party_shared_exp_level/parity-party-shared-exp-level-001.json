@@ -1,0 +1,46 @@
+{
+  "schema": "tvp3d.qa.parity_fixture",
+  "version": "2.0.0",
+  "fixture_id": "PARITY-PARTY-SHARED-EXP-LEVEL-001",
+  "oracle": "TVP_772",
+  "oracle_version": "7.72",
+  "source_evidence": {
+    "logical_path": "docs/qa/PARITY_PHASE2D2_PARTY_SHARED_EXP_LEVEL.md"
+  },
+  "preconditions": [
+    "una party de exactamente dos participantes: un lider y un miembro, ambos personajes normales capaces de ganar experiencia (ningun participante con la bandera notgainexperience)",
+    "el participante de nivel bajo esta NATURALMENTE por debajo del minimo que exige el servidor, ceil(nivel_mas_alto_de_la_party * 2 / 3): su nivel es el estado de creacion normal del perfil y no se modifico el nivel de ningun participante para fabricar la condicion",
+    "los dos participantes permanecen holgadamente DENTRO del rango espacial permitido durante toda la corrida, en el mismo piso, de modo que el requisito espacial nunca es el que falla",
+    "los dos participantes adquieren participacion legitima y reciente contra un primer monstruo hostil controlado antes de la medicion negativa, y esa participacion sigue vigente cuando se mide",
+    "la experiencia compartida quedo SOLICITADA por el lider antes de cualquier combate",
+    "el unico requisito de elegibilidad que no se cumple es el de NIVEL"
+  ],
+  "input_action": "con la experiencia compartida ya solicitada por el lider y con los dos participantes dentro del rango permitido, en el mismo piso, en la misma party y con las dos sesiones conectadas, ambos danan de forma autoritativa a un primer monstruo hostil de prueba hasta matarlo, lo que les registra participacion reciente a los dos; despues el LIDER, y solo el lider, dana de forma autoritativa a un segundo monstruo hostil de prueba hasta matarlo, lo que fuerza al servidor a reevaluar la elegibilidad de todos los participantes de la party",
+  "observed_authoritative_result": "el reparto de experiencia compartida nunca llega a habilitarse. Al morir el primer monstruo cada participante cobra su parte INDIVIDUAL proporcional al dano que hizo, en vez de la parte igual del pozo de la party, lo que prueba a la vez que los dos participaron y que el pozo no estaba operando. Al morir el segundo monstruo, atacado unicamente por el lider, el lider cobra la experiencia individual COMPLETA del objetivo (no la fraccion que produciria la formula de reparto) y el participante de nivel bajo no cobra NADA, aunque siga en la party, dentro del rango permitido, conectado y con participacion reciente vigente. La party sigue formada, ninguna sesion se desconecta y el piso no cambia.",
+  "normalization_rules": [
+    "los participantes se comparan por ROL dentro de la party (participante de nivel alto y participante de nivel bajo), nunca por nombre de personaje, id de cuenta ni runtime id",
+    "no se serializa ningun nivel concreto: la condicion de nivel se normaliza al hecho booleano de que el participante bajo esta por debajo del minimo exigido, calculado en tiempo de captura desde los niveles autoritativos realmente reportados",
+    "no se serializa ninguna coordenada ni distancia: la permanencia dentro del rango permitido se normaliza al hecho booleano correspondiente",
+    "no se compara experiencia total acumulada de ningun personaje ni ninguna magnitud absoluta de ganancia: solo se comparan RELACIONES (quien gano algo y quien no gano nada)",
+    "la formula exacta de reparto y la experiencia base de los monstruos de prueba no se congelan como numeros en este fixture: son metadata del harness derivada de los datos del oracle en tiempo de captura",
+    "el texto exacto de los mensajes del servidor no se compara",
+    "se ignoran vocaciones concretas, especies de monstruo, marcas de tiempo de reloj de pared y cualquier metadata de host o proceso"
+  ],
+  "determinism_notes": "este fixture afirma unicamente hechos observables desde afuera. `sharedExpEnabled` no viaja por la red y NO se afirma leyendo estado interno del servidor: la supresion del reparto se prueba POR COMPORTAMIENTO. La corroboracion decisiva es la MAGNITUD de lo que cobra el participante de nivel alto por el segundo monstruo: si el reparto estuviera habilitado y simplemente excluyera al participante de nivel bajo, el de nivel alto cobraria la fraccion repartida; cobrar el pago individual COMPLETO y sin dividir demuestra que la via de reparto quedo suprimida por entero. El 0 del participante de nivel bajo se aisla de forma explicita frente a los demas requisitos de elegibilidad para que no pueda atribuirse a otra cosa: la party sigue formada y se verifica, las dos sesiones siguen conectadas y se verifican, la separacion espacial se mantiene holgadamente dentro del rango permitido y se recalcula contra las posiciones realmente reportadas, y la participacion reciente de los dos participantes se prueba por su ganancia individual contra el primer monstruo, se sostiene con la condicion de combate observable del participante bajo latcheada en el instante exacto de la muerte del segundo objetivo, y se acota ademas con un presupuesto de tiempo conservador por debajo de la ventana de frescura configurada del oracle; si ese presupuesto se excede la captura devuelve BLOCKED en vez de declarar un resultado de nivel. Tampoco puede atribuirse a un cambio de piso, a una muerte de jugador, a un tercero que se quedara con la experiencia ni a identidad ambigua del monstruo: todas esas condiciones se verifican como controladas y cada monstruo de prueba se identifica por un runtime id NUEVO, nunca por nombre. ALCANCE DECLARADO: este fixture prueba la SUPRESION POR NIVEL INSUFICIENTE. NO certifica el borde exacto del umbral (por ejemplo un participante justo en minLevel contra otro justo por debajo), porque el nivel del participante bajo esta muy por debajo del minimo y no lo roza; certificar el borde exige un fixture dedicado que ejercite exactamente esa frontera, y hacerlo sin manipular progresion exige participantes cuyos niveles caigan naturalmente ahi.",
+  "excluded_nondeterministic_fields": [
+    "character_names",
+    "character_levels",
+    "character_vocations",
+    "total_accumulated_experience",
+    "experience_gain_magnitudes",
+    "monster_species",
+    "monster_base_experience",
+    "creature_runtime_ids",
+    "account_id",
+    "positions",
+    "tile_distances",
+    "server_message_text",
+    "wall_clock_timestamp"
+  ],
+  "classification": "MATCH_EXPECTED"
+}

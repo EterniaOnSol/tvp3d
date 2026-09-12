@@ -2,8 +2,166 @@
 
 Estado: LISTO_PARA_REVISION
 Ultimo agente: claude
-Ultima actualizacion: 2026-09-11T18:40:00-06:00
+Ultima actualizacion: 2026-09-11T20:15:00-06:00
 Contrato publicado: SI (`CONTRATO.md` v2.1.1, sin cambios en este turno)
+
+## Turno cerrado: Phase 2D.2 — Paridad de NIVEL de experiencia compartida
+
+`PARITY-PARTY-SHARED-EXP-LEVEL-001`: **CERTIFICADO EN VIVO**, replay
+**`PASS 8/8`** al **primer** intento. Detalle completo en
+`docs/qa/PARITY_PHASE2D2_PARTY_SHARED_EXP_LEVEL.md`.
+
+Segundo fixture **negativo** del dominio y **ultimo hueco declarado** de la
+experiencia compartida. Los tres fixtures previos quedaron **byte-identicos**
+contra HEAD: `PARITY-PARTY-SHARED-EXP-001`,
+`PARITY-PARTY-SHARED-EXP-RANGE-001` y `PARITY-PARTY-LIFECYCLE-001`, con sus
+fixtures, `QACase`, observaciones, reportes y adaptadores sin tocar.
+
+### La regla, verificada en el codigo, no supuesta
+
+`Party::canUseSharedExperience` (`party.cpp:344-354`) toma el **maximo** nivel
+de la party y exige
+
+```
+minLevel = static_cast<uint32_t>(std::ceil((static_cast<float>(highestLevel) * 2) / 3))
+```
+
+con comparacion **estricta** (`level < minLevel` rechaza). Es `ceil` sobre punto
+flotante, **no** division entera: con nivel mas alto 25 el minimo es **17**, no
+16. Y `canEnableSharedExperience` (`party.cpp:374-386`) lo exige para el lider
+**y** para cada miembro, asi que **uno** solo inelegible apaga el reparto
+entero.
+
+### No se provisiono nada, y eso fue lo correcto
+
+El usuario autorizo **explicitamente** crear cuentas y personajes de QA
+dedicados. **No hizo falta**, asi que no se creo ninguno:
+
+- `QA_LEVEL_HIGH`: participante de QA de nivel 25 ya existente, en una cuenta
+  que contiene solo personajes de QA.
+- `QA_LEVEL_LOW`: personaje de QA ya existente que **nunca habia entrado al
+  mundo**. Sin archivo propio bajo `servidor/gamedata/players/`, el servidor lo
+  carga desde `male.dat` (`iologindata.cpp:208-236`), que es literalmente el
+  estado de creacion del perfil: **nivel 1**, 150 de vida, stamina 2530,
+  habilidades 10. Crear uno nuevo habria dado **exactamente** ese mismo estado.
+
+Se verifico ademas que su **stamina > 0**: `Player::gainExperience`
+(`player.cpp:3292-3298`) devuelve temprano con `staminaMinutes == 0`, asi que un
+participante sin stamina no habria ganado experiencia **por un motivo distinto
+del nivel** y habria contaminado el fixture entero. La fila de la base decia
+`stamina = 0` y era irrelevante: el estado autoritativo vive en los archivos
+`.tvpp`, no en esa columna.
+
+La relacion `1 < 17` es **natural**. **0** mutaciones de nivel, **0**
+`/addSkill`, **0** ediciones de base, **0** cambios de credenciales, **0**
+personajes del usuario tocados.
+
+### El aislamiento y la corroboracion fuerte
+
+El rango deja de ser variable y pasa a ser **control**: los dos participantes se
+quedan en el **mismo** punto operativo toda la corrida. La participacion de los
+dos se prueba de forma autoritativa con su **ganancia individual** contra el
+primer monstruo, porque solo cobra quien figura en el `damageMap` con dano
+positivo y ese mismo evento es el que escribe `ticksMap` (`player.cpp:3227`).
+
+La prueba decisiva es la **magnitud**: por el segundo monstruo, atacado solo por
+el participante alto, cobro **+10**, su experiencia base **completa sin
+dividir**. Si el reparto siguiera habilitado excluyendo al bajo, habria cobrado
+`ceil(10 * 1.20 / 2) = 6`. Y en el primer monstruo los dos cobraron **+7 y +2**,
+sumando 9: bajo reparto habrian sido 6 y 6, sumando 12, **imposible** porque el
+pago individual nunca supera la experiencia base.
+
+### Corroboracion independiente del archivo persistido
+
+| Magnitud | `QA_LEVEL_HIGH` | `QA_LEVEL_LOW` |
+|---|---:|---:|
+| Nivel | 25 -> 25 (**0**) | 1 -> 1 (**0**) |
+| Punos / garrote | 46 / 11 sin cambio | 10 / 10 sin cambio |
+| Experiencia | 204824 -> 204841 (**+17**) | 0 -> 2 (**+2**) |
+| Vida | 172 -> 156 | 150 -> 150 (**0 de dano**) |
+
+El personaje de nivel 1 termino con **exactamente la misma vida** con la que
+entro: el diseño de dos monstruos y la eleccion de especie (la mas debil del
+bestiario con experiencia > 0) hicieron que no recibiera **ni un punto** de
+dano. No hubo que curarlo de ninguna forma.
+
+### Efecto declarado sobre la identidad de QA
+
+El participante bajo **ya no esta virgen**: ahora tiene archivo propio con **+2
+de experiencia** legitimos por pelear. Sigue en **nivel 1** (subir a 2 exige
+100), asi que sigue sirviendo. Queda **persistido a proposito** como
+infraestructura de QA reutilizable; no se borro para dejar la base prolija.
+
+### Alcance, dicho sin adornos
+
+Prueba la **supresion por nivel insuficiente**. **NO** certifica el borde del
+umbral (`minLevel` exacto contra `minLevel - 1`), porque el participante bajo
+esta muy por debajo y no lo roza. Tampoco afirma `sharedExpEnabled` leyendo
+estado interno. Se observo ademas que el mensaje generico del legacy dice
+"inactive" aunque la causa real sea el nivel: **no distingue** cual de los
+cuatro requisitos fallo, por eso no se congela.
+
+### Imprecision declarada, no corregida a escondidas
+
+El encabezado del adaptador cita `canEnableSharedExperience` como
+`party.cpp:333` cuando la linea correcta es **374**. Es un comentario, no
+logica. **No se corrigio** porque el archivo se congelo antes de la corrida y
+editarlo ahora romperia lo unico que el congelamiento garantiza: que lo
+commiteado sea byte a byte lo que produjo la observacion.
+
+### Seguridad
+
+**1 intento vivo de 3. 0 muertes de jugador. 2 monstruos invocados (el maximo).
+0 muertes colaterales. 0 usos de `/killall`. 0 dano del god. 0 mutaciones de
+progresion. 1 `OBSERVATION_JSON`.** La verificacion de la guarda de credenciales
+corto con codigo 2 **sin contactar al servidor** y no cuenta como intento vivo.
+
+Los **7 hashes congelados** antes de la corrida quedaron **identicos** despues
+del wrap y de los dos replays. `replay.py` y `wrap_live_observation.py` **no se
+modificaron**: aceptaron un **quinto** dominio de comportamiento sin cambios.
+
+### Sin evidencia grabada, a proposito
+
+Se busco antes de decidir. Las corridas historicas de Phase 2D mantuvieron a los
+dos participantes en el **mismo nivel** justamente para no romper esta regla
+(`PARITY_PHASE2D_PARTY_SHARED_EXP.md:269`), y tanto ese documento (146-149) como
+el de Phase 2D.1 (580-583) declaran la regla de nivel como **no afirmada**.
+Ninguna corrida historica midio experiencia con un participante por debajo del
+minimo. `RECORDED_EVIDENCE` queda en **5**.
+
+## Autorizaciones vigentes del proyecto
+
+| Regla | Valor |
+|---|---|
+| `QA_TEST_IDENTITY_PROVISIONING` | **`AUTHORIZED_WHEN_REQUIRED`** — un agente de QA **puede crear** cuentas y personajes de QA dedicados cuando una prueba de paridad los necesite de verdad, con los valores por defecto de creacion normal. Nunca para fabricar el resultado esperado manipulando progresion. Los identificadores y credenciales **no se versionan**; solo se documenta el **rol** |
+| `EXISTING_CREDENTIAL_MUTATION` | **`DO_NOT_PERFORM_MERELY_TO_UNBLOCK_CAPTURE`** — si falta o no sirve una credencial, el resultado correcto es `BLOCKED` pidiendo configuracion valida, o **crear una identidad de QA nueva**. Cambiar la credencial de una cuenta existente exige justificacion propia y autorizacion explicita |
+| `USER_ACCOUNTS_AND_CHARACTERS` | **`DO_NOT_MODIFY`** — ninguna cuenta que contenga personajes del usuario, y ningun personaje del usuario, se toca por ningun motivo |
+| `LIVE_CAPTURE_CREDENTIAL_MUTATION` | **`REQUIRES_EXPLICIT_USER_AUTHORIZATION`** (sin cambio desde Phase 2D.1.1) |
+| `NO_ADMIN_PROGRESSION_MUTATIONS` | `/addSkill`, nivel, habilidades, magia, vocacion, vida, mana y experiencia: **prohibidos** en capturas de paridad. Crear un personaje con los defaults normales **no** es una mutacion de progresion: es provisionamiento |
+
+## Conteos (Phase 2D.2)
+
+| Inventario | Especificadas | Materializadas |
+|---|---:|---:|
+| Obligaciones de contrato Architecture V2 (`qa 2.1.1`) | 198 | 0 (sin cambio) |
+| Fixtures `LEGACY_PARITY` | — | **9** (antes 8) |
+| Casos de replay `QACaseV2`/`ParityExpectationV1` | — | **9** (antes 8) |
+| Observaciones `RECORDED_EVIDENCE` | — | **5** (sin cambio, a proposito) |
+| Observaciones `LIVE_ORACLE` canonicas | — | **6** (antes 5) |
+| `PARITY-PARTY-SHARED-EXP-LEVEL-001` | — | **LIVE CERTIFIED, `PASS 8/8`** |
+| Cuentas/personajes de QA creados en este turno | — | **0** |
+
+Phase 2 sigue **EN CURSO**: este turno amplia el corpus de oracle, no lo cierra.
+
+**Le toca:** con los tres requisitos observables de
+`Party::canUseSharedExperience` ya certificados por separado (actividad, rango y
+nivel), el dominio de experiencia compartida queda **cerrado salvo bordes**. Lo
+que queda declarado y sin certificar: los dos **bordes** (30 contra 31 casillas;
+`minLevel` exacto contra `minLevel - 1`) y la participacion por **curacion a un
+companero** (`player.cpp:3247`), que el codigo documenta y ninguna corrida
+ejercito. Alternativa de mayor valor: abrir un **cuarto dominio** de paridad.
+Aparte, como linea propia, sigue abierta la deuda de sacar las credenciales
+literales de los 20 scripts de prueba viva legacy de `cliente3d/pruebas/`.
 
 ## Turno cerrado: Phase 2D.1.1 — Higiene de identificadores de autenticacion
 
