@@ -853,11 +853,6 @@ void Monster::onIdleStimulus()
 		int32_t dx = Position::getDistanceX(getPosition(), attackedCreature->getPosition());
 		int32_t dy = Position::getDistanceY(getPosition(), attackedCreature->getPosition());
 
-		if (dx > 10 || dy > 10) {
-			setAttackedCreature(nullptr);
-			Target = nullptr;
-		}
-
 		if (attackedCreature && getPosition().z != attackedCreature->getPosition().z) {
 			setAttackedCreature(nullptr);
 		}
@@ -1214,7 +1209,9 @@ void Monster::onIdleStimulus()
 
 		clearToDo();
 
-		if (r != RETURNVALUE_TOOFARAWAY)
+		// A blocked step can be temporary (door, creature, or map update).
+		// Keep the live target and retry instead of falling permanently idle.
+		if (r != RETURNVALUE_TOOFARAWAY && r != RETURNVALUE_THEREISNOWAY)
 			setAttackedCreature(nullptr);
 
 		addWaitToDo(100);

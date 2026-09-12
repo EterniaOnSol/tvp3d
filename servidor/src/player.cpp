@@ -3135,12 +3135,9 @@ void Player::onAttackedCreatureDisappear(bool)
 	if (attackedCreature && chaseMode && attackedCreature->getHealth() > 0
 			&& !attackedCreature->isRemoved()
 			&& attackedCreature->getZone() != ZONE_PROTECTION) {
-		// El objetivo puede salir de la ventana visible durante el chase. No
-		// cancelar el target aqui: el ciclo de combate lo seguira y lo retomara
-		// cuando el monster vuelva a estar visible o hasta que expire el timeout.
-		if (targetClearRound == 0) {
-			targetClearRound = std::time(nullptr) + 15;
-		}
+		// El objetivo puede salir de la ventana visible durante el chase.
+		// Mantener la referencia permite retomar el camino sin otro clic.
+		targetClearRound = 0;
 		clearToDo();
 		addYieldToDo();
 		return;

@@ -119,14 +119,9 @@ void Creature::onAttacking()
 		// Sin este caso, cada salida del rango terminaba en 0xA3 (Target lost)
 		// y el ataque quedaba interrumpido hasta hacer otro clic.
 		if (Player* player = getPlayer(); player && player->chaseMode) {
-			if (player->targetClearRound == 0) {
-				player->targetClearRound = std::time(nullptr) + 15;
-			}
-			if (std::time(nullptr) >= player->targetClearRound) {
-				setAttackedCreature(nullptr);
-				player->sendCancelTarget();
-				player->sendCancelMessage("Target lost.");
-			}
+			// Chase keeps the authoritative creature reference while it is alive.
+			// Do not expire it on a wall-clock timeout.
+			player->targetClearRound = 0;
 			return;
 		}
 		onCreatureDisappear(attackedCreature, false);
@@ -136,13 +131,8 @@ void Creature::onAttacking()
 	if (!Position::areInRange<1, 1>(attackedCreature->getPosition(), getPosition())) {
 		if (Player* player = getPlayer()) {
 			if (player->chaseMode) {
-				if (player->targetClearRound != 0 && 
-					std::time(nullptr) >= player->targetClearRound) {
-					player->setAttackedCreature(nullptr);
-					player->sendCancelMessage(RETURNVALUE_THEREISNOWAY);
-				} else if (player->targetClearRound == 0) {
-					player->targetClearRound = std::time(nullptr) + 15;
-				}
+				// Keep chasing until the target is actually invalid.
+				player->targetClearRound = 0;
 				return;
 			}
 		} else if (Monster* monster = getMonster()) {
