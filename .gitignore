@@ -61,3 +61,11 @@ Thumbs.db
 Desktop.ini
 *.tmp
 *.bak
+
+
+# Reportes e imagenes generados por las herramientas. Se regeneran corriendo
+# los scripts de herramientas/, no hace falta versionar la salida.
+cliente3d/generated/reports/qa_matrix_local.json
+generated/bestiario_referencias/
+generated/bestiario_referencias_4dir/
+generated/referencias_monstruos/
