@@ -1,9 +1,35 @@
 # Estado: integracion
 
 Estado: LISTO_PARA_REVISION
-Ultimo agente: claude
-Ultima actualizacion: 2026-09-10T01:05:00-06:00
+Ultimo agente: codex
+Ultima actualizacion: 2026-09-12T12:55:00-06:00
 Contrato publicado: SI (`CONTRATO.md` v2.0.1)
+
+## Turno cerrado: producto P1 — cliente descargable
+
+- Publicado `cliente3d/export_presets.cfg` con el preset Windows Desktop
+  `windows-desktop`, arquitectura x86_64 y PCK embebido en un unico EXE.
+- Incluidos explicitamente `assets/mapa772/*.bin` y las 42 mallas
+  `propio/monstruos3d/mallas/*.tvol`, que Godot no descubre porque se cargan
+  por rutas construidas en runtime.
+- Plantillas oficiales Windows de Godot 4.7.2 instaladas fuera del repositorio
+  en `%APPDATA%\Godot\export_templates\4.7.2.stable`.
+- Generado `dist/TVP3D.exe`: 429304992 bytes, SHA-256
+  `E274D23FBDB9A711B858865B4E0DF4ABF274787AE225FEB5E461DD89D7810303`.
+  `dist/` esta ignorado y el binario no forma parte del commit.
+- Documentado el comando CLI reproducible y la ruta Windows real de
+  `user://tvp3d_host.txt` en `worklog/integracion/EXPORTAR.md`.
+- La seleccion de servidor sigue ocurriendo en runtime: `--host`,
+  `TVP3D_HOST`, archivo de usuario y por ultimo `localhost`; el preset no
+  contiene hosts, IPs, cuentas ni claves.
+- Verificacion: editor headless codigo 0 sin errores de parseo; export release
+  codigo 0 y `[ DONE ] savepack`; EXE abierto directamente, ventana `TVP3D`
+  responsiva, formulario visible, lista de personajes recibida del servidor
+  local 7171/7172 y entrada al mundo observada.
+- No se modificaron red, autoridad, mapa, gameplay, contratos de otros
+  carriles ni `docs/tibia3d/MASTER_PLAN.md`.
+- El cambio ajeno `servidor/gamedata/players/1/1.tvpp` se preservo intacto.
+- Bloqueos activos: ninguno.
 
 ## Turno cerrado: Phase 1G.1 — Integration Profile Schema Erratum
 
