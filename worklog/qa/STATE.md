@@ -1,9 +1,38 @@
 # Estado: qa
 
 Estado: LISTO_PARA_REVISION
-Ultimo agente: claude
-Ultima actualizacion: 2026-09-13T01:40:00-06:00
+Ultimo agente: codex
+Ultima actualizacion: 2026-09-13T01:34:01-06:00
 Contrato publicado: SI (`CONTRATO.md` v2.1.1, sin cambios en este turno)
+
+## Turno cerrado: `PARITY-TRADE-DISCONNECT-CANCEL-001`
+
+**CERTIFICADO EN VIVO.** Con el comercio genuinamente abierto y ambas ofertas
+observadas por los dos jugadores, A cerro solamente su socket de juego mediante
+`Conexion772.cerrar()`; no se envio logout, aceptacion ni cancelacion
+explicita desde esa sesion. B recibio el cierre autoritativo, quedo sin trade
+activo y no recibio el objeto de A. A reconecto con una sesion nueva, conservo
+su objeto, no recibio el de B y no recupero el comercio viejo.
+
+- Caso nuevo: **PASS 8/8**.
+- Corpus completo, dos corridas byte-identicas: **18 PASS, 0 FAIL, 0 BLOCKED,
+  1 NOT_RUN**. El NOT_RUN es el caso publicado
+  `PARITY-LOOT-RANDOMNESS-001` en modo `EVIDENCE_ONLY`, no una regresion.
+- Conteos rederivados: 19 fixtures, 19 QACases, 9
+  `RECORDED_EVIDENCE`, 16 `LIVE_ORACLE`; Architecture V2 198/0.
+- Intentos: 2 preflights sin comercio abierto; 1 intento completo exitoso;
+  0 fallos de oracle.
+- Mutacion: 0 items creados/borrados/transferidos/consumidos; 0 cuentas,
+  personajes, muertes, combate, monstruos, casas, listas, camas, premium o
+  progresion; residuo persistente 0.
+- Produccion y `MASTER_PLAN.md` quedaron byte-identicos. El oracle se ejecuto
+  sobre copia Temp para preservar el cambio ajeno
+  `servidor/gamedata/players/1/1.tvpp`.
+- Procesos ajenos terminados: 0.
+- Evidencia detallada: `docs/qa/PARITY_TRADE_DISCONNECT_CANCEL.md`.
+- Bloqueo preexistente sin cambios:
+  `CASAS_CAMAS_SIN_PARTICIPANTE_QA_PREMIUM_CON_CASA`.
+- Phase 2 permanece **EN CURSO**; contrato QA sigue `2.1.1`.
 
 ## Turno cerrado: `PARITY-TRADE-RANGE-BOUNDARY-001` — Borde de alcance del comercio
 

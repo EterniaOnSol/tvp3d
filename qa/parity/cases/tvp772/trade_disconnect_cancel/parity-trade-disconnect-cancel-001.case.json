@@ -1,0 +1,91 @@
+{
+  "schema": "tvp3d.qa.case",
+  "version": "2.0.0",
+  "case_id": "PARITY-TRADE-DISCONNECT-CANCEL-001",
+  "class": "LEGACY_PARITY",
+  "title": "TVP 7.72 trade: disconnecting one participant closes an open trade and transfers nothing",
+  "owners": ["qa"],
+  "contracts": [
+    {"contract": "qa", "version": "2.1.1"}
+  ],
+  "requirement_refs": [
+    {
+      "contract": "qa",
+      "version": "2.1.1",
+      "section": "16",
+      "source_fixture_id": "PARITY-TRADE-DISCONNECT-CANCEL-001"
+    }
+  ],
+  "preconditions": [
+    "dos participantes normales con sesiones simultaneas y dentro del alcance de comercio",
+    "cada uno posee un objeto real propio y distinguible",
+    "las dos sesiones observan ambas ofertas antes del corte",
+    "ninguno acepta ni cancela explicitamente"
+  ],
+  "input_fixture": {
+    "logical_path": "qa/parity/fixtures/tvp772/trade_disconnect_cancel/parity-trade-disconnect-cancel-001.json"
+  },
+  "expected": {
+    "schema": "tvp3d.qa.parity_expectation",
+    "version": "1.0.0",
+    "mode": "SINGLE_OBSERVATION",
+    "assertions": [
+      {
+        "assertion_id": "DISCONNECT-PARTICIPANTS-WITHIN-RANGE",
+        "left_path": "/open_trade/participants_within_trade_range",
+        "operator": "EQ",
+        "right": {"literal": true}
+      },
+      {
+        "assertion_id": "DISCONNECT-EACH-OFFERED-A-REAL-ITEM",
+        "left_path": "/open_trade/each_participant_offered_a_real_item",
+        "operator": "EQ",
+        "right": {"literal": true}
+      },
+      {
+        "assertion_id": "DISCONNECT-BOTH-SAW-OWN-AND-COUNTERPART-OFFER",
+        "left_path": "/open_trade/both_participants_saw_own_and_counterpart_offer",
+        "operator": "EQ",
+        "right": {"literal": true}
+      },
+      {
+        "assertion_id": "DISCONNECT-NO-ACCEPTANCE-OR-EXPLICIT-CANCEL",
+        "left_path": "/open_trade/no_acceptance_or_explicit_cancel_sent",
+        "operator": "EQ",
+        "right": {"literal": true}
+      },
+      {
+        "assertion_id": "DISCONNECT-PRODUCTION-SOCKET-CLOSED-WITHOUT-GAMEPLAY",
+        "left_path": "/disconnect_cleanup/production_game_socket_closed_without_gameplay_request",
+        "operator": "EQ",
+        "right": {"literal": true}
+      },
+      {
+        "assertion_id": "DISCONNECT-SURVIVOR-CLOSED-AND-INACTIVE",
+        "left_path": "/disconnect_cleanup/survivor_authoritative_close_left_trade_inactive",
+        "operator": "EQ",
+        "right": {"literal": true}
+      },
+      {
+        "assertion_id": "DISCONNECT-OFFERED-ITEMS-KEPT-OWNERS-AFTER-RECONNECT",
+        "left_path": "/no_transfer/offered_items_kept_original_owners_after_reconnect",
+        "operator": "EQ",
+        "right": {"literal": true}
+      },
+      {
+        "assertion_id": "DISCONNECT-OLD-TRADE-NOT-RESTORED",
+        "left_path": "/no_transfer/disconnected_participant_old_trade_not_restored",
+        "operator": "EQ",
+        "right": {"literal": true}
+      }
+    ]
+  },
+  "mutates_external_state": false,
+  "requires_network": false,
+  "requires_legacy": false,
+  "requires_secrets": false,
+  "status_policy": {
+    "missing_prerequisite_status": "BLOCKED",
+    "assertion_mismatch_status": "FAIL"
+  }
+}

@@ -1,0 +1,29 @@
+{
+  "schema": "tvp3d.qa.oracle_observation",
+  "version": "1.0.0",
+  "fixture_id": "PARITY-TRADE-DISCONNECT-CANCEL-001",
+  "oracle": "TVP_772",
+  "oracle_version": "7.72",
+  "capture_origin": "LIVE_ORACLE",
+  "source_evidence": [
+    {
+      "logical_path": "docs/qa/PARITY_TRADE_DISCONNECT_CANCEL.md"
+    }
+  ],
+  "payload": {
+    "disconnect_cleanup": {
+      "production_game_socket_closed_without_gameplay_request": true,
+      "survivor_authoritative_close_left_trade_inactive": true
+    },
+    "no_transfer": {
+      "disconnected_participant_old_trade_not_restored": true,
+      "offered_items_kept_original_owners_after_reconnect": true
+    },
+    "open_trade": {
+      "both_participants_saw_own_and_counterpart_offer": true,
+      "each_participant_offered_a_real_item": true,
+      "no_acceptance_or_explicit_cancel_sent": true,
+      "participants_within_trade_range": true
+    }
+  }
+}

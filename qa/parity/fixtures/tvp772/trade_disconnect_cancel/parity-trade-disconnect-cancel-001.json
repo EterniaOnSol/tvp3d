@@ -1,0 +1,50 @@
+{
+  "schema": "tvp3d.qa.parity_fixture",
+  "version": "2.0.0",
+  "fixture_id": "PARITY-TRADE-DISCONNECT-CANCEL-001",
+  "oracle": "TVP_772",
+  "oracle_version": "7.72",
+  "source_evidence": {
+    "logical_path": "docs/qa/PARITY_TRADE_DISCONNECT_CANCEL.md"
+  },
+  "preconditions": [
+    "dos participantes normales y distintos, con sesiones de juego simultaneas y dentro del alcance de comercio en el mismo piso",
+    "cada participante posee un objeto autoritativo real, propio, distinguible, levantable y no contenedor",
+    "las dos sesiones observan su oferta propia y la de la contraparte antes de desconectar",
+    "ningun participante acepta ni cancela explicitamente",
+    "el participante que sobrevive permanece conectado mientras se corta solamente el socket de juego del otro"
+  ],
+  "input_action": "con el comercio efectivamente abierto, cerrar mediante Conexion772.cerrar() el socket de juego del participante A, sin enviar logout, aceptacion, cancelacion explicita, movimiento de objeto ni otra accion de gameplay desde esa sesion",
+  "observed_authoritative_result": "el servidor cierra implicitamente el comercio para B mediante su mensaje autoritativo de cierre y deja su sesion de comercio inactiva. Tras reconectar A, los dos objetos conservan sus duenos originales y el comercio anterior no reaparece.",
+  "normalization_rules": [
+    "los participantes se comparan solo por rol: participante desconectado y participante sobreviviente",
+    "el mecanismo se normaliza al cierre del socket de juego de produccion sin solicitud de gameplay; no se serializan socket, puerto, host ni opcode",
+    "el comercio abierto se prueba con las ofertas propia y de contraparte observadas por las dos sesiones",
+    "la ausencia de aceptacion y cancelacion explicita se deriva de contadores de llamadas del harness iguales a cero",
+    "los objetos se comparan por la relacion de propiedad antes y despues; no se serializan especie, ids ni ranuras",
+    "el cierre de B se normaliza al evento autoritativo que tambien deja comercio.activo en falso",
+    "la reconexion se normaliza a una sesion nueva sin el comercio anterior",
+    "se ignoran nombres, cuentas, credenciales, posiciones, runtime ids, timestamps, procesos y metadata de host"
+  ],
+  "determinism_notes": "El control positivo evita el falso positivo trivial de que ningun objeto se movio porque el comercio nunca abrio. La accion medida no invoca enviar_logout(), enviar_aceptar_comercio() ni enviar_cerrar_comercio() sobre la sesion original de A: Conexion772.cerrar() solo corta el TCP. Este fixture certifica exclusivamente la limpieza implicita de un comercio OPEN, sin aceptaciones y fuera de TRADE_TRANSFER. No certifica cancelacion explicita, fallo de transferencia, desconexion tras aceptar, crash de proceso o servidor, perdida de paquetes, timeout ni otros mecanismos de desconexion.",
+  "excluded_nondeterministic_fields": [
+    "character_names",
+    "account_id",
+    "player_guid",
+    "creature_runtime_ids",
+    "item_server_ids",
+    "item_client_ids",
+    "item_species",
+    "inventory_slot_ids",
+    "container_runtime_ids",
+    "legacy_protocol_opcodes",
+    "socket_ids",
+    "host",
+    "port",
+    "positions",
+    "server_message_text",
+    "wall_clock_timestamp",
+    "process_id"
+  ],
+  "classification": "MATCH_EXPECTED"
+}
