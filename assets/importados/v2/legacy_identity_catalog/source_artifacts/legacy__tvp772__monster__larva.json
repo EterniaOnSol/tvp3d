@@ -1,0 +1,11 @@
+{
+  "schema": "tvp3d.assets.source_artifact",
+  "version": "2.0.0",
+  "artifact_id": "legacy/tvp772/monster/larva",
+  "system": "XML",
+  "source_version": "7.72",
+  "kind": "XML",
+  "repository_relative_path": "servidor/data/monster/monsters/larva.xml",
+  "sha256": "38496a2832c149c6934185848eca2d1d8d75e05e1bdd660ea03fcf26d66ad888",
+  "size_bytes": "1224"
+}

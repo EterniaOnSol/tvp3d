@@ -1,0 +1,11 @@
+{
+  "schema": "tvp3d.assets.source_artifact",
+  "version": "2.0.0",
+  "artifact_id": "legacy/tvp772/monster/elf",
+  "system": "XML",
+  "source_version": "7.72",
+  "kind": "XML",
+  "repository_relative_path": "servidor/data/monster/monsters/elf.xml",
+  "sha256": "777f37f0661243aad91bf27f1a555de12e47f96d663ee1cfea946d2363f3f761",
+  "size_bytes": "1942"
+}

@@ -1,0 +1,11 @@
+{
+  "schema": "tvp3d.assets.source_artifact",
+  "version": "2.0.0",
+  "artifact_id": "legacy/tvp772/monster/black_knight",
+  "system": "XML",
+  "source_version": "7.72",
+  "kind": "XML",
+  "repository_relative_path": "servidor/data/monster/monsters/black knight.xml",
+  "sha256": "8c35d64b54694b28d170a4b9f11d5d0b7b61364faab25f9f1411f435ccd995e8",
+  "size_bytes": "2857"
+}

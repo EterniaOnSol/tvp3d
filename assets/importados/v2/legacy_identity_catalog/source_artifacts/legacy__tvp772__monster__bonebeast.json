@@ -1,0 +1,11 @@
+{
+  "schema": "tvp3d.assets.source_artifact",
+  "version": "2.0.0",
+  "artifact_id": "legacy/tvp772/monster/bonebeast",
+  "system": "XML",
+  "source_version": "7.72",
+  "kind": "XML",
+  "repository_relative_path": "servidor/data/monster/monsters/bonebeast.xml",
+  "sha256": "a82b9093dfbadbf354f20aa8f28019150d71202c0f485ae19bf52b04aa1f7627",
+  "size_bytes": "2352"
+}

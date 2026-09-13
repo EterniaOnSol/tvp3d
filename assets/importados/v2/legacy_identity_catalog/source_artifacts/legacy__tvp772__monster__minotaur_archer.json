@@ -1,0 +1,11 @@
+{
+  "schema": "tvp3d.assets.source_artifact",
+  "version": "2.0.0",
+  "artifact_id": "legacy/tvp772/monster/minotaur_archer",
+  "system": "XML",
+  "source_version": "7.72",
+  "kind": "XML",
+  "repository_relative_path": "servidor/data/monster/monsters/minotaur archer.xml",
+  "sha256": "4bd66bca57c3c5723d7a155c4253cc06d802b369765338ade0b1eec0c668b676",
+  "size_bytes": "2066"
+}

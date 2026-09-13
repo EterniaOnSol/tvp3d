@@ -1,0 +1,11 @@
+{
+  "schema": "tvp3d.assets.source_artifact",
+  "version": "2.0.0",
+  "artifact_id": "legacy/tvp772/monster/cyclops",
+  "system": "XML",
+  "source_version": "7.72",
+  "kind": "XML",
+  "repository_relative_path": "servidor/data/monster/monsters/cyclops.xml",
+  "sha256": "d5cfbfa936d3bd07ec8bc7ef00b2b41aabbdc14a580033779df6635680199c45",
+  "size_bytes": "2054"
+}

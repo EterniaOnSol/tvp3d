@@ -1,0 +1,11 @@
+{
+  "schema": "tvp3d.assets.source_artifact",
+  "version": "2.0.0",
+  "artifact_id": "legacy/tvp772/monster/blue_butterfly",
+  "system": "XML",
+  "source_version": "7.72",
+  "kind": "XML",
+  "repository_relative_path": "servidor/data/monster/monsters/blue butterfly.xml",
+  "sha256": "bdad93bab119b414b795b1e8407e1430ea4fc1f2b4d0f354e634781201b5e837",
+  "size_bytes": "1059"
+}

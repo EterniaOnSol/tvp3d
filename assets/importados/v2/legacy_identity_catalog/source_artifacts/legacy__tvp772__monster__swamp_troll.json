@@ -1,0 +1,11 @@
+{
+  "schema": "tvp3d.assets.source_artifact",
+  "version": "2.0.0",
+  "artifact_id": "legacy/tvp772/monster/swamp_troll",
+  "system": "XML",
+  "source_version": "7.72",
+  "kind": "XML",
+  "repository_relative_path": "servidor/data/monster/monsters/swamp troll.xml",
+  "sha256": "e802fd13e73e61ec8efe6f2318074fcad016733a65c0e0eebd2821438141ccd1",
+  "size_bytes": "1640"
+}

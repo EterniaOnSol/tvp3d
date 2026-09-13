@@ -1,0 +1,11 @@
+{
+  "schema": "tvp3d.assets.source_artifact",
+  "version": "2.0.0",
+  "artifact_id": "legacy/tvp772/monster/dwarf",
+  "system": "XML",
+  "source_version": "7.72",
+  "kind": "XML",
+  "repository_relative_path": "servidor/data/monster/monsters/dwarf.xml",
+  "sha256": "6a495ec9de8a7315a32f687a1186885e509bff9398c0800f9aa5e308f24f1f93",
+  "size_bytes": "1812"
+}

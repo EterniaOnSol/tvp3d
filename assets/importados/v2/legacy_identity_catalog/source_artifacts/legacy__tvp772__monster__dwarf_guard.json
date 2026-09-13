@@ -1,0 +1,11 @@
+{
+  "schema": "tvp3d.assets.source_artifact",
+  "version": "2.0.0",
+  "artifact_id": "legacy/tvp772/monster/dwarf_guard",
+  "system": "XML",
+  "source_version": "7.72",
+  "kind": "XML",
+  "repository_relative_path": "servidor/data/monster/monsters/dwarf guard.xml",
+  "sha256": "15cca369f9dafdf8499ddea5351d3a98faa7ac7943b34c886bd4f83b2cda74c3",
+  "size_bytes": "1845"
+}

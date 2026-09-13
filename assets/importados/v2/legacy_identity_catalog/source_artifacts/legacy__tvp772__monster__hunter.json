@@ -1,0 +1,11 @@
+{
+  "schema": "tvp3d.assets.source_artifact",
+  "version": "2.0.0",
+  "artifact_id": "legacy/tvp772/monster/hunter",
+  "system": "XML",
+  "source_version": "7.72",
+  "kind": "XML",
+  "repository_relative_path": "servidor/data/monster/monsters/hunter.xml",
+  "sha256": "f47ba7916a84603ded81dbb4c71722129c482b92ea1a831ae2bff5eea3bd7cf0",
+  "size_bytes": "2177"
+}

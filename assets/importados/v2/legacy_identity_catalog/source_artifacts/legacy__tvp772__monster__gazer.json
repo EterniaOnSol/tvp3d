@@ -1,0 +1,11 @@
+{
+  "schema": "tvp3d.assets.source_artifact",
+  "version": "2.0.0",
+  "artifact_id": "legacy/tvp772/monster/gazer",
+  "system": "XML",
+  "source_version": "7.72",
+  "kind": "XML",
+  "repository_relative_path": "servidor/data/monster/monsters/gazer.xml",
+  "sha256": "a6811d7dd8e31549eb8e500bfb08f331b89692297378096d1318c44dc4ca4186",
+  "size_bytes": "1909"
+}

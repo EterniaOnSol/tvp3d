@@ -1,0 +1,11 @@
+{
+  "schema": "tvp3d.assets.source_artifact",
+  "version": "2.0.0",
+  "artifact_id": "legacy/tvp772/monster/orshabaal",
+  "system": "XML",
+  "source_version": "7.72",
+  "kind": "XML",
+  "repository_relative_path": "servidor/data/monster/monsters/orshabaal.xml",
+  "sha256": "dfc84fbe71730c3221ff43765faf79512a1f59f9a05454d8f774db2b74dddb9b",
+  "size_bytes": "6221"
+}

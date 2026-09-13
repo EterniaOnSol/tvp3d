@@ -1,0 +1,11 @@
+{
+  "schema": "tvp3d.assets.source_artifact",
+  "version": "2.0.0",
+  "artifact_id": "legacy/tvp772/monster/cobra",
+  "system": "XML",
+  "source_version": "7.72",
+  "kind": "XML",
+  "repository_relative_path": "servidor/data/monster/monsters/cobra.xml",
+  "sha256": "4e5c329b9e5add6c759bde10fe223d407980b2d88b9a33753ade731fc9fde8a3",
+  "size_bytes": "1270"
+}

@@ -1,0 +1,11 @@
+{
+  "schema": "tvp3d.assets.source_artifact",
+  "version": "2.0.0",
+  "artifact_id": "legacy/tvp772/monster/dragon",
+  "system": "XML",
+  "source_version": "7.72",
+  "kind": "XML",
+  "repository_relative_path": "servidor/data/monster/monsters/dragon.xml",
+  "sha256": "737d1f77009112eecdefaf2937d3ab8ba41d51505711ecb30dd5a33b8f1ff919",
+  "size_bytes": "2881"
+}

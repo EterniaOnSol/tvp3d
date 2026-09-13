@@ -1,0 +1,11 @@
+{
+  "schema": "tvp3d.assets.source_artifact",
+  "version": "2.0.0",
+  "artifact_id": "legacy/tvp772/monster/shredderthrower",
+  "system": "XML",
+  "source_version": "7.72",
+  "kind": "XML",
+  "repository_relative_path": "servidor/data/monster/monsters/shredderthrower.xml",
+  "sha256": "0226522e5d314f07a3cd238f16ab6f141eabab78ba53e0f19c61520ff3fce465",
+  "size_bytes": "1261"
+}

@@ -1,0 +1,11 @@
+{
+  "schema": "tvp3d.assets.source_artifact",
+  "version": "2.0.0",
+  "artifact_id": "legacy/tvp772/monster/bug",
+  "system": "XML",
+  "source_version": "7.72",
+  "kind": "XML",
+  "repository_relative_path": "servidor/data/monster/monsters/bug.xml",
+  "sha256": "7f6dd541ce5fa38c3a53de51c0b7d4d03553eb3b3d0947cb6745bb2a00dba3e2",
+  "size_bytes": "1199"
+}

@@ -1,0 +1,11 @@
+{
+  "schema": "tvp3d.assets.source_artifact",
+  "version": "2.0.0",
+  "artifact_id": "legacy/tvp772/monster/bat",
+  "system": "XML",
+  "source_version": "7.72",
+  "kind": "XML",
+  "repository_relative_path": "servidor/data/monster/monsters/bat.xml",
+  "sha256": "215cacf62d7b61af4a9650103929aaccab178aca8625c2a11701cb5efdef3063",
+  "size_bytes": "1109"
+}

@@ -1,0 +1,11 @@
+{
+  "schema": "tvp3d.assets.source_artifact",
+  "version": "2.0.0",
+  "artifact_id": "legacy/tvp772/monster/wolf",
+  "system": "XML",
+  "source_version": "7.72",
+  "kind": "XML",
+  "repository_relative_path": "servidor/data/monster/monsters/wolf.xml",
+  "sha256": "9f4657db24d36278f24a7dc847e163c0bcdd58b357fc8dfb595f6bc254f91d87",
+  "size_bytes": "1135"
+}

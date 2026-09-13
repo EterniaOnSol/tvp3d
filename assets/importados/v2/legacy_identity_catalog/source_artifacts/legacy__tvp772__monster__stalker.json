@@ -1,0 +1,11 @@
+{
+  "schema": "tvp3d.assets.source_artifact",
+  "version": "2.0.0",
+  "artifact_id": "legacy/tvp772/monster/stalker",
+  "system": "XML",
+  "source_version": "7.72",
+  "kind": "XML",
+  "repository_relative_path": "servidor/data/monster/monsters/stalker.xml",
+  "sha256": "505286a5c15bc9249e28b638648c9453e0d11ce5134866c9fad923d6b3daf272",
+  "size_bytes": "1903"
+}

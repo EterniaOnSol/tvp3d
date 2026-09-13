@@ -1,0 +1,11 @@
+{
+  "schema": "tvp3d.assets.source_artifact",
+  "version": "2.0.0",
+  "artifact_id": "legacy/tvp772/monster/minotaur_guard",
+  "system": "XML",
+  "source_version": "7.72",
+  "kind": "XML",
+  "repository_relative_path": "servidor/data/monster/monsters/minotaur guard.xml",
+  "sha256": "b89c4aa0c0fec1a9ca37ad0a5d29eddd8999cbb1d9d849d6fd2728673b22fc45",
+  "size_bytes": "1872"
+}

@@ -1,0 +1,11 @@
+{
+  "schema": "tvp3d.assets.source_artifact",
+  "version": "2.0.0",
+  "artifact_id": "legacy/tvp772/monster/orc_spearman",
+  "system": "XML",
+  "source_version": "7.72",
+  "kind": "XML",
+  "repository_relative_path": "servidor/data/monster/monsters/orc spearman.xml",
+  "sha256": "cedd988ea7742eb029e3c0d8cecdcaf3a6e0994046ef2942c92893bfcb7c6e92",
+  "size_bytes": "1750"
+}

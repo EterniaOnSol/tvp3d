@@ -1,0 +1,11 @@
+{
+  "schema": "tvp3d.assets.source_artifact",
+  "version": "2.0.0",
+  "artifact_id": "legacy/tvp772/monster/tarantula",
+  "system": "XML",
+  "source_version": "7.72",
+  "kind": "XML",
+  "repository_relative_path": "servidor/data/monster/monsters/tarantula.xml",
+  "sha256": "a74e3d10584966b3c570d83c456757ceab956af867efbb7f7b38fe09f190a586",
+  "size_bytes": "1831"
+}

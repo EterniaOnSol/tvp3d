@@ -1,0 +1,11 @@
+{
+  "schema": "tvp3d.assets.source_artifact",
+  "version": "2.0.0",
+  "artifact_id": "legacy/tvp772/monster/lich",
+  "system": "XML",
+  "source_version": "7.72",
+  "kind": "XML",
+  "repository_relative_path": "servidor/data/monster/monsters/lich.xml",
+  "sha256": "e7981911158c839abce8709a9868d3a71558694c631a779d067cce057d88c50b",
+  "size_bytes": "3325"
+}

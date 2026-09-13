@@ -1,0 +1,11 @@
+{
+  "schema": "tvp3d.assets.source_artifact",
+  "version": "2.0.0",
+  "artifact_id": "legacy/tvp772/monster/the_evil_eye",
+  "system": "XML",
+  "source_version": "7.72",
+  "kind": "XML",
+  "repository_relative_path": "servidor/data/monster/monsters/the evil eye.xml",
+  "sha256": "b22cd07ca34b42abd685701a158ccd002cb90e5dad83dbb91ba8d04d1f1ce17e",
+  "size_bytes": "3557"
+}

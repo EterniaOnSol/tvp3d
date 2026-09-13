@@ -1,0 +1,11 @@
+{
+  "schema": "tvp3d.assets.source_artifact",
+  "version": "2.0.0",
+  "artifact_id": "legacy/tvp772/monster/slime",
+  "system": "XML",
+  "source_version": "7.72",
+  "kind": "XML",
+  "repository_relative_path": "servidor/data/monster/monsters/slime.xml",
+  "sha256": "82201c62a3d927dabeb16819c89f8193d0275d05c903f20b194e70a8f9165cdc",
+  "size_bytes": "1195"
+}

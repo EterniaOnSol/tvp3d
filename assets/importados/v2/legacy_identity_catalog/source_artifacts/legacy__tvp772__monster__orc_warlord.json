@@ -1,0 +1,11 @@
+{
+  "schema": "tvp3d.assets.source_artifact",
+  "version": "2.0.0",
+  "artifact_id": "legacy/tvp772/monster/orc_warlord",
+  "system": "XML",
+  "source_version": "7.72",
+  "kind": "XML",
+  "repository_relative_path": "servidor/data/monster/monsters/orc warlord.xml",
+  "sha256": "e5b629b72c71f930b3df02d40ebc3d0af23da0cadd7c90901e62639667e20a9b",
+  "size_bytes": "2649"
+}

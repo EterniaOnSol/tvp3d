@@ -1,0 +1,11 @@
+{
+  "schema": "tvp3d.assets.source_artifact",
+  "version": "2.0.0",
+  "artifact_id": "legacy/tvp772/monster/blue_djinn",
+  "system": "XML",
+  "source_version": "7.72",
+  "kind": "XML",
+  "repository_relative_path": "servidor/data/monster/monsters/blue djinn.xml",
+  "sha256": "2fee4dcf116b1a1e5c3a5d6c456eb909e12efb4e1a90e1477fd4677c293ce35a",
+  "size_bytes": "2527"
+}

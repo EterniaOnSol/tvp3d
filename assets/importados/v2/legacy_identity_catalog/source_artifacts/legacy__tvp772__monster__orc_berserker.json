@@ -1,0 +1,11 @@
+{
+  "schema": "tvp3d.assets.source_artifact",
+  "version": "2.0.0",
+  "artifact_id": "legacy/tvp772/monster/orc_berserker",
+  "system": "XML",
+  "source_version": "7.72",
+  "kind": "XML",
+  "repository_relative_path": "servidor/data/monster/monsters/orc berserker.xml",
+  "sha256": "d9ee6cf2f36e1d31f7a4fbfeab1a24caa2a3bc2486689f7175942f1716673d08",
+  "size_bytes": "1784"
+}

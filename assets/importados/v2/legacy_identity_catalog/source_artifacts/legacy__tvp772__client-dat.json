@@ -1,0 +1,11 @@
+{
+  "schema": "tvp3d.assets.source_artifact",
+  "version": "2.0.0",
+  "artifact_id": "legacy/tvp772/client-dat",
+  "system": "DAT",
+  "source_version": "7.72",
+  "kind": "DAT",
+  "repository_relative_path": "cliente3d/assets/cliente772/Tibia.dat",
+  "sha256": "3c5e857ff72fd1e52879eb8845adc72c0991786ad0eaf85f6847595c9677aedd",
+  "size_bytes": "175805"
+}

@@ -1,0 +1,11 @@
+{
+  "schema": "tvp3d.assets.source_artifact",
+  "version": "2.0.0",
+  "artifact_id": "legacy/tvp772/monster/hydra",
+  "system": "XML",
+  "source_version": "7.72",
+  "kind": "XML",
+  "repository_relative_path": "servidor/data/monster/monsters/hydra.xml",
+  "sha256": "1f33ba6d67b969a5396a2aa32f4a623c0aaaf8667ec50476dd8019af6177af02",
+  "size_bytes": "2881"
+}

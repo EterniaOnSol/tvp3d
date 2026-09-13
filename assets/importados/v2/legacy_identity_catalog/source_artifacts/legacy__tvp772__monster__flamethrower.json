@@ -1,0 +1,11 @@
+{
+  "schema": "tvp3d.assets.source_artifact",
+  "version": "2.0.0",
+  "artifact_id": "legacy/tvp772/monster/flamethrower",
+  "system": "XML",
+  "source_version": "7.72",
+  "kind": "XML",
+  "repository_relative_path": "servidor/data/monster/monsters/flamethrower.xml",
+  "sha256": "d120d91b95daef47ebe3f146d03ebdcdcceeb504991f08f9a6560d0abc4f267f",
+  "size_bytes": "1243"
+}

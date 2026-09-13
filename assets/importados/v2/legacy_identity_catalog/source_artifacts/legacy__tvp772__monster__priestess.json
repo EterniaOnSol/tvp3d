@@ -1,0 +1,11 @@
+{
+  "schema": "tvp3d.assets.source_artifact",
+  "version": "2.0.0",
+  "artifact_id": "legacy/tvp772/monster/priestess",
+  "system": "XML",
+  "source_version": "7.72",
+  "kind": "XML",
+  "repository_relative_path": "servidor/data/monster/monsters/priestess.xml",
+  "sha256": "1a1b8a93260103ae48489fd17eeb902867e88af107109753676b1d7d2d5a69ea",
+  "size_bytes": "2645"
+}

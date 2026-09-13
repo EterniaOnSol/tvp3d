@@ -1,0 +1,11 @@
+{
+  "schema": "tvp3d.assets.source_artifact",
+  "version": "2.0.0",
+  "artifact_id": "legacy/tvp772/monster/smuggler",
+  "system": "XML",
+  "source_version": "7.72",
+  "kind": "XML",
+  "repository_relative_path": "servidor/data/monster/monsters/smuggler.xml",
+  "sha256": "187456669eed32a0a7b8ae8dfcac2c4b7b0a3b14fb3794723fa32b2007e9789d",
+  "size_bytes": "1892"
+}

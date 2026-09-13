@@ -1,0 +1,11 @@
+{
+  "schema": "tvp3d.assets.source_artifact",
+  "version": "2.0.0",
+  "artifact_id": "legacy/tvp772/monster/kongra",
+  "system": "XML",
+  "source_version": "7.72",
+  "kind": "XML",
+  "repository_relative_path": "servidor/data/monster/monsters/kongra.xml",
+  "sha256": "082630456a005b483d0e2b9621fa7516532b37d2a12d7a72d1e9d1e57c2d4258",
+  "size_bytes": "1905"
+}

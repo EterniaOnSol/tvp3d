@@ -1,0 +1,11 @@
+{
+  "schema": "tvp3d.assets.source_artifact",
+  "version": "2.0.0",
+  "artifact_id": "legacy/tvp772/monster/bazir",
+  "system": "XML",
+  "source_version": "7.72",
+  "kind": "XML",
+  "repository_relative_path": "servidor/data/monster/monsters/bazir.xml",
+  "sha256": "da5f00c8ea33f964649b24f060ebf5c403e3c976f9a808857f505b504f504428",
+  "size_bytes": "7451"
+}

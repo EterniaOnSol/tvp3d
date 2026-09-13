@@ -1,0 +1,11 @@
+{
+  "schema": "tvp3d.assets.source_artifact",
+  "version": "2.0.0",
+  "artifact_id": "legacy/tvp772/items-otb",
+  "system": "OTB",
+  "source_version": "7.72",
+  "kind": "OTB",
+  "repository_relative_path": "servidor/data/items/items.otb",
+  "sha256": "99d2b1e59783225402c95cf31c9d1dae4da67eee3cd99823da8f22ebdec4294a",
+  "size_bytes": "207698"
+}

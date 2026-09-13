@@ -2,10 +2,28 @@
 
 Estado: LISTO_PARA_REVISION
 Ultimo agente: codex
-Ultima actualizacion: 2026-09-09T17:18:27-06:00
+Ultima actualizacion: 2026-09-13T12:00:00-06:00
 Contrato publicado: SI
 
 ## Ultimo turno cerrado
+
+- Stage 1 del catalogo determinista legacy materializado contra las fuentes
+  reales Tibia 7.72. Import run:
+  sha256:f0ec4ddfed4cfc6600a679eab3ce31db43a3f4c671679df5956bd28ccccedc34.
+  Se publican 168 archivos derivados: 163 manifests de fuente, mappings,
+  alias index, canonical index, validation e import run.
+- Resultado: 5143 identidades canonicas y mappings; 43243 aliases; 6 OTB
+  many-to-one; 0 ids OTBM sin traduccion; 2657 aliases ambiguos explicitamente
+  preservados; un tile con 34 elementos reportado sobre MAX_POR_CASILLA=32.
+- items772_flags.json queda reproducible desde OTB con estado
+  RESOLVED_PER_RECORD_LEGACY_CLIENT_INDEX_CONFLICT: unicamente client id 425
+  tiene server ids 422/4331 con flags incompatibles y no se inventa inversa.
+  No se hash-ea ni declara fuente el JSON runtime legado.
+- La generacion real en dos directorios aislados fue byte-identica. Runtime,
+  renderer, Integration, QA, Protocolo y servidor permanecen sin cambios.
+
+- Se abre Stage 1 del catalogo determinista de identidad legacy; se preservan
+  las fuentes y se mantiene congelado el runtime.
 
 - Phase 1C publico Assets / Data Import V2 2.0.0 y conservo Assets 1.4.0
   como perfil historico superseded.

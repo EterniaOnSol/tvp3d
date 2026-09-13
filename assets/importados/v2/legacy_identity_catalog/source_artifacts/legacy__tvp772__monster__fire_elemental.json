@@ -1,0 +1,11 @@
+{
+  "schema": "tvp3d.assets.source_artifact",
+  "version": "2.0.0",
+  "artifact_id": "legacy/tvp772/monster/fire_elemental",
+  "system": "XML",
+  "source_version": "7.72",
+  "kind": "XML",
+  "repository_relative_path": "servidor/data/monster/monsters/fire elemental.xml",
+  "sha256": "425f487e65d6bac1908f5628fb6023b8db307623f7ea37250b2f3cf716c340fd",
+  "size_bytes": "1411"
+}

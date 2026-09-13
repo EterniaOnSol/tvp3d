@@ -1,0 +1,11 @@
+{
+  "schema": "tvp3d.assets.source_artifact",
+  "version": "2.0.0",
+  "artifact_id": "legacy/tvp772/monster/merlkin",
+  "system": "XML",
+  "source_version": "7.72",
+  "kind": "XML",
+  "repository_relative_path": "servidor/data/monster/monsters/merlkin.xml",
+  "sha256": "840d2c083c4eab19d75817965fb3d3977acbfb81f675ca944ec0c7fe5cece2f0",
+  "size_bytes": "2312"
+}

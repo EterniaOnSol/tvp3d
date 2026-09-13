@@ -1,0 +1,11 @@
+{
+  "schema": "tvp3d.assets.source_artifact",
+  "version": "2.0.0",
+  "artifact_id": "legacy/tvp772/monster/sibang",
+  "system": "XML",
+  "source_version": "7.72",
+  "kind": "XML",
+  "repository_relative_path": "servidor/data/monster/monsters/sibang.xml",
+  "sha256": "9772e2477870cc0ef79fc06c63f6d6ad8b567468f16ac20228e85c7579d0847d",
+  "size_bytes": "1962"
+}

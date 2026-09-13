@@ -1,0 +1,11 @@
+{
+  "schema": "tvp3d.assets.source_artifact",
+  "version": "2.0.0",
+  "artifact_id": "legacy/tvp772/monster/rabbit",
+  "system": "XML",
+  "source_version": "7.72",
+  "kind": "XML",
+  "repository_relative_path": "servidor/data/monster/monsters/rabbit.xml",
+  "sha256": "bb4bf6b353b0d859ac5c1d9c14a46513ea12230cf1d782d189e61e18921452aa",
+  "size_bytes": "1199"
+}

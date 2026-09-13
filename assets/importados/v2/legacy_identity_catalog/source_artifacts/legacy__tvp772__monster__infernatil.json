@@ -1,0 +1,11 @@
+{
+  "schema": "tvp3d.assets.source_artifact",
+  "version": "2.0.0",
+  "artifact_id": "legacy/tvp772/monster/infernatil",
+  "system": "XML",
+  "source_version": "7.72",
+  "kind": "XML",
+  "repository_relative_path": "servidor/data/monster/monsters/infernatil.xml",
+  "sha256": "66f68f708856d2eee4dc8d42c12b34e148149da85872eb2df1b22dde9176058f",
+  "size_bytes": "6631"
+}

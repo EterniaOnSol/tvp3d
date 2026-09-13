@@ -1,0 +1,11 @@
+{
+  "schema": "tvp3d.assets.source_artifact",
+  "version": "2.0.0",
+  "artifact_id": "legacy/tvp772/monster/assassin",
+  "system": "XML",
+  "source_version": "7.72",
+  "kind": "XML",
+  "repository_relative_path": "servidor/data/monster/monsters/assassin.xml",
+  "sha256": "c00c048a4e95d11073191e9f0ec2817008627e2437b4bdb010e24ade55bc7034",
+  "size_bytes": "2673"
+}

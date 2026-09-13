@@ -1,0 +1,11 @@
+{
+  "schema": "tvp3d.assets.source_artifact",
+  "version": "2.0.0",
+  "artifact_id": "legacy/tvp772/items-xml",
+  "system": "XML",
+  "source_version": "7.72",
+  "kind": "XML",
+  "repository_relative_path": "servidor/data/items/items.xml",
+  "sha256": "988c633c87f07451ee354bddccf2ca538e97bd602799de7f62e7d73ecd3b63c7",
+  "size_bytes": "499533"
+}

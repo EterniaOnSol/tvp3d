@@ -1,0 +1,11 @@
+{
+  "schema": "tvp3d.assets.source_artifact",
+  "version": "2.0.0",
+  "artifact_id": "legacy/tvp772/monster/dworc_fleshhunter",
+  "system": "XML",
+  "source_version": "7.72",
+  "kind": "XML",
+  "repository_relative_path": "servidor/data/monster/monsters/dworc fleshhunter.xml",
+  "sha256": "1d1d8f653742b47b629b9abe5521d15d7938681a114e1f82a17981fa7a28f4bc",
+  "size_bytes": "2086"
+}

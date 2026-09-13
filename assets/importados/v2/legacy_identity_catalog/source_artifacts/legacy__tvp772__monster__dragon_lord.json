@@ -1,0 +1,11 @@
+{
+  "schema": "tvp3d.assets.source_artifact",
+  "version": "2.0.0",
+  "artifact_id": "legacy/tvp772/monster/dragon_lord",
+  "system": "XML",
+  "source_version": "7.72",
+  "kind": "XML",
+  "repository_relative_path": "servidor/data/monster/monsters/dragon lord.xml",
+  "sha256": "4801e9dcc88889cfb627bb96b2bdb478c2a1cffd17143ed1543ba383ee7c6cbf",
+  "size_bytes": "2919"
+}

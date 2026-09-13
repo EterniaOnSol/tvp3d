@@ -1,0 +1,11 @@
+{
+  "schema": "tvp3d.assets.source_artifact",
+  "version": "2.0.0",
+  "artifact_id": "legacy/tvp772/monster/beholder",
+  "system": "XML",
+  "source_version": "7.72",
+  "kind": "XML",
+  "repository_relative_path": "servidor/data/monster/monsters/beholder.xml",
+  "sha256": "9c33386968dad80ff503137b72fee71aab63a8e38bf683c93561ba9776ca2e12",
+  "size_bytes": "2908"
+}

@@ -1,0 +1,11 @@
+{
+  "schema": "tvp3d.assets.source_artifact",
+  "version": "2.0.0",
+  "artifact_id": "legacy/tvp772/monster/magicthrower",
+  "system": "XML",
+  "source_version": "7.72",
+  "kind": "XML",
+  "repository_relative_path": "servidor/data/monster/monsters/magicthrower.xml",
+  "sha256": "b3ecf946cba946395a3bfbb296a921ea95660e09620531b581f694adbdb1f5ce",
+  "size_bytes": "1247"
+}

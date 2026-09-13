@@ -1,0 +1,11 @@
+{
+  "schema": "tvp3d.assets.source_artifact",
+  "version": "2.0.0",
+  "artifact_id": "legacy/tvp772/monster/orc_shaman",
+  "system": "XML",
+  "source_version": "7.72",
+  "kind": "XML",
+  "repository_relative_path": "servidor/data/monster/monsters/orc shaman.xml",
+  "sha256": "e27b6124e4d52c952dd5400ceb5b1561d09b481cd5cc52c9a6ab16eed14f45cf",
+  "size_bytes": "2368"
+}

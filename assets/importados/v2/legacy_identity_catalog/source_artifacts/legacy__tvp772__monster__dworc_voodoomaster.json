@@ -1,0 +1,11 @@
+{
+  "schema": "tvp3d.assets.source_artifact",
+  "version": "2.0.0",
+  "artifact_id": "legacy/tvp772/monster/dworc_voodoomaster",
+  "system": "XML",
+  "source_version": "7.72",
+  "kind": "XML",
+  "repository_relative_path": "servidor/data/monster/monsters/dworc voodoomaster.xml",
+  "sha256": "63689b04335eec8ff5928fe4d1a9336122dfe164d650faded67283247a45e51e",
+  "size_bytes": "3185"
+}

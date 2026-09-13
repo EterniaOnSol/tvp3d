@@ -1,0 +1,11 @@
+{
+  "schema": "tvp3d.assets.source_artifact",
+  "version": "2.0.0",
+  "artifact_id": "legacy/tvp772/monster/rahemos",
+  "system": "XML",
+  "source_version": "7.72",
+  "kind": "XML",
+  "repository_relative_path": "servidor/data/monster/monsters/rahemos.xml",
+  "sha256": "2ad770afc6d5564e328b8f83f8e334f341f491ea944309d06f1cfe5023019e87",
+  "size_bytes": "3456"
+}

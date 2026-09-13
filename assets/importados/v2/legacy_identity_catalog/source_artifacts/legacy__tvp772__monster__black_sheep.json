@@ -1,0 +1,11 @@
+{
+  "schema": "tvp3d.assets.source_artifact",
+  "version": "2.0.0",
+  "artifact_id": "legacy/tvp772/monster/black_sheep",
+  "system": "XML",
+  "source_version": "7.72",
+  "kind": "XML",
+  "repository_relative_path": "servidor/data/monster/monsters/black sheep.xml",
+  "sha256": "e5ffc13fd2eb02a104d40db0cf11abf7a069b5642e3b79b5c2489c2ce8858565",
+  "size_bytes": "1196"
+}

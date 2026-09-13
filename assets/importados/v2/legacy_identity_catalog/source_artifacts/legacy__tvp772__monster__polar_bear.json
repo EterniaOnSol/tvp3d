@@ -1,0 +1,11 @@
+{
+  "schema": "tvp3d.assets.source_artifact",
+  "version": "2.0.0",
+  "artifact_id": "legacy/tvp772/monster/polar_bear",
+  "system": "XML",
+  "source_version": "7.72",
+  "kind": "XML",
+  "repository_relative_path": "servidor/data/monster/monsters/polar bear.xml",
+  "sha256": "7a76a209f13d4c2b29cdabaf381db950a841725adbf17c6c1251a4ce5dd7166f",
+  "size_bytes": "1306"
+}

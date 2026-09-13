@@ -1,0 +1,11 @@
+{
+  "schema": "tvp3d.assets.source_artifact",
+  "version": "2.0.0",
+  "artifact_id": "legacy/tvp772/monster/ghoul",
+  "system": "XML",
+  "source_version": "7.72",
+  "kind": "XML",
+  "repository_relative_path": "servidor/data/monster/monsters/ghoul.xml",
+  "sha256": "911657b6b4741a91440c3bb9101dd78cea4661114621a79962294cf9f17dae48",
+  "size_bytes": "1802"
+}

@@ -1,0 +1,11 @@
+{
+  "schema": "tvp3d.assets.source_artifact",
+  "version": "2.0.0",
+  "artifact_id": "legacy/tvp772/monster/snake",
+  "system": "XML",
+  "source_version": "7.72",
+  "kind": "XML",
+  "repository_relative_path": "servidor/data/monster/monsters/snake.xml",
+  "sha256": "7cb3b3baedb2c21330d682fa61b47a9f3742bcb1f973d33d475caadcfd9b84d8",
+  "size_bytes": "1126"
+}

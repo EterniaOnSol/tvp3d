@@ -1,0 +1,11 @@
+{
+  "schema": "tvp3d.assets.source_artifact",
+  "version": "2.0.0",
+  "artifact_id": "legacy/tvp772/monster/terror_bird",
+  "system": "XML",
+  "source_version": "7.72",
+  "kind": "XML",
+  "repository_relative_path": "servidor/data/monster/monsters/terror bird.xml",
+  "sha256": "a4857aa4e29da4705daf7eba78deb5d95186ac80c45a1bf9564c1e163dea1346",
+  "size_bytes": "1497"
+}

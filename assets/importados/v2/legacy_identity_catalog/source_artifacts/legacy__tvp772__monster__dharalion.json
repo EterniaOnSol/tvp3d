@@ -1,0 +1,11 @@
+{
+  "schema": "tvp3d.assets.source_artifact",
+  "version": "2.0.0",
+  "artifact_id": "legacy/tvp772/monster/dharalion",
+  "system": "XML",
+  "source_version": "7.72",
+  "kind": "XML",
+  "repository_relative_path": "servidor/data/monster/monsters/dharalion.xml",
+  "sha256": "59a839df4f72a63c349270d1a73816b9b6e991098fd6041185733f4f197f061f",
+  "size_bytes": "3026"
+}

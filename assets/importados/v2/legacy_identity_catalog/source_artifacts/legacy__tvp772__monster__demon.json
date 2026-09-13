@@ -1,0 +1,11 @@
+{
+  "schema": "tvp3d.assets.source_artifact",
+  "version": "2.0.0",
+  "artifact_id": "legacy/tvp772/monster/demon",
+  "system": "XML",
+  "source_version": "7.72",
+  "kind": "XML",
+  "repository_relative_path": "servidor/data/monster/monsters/demon.xml",
+  "sha256": "fb22f7b38398730c704e414ae660abc7c86f9ed19ad7b0c0816bfefdfea53215",
+  "size_bytes": "3843"
+}

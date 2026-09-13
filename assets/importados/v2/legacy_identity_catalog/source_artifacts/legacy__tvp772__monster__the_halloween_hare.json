@@ -1,0 +1,11 @@
+{
+  "schema": "tvp3d.assets.source_artifact",
+  "version": "2.0.0",
+  "artifact_id": "legacy/tvp772/monster/the_halloween_hare",
+  "system": "XML",
+  "source_version": "7.72",
+  "kind": "XML",
+  "repository_relative_path": "servidor/data/monster/monsters/the halloween hare.xml",
+  "sha256": "8bd4a44ce316c397402113a15eb2e30c62d76fcf85b7078a2d3b031f1418669a",
+  "size_bytes": "2410"
+}

@@ -1,0 +1,11 @@
+{
+  "schema": "tvp3d.assets.source_artifact",
+  "version": "2.0.0",
+  "artifact_id": "legacy/tvp772/monster/elf_scout",
+  "system": "XML",
+  "source_version": "7.72",
+  "kind": "XML",
+  "repository_relative_path": "servidor/data/monster/monsters/elf scout.xml",
+  "sha256": "b1ca95f32cc58b50a4b9e0408f6736da3c3606810ee1c0bc0dcdc01d372ed9f5",
+  "size_bytes": "2179"
+}

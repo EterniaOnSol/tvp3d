@@ -1,0 +1,11 @@
+{
+  "schema": "tvp3d.assets.source_artifact",
+  "version": "2.0.0",
+  "artifact_id": "legacy/tvp772/monster/flamingo",
+  "system": "XML",
+  "source_version": "7.72",
+  "kind": "XML",
+  "repository_relative_path": "servidor/data/monster/monsters/flamingo.xml",
+  "sha256": "305f54e3839ed6625c32bc26446dda236c68cbbba13b82521e6b80ccbbc11467",
+  "size_bytes": "1059"
+}

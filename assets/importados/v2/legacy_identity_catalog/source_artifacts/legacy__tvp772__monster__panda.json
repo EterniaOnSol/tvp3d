@@ -1,0 +1,11 @@
+{
+  "schema": "tvp3d.assets.source_artifact",
+  "version": "2.0.0",
+  "artifact_id": "legacy/tvp772/monster/panda",
+  "system": "XML",
+  "source_version": "7.72",
+  "kind": "XML",
+  "repository_relative_path": "servidor/data/monster/monsters/panda.xml",
+  "sha256": "5eb8b1522b3b933949d6f4c5f3a581bad95d37ba50cf4f33559c7255653fd9b4",
+  "size_bytes": "1283"
+}

@@ -1,0 +1,11 @@
+{
+  "schema": "tvp3d.assets.source_artifact",
+  "version": "2.0.0",
+  "artifact_id": "legacy/tvp772/monster/lizard_snakecharmer",
+  "system": "XML",
+  "source_version": "7.72",
+  "kind": "XML",
+  "repository_relative_path": "servidor/data/monster/monsters/lizard snakecharmer.xml",
+  "sha256": "9f48348fea323cb3f378a7c5578ced8542ffb386befbd7b1b97d2b22c9580183",
+  "size_bytes": "2436"
+}

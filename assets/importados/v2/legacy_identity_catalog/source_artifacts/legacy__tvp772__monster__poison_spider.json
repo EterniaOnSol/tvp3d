@@ -1,0 +1,11 @@
+{
+  "schema": "tvp3d.assets.source_artifact",
+  "version": "2.0.0",
+  "artifact_id": "legacy/tvp772/monster/poison_spider",
+  "system": "XML",
+  "source_version": "7.72",
+  "kind": "XML",
+  "repository_relative_path": "servidor/data/monster/monsters/poison spider.xml",
+  "sha256": "7a74614831dcd1726cd98ccd613c3a03f267bd1c6c217908a602ca8d16d0b33b",
+  "size_bytes": "1175"
+}

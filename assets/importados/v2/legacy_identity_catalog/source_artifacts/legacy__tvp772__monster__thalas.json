@@ -1,0 +1,11 @@
+{
+  "schema": "tvp3d.assets.source_artifact",
+  "version": "2.0.0",
+  "artifact_id": "legacy/tvp772/monster/thalas",
+  "system": "XML",
+  "source_version": "7.72",
+  "kind": "XML",
+  "repository_relative_path": "servidor/data/monster/monsters/thalas.xml",
+  "sha256": "f17ca7c49de831cafdf1f113df95cf8d59779bf55b31d573b224dbc1599cf6aa",
+  "size_bytes": "3203"
+}

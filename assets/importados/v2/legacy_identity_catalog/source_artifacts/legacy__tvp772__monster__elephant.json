@@ -1,0 +1,11 @@
+{
+  "schema": "tvp3d.assets.source_artifact",
+  "version": "2.0.0",
+  "artifact_id": "legacy/tvp772/monster/elephant",
+  "system": "XML",
+  "source_version": "7.72",
+  "kind": "XML",
+  "repository_relative_path": "servidor/data/monster/monsters/elephant.xml",
+  "sha256": "25bfe0595c46bba32e231609d4cc1aeeb529998899823814efbb08050bee85cc",
+  "size_bytes": "1483"
+}

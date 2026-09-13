@@ -1,0 +1,11 @@
+{
+  "schema": "tvp3d.assets.source_artifact",
+  "version": "2.0.0",
+  "artifact_id": "legacy/tvp772/monster/elf_arcanist",
+  "system": "XML",
+  "source_version": "7.72",
+  "kind": "XML",
+  "repository_relative_path": "servidor/data/monster/monsters/elf arcanist.xml",
+  "sha256": "43bcadb20105005961602f49d2e9bca6f6d328d5d5d539769a7a8209e87d2aa6",
+  "size_bytes": "2959"
+}

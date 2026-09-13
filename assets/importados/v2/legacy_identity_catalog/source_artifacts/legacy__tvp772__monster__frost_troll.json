@@ -1,0 +1,11 @@
+{
+  "schema": "tvp3d.assets.source_artifact",
+  "version": "2.0.0",
+  "artifact_id": "legacy/tvp772/monster/frost_troll",
+  "system": "XML",
+  "source_version": "7.72",
+  "kind": "XML",
+  "repository_relative_path": "servidor/data/monster/monsters/frost troll.xml",
+  "sha256": "6ad66c8ee7e9b2afbe2f821bd5c86aee23c9e4ffe1a436912c206b361de0d62d",
+  "size_bytes": "1691"
+}

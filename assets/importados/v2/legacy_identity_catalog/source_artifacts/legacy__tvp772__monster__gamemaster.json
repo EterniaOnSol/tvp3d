@@ -1,0 +1,11 @@
+{
+  "schema": "tvp3d.assets.source_artifact",
+  "version": "2.0.0",
+  "artifact_id": "legacy/tvp772/monster/gamemaster",
+  "system": "XML",
+  "source_version": "7.72",
+  "kind": "XML",
+  "repository_relative_path": "servidor/data/monster/monsters/gamemaster.xml",
+  "sha256": "1b6c085bcdba751a59b7879b696843929c2a45d7c776cb7c9a1519673605ac15",
+  "size_bytes": "1721"
+}

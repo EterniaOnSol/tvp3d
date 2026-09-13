@@ -1,0 +1,11 @@
+{
+  "schema": "tvp3d.assets.source_artifact",
+  "version": "2.0.0",
+  "artifact_id": "legacy/tvp772/monster/witch",
+  "system": "XML",
+  "source_version": "7.72",
+  "kind": "XML",
+  "repository_relative_path": "servidor/data/monster/monsters/witch.xml",
+  "sha256": "7f0bf178a44cf0533787b07c4cfeb33f6bd025bd7b524111f3d51ebb3dadc142",
+  "size_bytes": "2273"
+}

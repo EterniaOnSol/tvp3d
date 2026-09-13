@@ -1,0 +1,11 @@
+{
+  "schema": "tvp3d.assets.source_artifact",
+  "version": "2.0.0",
+  "artifact_id": "legacy/tvp772/monster/elder_beholder",
+  "system": "XML",
+  "source_version": "7.72",
+  "kind": "XML",
+  "repository_relative_path": "servidor/data/monster/monsters/elder beholder.xml",
+  "sha256": "1bd0090d29313842cea929c6087a9f5c69a9f91fac742608b243b42260433de8",
+  "size_bytes": "3295"
+}

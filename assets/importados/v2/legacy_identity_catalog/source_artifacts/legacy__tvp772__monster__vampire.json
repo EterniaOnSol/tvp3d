@@ -1,0 +1,11 @@
+{
+  "schema": "tvp3d.assets.source_artifact",
+  "version": "2.0.0",
+  "artifact_id": "legacy/tvp772/monster/vampire",
+  "system": "XML",
+  "source_version": "7.72",
+  "kind": "XML",
+  "repository_relative_path": "servidor/data/monster/monsters/vampire.xml",
+  "sha256": "433a74e1245037a0e655dd5ec7867704a8c83bc0aea0a6440a9b8384106c8b39",
+  "size_bytes": "2411"
+}

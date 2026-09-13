@@ -1,0 +1,11 @@
+{
+  "schema": "tvp3d.assets.source_artifact",
+  "version": "2.0.0",
+  "artifact_id": "legacy/tvp772/monster/necropharus",
+  "system": "XML",
+  "source_version": "7.72",
+  "kind": "XML",
+  "repository_relative_path": "servidor/data/monster/monsters/necropharus.xml",
+  "sha256": "50f0af25b9c4a474f6945addcef38a981867b06532698a4a9ff5e5637f601f04",
+  "size_bytes": "2700"
+}

@@ -1,0 +1,11 @@
+{
+  "schema": "tvp3d.assets.source_artifact",
+  "version": "2.0.0",
+  "artifact_id": "legacy/tvp772/monster/training_monk",
+  "system": "XML",
+  "source_version": "7.72",
+  "kind": "XML",
+  "repository_relative_path": "servidor/data/monster/monsters/training monk.xml",
+  "sha256": "1666213a41466266644469281857a66170ac3fa87e8b35c0441650286097e2c3",
+  "size_bytes": "2342"
+}

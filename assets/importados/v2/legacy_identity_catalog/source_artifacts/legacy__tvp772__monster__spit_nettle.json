@@ -1,0 +1,11 @@
+{
+  "schema": "tvp3d.assets.source_artifact",
+  "version": "2.0.0",
+  "artifact_id": "legacy/tvp772/monster/spit_nettle",
+  "system": "XML",
+  "source_version": "7.72",
+  "kind": "XML",
+  "repository_relative_path": "servidor/data/monster/monsters/spit nettle.xml",
+  "sha256": "fe48f9ec5e049d4e3327d9a545e8f14afcddfc25ab75b6b1f703f74e792dd353",
+  "size_bytes": "1959"
+}

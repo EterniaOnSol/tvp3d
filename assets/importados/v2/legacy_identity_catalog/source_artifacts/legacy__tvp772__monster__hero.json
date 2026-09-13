@@ -1,0 +1,11 @@
+{
+  "schema": "tvp3d.assets.source_artifact",
+  "version": "2.0.0",
+  "artifact_id": "legacy/tvp772/monster/hero",
+  "system": "XML",
+  "source_version": "7.72",
+  "kind": "XML",
+  "repository_relative_path": "servidor/data/monster/monsters/hero.xml",
+  "sha256": "63fbe749fff568f9698c8baf566f4b4b15238dc84a76ab43660d2eec6418aae2",
+  "size_bytes": "2781"
+}

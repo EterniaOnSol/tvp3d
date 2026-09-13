@@ -1,0 +1,11 @@
+{
+  "schema": "tvp3d.assets.source_artifact",
+  "version": "2.0.0",
+  "artifact_id": "legacy/tvp772/monster/omruc",
+  "system": "XML",
+  "source_version": "7.72",
+  "kind": "XML",
+  "repository_relative_path": "servidor/data/monster/monsters/omruc.xml",
+  "sha256": "db0b91e5debc81b334535ed3c61bd84ebd25763d2f0ed3c3a0bba7277471d1c8",
+  "size_bytes": "3435"
+}

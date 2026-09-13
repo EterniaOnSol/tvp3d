@@ -1,0 +1,11 @@
+{
+  "schema": "tvp3d.assets.source_artifact",
+  "version": "2.0.0",
+  "artifact_id": "legacy/tvp772/monster/wild_warrior",
+  "system": "XML",
+  "source_version": "7.72",
+  "kind": "XML",
+  "repository_relative_path": "servidor/data/monster/monsters/wild warrior.xml",
+  "sha256": "ab5bc5e6cba1595b56bfd55806a3d7683bca40886de5e9adad77204c4ac03924",
+  "size_bytes": "2220"
+}

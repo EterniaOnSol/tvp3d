@@ -1,0 +1,11 @@
+{
+  "schema": "tvp3d.assets.source_artifact",
+  "version": "2.0.0",
+  "artifact_id": "legacy/tvp772/monster/pig",
+  "system": "XML",
+  "source_version": "7.72",
+  "kind": "XML",
+  "repository_relative_path": "servidor/data/monster/monsters/pig.xml",
+  "sha256": "0a3015ee43d14597138534b2d3e2270ed034beb4357485ae25bedbed72118536",
+  "size_bytes": "1131"
+}

@@ -1,0 +1,11 @@
+{
+  "schema": "tvp3d.assets.source_artifact",
+  "version": "2.0.0",
+  "artifact_id": "legacy/tvp772/monster/deer",
+  "system": "XML",
+  "source_version": "7.72",
+  "kind": "XML",
+  "repository_relative_path": "servidor/data/monster/monsters/deer.xml",
+  "sha256": "1933a600838387a58636fb9f40989466408d37294da3297a49b0b9b5a0b5dc3a",
+  "size_bytes": "1195"
+}

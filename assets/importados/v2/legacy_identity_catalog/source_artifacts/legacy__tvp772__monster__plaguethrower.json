@@ -1,0 +1,11 @@
+{
+  "schema": "tvp3d.assets.source_artifact",
+  "version": "2.0.0",
+  "artifact_id": "legacy/tvp772/monster/plaguethrower",
+  "system": "XML",
+  "source_version": "7.72",
+  "kind": "XML",
+  "repository_relative_path": "servidor/data/monster/monsters/plaguethrower.xml",
+  "sha256": "a1781808faf27713e58dbdef558f8a8124e0bce725b4be7d3d11c5830d9ab691",
+  "size_bytes": "1251"
+}

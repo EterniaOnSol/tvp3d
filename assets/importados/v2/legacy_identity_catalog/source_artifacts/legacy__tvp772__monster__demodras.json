@@ -1,0 +1,11 @@
+{
+  "schema": "tvp3d.assets.source_artifact",
+  "version": "2.0.0",
+  "artifact_id": "legacy/tvp772/monster/demodras",
+  "system": "XML",
+  "source_version": "7.72",
+  "kind": "XML",
+  "repository_relative_path": "servidor/data/monster/monsters/demodras.xml",
+  "sha256": "976854d2b1ad5ae6ed2f8153077f4e491a3da8be251af107f26a1d854671b6b7",
+  "size_bytes": "3057"
+}

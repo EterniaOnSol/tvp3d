@@ -1,0 +1,11 @@
+{
+  "schema": "tvp3d.assets.source_artifact",
+  "version": "2.0.0",
+  "artifact_id": "legacy/tvp772/monster/amazon",
+  "system": "XML",
+  "source_version": "7.72",
+  "kind": "XML",
+  "repository_relative_path": "servidor/data/monster/monsters/amazon.xml",
+  "sha256": "c613b3a983486e32e9fc2c489a606aef9bc2d85b4c33465ff759fcd344507fb7",
+  "size_bytes": "2014"
+}

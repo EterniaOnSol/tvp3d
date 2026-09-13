@@ -1,0 +1,11 @@
+{
+  "schema": "tvp3d.assets.source_artifact",
+  "version": "2.0.0",
+  "artifact_id": "legacy/tvp772/monster/vashresamun",
+  "system": "XML",
+  "source_version": "7.72",
+  "kind": "XML",
+  "repository_relative_path": "servidor/data/monster/monsters/vashresamun.xml",
+  "sha256": "b4fb8517b8883afd92ae72ad4c4cc536a1284a8acecb9ff6fa52c9ec9ae80aeb",
+  "size_bytes": "2754"
+}

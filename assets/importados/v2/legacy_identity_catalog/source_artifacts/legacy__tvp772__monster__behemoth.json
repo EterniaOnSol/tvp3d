@@ -1,0 +1,11 @@
+{
+  "schema": "tvp3d.assets.source_artifact",
+  "version": "2.0.0",
+  "artifact_id": "legacy/tvp772/monster/behemoth",
+  "system": "XML",
+  "source_version": "7.72",
+  "kind": "XML",
+  "repository_relative_path": "servidor/data/monster/monsters/behemoth.xml",
+  "sha256": "2e1f87462188e0fc699a2b4a424b8386ab4a938225e9d12c5798fb4ffaaaab16",
+  "size_bytes": "2691"
+}

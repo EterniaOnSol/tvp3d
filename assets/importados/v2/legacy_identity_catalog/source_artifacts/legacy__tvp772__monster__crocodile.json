@@ -1,0 +1,11 @@
+{
+  "schema": "tvp3d.assets.source_artifact",
+  "version": "2.0.0",
+  "artifact_id": "legacy/tvp772/monster/crocodile",
+  "system": "XML",
+  "source_version": "7.72",
+  "kind": "XML",
+  "repository_relative_path": "servidor/data/monster/monsters/crocodile.xml",
+  "sha256": "f078ecae9a19add8421b46efa64087b6322af0d4337651b068a808b0c83eb6da",
+  "size_bytes": "1494"
+}

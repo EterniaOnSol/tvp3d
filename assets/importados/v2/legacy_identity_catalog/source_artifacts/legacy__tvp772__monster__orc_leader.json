@@ -1,0 +1,11 @@
+{
+  "schema": "tvp3d.assets.source_artifact",
+  "version": "2.0.0",
+  "artifact_id": "legacy/tvp772/monster/orc_leader",
+  "system": "XML",
+  "source_version": "7.72",
+  "kind": "XML",
+  "repository_relative_path": "servidor/data/monster/monsters/orc leader.xml",
+  "sha256": "6784d6dfdf7f0db1b1bed0c3e094943ab5204f2d276cf89752b78f41f1bda70a",
+  "size_bytes": "2313"
+}

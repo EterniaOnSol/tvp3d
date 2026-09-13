@@ -1,0 +1,2017 @@
+{
+  "schema": "tvp3d.assets.import_run",
+  "version": "2.0.0",
+  "import_run_id": "sha256:f0ec4ddfed4cfc6600a679eab3ce31db43a3f4c671679df5956bd28ccccedc34",
+  "tool": {
+    "id": "tvp3d.assets.legacy_identity_catalog",
+    "version": "1.0.0"
+  },
+  "inputs": [
+    {
+      "artifact_id": "legacy/tvp772/client-dat",
+      "sha256": "3c5e857ff72fd1e52879eb8845adc72c0991786ad0eaf85f6847595c9677aedd"
+    },
+    {
+      "artifact_id": "legacy/tvp772/client-spr",
+      "sha256": "86abbf5fadcf84313a03615a55a8bd626baab98671f0a78c9b36cb61cce0c64a"
+    },
+    {
+      "artifact_id": "legacy/tvp772/items-otb",
+      "sha256": "99d2b1e59783225402c95cf31c9d1dae4da67eee3cd99823da8f22ebdec4294a"
+    },
+    {
+      "artifact_id": "legacy/tvp772/items-xml",
+      "sha256": "988c633c87f07451ee354bddccf2ca538e97bd602799de7f62e7d73ecd3b63c7"
+    },
+    {
+      "artifact_id": "legacy/tvp772/monster/amazon",
+      "sha256": "c613b3a983486e32e9fc2c489a606aef9bc2d85b4c33465ff759fcd344507fb7"
+    },
+    {
+      "artifact_id": "legacy/tvp772/monster/ancient_scarab",
+      "sha256": "b9b4783f7c04572a5e35b2fbc5e1a67f6188ef573c6bed0874b4e507e9181525"
+    },
+    {
+      "artifact_id": "legacy/tvp772/monster/apocalypse",
+      "sha256": "fb523196e8ce610018f77332a250cc96a6f0d6d53ced3d347506b423594769c7"
+    },
+    {
+      "artifact_id": "legacy/tvp772/monster/ashmunrah",
+      "sha256": "c1c8666e98be5d166ba1b609c59fd234597a5cbcd7ae41836c10460cc025b015"
+    },
+    {
+      "artifact_id": "legacy/tvp772/monster/assassin",
+      "sha256": "c00c048a4e95d11073191e9f0ec2817008627e2437b4bdb010e24ade55bc7034"
+    },
+    {
+      "artifact_id": "legacy/tvp772/monster/badger",
+      "sha256": "65edd78a4d1eaf9f26cb0c95aac1d539e46fb43beae89154194c3d527f3cf65c"
+    },
+    {
+      "artifact_id": "legacy/tvp772/monster/bandit",
+      "sha256": "823c3706e7ff9a4fd8168d6630e318b34aca68cb93c5a869669532cef68fe04c"
+    },
+    {
+      "artifact_id": "legacy/tvp772/monster/banshee",
+      "sha256": "8c43405510f9f5e6651efe462cab785f175c39093b3f92dadb40a3db62ce3a33"
+    },
+    {
+      "artifact_id": "legacy/tvp772/monster/bat",
+      "sha256": "215cacf62d7b61af4a9650103929aaccab178aca8625c2a11701cb5efdef3063"
+    },
+    {
+      "artifact_id": "legacy/tvp772/monster/bazir",
+      "sha256": "da5f00c8ea33f964649b24f060ebf5c403e3c976f9a808857f505b504f504428"
+    },
+    {
+      "artifact_id": "legacy/tvp772/monster/bear",
+      "sha256": "043fe3f82d22ae142baae02625b8943ddb6db0c07ad004e505a4972391f869c4"
+    },
+    {
+      "artifact_id": "legacy/tvp772/monster/behemoth",
+      "sha256": "2e1f87462188e0fc699a2b4a424b8386ab4a938225e9d12c5798fb4ffaaaab16"
+    },
+    {
+      "artifact_id": "legacy/tvp772/monster/beholder",
+      "sha256": "9c33386968dad80ff503137b72fee71aab63a8e38bf683c93561ba9776ca2e12"
+    },
+    {
+      "artifact_id": "legacy/tvp772/monster/black_knight",
+      "sha256": "8c35d64b54694b28d170a4b9f11d5d0b7b61364faab25f9f1411f435ccd995e8"
+    },
+    {
+      "artifact_id": "legacy/tvp772/monster/black_sheep",
+      "sha256": "e5ffc13fd2eb02a104d40db0cf11abf7a069b5642e3b79b5c2489c2ce8858565"
+    },
+    {
+      "artifact_id": "legacy/tvp772/monster/blue_butterfly",
+      "sha256": "bdad93bab119b414b795b1e8407e1430ea4fc1f2b4d0f354e634781201b5e837"
+    },
+    {
+      "artifact_id": "legacy/tvp772/monster/blue_djinn",
+      "sha256": "2fee4dcf116b1a1e5c3a5d6c456eb909e12efb4e1a90e1477fd4677c293ce35a"
+    },
+    {
+      "artifact_id": "legacy/tvp772/monster/bonebeast",
+      "sha256": "a82b9093dfbadbf354f20aa8f28019150d71202c0f485ae19bf52b04aa1f7627"
+    },
+    {
+      "artifact_id": "legacy/tvp772/monster/bug",
+      "sha256": "7f6dd541ce5fa38c3a53de51c0b7d4d03553eb3b3d0947cb6745bb2a00dba3e2"
+    },
+    {
+      "artifact_id": "legacy/tvp772/monster/carniphila",
+      "sha256": "3a82caf5bd629e7af6c3f0149d903c7f2c7cda92c34e95ff1ae903dc71c0340a"
+    },
+    {
+      "artifact_id": "legacy/tvp772/monster/cave_rat",
+      "sha256": "d66e1a6812f1d9d8aabe0f1a1b88db321c26026c75d966eb1b60dadee2af0898"
+    },
+    {
+      "artifact_id": "legacy/tvp772/monster/centipede",
+      "sha256": "2407883f971cf2d1a856385f65b02b53f0ab87eb1d9c1c5095550a5f61ee801b"
+    },
+    {
+      "artifact_id": "legacy/tvp772/monster/chicken",
+      "sha256": "b415ba5ff51bfeddced19e7d7416017ea2f592fadd487688c29171eed52630be"
+    },
+    {
+      "artifact_id": "legacy/tvp772/monster/cobra",
+      "sha256": "4e5c329b9e5add6c759bde10fe223d407980b2d88b9a33753ade731fc9fde8a3"
+    },
+    {
+      "artifact_id": "legacy/tvp772/monster/crab",
+      "sha256": "26c3c7d644047b8251c9409aa7c47bd06ac4cec71ed2137a8d0ed8466c37cacf"
+    },
+    {
+      "artifact_id": "legacy/tvp772/monster/crocodile",
+      "sha256": "f078ecae9a19add8421b46efa64087b6322af0d4337651b068a808b0c83eb6da"
+    },
+    {
+      "artifact_id": "legacy/tvp772/monster/crypt_shambler",
+      "sha256": "b56ce6d1c539524e70f14b7ba206727081556e73123848c713e336173c3e77c7"
+    },
+    {
+      "artifact_id": "legacy/tvp772/monster/cyclops",
+      "sha256": "d5cfbfa936d3bd07ec8bc7ef00b2b41aabbdc14a580033779df6635680199c45"
+    },
+    {
+      "artifact_id": "legacy/tvp772/monster/dark_monk",
+      "sha256": "b3b539bd48d9b7280e4de44409557e1f5662db70009bfacd3af1857ff35012a1"
+    },
+    {
+      "artifact_id": "legacy/tvp772/monster/deathslicer",
+      "sha256": "0c3951031bf11e3b5c41b99d3ce0f14c5957e7f446b06374e4f9b074437deabd"
+    },
+    {
+      "artifact_id": "legacy/tvp772/monster/deer",
+      "sha256": "1933a600838387a58636fb9f40989466408d37294da3297a49b0b9b5a0b5dc3a"
+    },
+    {
+      "artifact_id": "legacy/tvp772/monster/demodras",
+      "sha256": "976854d2b1ad5ae6ed2f8153077f4e491a3da8be251af107f26a1d854671b6b7"
+    },
+    {
+      "artifact_id": "legacy/tvp772/monster/demon",
+      "sha256": "fb22f7b38398730c704e414ae660abc7c86f9ed19ad7b0c0816bfefdfea53215"
+    },
+    {
+      "artifact_id": "legacy/tvp772/monster/demon_skeleton",
+      "sha256": "398bb063b8e2da4b13e7458d952e1126651a4034edb813f19bad458d5dae3334"
+    },
+    {
+      "artifact_id": "legacy/tvp772/monster/dharalion",
+      "sha256": "59a839df4f72a63c349270d1a73816b9b6e991098fd6041185733f4f197f061f"
+    },
+    {
+      "artifact_id": "legacy/tvp772/monster/dipthrah",
+      "sha256": "8ab4d0e4cef04fe94b48fce7fab914fd75495eed167a9e00295bc3382930b2a8"
+    },
+    {
+      "artifact_id": "legacy/tvp772/monster/dog",
+      "sha256": "f06c84ba27bf83a733f8d0cfe1b1913093a173492991d61fe29ac01146fce375"
+    },
+    {
+      "artifact_id": "legacy/tvp772/monster/dragon",
+      "sha256": "737d1f77009112eecdefaf2937d3ab8ba41d51505711ecb30dd5a33b8f1ff919"
+    },
+    {
+      "artifact_id": "legacy/tvp772/monster/dragon_lord",
+      "sha256": "4801e9dcc88889cfb627bb96b2bdb478c2a1cffd17143ed1543ba383ee7c6cbf"
+    },
+    {
+      "artifact_id": "legacy/tvp772/monster/dwarf",
+      "sha256": "6a495ec9de8a7315a32f687a1186885e509bff9398c0800f9aa5e308f24f1f93"
+    },
+    {
+      "artifact_id": "legacy/tvp772/monster/dwarf_geomancer",
+      "sha256": "00ae9170d28ea515be6129c02b566feccff9d44897bedb5bd8220c6da65e79fc"
+    },
+    {
+      "artifact_id": "legacy/tvp772/monster/dwarf_guard",
+      "sha256": "15cca369f9dafdf8499ddea5351d3a98faa7ac7943b34c886bd4f83b2cda74c3"
+    },
+    {
+      "artifact_id": "legacy/tvp772/monster/dwarf_soldier",
+      "sha256": "3dac47c0c11637a149711600236ea8988c445e56f4cd250c8abb47dca07e82a7"
+    },
+    {
+      "artifact_id": "legacy/tvp772/monster/dworc_fleshhunter",
+      "sha256": "1d1d8f653742b47b629b9abe5521d15d7938681a114e1f82a17981fa7a28f4bc"
+    },
+    {
+      "artifact_id": "legacy/tvp772/monster/dworc_venomsniper",
+      "sha256": "df816cb7728a7568d2d5015827247e9b33e6fc449f6d890410d578a6468e05c4"
+    },
+    {
+      "artifact_id": "legacy/tvp772/monster/dworc_voodoomaster",
+      "sha256": "63689b04335eec8ff5928fe4d1a9336122dfe164d650faded67283247a45e51e"
+    },
+    {
+      "artifact_id": "legacy/tvp772/monster/efreet",
+      "sha256": "e3edcfd2117dcdbe6b8c2dd77ca235846196cd5ce86df6ae39c7b34a87bc0c84"
+    },
+    {
+      "artifact_id": "legacy/tvp772/monster/elder_beholder",
+      "sha256": "1bd0090d29313842cea929c6087a9f5c69a9f91fac742608b243b42260433de8"
+    },
+    {
+      "artifact_id": "legacy/tvp772/monster/elephant",
+      "sha256": "25bfe0595c46bba32e231609d4cc1aeeb529998899823814efbb08050bee85cc"
+    },
+    {
+      "artifact_id": "legacy/tvp772/monster/elf",
+      "sha256": "777f37f0661243aad91bf27f1a555de12e47f96d663ee1cfea946d2363f3f761"
+    },
+    {
+      "artifact_id": "legacy/tvp772/monster/elf_arcanist",
+      "sha256": "43bcadb20105005961602f49d2e9bca6f6d328d5d5d539769a7a8209e87d2aa6"
+    },
+    {
+      "artifact_id": "legacy/tvp772/monster/elf_scout",
+      "sha256": "b1ca95f32cc58b50a4b9e0408f6736da3c3606810ee1c0bc0dcdc01d372ed9f5"
+    },
+    {
+      "artifact_id": "legacy/tvp772/monster/fernfang",
+      "sha256": "4caaf838bd7ffcda4f635257baf97f9518cf70365355ddbae464a1b423466872"
+    },
+    {
+      "artifact_id": "legacy/tvp772/monster/ferumbras",
+      "sha256": "a76d52ff3f13188140569c1745910501c0734cfa290ce3bf9cfbaae62009a871"
+    },
+    {
+      "artifact_id": "legacy/tvp772/monster/fire_devil",
+      "sha256": "b7f45c7af0938181326925b4f31e3e4409d1877ab1835382e5b7d60b0f9a13d9"
+    },
+    {
+      "artifact_id": "legacy/tvp772/monster/fire_elemental",
+      "sha256": "425f487e65d6bac1908f5628fb6023b8db307623f7ea37250b2f3cf716c340fd"
+    },
+    {
+      "artifact_id": "legacy/tvp772/monster/flamethrower",
+      "sha256": "d120d91b95daef47ebe3f146d03ebdcdcceeb504991f08f9a6560d0abc4f267f"
+    },
+    {
+      "artifact_id": "legacy/tvp772/monster/flamingo",
+      "sha256": "305f54e3839ed6625c32bc26446dda236c68cbbba13b82521e6b80ccbbc11467"
+    },
+    {
+      "artifact_id": "legacy/tvp772/monster/frost_troll",
+      "sha256": "6ad66c8ee7e9b2afbe2f821bd5c86aee23c9e4ffe1a436912c206b361de0d62d"
+    },
+    {
+      "artifact_id": "legacy/tvp772/monster/gamemaster",
+      "sha256": "1b6c085bcdba751a59b7879b696843929c2a45d7c776cb7c9a1519673605ac15"
+    },
+    {
+      "artifact_id": "legacy/tvp772/monster/gargoyle",
+      "sha256": "79485eb819335ab1c45e196b0322401f34d9b864ef25b6d617d184dd9f5bd93d"
+    },
+    {
+      "artifact_id": "legacy/tvp772/monster/gazer",
+      "sha256": "a6811d7dd8e31549eb8e500bfb08f331b89692297378096d1318c44dc4ca4186"
+    },
+    {
+      "artifact_id": "legacy/tvp772/monster/general_murius",
+      "sha256": "0adddfa25bdbc8aa9268f9738236742f0a45e002303fee4f20bd890279fdac2f"
+    },
+    {
+      "artifact_id": "legacy/tvp772/monster/ghost",
+      "sha256": "cc148ff8995f5255d2759b0826a1cde80a68e4e29683ef3c5aa19f26089d55fd"
+    },
+    {
+      "artifact_id": "legacy/tvp772/monster/ghoul",
+      "sha256": "911657b6b4741a91440c3bb9101dd78cea4661114621a79962294cf9f17dae48"
+    },
+    {
+      "artifact_id": "legacy/tvp772/monster/giant_spider",
+      "sha256": "5a74381ae997369ef94287f2f4711b40d8effe58e5498b9ce5b0d76d4aaf7a9c"
+    },
+    {
+      "artifact_id": "legacy/tvp772/monster/goblin",
+      "sha256": "e6d93869c231b2b504753463d590f7eacd4da96a1dcc6d40d8d08072a9df08b0"
+    },
+    {
+      "artifact_id": "legacy/tvp772/monster/green_djinn",
+      "sha256": "15307aac8290bd57a14ca6c31f44a7ca3af8bf4029b3c28d5d5d14175f7fc7c3"
+    },
+    {
+      "artifact_id": "legacy/tvp772/monster/grorlam",
+      "sha256": "5297d22926f21dc437d78b9d14a92e1d2e1715cdd1a55a859d3cb02661ee10e4"
+    },
+    {
+      "artifact_id": "legacy/tvp772/monster/hero",
+      "sha256": "63fbe749fff568f9698c8baf566f4b4b15238dc84a76ab43660d2eec6418aae2"
+    },
+    {
+      "artifact_id": "legacy/tvp772/monster/hunter",
+      "sha256": "f47ba7916a84603ded81dbb4c71722129c482b92ea1a831ae2bff5eea3bd7cf0"
+    },
+    {
+      "artifact_id": "legacy/tvp772/monster/hyaena",
+      "sha256": "5feccb452a60f436969a0e8bb37638c84cc78aa3433eeec238906c8d6ff3560f"
+    },
+    {
+      "artifact_id": "legacy/tvp772/monster/hydra",
+      "sha256": "1f33ba6d67b969a5396a2aa32f4a623c0aaaf8667ec50476dd8019af6177af02"
+    },
+    {
+      "artifact_id": "legacy/tvp772/monster/illusion",
+      "sha256": "fb686d30193d481c1919fc269ea9e29fdffaae0e9183b0d05179100bf4206d70"
+    },
+    {
+      "artifact_id": "legacy/tvp772/monster/infernatil",
+      "sha256": "66f68f708856d2eee4dc8d42c12b34e148149da85872eb2df1b22dde9176058f"
+    },
+    {
+      "artifact_id": "legacy/tvp772/monster/kongra",
+      "sha256": "082630456a005b483d0e2b9621fa7516532b37d2a12d7a72d1e9d1e57c2d4258"
+    },
+    {
+      "artifact_id": "legacy/tvp772/monster/larva",
+      "sha256": "38496a2832c149c6934185848eca2d1d8d75e05e1bdd660ea03fcf26d66ad888"
+    },
+    {
+      "artifact_id": "legacy/tvp772/monster/lich",
+      "sha256": "e7981911158c839abce8709a9868d3a71558694c631a779d067cce057d88c50b"
+    },
+    {
+      "artifact_id": "legacy/tvp772/monster/lion",
+      "sha256": "8a9abf4599aec9bbd669447973e99c87632a245d75988610ef740592d8eba465"
+    },
+    {
+      "artifact_id": "legacy/tvp772/monster/lizard_sentinel",
+      "sha256": "c9368aec4349f1bd339e146dc6f87809932d5ae5681ef770f74ffe3a85ef27e9"
+    },
+    {
+      "artifact_id": "legacy/tvp772/monster/lizard_snakecharmer",
+      "sha256": "9f48348fea323cb3f378a7c5578ced8542ffb386befbd7b1b97d2b22c9580183"
+    },
+    {
+      "artifact_id": "legacy/tvp772/monster/lizard_templar",
+      "sha256": "5c22a626b15b142d3ff3f70ffc540852f14b1426a489d7756fe646cf279a2250"
+    },
+    {
+      "artifact_id": "legacy/tvp772/monster/magicthrower",
+      "sha256": "b3ecf946cba946395a3bfbb296a921ea95660e09620531b581f694adbdb1f5ce"
+    },
+    {
+      "artifact_id": "legacy/tvp772/monster/mahrdis",
+      "sha256": "1b23cc3a5cb88f8d7569402156f2a5bfd1ff55058fc38e7a1de8b4ca94986451"
+    },
+    {
+      "artifact_id": "legacy/tvp772/monster/marid",
+      "sha256": "a2030579f3eb58ea46c152f04828d11c28b245d52dcb58a2803ece03c4198c08"
+    },
+    {
+      "artifact_id": "legacy/tvp772/monster/merlkin",
+      "sha256": "840d2c083c4eab19d75817965fb3d3977acbfb81f675ca944ec0c7fe5cece2f0"
+    },
+    {
+      "artifact_id": "legacy/tvp772/monster/mimic",
+      "sha256": "ce06af9016b1f64a505f1caa645102640c084107b5fcbdee187612d729a60a47"
+    },
+    {
+      "artifact_id": "legacy/tvp772/monster/minotaur",
+      "sha256": "bab4c80570a25ab71ade0f248229b2c8251d697e3023ba87a4a5680fc5738917"
+    },
+    {
+      "artifact_id": "legacy/tvp772/monster/minotaur_archer",
+      "sha256": "4bd66bca57c3c5723d7a155c4253cc06d802b369765338ade0b1eec0c668b676"
+    },
+    {
+      "artifact_id": "legacy/tvp772/monster/minotaur_guard",
+      "sha256": "b89c4aa0c0fec1a9ca37ad0a5d29eddd8999cbb1d9d849d6fd2728673b22fc45"
+    },
+    {
+      "artifact_id": "legacy/tvp772/monster/minotaur_mage",
+      "sha256": "c678035c92359d4b6064594f0632487fc44659ae3b228ce6a03d5870125dea9f"
+    },
+    {
+      "artifact_id": "legacy/tvp772/monster/monk",
+      "sha256": "22d9681cca1cc8fb841c6f4a3d9f2a3a7881777d1574d3eaf0eb47a42679a2bc"
+    },
+    {
+      "artifact_id": "legacy/tvp772/monster/morgaroth",
+      "sha256": "8b9a709726566ef404f057f5bac073c93c3da4e651b8cf2386f8bbf625ae7bd8"
+    },
+    {
+      "artifact_id": "legacy/tvp772/monster/morguthis",
+      "sha256": "30f4572141303c3e161b6b6b79dea5690c3cee5980e67d23bba25ecfc9d0de35"
+    },
+    {
+      "artifact_id": "legacy/tvp772/monster/mummy",
+      "sha256": "70ff644fba06ee9a6f44e63e5fa5e928303a6a4a3472afab6dd730e1b240f718"
+    },
+    {
+      "artifact_id": "legacy/tvp772/monster/necromancer",
+      "sha256": "32fd3e1a21f77e9b22e79901f98750abbe12da1262bf240ba5b6c8b41d2b192c"
+    },
+    {
+      "artifact_id": "legacy/tvp772/monster/necropharus",
+      "sha256": "50f0af25b9c4a474f6945addcef38a981867b06532698a4a9ff5e5637f601f04"
+    },
+    {
+      "artifact_id": "legacy/tvp772/monster/omruc",
+      "sha256": "db0b91e5debc81b334535ed3c61bd84ebd25763d2f0ed3c3a0bba7277471d1c8"
+    },
+    {
+      "artifact_id": "legacy/tvp772/monster/orc",
+      "sha256": "1e90f23866fff4ad490f62a16816a6838bd9d67950d2e14dcd22a49306b621d3"
+    },
+    {
+      "artifact_id": "legacy/tvp772/monster/orc_berserker",
+      "sha256": "d9ee6cf2f36e1d31f7a4fbfeab1a24caa2a3bc2486689f7175942f1716673d08"
+    },
+    {
+      "artifact_id": "legacy/tvp772/monster/orc_leader",
+      "sha256": "6784d6dfdf7f0db1b1bed0c3e094943ab5204f2d276cf89752b78f41f1bda70a"
+    },
+    {
+      "artifact_id": "legacy/tvp772/monster/orc_rider",
+      "sha256": "43cebd2b725f6a6fc6fd171b20c82006650c44d4e1e5d8ca7d801489e36e8211"
+    },
+    {
+      "artifact_id": "legacy/tvp772/monster/orc_shaman",
+      "sha256": "e27b6124e4d52c952dd5400ceb5b1561d09b481cd5cc52c9a6ab16eed14f45cf"
+    },
+    {
+      "artifact_id": "legacy/tvp772/monster/orc_spearman",
+      "sha256": "cedd988ea7742eb029e3c0d8cecdcaf3a6e0994046ef2942c92893bfcb7c6e92"
+    },
+    {
+      "artifact_id": "legacy/tvp772/monster/orc_warlord",
+      "sha256": "e5b629b72c71f930b3df02d40ebc3d0af23da0cadd7c90901e62639667e20a9b"
+    },
+    {
+      "artifact_id": "legacy/tvp772/monster/orc_warrior",
+      "sha256": "e8253731633029fd0cf4e9550fd596e69ad5e77f9d6dc57decdbad398dd092ff"
+    },
+    {
+      "artifact_id": "legacy/tvp772/monster/orshabaal",
+      "sha256": "dfc84fbe71730c3221ff43765faf79512a1f59f9a05454d8f774db2b74dddb9b"
+    },
+    {
+      "artifact_id": "legacy/tvp772/monster/panda",
+      "sha256": "5eb8b1522b3b933949d6f4c5f3a581bad95d37ba50cf4f33559c7255653fd9b4"
+    },
+    {
+      "artifact_id": "legacy/tvp772/monster/parrot",
+      "sha256": "12638a83cff72c5e2ae6f40e47234c433bffd2ca0f062205c886d980185ce1a1"
+    },
+    {
+      "artifact_id": "legacy/tvp772/monster/pig",
+      "sha256": "0a3015ee43d14597138534b2d3e2270ed034beb4357485ae25bedbed72118536"
+    },
+    {
+      "artifact_id": "legacy/tvp772/monster/plaguethrower",
+      "sha256": "a1781808faf27713e58dbdef558f8a8124e0bce725b4be7d3d11c5830d9ab691"
+    },
+    {
+      "artifact_id": "legacy/tvp772/monster/poison_spider",
+      "sha256": "7a74614831dcd1726cd98ccd613c3a03f267bd1c6c217908a602ca8d16d0b33b"
+    },
+    {
+      "artifact_id": "legacy/tvp772/monster/polar_bear",
+      "sha256": "7a76a209f13d4c2b29cdabaf381db950a841725adbf17c6c1251a4ce5dd7166f"
+    },
+    {
+      "artifact_id": "legacy/tvp772/monster/priestess",
+      "sha256": "1a1b8a93260103ae48489fd17eeb902867e88af107109753676b1d7d2d5a69ea"
+    },
+    {
+      "artifact_id": "legacy/tvp772/monster/purple_butterfly",
+      "sha256": "469f32f86511aef3de55ac5a3299a9aedb53f43e0b3a82195ff4ef641f720342"
+    },
+    {
+      "artifact_id": "legacy/tvp772/monster/rabbit",
+      "sha256": "bb4bf6b353b0d859ac5c1d9c14a46513ea12230cf1d782d189e61e18921452aa"
+    },
+    {
+      "artifact_id": "legacy/tvp772/monster/rahemos",
+      "sha256": "2ad770afc6d5564e328b8f83f8e334f341f491ea944309d06f1cfe5023019e87"
+    },
+    {
+      "artifact_id": "legacy/tvp772/monster/rat",
+      "sha256": "92017e17c5fe2558f20d444ca3664219878b65fb19469a8fbd86eac74b7313c4"
+    },
+    {
+      "artifact_id": "legacy/tvp772/monster/red_butterfly",
+      "sha256": "f06b28e950b1de045657ca270be4fffbfe2b14a5d88797a097adea5b591ea73f"
+    },
+    {
+      "artifact_id": "legacy/tvp772/monster/rotworm",
+      "sha256": "bae29e492953702885690baabac9ba1084a1871a9995214ac669aee88e9a8465"
+    },
+    {
+      "artifact_id": "legacy/tvp772/monster/scarab",
+      "sha256": "d54dea1893d7801cc541e66bd21b4d72417c059a68feb580516a15e99c5ba1f6"
+    },
+    {
+      "artifact_id": "legacy/tvp772/monster/scorpion",
+      "sha256": "b6c6e1e9b9b7dfd9c686668ac2b9bfd790853ce827a1330da25c4b511d75ad43"
+    },
+    {
+      "artifact_id": "legacy/tvp772/monster/serpent_spawn",
+      "sha256": "6519d0d0383a5371f52f673685ff576495cf08a2247e70a4b9f29b446d7e9e9f"
+    },
+    {
+      "artifact_id": "legacy/tvp772/monster/sheep",
+      "sha256": "a20cb6f27f183306557c4b194eb571906acc6e50bafef1e53a7642581f70ac1a"
+    },
+    {
+      "artifact_id": "legacy/tvp772/monster/shredderthrower",
+      "sha256": "0226522e5d314f07a3cd238f16ab6f141eabab78ba53e0f19c61520ff3fce465"
+    },
+    {
+      "artifact_id": "legacy/tvp772/monster/sibang",
+      "sha256": "9772e2477870cc0ef79fc06c63f6d6ad8b567468f16ac20228e85c7579d0847d"
+    },
+    {
+      "artifact_id": "legacy/tvp772/monster/skeleton",
+      "sha256": "d30ebf0dff13d95d3e6760ed8a0f4df9f341a80b658ab6a62d2dd616bac21c6d"
+    },
+    {
+      "artifact_id": "legacy/tvp772/monster/skunk",
+      "sha256": "3009cb3bf69461aaf2f4a645f2ca9e5dd531627b44b3089f3e7069867df7c57f"
+    },
+    {
+      "artifact_id": "legacy/tvp772/monster/slime",
+      "sha256": "82201c62a3d927dabeb16819c89f8193d0275d05c903f20b194e70a8f9165cdc"
+    },
+    {
+      "artifact_id": "legacy/tvp772/monster/smuggler",
+      "sha256": "187456669eed32a0a7b8ae8dfcac2c4b7b0a3b14fb3794723fa32b2007e9789d"
+    },
+    {
+      "artifact_id": "legacy/tvp772/monster/snake",
+      "sha256": "7cb3b3baedb2c21330d682fa61b47a9f3742bcb1f973d33d475caadcfd9b84d8"
+    },
+    {
+      "artifact_id": "legacy/tvp772/monster/spider",
+      "sha256": "5d594cb16c96316a74825828c203a795a47e8692a23e12d50f84f48a4a9479e7"
+    },
+    {
+      "artifact_id": "legacy/tvp772/monster/spit_nettle",
+      "sha256": "fe48f9ec5e049d4e3327d9a545e8f14afcddfc25ab75b6b1f703f74e792dd353"
+    },
+    {
+      "artifact_id": "legacy/tvp772/monster/stalker",
+      "sha256": "505286a5c15bc9249e28b638648c9453e0d11ce5134866c9fad923d6b3daf272"
+    },
+    {
+      "artifact_id": "legacy/tvp772/monster/stone_golem",
+      "sha256": "3e538f4bec129752c10d6d7caf5e9353448e1883d65025ad17673d5d9550877e"
+    },
+    {
+      "artifact_id": "legacy/tvp772/monster/swamp_troll",
+      "sha256": "e802fd13e73e61ec8efe6f2318074fcad016733a65c0e0eebd2821438141ccd1"
+    },
+    {
+      "artifact_id": "legacy/tvp772/monster/tarantula",
+      "sha256": "a74e3d10584966b3c570d83c456757ceab956af867efbb7f7b38fe09f190a586"
+    },
+    {
+      "artifact_id": "legacy/tvp772/monster/terror_bird",
+      "sha256": "a4857aa4e29da4705daf7eba78deb5d95186ac80c45a1bf9564c1e163dea1346"
+    },
+    {
+      "artifact_id": "legacy/tvp772/monster/thalas",
+      "sha256": "f17ca7c49de831cafdf1f113df95cf8d59779bf55b31d573b224dbc1599cf6aa"
+    },
+    {
+      "artifact_id": "legacy/tvp772/monster/the_evil_eye",
+      "sha256": "b22cd07ca34b42abd685701a158ccd002cb90e5dad83dbb91ba8d04d1f1ce17e"
+    },
+    {
+      "artifact_id": "legacy/tvp772/monster/the_halloween_hare",
+      "sha256": "8bd4a44ce316c397402113a15eb2e30c62d76fcf85b7078a2d3b031f1418669a"
+    },
+    {
+      "artifact_id": "legacy/tvp772/monster/the_horned_fox",
+      "sha256": "e1a47bd529119ac5ff843ecf5da2c2db5863f6b05a8cdd8a524edba0521d1b06"
+    },
+    {
+      "artifact_id": "legacy/tvp772/monster/the_old_widow",
+      "sha256": "e17233bfe926475c935b32554456f6247e4806f2b01b11b7099257eb5b7dd9ee"
+    },
+    {
+      "artifact_id": "legacy/tvp772/monster/tiger",
+      "sha256": "bcbefa4e82f7bb10544da880d2dda72e94b175cab022192e8ff01869b41fe592"
+    },
+    {
+      "artifact_id": "legacy/tvp772/monster/training_monk",
+      "sha256": "1666213a41466266644469281857a66170ac3fa87e8b35c0441650286097e2c3"
+    },
+    {
+      "artifact_id": "legacy/tvp772/monster/troll",
+      "sha256": "c1d566cc617476a2623876c411181436e8df2235de7759eb1da3cf68d61d6cf2"
+    },
+    {
+      "artifact_id": "legacy/tvp772/monster/valkyrie",
+      "sha256": "0d6fb7bd04c71847ef39df5a2d79f00d2472213d4cbb3aa22dcc65a9f01c4f57"
+    },
+    {
+      "artifact_id": "legacy/tvp772/monster/vampire",
+      "sha256": "433a74e1245037a0e655dd5ec7867704a8c83bc0aea0a6440a9b8384106c8b39"
+    },
+    {
+      "artifact_id": "legacy/tvp772/monster/vashresamun",
+      "sha256": "b4fb8517b8883afd92ae72ad4c4cc536a1284a8acecb9ff6fa52c9ec9ae80aeb"
+    },
+    {
+      "artifact_id": "legacy/tvp772/monster/war_wolf",
+      "sha256": "0a37ac0435142be8e413ac7725ba9a67dcc5290dc0d873cae258cee5c86d52d8"
+    },
+    {
+      "artifact_id": "legacy/tvp772/monster/warlock",
+      "sha256": "cea10d60a01614cc9a778e9b28971fa2632483e8c5a380300b1d559d624157fe"
+    },
+    {
+      "artifact_id": "legacy/tvp772/monster/wasp",
+      "sha256": "b861ac1718a8508fdd5a9f7430b21560959fda7e5a3ecdfd88a6a242b5b6d46b"
+    },
+    {
+      "artifact_id": "legacy/tvp772/monster/wild_warrior",
+      "sha256": "ab5bc5e6cba1595b56bfd55806a3d7683bca40886de5e9adad77204c4ac03924"
+    },
+    {
+      "artifact_id": "legacy/tvp772/monster/winter_wolf",
+      "sha256": "6bf775a20f5055c53db5ca387862623c92b6da771d88b2ec47189733ccddce6b"
+    },
+    {
+      "artifact_id": "legacy/tvp772/monster/witch",
+      "sha256": "7f0bf178a44cf0533787b07c4cfeb33f6bd025bd7b524111f3d51ebb3dadc142"
+    },
+    {
+      "artifact_id": "legacy/tvp772/monster/wolf",
+      "sha256": "9f4657db24d36278f24a7dc847e163c0bcdd58b357fc8dfb595f6bc254f91d87"
+    },
+    {
+      "artifact_id": "legacy/tvp772/monster/yellow_butterfly",
+      "sha256": "9e486d9db132483e720a6eaee47d1850662afdcb6804f51b166e92c2433cdefa"
+    },
+    {
+      "artifact_id": "legacy/tvp772/monster/yeti",
+      "sha256": "3d44d92bd1ad8cb4b1b5d3a6133f370c055423ce099b45f010d8a760c892293c"
+    },
+    {
+      "artifact_id": "legacy/tvp772/world-map",
+      "sha256": "f7f42f6578a0cefac27c34d4e0d542499f043c4cc8c5ca4193f89cd0adfb05ee"
+    }
+  ],
+  "contracts": [
+    "tvp3d.assets/2.0.0",
+    "tvp3d.model/2.1.0"
+  ],
+  "normalization_profile": {
+    "id": "TVP772_BASELINE",
+    "version": "1.0.0"
+  },
+  "outputs": [
+    {
+      "logical_path": "alias_index.json",
+      "schema": "tvp3d.assets.alias_index",
+      "version": "1.0.0",
+      "sha256": "0c59cb8cd27e822362ce2216a5f9df52dd94b4a2ee983fdfd73c0830ab0ed5ae",
+      "size_bytes": "12988615",
+      "publication_class": "DERIVED_CACHE"
+    },
+    {
+      "logical_path": "canonical_index.json",
+      "schema": "tvp3d.assets.canonical_identity_index",
+      "version": "1.0.0",
+      "sha256": "09b99a6f0178f709b3bde4258e6bc2516282f5e4391f24f168517e0d191a77cf",
+      "size_bytes": "7254413",
+      "publication_class": "DERIVED_CACHE"
+    },
+    {
+      "logical_path": "identity_mappings.json",
+      "schema": "tvp3d.assets.identity_mapping_catalog",
+      "version": "1.0.0",
+      "sha256": "687c44b8318fdf1131aa9cb6f23f9e4657fd1d4f8574f9e3fb3041641f2930c8",
+      "size_bytes": "12857659",
+      "publication_class": "DERIVED_CACHE"
+    },
+    {
+      "logical_path": "source_artifacts/legacy__tvp772__client-dat.json",
+      "schema": "tvp3d.assets.source_artifact",
+      "version": "2.0.0",
+      "sha256": "032bb0a1d66f0c5c5b5c77e43fb2aa297aa46e8fd1d61c7b1f402612c64781b6",
+      "size_bytes": "355",
+      "publication_class": "DERIVED_CACHE"
+    },
+    {
+      "logical_path": "source_artifacts/legacy__tvp772__client-spr.json",
+      "schema": "tvp3d.assets.source_artifact",
+      "version": "2.0.0",
+      "sha256": "7c7956e574a7e02e7bd8a4000e12ed022ca87659aee4a47ff3ff6c03f397faa7",
+      "size_bytes": "357",
+      "publication_class": "DERIVED_CACHE"
+    },
+    {
+      "logical_path": "source_artifacts/legacy__tvp772__items-otb.json",
+      "schema": "tvp3d.assets.source_artifact",
+      "version": "2.0.0",
+      "sha256": "d1916117ba5a15e70bce5afa7242ae3b9524cd3f275cf40cc57213c172c4250f",
+      "size_bytes": "346",
+      "publication_class": "DERIVED_CACHE"
+    },
+    {
+      "logical_path": "source_artifacts/legacy__tvp772__items-xml.json",
+      "schema": "tvp3d.assets.source_artifact",
+      "version": "2.0.0",
+      "sha256": "cf5f211278d59d9e068f2c68d08d7f4f55fb85008ebc2dc20423e72ee77fb59c",
+      "size_bytes": "346",
+      "publication_class": "DERIVED_CACHE"
+    },
+    {
+      "logical_path": "source_artifacts/legacy__tvp772__monster__amazon.json",
+      "schema": "tvp3d.assets.source_artifact",
+      "version": "2.0.0",
+      "sha256": "c74812625c718cd500edad521dc4260c772037c749328b6ac10be2e473d1f397",
+      "size_bytes": "361",
+      "publication_class": "DERIVED_CACHE"
+    },
+    {
+      "logical_path": "source_artifacts/legacy__tvp772__monster__ancient_scarab.json",
+      "schema": "tvp3d.assets.source_artifact",
+      "version": "2.0.0",
+      "sha256": "89e6e861fbcfc9715181d58dc06c2bbf444abaa07e07f14dd44b121b24e03950",
+      "size_bytes": "377",
+      "publication_class": "DERIVED_CACHE"
+    },
+    {
+      "logical_path": "source_artifacts/legacy__tvp772__monster__apocalypse.json",
+      "schema": "tvp3d.assets.source_artifact",
+      "version": "2.0.0",
+      "sha256": "e2524db898eb0d9a739f9e76a6e55ade2600684c83492ae4a5679ac4f3970331",
+      "size_bytes": "369",
+      "publication_class": "DERIVED_CACHE"
+    },
+    {
+      "logical_path": "source_artifacts/legacy__tvp772__monster__ashmunrah.json",
+      "schema": "tvp3d.assets.source_artifact",
+      "version": "2.0.0",
+      "sha256": "20d67cda0629c5d88ba0259605b93806e45a97906527d97e076aefafd576cefc",
+      "size_bytes": "367",
+      "publication_class": "DERIVED_CACHE"
+    },
+    {
+      "logical_path": "source_artifacts/legacy__tvp772__monster__assassin.json",
+      "schema": "tvp3d.assets.source_artifact",
+      "version": "2.0.0",
+      "sha256": "5c8c980ad0d9b47263fee5ffab9aa04d180ce670cf076f1eb6a9c626ffe2106f",
+      "size_bytes": "365",
+      "publication_class": "DERIVED_CACHE"
+    },
+    {
+      "logical_path": "source_artifacts/legacy__tvp772__monster__badger.json",
+      "schema": "tvp3d.assets.source_artifact",
+      "version": "2.0.0",
+      "sha256": "83ce9a50a637c45534d8bdb8e489b48ac3f09303f3803ac9bb0606fd59e3929e",
+      "size_bytes": "361",
+      "publication_class": "DERIVED_CACHE"
+    },
+    {
+      "logical_path": "source_artifacts/legacy__tvp772__monster__bandit.json",
+      "schema": "tvp3d.assets.source_artifact",
+      "version": "2.0.0",
+      "sha256": "632199d1b6da5ce939c01db7f5057dc58505e7d5897177558be46334f4c52a0c",
+      "size_bytes": "361",
+      "publication_class": "DERIVED_CACHE"
+    },
+    {
+      "logical_path": "source_artifacts/legacy__tvp772__monster__banshee.json",
+      "schema": "tvp3d.assets.source_artifact",
+      "version": "2.0.0",
+      "sha256": "052aa0af5d191968b23d1063750e4fe6fbe496351eab0fe4587e55d3a901650c",
+      "size_bytes": "363",
+      "publication_class": "DERIVED_CACHE"
+    },
+    {
+      "logical_path": "source_artifacts/legacy__tvp772__monster__bat.json",
+      "schema": "tvp3d.assets.source_artifact",
+      "version": "2.0.0",
+      "sha256": "6cdc8d87c64a74bf4a04b97db11ebc2c8babc53d26ee02936bda731e9c8dfc34",
+      "size_bytes": "355",
+      "publication_class": "DERIVED_CACHE"
+    },
+    {
+      "logical_path": "source_artifacts/legacy__tvp772__monster__bazir.json",
+      "schema": "tvp3d.assets.source_artifact",
+      "version": "2.0.0",
+      "sha256": "9f089acbe656957efdccdbc486dcb06bc4fcb2bc8abb38fa324c1552741c9fe2",
+      "size_bytes": "359",
+      "publication_class": "DERIVED_CACHE"
+    },
+    {
+      "logical_path": "source_artifacts/legacy__tvp772__monster__bear.json",
+      "schema": "tvp3d.assets.source_artifact",
+      "version": "2.0.0",
+      "sha256": "5c015d922dbdb924aa8bb8b6d6c6843003793db31dc7ab4adff88793da7b4975",
+      "size_bytes": "357",
+      "publication_class": "DERIVED_CACHE"
+    },
+    {
+      "logical_path": "source_artifacts/legacy__tvp772__monster__behemoth.json",
+      "schema": "tvp3d.assets.source_artifact",
+      "version": "2.0.0",
+      "sha256": "fe0edbcfea962024227f4c558d61a6a0107401ac70a9e50d1a90e69183c572ef",
+      "size_bytes": "365",
+      "publication_class": "DERIVED_CACHE"
+    },
+    {
+      "logical_path": "source_artifacts/legacy__tvp772__monster__beholder.json",
+      "schema": "tvp3d.assets.source_artifact",
+      "version": "2.0.0",
+      "sha256": "9439347055737260b709543a254d34ba789a4c943cc05df89591665c61c989a6",
+      "size_bytes": "365",
+      "publication_class": "DERIVED_CACHE"
+    },
+    {
+      "logical_path": "source_artifacts/legacy__tvp772__monster__black_knight.json",
+      "schema": "tvp3d.assets.source_artifact",
+      "version": "2.0.0",
+      "sha256": "1e5ec5ba18b90996ad20263125d212e7e91a3f6000fc548cd3b89d1b3fbc15c3",
+      "size_bytes": "373",
+      "publication_class": "DERIVED_CACHE"
+    },
+    {
+      "logical_path": "source_artifacts/legacy__tvp772__monster__black_sheep.json",
+      "schema": "tvp3d.assets.source_artifact",
+      "version": "2.0.0",
+      "sha256": "c9572565270d79dd54100b195f1ebe50cc2d1f216635b7833b8ab86ce751097d",
+      "size_bytes": "371",
+      "publication_class": "DERIVED_CACHE"
+    },
+    {
+      "logical_path": "source_artifacts/legacy__tvp772__monster__blue_butterfly.json",
+      "schema": "tvp3d.assets.source_artifact",
+      "version": "2.0.0",
+      "sha256": "bd6753035511c614b858e856bd1e632a471c31a93ae21a50d3143e66c388086e",
+      "size_bytes": "377",
+      "publication_class": "DERIVED_CACHE"
+    },
+    {
+      "logical_path": "source_artifacts/legacy__tvp772__monster__blue_djinn.json",
+      "schema": "tvp3d.assets.source_artifact",
+      "version": "2.0.0",
+      "sha256": "9346b63a5e53454f12365ce8f0089993c978c26d481013ca3eccfa47434eaafd",
+      "size_bytes": "369",
+      "publication_class": "DERIVED_CACHE"
+    },
+    {
+      "logical_path": "source_artifacts/legacy__tvp772__monster__bonebeast.json",
+      "schema": "tvp3d.assets.source_artifact",
+      "version": "2.0.0",
+      "sha256": "220747b383bf42da6b7d43fd2383855f2697dd6291f4ba21036ce3937cf6b624",
+      "size_bytes": "367",
+      "publication_class": "DERIVED_CACHE"
+    },
+    {
+      "logical_path": "source_artifacts/legacy__tvp772__monster__bug.json",
+      "schema": "tvp3d.assets.source_artifact",
+      "version": "2.0.0",
+      "sha256": "8538d59bdf8815441a8bed6e21d40c99bb9f03625fe02d29cc5a5374d7c79314",
+      "size_bytes": "355",
+      "publication_class": "DERIVED_CACHE"
+    },
+    {
+      "logical_path": "source_artifacts/legacy__tvp772__monster__carniphila.json",
+      "schema": "tvp3d.assets.source_artifact",
+      "version": "2.0.0",
+      "sha256": "4f4cb80f2519c79f34f62c2ac5edc7a005c302e0abcd2451c20c57e0722d0c41",
+      "size_bytes": "369",
+      "publication_class": "DERIVED_CACHE"
+    },
+    {
+      "logical_path": "source_artifacts/legacy__tvp772__monster__cave_rat.json",
+      "schema": "tvp3d.assets.source_artifact",
+      "version": "2.0.0",
+      "sha256": "5b87a73e3f205b900bc37a419a6fd315b048958a8d78d4ecc1f8ba2aea51d073",
+      "size_bytes": "365",
+      "publication_class": "DERIVED_CACHE"
+    },
+    {
+      "logical_path": "source_artifacts/legacy__tvp772__monster__centipede.json",
+      "schema": "tvp3d.assets.source_artifact",
+      "version": "2.0.0",
+      "sha256": "17482e1c918d0045d90a5973572e3cbb38dac422c8b0b4f580cd6fa87dc7d704",
+      "size_bytes": "367",
+      "publication_class": "DERIVED_CACHE"
+    },
+    {
+      "logical_path": "source_artifacts/legacy__tvp772__monster__chicken.json",
+      "schema": "tvp3d.assets.source_artifact",
+      "version": "2.0.0",
+      "sha256": "e7e6244efae697c3e5934fea804e2d6ffc70d5b82d29d180d710d4826c06f3a8",
+      "size_bytes": "363",
+      "publication_class": "DERIVED_CACHE"
+    },
+    {
+      "logical_path": "source_artifacts/legacy__tvp772__monster__cobra.json",
+      "schema": "tvp3d.assets.source_artifact",
+      "version": "2.0.0",
+      "sha256": "c214319055b4aeed9e56e1114ad4c83e82f4f3b10d7975a88a505dc80d246962",
+      "size_bytes": "359",
+      "publication_class": "DERIVED_CACHE"
+    },
+    {
+      "logical_path": "source_artifacts/legacy__tvp772__monster__crab.json",
+      "schema": "tvp3d.assets.source_artifact",
+      "version": "2.0.0",
+      "sha256": "18b170198104f2cc12df47622cea516661987061e98c8c142c40d4b9a4e7fa9e",
+      "size_bytes": "357",
+      "publication_class": "DERIVED_CACHE"
+    },
+    {
+      "logical_path": "source_artifacts/legacy__tvp772__monster__crocodile.json",
+      "schema": "tvp3d.assets.source_artifact",
+      "version": "2.0.0",
+      "sha256": "dfa8f58b639e83eaa9e034139c2dbe6cbcd3f350f9cc1aa97ac7aef66ec24ceb",
+      "size_bytes": "367",
+      "publication_class": "DERIVED_CACHE"
+    },
+    {
+      "logical_path": "source_artifacts/legacy__tvp772__monster__crypt_shambler.json",
+      "schema": "tvp3d.assets.source_artifact",
+      "version": "2.0.0",
+      "sha256": "94191448140d3ae73746bee05a04ea8f7b50c76dd7a0161a9cb5df82140cc864",
+      "size_bytes": "377",
+      "publication_class": "DERIVED_CACHE"
+    },
+    {
+      "logical_path": "source_artifacts/legacy__tvp772__monster__cyclops.json",
+      "schema": "tvp3d.assets.source_artifact",
+      "version": "2.0.0",
+      "sha256": "aa39150c564df1825447afebb74c88bac7700e751bc604745272eb9e2b9a493d",
+      "size_bytes": "363",
+      "publication_class": "DERIVED_CACHE"
+    },
+    {
+      "logical_path": "source_artifacts/legacy__tvp772__monster__dark_monk.json",
+      "schema": "tvp3d.assets.source_artifact",
+      "version": "2.0.0",
+      "sha256": "d03d82b62232c9acadb289dca7a5a8c88a5f054fedc3592a781d29ebab9f39c3",
+      "size_bytes": "367",
+      "publication_class": "DERIVED_CACHE"
+    },
+    {
+      "logical_path": "source_artifacts/legacy__tvp772__monster__deathslicer.json",
+      "schema": "tvp3d.assets.source_artifact",
+      "version": "2.0.0",
+      "sha256": "973cf36c7f2b61c06959668aba0e35eabacd8955441d90b1d0f43cdf1cb6d308",
+      "size_bytes": "371",
+      "publication_class": "DERIVED_CACHE"
+    },
+    {
+      "logical_path": "source_artifacts/legacy__tvp772__monster__deer.json",
+      "schema": "tvp3d.assets.source_artifact",
+      "version": "2.0.0",
+      "sha256": "8142a3f7f1bed38f877666b544b790b9bdb6a0cbc78dd1286a22f56542d17925",
+      "size_bytes": "357",
+      "publication_class": "DERIVED_CACHE"
+    },
+    {
+      "logical_path": "source_artifacts/legacy__tvp772__monster__demodras.json",
+      "schema": "tvp3d.assets.source_artifact",
+      "version": "2.0.0",
+      "sha256": "81f9d26e4cffd9b81b5023bc855406ff6b6f1efe3ceaaca7b2ca6c89e3d8a82c",
+      "size_bytes": "365",
+      "publication_class": "DERIVED_CACHE"
+    },
+    {
+      "logical_path": "source_artifacts/legacy__tvp772__monster__demon.json",
+      "schema": "tvp3d.assets.source_artifact",
+      "version": "2.0.0",
+      "sha256": "100c0712ab8a70ec19a1bfa6a20435d5f6658d266c76735cd00fea654efa933d",
+      "size_bytes": "359",
+      "publication_class": "DERIVED_CACHE"
+    },
+    {
+      "logical_path": "source_artifacts/legacy__tvp772__monster__demon_skeleton.json",
+      "schema": "tvp3d.assets.source_artifact",
+      "version": "2.0.0",
+      "sha256": "5fd2930602a1a7d483334a965faeac35c2e171ab999ba32e203719627b1c73a2",
+      "size_bytes": "377",
+      "publication_class": "DERIVED_CACHE"
+    },
+    {
+      "logical_path": "source_artifacts/legacy__tvp772__monster__dharalion.json",
+      "schema": "tvp3d.assets.source_artifact",
+      "version": "2.0.0",
+      "sha256": "803b183a037083f9a35c37e52d36cb8f12eaea5d458b3b3376bb9d82bfe356c6",
+      "size_bytes": "367",
+      "publication_class": "DERIVED_CACHE"
+    },
+    {
+      "logical_path": "source_artifacts/legacy__tvp772__monster__dipthrah.json",
+      "schema": "tvp3d.assets.source_artifact",
+      "version": "2.0.0",
+      "sha256": "b5d164db01d7be32234ea48ff0f223b4dc3439cb2d27bd67366c885b1f322e37",
+      "size_bytes": "365",
+      "publication_class": "DERIVED_CACHE"
+    },
+    {
+      "logical_path": "source_artifacts/legacy__tvp772__monster__dog.json",
+      "schema": "tvp3d.assets.source_artifact",
+      "version": "2.0.0",
+      "sha256": "a66d6023c3f9efae1f929f4e49e6cfd1bcaf1a2c71c54ca24a4f74c13aa93c13",
+      "size_bytes": "355",
+      "publication_class": "DERIVED_CACHE"
+    },
+    {
+      "logical_path": "source_artifacts/legacy__tvp772__monster__dragon.json",
+      "schema": "tvp3d.assets.source_artifact",
+      "version": "2.0.0",
+      "sha256": "de0fdf0008a04fec03964c8c7b91aa321abcc7dec0721aab521a689e8c609270",
+      "size_bytes": "361",
+      "publication_class": "DERIVED_CACHE"
+    },
+    {
+      "logical_path": "source_artifacts/legacy__tvp772__monster__dragon_lord.json",
+      "schema": "tvp3d.assets.source_artifact",
+      "version": "2.0.0",
+      "sha256": "90d1831e3dcedb2a7458f6cfe7eeb342c7b433079d393d118a471164ec711687",
+      "size_bytes": "371",
+      "publication_class": "DERIVED_CACHE"
+    },
+    {
+      "logical_path": "source_artifacts/legacy__tvp772__monster__dwarf.json",
+      "schema": "tvp3d.assets.source_artifact",
+      "version": "2.0.0",
+      "sha256": "628f2f1c1db655e7da1ffc24964363d4574d1696ecf596f35cbd487ee08ddc49",
+      "size_bytes": "359",
+      "publication_class": "DERIVED_CACHE"
+    },
+    {
+      "logical_path": "source_artifacts/legacy__tvp772__monster__dwarf_geomancer.json",
+      "schema": "tvp3d.assets.source_artifact",
+      "version": "2.0.0",
+      "sha256": "1dcbba69d0f7c64c945126c9db7c4b0981ab1bef984a22301b81e5f77cee510f",
+      "size_bytes": "379",
+      "publication_class": "DERIVED_CACHE"
+    },
+    {
+      "logical_path": "source_artifacts/legacy__tvp772__monster__dwarf_guard.json",
+      "schema": "tvp3d.assets.source_artifact",
+      "version": "2.0.0",
+      "sha256": "9adf3d23db458331299382e45d9d4d2b47ba88d907b6c60fba42cd33bdadbf6b",
+      "size_bytes": "371",
+      "publication_class": "DERIVED_CACHE"
+    },
+    {
+      "logical_path": "source_artifacts/legacy__tvp772__monster__dwarf_soldier.json",
+      "schema": "tvp3d.assets.source_artifact",
+      "version": "2.0.0",
+      "sha256": "75d9db13cbb74263442596f811815e64aac046543c8bab69a256e5dd669bfe6d",
+      "size_bytes": "375",
+      "publication_class": "DERIVED_CACHE"
+    },
+    {
+      "logical_path": "source_artifacts/legacy__tvp772__monster__dworc_fleshhunter.json",
+      "schema": "tvp3d.assets.source_artifact",
+      "version": "2.0.0",
+      "sha256": "9ac1bf3f3658eadb63a7a76e02c5ed6a6c00e7e3df8681bd39da7d5701011b2b",
+      "size_bytes": "383",
+      "publication_class": "DERIVED_CACHE"
+    },
+    {
+      "logical_path": "source_artifacts/legacy__tvp772__monster__dworc_venomsniper.json",
+      "schema": "tvp3d.assets.source_artifact",
+      "version": "2.0.0",
+      "sha256": "03b77faf719d62310ba0068f6c1ead10a719cf95b62db3201b173add7a363f6c",
+      "size_bytes": "383",
+      "publication_class": "DERIVED_CACHE"
+    },
+    {
+      "logical_path": "source_artifacts/legacy__tvp772__monster__dworc_voodoomaster.json",
+      "schema": "tvp3d.assets.source_artifact",
+      "version": "2.0.0",
+      "sha256": "24629b34580a3c240b78886b31381380ee160f60935ebaf07937c759ce6e79ed",
+      "size_bytes": "385",
+      "publication_class": "DERIVED_CACHE"
+    },
+    {
+      "logical_path": "source_artifacts/legacy__tvp772__monster__efreet.json",
+      "schema": "tvp3d.assets.source_artifact",
+      "version": "2.0.0",
+      "sha256": "5a2a4f4afe3d60050674d16b3d1fbc9d0b18bacc31a1b90ab41a116d9de8c879",
+      "size_bytes": "361",
+      "publication_class": "DERIVED_CACHE"
+    },
+    {
+      "logical_path": "source_artifacts/legacy__tvp772__monster__elder_beholder.json",
+      "schema": "tvp3d.assets.source_artifact",
+      "version": "2.0.0",
+      "sha256": "b1c465c4a6b77e7c85e5a22814c19564a4a9cfb4004c6945c0c597202ee819b6",
+      "size_bytes": "377",
+      "publication_class": "DERIVED_CACHE"
+    },
+    {
+      "logical_path": "source_artifacts/legacy__tvp772__monster__elephant.json",
+      "schema": "tvp3d.assets.source_artifact",
+      "version": "2.0.0",
+      "sha256": "81838b32e75caedffb2f65ae527f732241f68a0af92ce960e96a189a52ef2c68",
+      "size_bytes": "365",
+      "publication_class": "DERIVED_CACHE"
+    },
+    {
+      "logical_path": "source_artifacts/legacy__tvp772__monster__elf.json",
+      "schema": "tvp3d.assets.source_artifact",
+      "version": "2.0.0",
+      "sha256": "0742b2d12500fab92e2cc602998d6aa16dd93c4ac226307fac9f4bd449c22f59",
+      "size_bytes": "355",
+      "publication_class": "DERIVED_CACHE"
+    },
+    {
+      "logical_path": "source_artifacts/legacy__tvp772__monster__elf_arcanist.json",
+      "schema": "tvp3d.assets.source_artifact",
+      "version": "2.0.0",
+      "sha256": "263b9ed50bf32099e670d5ffd9c81d6287d1c45616149c89470bb3ac6cafbbca",
+      "size_bytes": "373",
+      "publication_class": "DERIVED_CACHE"
+    },
+    {
+      "logical_path": "source_artifacts/legacy__tvp772__monster__elf_scout.json",
+      "schema": "tvp3d.assets.source_artifact",
+      "version": "2.0.0",
+      "sha256": "40b9a39f8835d7ec347f0c444a41bc13095eae88719b363cfea55a980beaf27a",
+      "size_bytes": "367",
+      "publication_class": "DERIVED_CACHE"
+    },
+    {
+      "logical_path": "source_artifacts/legacy__tvp772__monster__fernfang.json",
+      "schema": "tvp3d.assets.source_artifact",
+      "version": "2.0.0",
+      "sha256": "e648da06c615d2bf2f3ad7bc2d811f6be6594c627ae2d52d85ad4aedbd249f2a",
+      "size_bytes": "365",
+      "publication_class": "DERIVED_CACHE"
+    },
+    {
+      "logical_path": "source_artifacts/legacy__tvp772__monster__ferumbras.json",
+      "schema": "tvp3d.assets.source_artifact",
+      "version": "2.0.0",
+      "sha256": "7d06039117a97955fba8e9d0e2f52c77acb09aa0eed7f1c712907380a4c93b9d",
+      "size_bytes": "367",
+      "publication_class": "DERIVED_CACHE"
+    },
+    {
+      "logical_path": "source_artifacts/legacy__tvp772__monster__fire_devil.json",
+      "schema": "tvp3d.assets.source_artifact",
+      "version": "2.0.0",
+      "sha256": "32fbc0738eb3aad29f3df97e535c072c5da0eed1551124e3a1628c8a11daccb7",
+      "size_bytes": "369",
+      "publication_class": "DERIVED_CACHE"
+    },
+    {
+      "logical_path": "source_artifacts/legacy__tvp772__monster__fire_elemental.json",
+      "schema": "tvp3d.assets.source_artifact",
+      "version": "2.0.0",
+      "sha256": "0e3324cd99ac082811ff42dcae38016195223fe833052c958d42b9c15a4dd61d",
+      "size_bytes": "377",
+      "publication_class": "DERIVED_CACHE"
+    },
+    {
+      "logical_path": "source_artifacts/legacy__tvp772__monster__flamethrower.json",
+      "schema": "tvp3d.assets.source_artifact",
+      "version": "2.0.0",
+      "sha256": "db9b3d991902d0adefc1fbac4d2909954c2573e311ae1746700c49df61402d9b",
+      "size_bytes": "373",
+      "publication_class": "DERIVED_CACHE"
+    },
+    {
+      "logical_path": "source_artifacts/legacy__tvp772__monster__flamingo.json",
+      "schema": "tvp3d.assets.source_artifact",
+      "version": "2.0.0",
+      "sha256": "f184c409367cd2834b31ff5e88340d01af794dd79eb78355b6df6c5c73ac0a22",
+      "size_bytes": "365",
+      "publication_class": "DERIVED_CACHE"
+    },
+    {
+      "logical_path": "source_artifacts/legacy__tvp772__monster__frost_troll.json",
+      "schema": "tvp3d.assets.source_artifact",
+      "version": "2.0.0",
+      "sha256": "775a2b304eaaa90707db3361f7776f169f1d55b5b8425250dbab4f63c32c5859",
+      "size_bytes": "371",
+      "publication_class": "DERIVED_CACHE"
+    },
+    {
+      "logical_path": "source_artifacts/legacy__tvp772__monster__gamemaster.json",
+      "schema": "tvp3d.assets.source_artifact",
+      "version": "2.0.0",
+      "sha256": "7b10ea0e8c54ceba0d799ef7e78a31293599ec3f09a95237f4275ef22d976549",
+      "size_bytes": "369",
+      "publication_class": "DERIVED_CACHE"
+    },
+    {
+      "logical_path": "source_artifacts/legacy__tvp772__monster__gargoyle.json",
+      "schema": "tvp3d.assets.source_artifact",
+      "version": "2.0.0",
+      "sha256": "decc3e91936bc9198f9bff570bda36f7e5fbaa62d901ce07718d593407782cdd",
+      "size_bytes": "365",
+      "publication_class": "DERIVED_CACHE"
+    },
+    {
+      "logical_path": "source_artifacts/legacy__tvp772__monster__gazer.json",
+      "schema": "tvp3d.assets.source_artifact",
+      "version": "2.0.0",
+      "sha256": "40446358b78a5f8317df905ceb82dbd452019573c4565668e8123b68f7154e4e",
+      "size_bytes": "359",
+      "publication_class": "DERIVED_CACHE"
+    },
+    {
+      "logical_path": "source_artifacts/legacy__tvp772__monster__general_murius.json",
+      "schema": "tvp3d.assets.source_artifact",
+      "version": "2.0.0",
+      "sha256": "d65fb542a9ab1dc54193526ff31dfd9cb33bddf754c6c70bcf7f24c811b64a76",
+      "size_bytes": "377",
+      "publication_class": "DERIVED_CACHE"
+    },
+    {
+      "logical_path": "source_artifacts/legacy__tvp772__monster__ghost.json",
+      "schema": "tvp3d.assets.source_artifact",
+      "version": "2.0.0",
+      "sha256": "912327ce2879ac56439b4bcf2431321aaa3fbf85ab6b21990aeb69349a7af253",
+      "size_bytes": "359",
+      "publication_class": "DERIVED_CACHE"
+    },
+    {
+      "logical_path": "source_artifacts/legacy__tvp772__monster__ghoul.json",
+      "schema": "tvp3d.assets.source_artifact",
+      "version": "2.0.0",
+      "sha256": "5ebbf99d68144ab0003280a6f2f6e9b48aa444c6ff45957da59a2020034e1b86",
+      "size_bytes": "359",
+      "publication_class": "DERIVED_CACHE"
+    },
+    {
+      "logical_path": "source_artifacts/legacy__tvp772__monster__giant_spider.json",
+      "schema": "tvp3d.assets.source_artifact",
+      "version": "2.0.0",
+      "sha256": "d3f6be792a0da4f2155f3a1b6538562d0ed8448f5c756345cce64868b2fdf0e2",
+      "size_bytes": "373",
+      "publication_class": "DERIVED_CACHE"
+    },
+    {
+      "logical_path": "source_artifacts/legacy__tvp772__monster__goblin.json",
+      "schema": "tvp3d.assets.source_artifact",
+      "version": "2.0.0",
+      "sha256": "f3640732ffd8704029e2edc13818a2fe2dbcd31bede1647a1c5258dba5ee0940",
+      "size_bytes": "361",
+      "publication_class": "DERIVED_CACHE"
+    },
+    {
+      "logical_path": "source_artifacts/legacy__tvp772__monster__green_djinn.json",
+      "schema": "tvp3d.assets.source_artifact",
+      "version": "2.0.0",
+      "sha256": "e60b85bf2d3c5755ab421bcb91ec7b8500f0947cc28fc8bd283178ffd5ee2002",
+      "size_bytes": "371",
+      "publication_class": "DERIVED_CACHE"
+    },
+    {
+      "logical_path": "source_artifacts/legacy__tvp772__monster__grorlam.json",
+      "schema": "tvp3d.assets.source_artifact",
+      "version": "2.0.0",
+      "sha256": "14a60c4a23b9285bf30c1616893bee26eac9eb651b5bf72c97ce413d08b5316a",
+      "size_bytes": "363",
+      "publication_class": "DERIVED_CACHE"
+    },
+    {
+      "logical_path": "source_artifacts/legacy__tvp772__monster__hero.json",
+      "schema": "tvp3d.assets.source_artifact",
+      "version": "2.0.0",
+      "sha256": "b50e09819c73e222b7eb573ba00ca0ff39922e01150ee6c5eca40da105f71d61",
+      "size_bytes": "357",
+      "publication_class": "DERIVED_CACHE"
+    },
+    {
+      "logical_path": "source_artifacts/legacy__tvp772__monster__hunter.json",
+      "schema": "tvp3d.assets.source_artifact",
+      "version": "2.0.0",
+      "sha256": "6a14c9b7bf8b219a0d51a6b2044c06d16421fc936b293cc3cba28246a1a837eb",
+      "size_bytes": "361",
+      "publication_class": "DERIVED_CACHE"
+    },
+    {
+      "logical_path": "source_artifacts/legacy__tvp772__monster__hyaena.json",
+      "schema": "tvp3d.assets.source_artifact",
+      "version": "2.0.0",
+      "sha256": "fe091579a01fdf7c40b3942d8ab6a0fcb9f9535ad8982a695a3f7b47cdf37ec8",
+      "size_bytes": "361",
+      "publication_class": "DERIVED_CACHE"
+    },
+    {
+      "logical_path": "source_artifacts/legacy__tvp772__monster__hydra.json",
+      "schema": "tvp3d.assets.source_artifact",
+      "version": "2.0.0",
+      "sha256": "67432a45be7ac0c64f62dc70dd04e0cd06bc9b2714f3693fcc4aa292a802d1c0",
+      "size_bytes": "359",
+      "publication_class": "DERIVED_CACHE"
+    },
+    {
+      "logical_path": "source_artifacts/legacy__tvp772__monster__illusion.json",
+      "schema": "tvp3d.assets.source_artifact",
+      "version": "2.0.0",
+      "sha256": "d2e7360c5f193d779c40d7dc2610d139ecda3c8347020f3768da973ca57b9bbb",
+      "size_bytes": "365",
+      "publication_class": "DERIVED_CACHE"
+    },
+    {
+      "logical_path": "source_artifacts/legacy__tvp772__monster__infernatil.json",
+      "schema": "tvp3d.assets.source_artifact",
+      "version": "2.0.0",
+      "sha256": "658b0dbfdd24417bf98c6d2b3571d2292dca005f8b5121dd3b2b6f9da7c2de73",
+      "size_bytes": "369",
+      "publication_class": "DERIVED_CACHE"
+    },
+    {
+      "logical_path": "source_artifacts/legacy__tvp772__monster__kongra.json",
+      "schema": "tvp3d.assets.source_artifact",
+      "version": "2.0.0",
+      "sha256": "8073b40e31267aa7ce1d8972c92b8bc3188cf36a9d683bd3f425ccce70082187",
+      "size_bytes": "361",
+      "publication_class": "DERIVED_CACHE"
+    },
+    {
+      "logical_path": "source_artifacts/legacy__tvp772__monster__larva.json",
+      "schema": "tvp3d.assets.source_artifact",
+      "version": "2.0.0",
+      "sha256": "7ed802b1c2284e33682dc07decd6bdb3b62cdf5a128e46cde66dd3b08080ae4a",
+      "size_bytes": "359",
+      "publication_class": "DERIVED_CACHE"
+    },
+    {
+      "logical_path": "source_artifacts/legacy__tvp772__monster__lich.json",
+      "schema": "tvp3d.assets.source_artifact",
+      "version": "2.0.0",
+      "sha256": "18364606d5470a78d592505ec853c624d5bd74da3f567fe39835f9abac956219",
+      "size_bytes": "357",
+      "publication_class": "DERIVED_CACHE"
+    },
+    {
+      "logical_path": "source_artifacts/legacy__tvp772__monster__lion.json",
+      "schema": "tvp3d.assets.source_artifact",
+      "version": "2.0.0",
+      "sha256": "f3cc8dd6b937f25231048aceadba35bb9d6380492ecaf410fba1244dd74f4072",
+      "size_bytes": "357",
+      "publication_class": "DERIVED_CACHE"
+    },
+    {
+      "logical_path": "source_artifacts/legacy__tvp772__monster__lizard_sentinel.json",
+      "schema": "tvp3d.assets.source_artifact",
+      "version": "2.0.0",
+      "sha256": "4c799507a25cada58f0744519f21c3a89478394766c492528bd84d9b6c833cc9",
+      "size_bytes": "379",
+      "publication_class": "DERIVED_CACHE"
+    },
+    {
+      "logical_path": "source_artifacts/legacy__tvp772__monster__lizard_snakecharmer.json",
+      "schema": "tvp3d.assets.source_artifact",
+      "version": "2.0.0",
+      "sha256": "2697e979a104dbbbb83f382c6f8a58342c84e0a7bf4f43708ac22f46880ad212",
+      "size_bytes": "387",
+      "publication_class": "DERIVED_CACHE"
+    },
+    {
+      "logical_path": "source_artifacts/legacy__tvp772__monster__lizard_templar.json",
+      "schema": "tvp3d.assets.source_artifact",
+      "version": "2.0.0",
+      "sha256": "f213144fba7405af47d8461e1840cb4b53514aae415982dfc4ac8b07517704fd",
+      "size_bytes": "377",
+      "publication_class": "DERIVED_CACHE"
+    },
+    {
+      "logical_path": "source_artifacts/legacy__tvp772__monster__magicthrower.json",
+      "schema": "tvp3d.assets.source_artifact",
+      "version": "2.0.0",
+      "sha256": "174ecfcfd6f507c27ac3c6175a35308c2ddc2a91f3573d6ea47ca1f3198ebe78",
+      "size_bytes": "373",
+      "publication_class": "DERIVED_CACHE"
+    },
+    {
+      "logical_path": "source_artifacts/legacy__tvp772__monster__mahrdis.json",
+      "schema": "tvp3d.assets.source_artifact",
+      "version": "2.0.0",
+      "sha256": "2687177e77f2fef2aac8b6430d671c268e04be7f1f98a29f715ccbafe3bb807b",
+      "size_bytes": "363",
+      "publication_class": "DERIVED_CACHE"
+    },
+    {
+      "logical_path": "source_artifacts/legacy__tvp772__monster__marid.json",
+      "schema": "tvp3d.assets.source_artifact",
+      "version": "2.0.0",
+      "sha256": "1364aedb68e48c2c6722e1117e07b8d7ba069be72eea79b5295bf4efa1db5efb",
+      "size_bytes": "359",
+      "publication_class": "DERIVED_CACHE"
+    },
+    {
+      "logical_path": "source_artifacts/legacy__tvp772__monster__merlkin.json",
+      "schema": "tvp3d.assets.source_artifact",
+      "version": "2.0.0",
+      "sha256": "141820ee91f6d63e14e41bdb59f931e63bb707873076d46a6e8ded3ed3ba9746",
+      "size_bytes": "363",
+      "publication_class": "DERIVED_CACHE"
+    },
+    {
+      "logical_path": "source_artifacts/legacy__tvp772__monster__mimic.json",
+      "schema": "tvp3d.assets.source_artifact",
+      "version": "2.0.0",
+      "sha256": "7ed098e440af615682d6b6e3e02dac64d8ca377a5f4d6971eb6db1e92da2ee81",
+      "size_bytes": "359",
+      "publication_class": "DERIVED_CACHE"
+    },
+    {
+      "logical_path": "source_artifacts/legacy__tvp772__monster__minotaur.json",
+      "schema": "tvp3d.assets.source_artifact",
+      "version": "2.0.0",
+      "sha256": "579ebd7cbee0454b5852f7e2b2e9efe9c5dd075be341cc1f959532002bedb1a4",
+      "size_bytes": "365",
+      "publication_class": "DERIVED_CACHE"
+    },
+    {
+      "logical_path": "source_artifacts/legacy__tvp772__monster__minotaur_archer.json",
+      "schema": "tvp3d.assets.source_artifact",
+      "version": "2.0.0",
+      "sha256": "529543b52e7291f23b62ec11f36a6a16609d2966ed7cb00f15348e65e9ab5902",
+      "size_bytes": "379",
+      "publication_class": "DERIVED_CACHE"
+    },
+    {
+      "logical_path": "source_artifacts/legacy__tvp772__monster__minotaur_guard.json",
+      "schema": "tvp3d.assets.source_artifact",
+      "version": "2.0.0",
+      "sha256": "685e6e1a77aa9759c7a8e1650c7e62d126e333b8ddd781401520f0714d70fd55",
+      "size_bytes": "377",
+      "publication_class": "DERIVED_CACHE"
+    },
+    {
+      "logical_path": "source_artifacts/legacy__tvp772__monster__minotaur_mage.json",
+      "schema": "tvp3d.assets.source_artifact",
+      "version": "2.0.0",
+      "sha256": "4ace9613483b623b8549d695936f0222d078e26fb072e09dca2eac28c205849c",
+      "size_bytes": "375",
+      "publication_class": "DERIVED_CACHE"
+    },
+    {
+      "logical_path": "source_artifacts/legacy__tvp772__monster__monk.json",
+      "schema": "tvp3d.assets.source_artifact",
+      "version": "2.0.0",
+      "sha256": "fa127c82c5f16002fb3961bd46124434752aac34b7f059b38533ea902358e49d",
+      "size_bytes": "357",
+      "publication_class": "DERIVED_CACHE"
+    },
+    {
+      "logical_path": "source_artifacts/legacy__tvp772__monster__morgaroth.json",
+      "schema": "tvp3d.assets.source_artifact",
+      "version": "2.0.0",
+      "sha256": "f77bdf5d7914334944f768d408ca2f37f4813a0de6ec9bea9ec772cd07d2bcb9",
+      "size_bytes": "367",
+      "publication_class": "DERIVED_CACHE"
+    },
+    {
+      "logical_path": "source_artifacts/legacy__tvp772__monster__morguthis.json",
+      "schema": "tvp3d.assets.source_artifact",
+      "version": "2.0.0",
+      "sha256": "309788164efb3824edbca3c8e20bf368716fd97972c1bc2bff0c33b5476193b3",
+      "size_bytes": "367",
+      "publication_class": "DERIVED_CACHE"
+    },
+    {
+      "logical_path": "source_artifacts/legacy__tvp772__monster__mummy.json",
+      "schema": "tvp3d.assets.source_artifact",
+      "version": "2.0.0",
+      "sha256": "ab6414f53639f593561e2ae9df43ab0e28ce75af5ee70f3df6e349d2f4883b4f",
+      "size_bytes": "359",
+      "publication_class": "DERIVED_CACHE"
+    },
+    {
+      "logical_path": "source_artifacts/legacy__tvp772__monster__necromancer.json",
+      "schema": "tvp3d.assets.source_artifact",
+      "version": "2.0.0",
+      "sha256": "88134ee56c1bf0bf368381f6ba2d78e3b513dde75d891143c6c43395bff46caa",
+      "size_bytes": "371",
+      "publication_class": "DERIVED_CACHE"
+    },
+    {
+      "logical_path": "source_artifacts/legacy__tvp772__monster__necropharus.json",
+      "schema": "tvp3d.assets.source_artifact",
+      "version": "2.0.0",
+      "sha256": "d766c625f7c42194bbaefd7dd95b8a1bd6317d056d6611d728e89552465f6b84",
+      "size_bytes": "371",
+      "publication_class": "DERIVED_CACHE"
+    },
+    {
+      "logical_path": "source_artifacts/legacy__tvp772__monster__omruc.json",
+      "schema": "tvp3d.assets.source_artifact",
+      "version": "2.0.0",
+      "sha256": "5a561c31222271efab4810e050ff203c7cd0963ffd80bbbe3eb9e730d417faa1",
+      "size_bytes": "359",
+      "publication_class": "DERIVED_CACHE"
+    },
+    {
+      "logical_path": "source_artifacts/legacy__tvp772__monster__orc.json",
+      "schema": "tvp3d.assets.source_artifact",
+      "version": "2.0.0",
+      "sha256": "7fdeddc888b92991d04ed0ec8961c2979146ed343ef64df1a8cdcb222cd3eea6",
+      "size_bytes": "355",
+      "publication_class": "DERIVED_CACHE"
+    },
+    {
+      "logical_path": "source_artifacts/legacy__tvp772__monster__orc_berserker.json",
+      "schema": "tvp3d.assets.source_artifact",
+      "version": "2.0.0",
+      "sha256": "d1e706689cb19afee254faf602aab34d0033fafd229a5c750ffe2188c925dee7",
+      "size_bytes": "375",
+      "publication_class": "DERIVED_CACHE"
+    },
+    {
+      "logical_path": "source_artifacts/legacy__tvp772__monster__orc_leader.json",
+      "schema": "tvp3d.assets.source_artifact",
+      "version": "2.0.0",
+      "sha256": "947df0942d2cd9445e065738c749d1c6c902c3748272167e4479bdf6b752b983",
+      "size_bytes": "369",
+      "publication_class": "DERIVED_CACHE"
+    },
+    {
+      "logical_path": "source_artifacts/legacy__tvp772__monster__orc_rider.json",
+      "schema": "tvp3d.assets.source_artifact",
+      "version": "2.0.0",
+      "sha256": "7b1b2300ebbc45bb8dd57f77268eb6fdd3d702eadb3bb2b61b5fe83ec841ef4a",
+      "size_bytes": "367",
+      "publication_class": "DERIVED_CACHE"
+    },
+    {
+      "logical_path": "source_artifacts/legacy__tvp772__monster__orc_shaman.json",
+      "schema": "tvp3d.assets.source_artifact",
+      "version": "2.0.0",
+      "sha256": "99f58e246bf38fa11fb8db1a10cee932efd1a4b514ad5dc3dac05aabe09fd4da",
+      "size_bytes": "369",
+      "publication_class": "DERIVED_CACHE"
+    },
+    {
+      "logical_path": "source_artifacts/legacy__tvp772__monster__orc_spearman.json",
+      "schema": "tvp3d.assets.source_artifact",
+      "version": "2.0.0",
+      "sha256": "c2376776226bcd0412a7171822e0bb6877b8d10e2c1177fe86fcedf10290ecd4",
+      "size_bytes": "373",
+      "publication_class": "DERIVED_CACHE"
+    },
+    {
+      "logical_path": "source_artifacts/legacy__tvp772__monster__orc_warlord.json",
+      "schema": "tvp3d.assets.source_artifact",
+      "version": "2.0.0",
+      "sha256": "a50dca7ab6259acf17d1f702439eecdf5ae51ca0eb4eedb57a5d580b7f356794",
+      "size_bytes": "371",
+      "publication_class": "DERIVED_CACHE"
+    },
+    {
+      "logical_path": "source_artifacts/legacy__tvp772__monster__orc_warrior.json",
+      "schema": "tvp3d.assets.source_artifact",
+      "version": "2.0.0",
+      "sha256": "a8eb46a22a9e74578e5cfd858b63bf3ea59848326694de3f046641d121ca9db5",
+      "size_bytes": "371",
+      "publication_class": "DERIVED_CACHE"
+    },
+    {
+      "logical_path": "source_artifacts/legacy__tvp772__monster__orshabaal.json",
+      "schema": "tvp3d.assets.source_artifact",
+      "version": "2.0.0",
+      "sha256": "23fe6ba7a7d07bb035b515bb42fc3635a252b05d3b06b4a92a1a1d70f8381cf3",
+      "size_bytes": "367",
+      "publication_class": "DERIVED_CACHE"
+    },
+    {
+      "logical_path": "source_artifacts/legacy__tvp772__monster__panda.json",
+      "schema": "tvp3d.assets.source_artifact",
+      "version": "2.0.0",
+      "sha256": "0e5679440745e103a5a64bb006e2a7a3969301ae9260abad7adef29010b44515",
+      "size_bytes": "359",
+      "publication_class": "DERIVED_CACHE"
+    },
+    {
+      "logical_path": "source_artifacts/legacy__tvp772__monster__parrot.json",
+      "schema": "tvp3d.assets.source_artifact",
+      "version": "2.0.0",
+      "sha256": "8b68c79f33dbb0436d2af2b862edfb4f8e125abbaad9796ec5a9046e70bdd9e9",
+      "size_bytes": "361",
+      "publication_class": "DERIVED_CACHE"
+    },
+    {
+      "logical_path": "source_artifacts/legacy__tvp772__monster__pig.json",
+      "schema": "tvp3d.assets.source_artifact",
+      "version": "2.0.0",
+      "sha256": "dd6500620845021967127209840da45fcba412c9724c412032f4dac0e32a9b15",
+      "size_bytes": "355",
+      "publication_class": "DERIVED_CACHE"
+    },
+    {
+      "logical_path": "source_artifacts/legacy__tvp772__monster__plaguethrower.json",
+      "schema": "tvp3d.assets.source_artifact",
+      "version": "2.0.0",
+      "sha256": "b4608ddf53f0839b014aee4e19958acc2f8e9f973a1c5d98913ce5c38ed890da",
+      "size_bytes": "375",
+      "publication_class": "DERIVED_CACHE"
+    },
+    {
+      "logical_path": "source_artifacts/legacy__tvp772__monster__poison_spider.json",
+      "schema": "tvp3d.assets.source_artifact",
+      "version": "2.0.0",
+      "sha256": "0accb81d1f8a14fe53ad66fad840ee3c7dc6764db9d8398dc6d5b7e388f7372d",
+      "size_bytes": "375",
+      "publication_class": "DERIVED_CACHE"
+    },
+    {
+      "logical_path": "source_artifacts/legacy__tvp772__monster__polar_bear.json",
+      "schema": "tvp3d.assets.source_artifact",
+      "version": "2.0.0",
+      "sha256": "71a84f92fcdaee52c399748a0f335d48387f3445de7169349e628b41a1089995",
+      "size_bytes": "369",
+      "publication_class": "DERIVED_CACHE"
+    },
+    {
+      "logical_path": "source_artifacts/legacy__tvp772__monster__priestess.json",
+      "schema": "tvp3d.assets.source_artifact",
+      "version": "2.0.0",
+      "sha256": "c30cbcd8e6d1d4cb7eda0fa023910dbe424aa4a78f641addff02211fad87dc6f",
+      "size_bytes": "367",
+      "publication_class": "DERIVED_CACHE"
+    },
+    {
+      "logical_path": "source_artifacts/legacy__tvp772__monster__purple_butterfly.json",
+      "schema": "tvp3d.assets.source_artifact",
+      "version": "2.0.0",
+      "sha256": "449790587c4e0d2d7a4094e1e777c6fe4d88f50f483a265970f4a809b39b862d",
+      "size_bytes": "381",
+      "publication_class": "DERIVED_CACHE"
+    },
+    {
+      "logical_path": "source_artifacts/legacy__tvp772__monster__rabbit.json",
+      "schema": "tvp3d.assets.source_artifact",
+      "version": "2.0.0",
+      "sha256": "5229c064cc4be25c56505e0babab4b00352ce946734c8d54428f9f6d594b8cf8",
+      "size_bytes": "361",
+      "publication_class": "DERIVED_CACHE"
+    },
+    {
+      "logical_path": "source_artifacts/legacy__tvp772__monster__rahemos.json",
+      "schema": "tvp3d.assets.source_artifact",
+      "version": "2.0.0",
+      "sha256": "7a8bbf89e46e1bca0213a2bdbbbf340cc0475d9f4f973f1319328cf7bfd362da",
+      "size_bytes": "363",
+      "publication_class": "DERIVED_CACHE"
+    },
+    {
+      "logical_path": "source_artifacts/legacy__tvp772__monster__rat.json",
+      "schema": "tvp3d.assets.source_artifact",
+      "version": "2.0.0",
+      "sha256": "9aa0a8d05a28a111bf222cef463fc5d9ddee5adfd3c7c265c86f08830a230112",
+      "size_bytes": "355",
+      "publication_class": "DERIVED_CACHE"
+    },
+    {
+      "logical_path": "source_artifacts/legacy__tvp772__monster__red_butterfly.json",
+      "schema": "tvp3d.assets.source_artifact",
+      "version": "2.0.0",
+      "sha256": "6cbd9c8cfc4cd90eba4f4e44efd8e7c213bfeeb760a4a871da682527a64f7ca2",
+      "size_bytes": "375",
+      "publication_class": "DERIVED_CACHE"
+    },
+    {
+      "logical_path": "source_artifacts/legacy__tvp772__monster__rotworm.json",
+      "schema": "tvp3d.assets.source_artifact",
+      "version": "2.0.0",
+      "sha256": "14c8d57fe4d1526cfc77d9caf1953bdf50fa50a0a1fb39ddb071e57efa1bd3cf",
+      "size_bytes": "363",
+      "publication_class": "DERIVED_CACHE"
+    },
+    {
+      "logical_path": "source_artifacts/legacy__tvp772__monster__scarab.json",
+      "schema": "tvp3d.assets.source_artifact",
+      "version": "2.0.0",
+      "sha256": "933f820893a7bcedf301c9c644cecb928e1c074ccee9331d701fb269c084a5ab",
+      "size_bytes": "361",
+      "publication_class": "DERIVED_CACHE"
+    },
+    {
+      "logical_path": "source_artifacts/legacy__tvp772__monster__scorpion.json",
+      "schema": "tvp3d.assets.source_artifact",
+      "version": "2.0.0",
+      "sha256": "fc26b0edf3cc2d2d8d0a8405a2d7dc1f678ca5588c9370bca47c5d9469143ecc",
+      "size_bytes": "365",
+      "publication_class": "DERIVED_CACHE"
+    },
+    {
+      "logical_path": "source_artifacts/legacy__tvp772__monster__serpent_spawn.json",
+      "schema": "tvp3d.assets.source_artifact",
+      "version": "2.0.0",
+      "sha256": "27d97ca97750e806cf4a2f5f63928c9d1d7250ca9b654cd8ca7c04ae7430f5ea",
+      "size_bytes": "375",
+      "publication_class": "DERIVED_CACHE"
+    },
+    {
+      "logical_path": "source_artifacts/legacy__tvp772__monster__sheep.json",
+      "schema": "tvp3d.assets.source_artifact",
+      "version": "2.0.0",
+      "sha256": "dec389dc889cd87d895f84269184935d2921cb0470c54bb0ca32c296ba2e6ed3",
+      "size_bytes": "359",
+      "publication_class": "DERIVED_CACHE"
+    },
+    {
+      "logical_path": "source_artifacts/legacy__tvp772__monster__shredderthrower.json",
+      "schema": "tvp3d.assets.source_artifact",
+      "version": "2.0.0",
+      "sha256": "a7de8adb3c74ffc6e4dbf2823b1d5c523950b4e3e5aee5496a997e9cdf657294",
+      "size_bytes": "379",
+      "publication_class": "DERIVED_CACHE"
+    },
+    {
+      "logical_path": "source_artifacts/legacy__tvp772__monster__sibang.json",
+      "schema": "tvp3d.assets.source_artifact",
+      "version": "2.0.0",
+      "sha256": "05652c7cab23967784345746ab25bcc2c9676943ff9ecf8db385cc816eaf99a0",
+      "size_bytes": "361",
+      "publication_class": "DERIVED_CACHE"
+    },
+    {
+      "logical_path": "source_artifacts/legacy__tvp772__monster__skeleton.json",
+      "schema": "tvp3d.assets.source_artifact",
+      "version": "2.0.0",
+      "sha256": "88ef523c8232c60c3ab94af9c7b4ff0435d57c0d6633fb5fd2f9c73d829c915d",
+      "size_bytes": "365",
+      "publication_class": "DERIVED_CACHE"
+    },
+    {
+      "logical_path": "source_artifacts/legacy__tvp772__monster__skunk.json",
+      "schema": "tvp3d.assets.source_artifact",
+      "version": "2.0.0",
+      "sha256": "886b87c017fc9985180bff01fe750d4d2994e1b92a897ac6373affd9bfc31d7a",
+      "size_bytes": "359",
+      "publication_class": "DERIVED_CACHE"
+    },
+    {
+      "logical_path": "source_artifacts/legacy__tvp772__monster__slime.json",
+      "schema": "tvp3d.assets.source_artifact",
+      "version": "2.0.0",
+      "sha256": "3fb2c84bd9b69c2ffa1fbf5177a6a1412527af44eff28ded30a56320ecdba3c0",
+      "size_bytes": "359",
+      "publication_class": "DERIVED_CACHE"
+    },
+    {
+      "logical_path": "source_artifacts/legacy__tvp772__monster__smuggler.json",
+      "schema": "tvp3d.assets.source_artifact",
+      "version": "2.0.0",
+      "sha256": "c3729c4458b12e434a9070799717b0b7ea16ea960cf558f11218fd37aeb3ba3c",
+      "size_bytes": "365",
+      "publication_class": "DERIVED_CACHE"
+    },
+    {
+      "logical_path": "source_artifacts/legacy__tvp772__monster__snake.json",
+      "schema": "tvp3d.assets.source_artifact",
+      "version": "2.0.0",
+      "sha256": "ecf2d9e78bb9197cc7a72ce00dc4a55ceb1244b458e005e13713edced6f6863e",
+      "size_bytes": "359",
+      "publication_class": "DERIVED_CACHE"
+    },
+    {
+      "logical_path": "source_artifacts/legacy__tvp772__monster__spider.json",
+      "schema": "tvp3d.assets.source_artifact",
+      "version": "2.0.0",
+      "sha256": "e3a67a7ac09a086488d1ca05702d705f6b4ad6b2a074292cedd4327c6c05ac96",
+      "size_bytes": "361",
+      "publication_class": "DERIVED_CACHE"
+    },
+    {
+      "logical_path": "source_artifacts/legacy__tvp772__monster__spit_nettle.json",
+      "schema": "tvp3d.assets.source_artifact",
+      "version": "2.0.0",
+      "sha256": "1f9ac7d0864cfb0068757c24b3c023a25a1d7ec24eba7b608e7387a45d8acb3c",
+      "size_bytes": "371",
+      "publication_class": "DERIVED_CACHE"
+    },
+    {
+      "logical_path": "source_artifacts/legacy__tvp772__monster__stalker.json",
+      "schema": "tvp3d.assets.source_artifact",
+      "version": "2.0.0",
+      "sha256": "c09d920799c3ba9dee63744c736c9c422cedfa137bbc4f34149753ac14123cc0",
+      "size_bytes": "363",
+      "publication_class": "DERIVED_CACHE"
+    },
+    {
+      "logical_path": "source_artifacts/legacy__tvp772__monster__stone_golem.json",
+      "schema": "tvp3d.assets.source_artifact",
+      "version": "2.0.0",
+      "sha256": "baedf5827361cf0f143cac115c05058a2de83a2c45bc9430a1ad80bdf436af16",
+      "size_bytes": "371",
+      "publication_class": "DERIVED_CACHE"
+    },
+    {
+      "logical_path": "source_artifacts/legacy__tvp772__monster__swamp_troll.json",
+      "schema": "tvp3d.assets.source_artifact",
+      "version": "2.0.0",
+      "sha256": "b91014fae0e14c1d01ac9de9496347c3ee88340dab4bf65c4e96df393dedb2b5",
+      "size_bytes": "371",
+      "publication_class": "DERIVED_CACHE"
+    },
+    {
+      "logical_path": "source_artifacts/legacy__tvp772__monster__tarantula.json",
+      "schema": "tvp3d.assets.source_artifact",
+      "version": "2.0.0",
+      "sha256": "f00b25475b04e7ba965c97115e56448602515577af32a729fe2b3fbdb66f278c",
+      "size_bytes": "367",
+      "publication_class": "DERIVED_CACHE"
+    },
+    {
+      "logical_path": "source_artifacts/legacy__tvp772__monster__terror_bird.json",
+      "schema": "tvp3d.assets.source_artifact",
+      "version": "2.0.0",
+      "sha256": "4272201156d0a776c20db4400f4a266aafc380a7a61c9afba5b70f80096bd647",
+      "size_bytes": "371",
+      "publication_class": "DERIVED_CACHE"
+    },
+    {
+      "logical_path": "source_artifacts/legacy__tvp772__monster__thalas.json",
+      "schema": "tvp3d.assets.source_artifact",
+      "version": "2.0.0",
+      "sha256": "97f618ae2073c9353c7182bac54cf456a1eebe4d38cf63bffea6b2a35b388ac7",
+      "size_bytes": "361",
+      "publication_class": "DERIVED_CACHE"
+    },
+    {
+      "logical_path": "source_artifacts/legacy__tvp772__monster__the_evil_eye.json",
+      "schema": "tvp3d.assets.source_artifact",
+      "version": "2.0.0",
+      "sha256": "188e7597c9459b4eea3af568ef96c86bf12c4bc1261c1b141756c5dd6731f1ce",
+      "size_bytes": "373",
+      "publication_class": "DERIVED_CACHE"
+    },
+    {
+      "logical_path": "source_artifacts/legacy__tvp772__monster__the_halloween_hare.json",
+      "schema": "tvp3d.assets.source_artifact",
+      "version": "2.0.0",
+      "sha256": "00ded053e8ff5cf159e4aeb807c0a0ca9340e7becb3ae2984e51e71aceabbc70",
+      "size_bytes": "385",
+      "publication_class": "DERIVED_CACHE"
+    },
+    {
+      "logical_path": "source_artifacts/legacy__tvp772__monster__the_horned_fox.json",
+      "schema": "tvp3d.assets.source_artifact",
+      "version": "2.0.0",
+      "sha256": "7ea2dc27bf924060fd9eafea4dcf8a11c36f0117444967702021beb0002669c6",
+      "size_bytes": "377",
+      "publication_class": "DERIVED_CACHE"
+    },
+    {
+      "logical_path": "source_artifacts/legacy__tvp772__monster__the_old_widow.json",
+      "schema": "tvp3d.assets.source_artifact",
+      "version": "2.0.0",
+      "sha256": "b28ca8f9dd4fa96490f9b12c241ff47bb5b9c8464b2b414256a183495209cdb9",
+      "size_bytes": "375",
+      "publication_class": "DERIVED_CACHE"
+    },
+    {
+      "logical_path": "source_artifacts/legacy__tvp772__monster__tiger.json",
+      "schema": "tvp3d.assets.source_artifact",
+      "version": "2.0.0",
+      "sha256": "3f12717be38e6811ca9107a624dcfcfb6a5a0050faef680f1d4ff4946a078208",
+      "size_bytes": "359",
+      "publication_class": "DERIVED_CACHE"
+    },
+    {
+      "logical_path": "source_artifacts/legacy__tvp772__monster__training_monk.json",
+      "schema": "tvp3d.assets.source_artifact",
+      "version": "2.0.0",
+      "sha256": "f6a8d43bfcd5ec010eb59509d9886960e84583e01e0362a15deae5b490e6ffc8",
+      "size_bytes": "375",
+      "publication_class": "DERIVED_CACHE"
+    },
+    {
+      "logical_path": "source_artifacts/legacy__tvp772__monster__troll.json",
+      "schema": "tvp3d.assets.source_artifact",
+      "version": "2.0.0",
+      "sha256": "2223a8f507f0cd55c36eed5dc3c251cb823467e1517f0590b67d6ad98a4b2722",
+      "size_bytes": "359",
+      "publication_class": "DERIVED_CACHE"
+    },
+    {
+      "logical_path": "source_artifacts/legacy__tvp772__monster__valkyrie.json",
+      "schema": "tvp3d.assets.source_artifact",
+      "version": "2.0.0",
+      "sha256": "3c6af8143b44866a07390e64445fcebdf09a75a92430fea1efd8072489110b2d",
+      "size_bytes": "365",
+      "publication_class": "DERIVED_CACHE"
+    },
+    {
+      "logical_path": "source_artifacts/legacy__tvp772__monster__vampire.json",
+      "schema": "tvp3d.assets.source_artifact",
+      "version": "2.0.0",
+      "sha256": "207c4a741468cd8a23750d02272005904fd686752b01aae863882993cfde769a",
+      "size_bytes": "363",
+      "publication_class": "DERIVED_CACHE"
+    },
+    {
+      "logical_path": "source_artifacts/legacy__tvp772__monster__vashresamun.json",
+      "schema": "tvp3d.assets.source_artifact",
+      "version": "2.0.0",
+      "sha256": "be1722398b9a52cb36f5b534fcc6989b2ca4e37bd09c566621e3538c064bd35e",
+      "size_bytes": "371",
+      "publication_class": "DERIVED_CACHE"
+    },
+    {
+      "logical_path": "source_artifacts/legacy__tvp772__monster__war_wolf.json",
+      "schema": "tvp3d.assets.source_artifact",
+      "version": "2.0.0",
+      "sha256": "6c9b8daf15a9787429b852aef2e208fce7c01d6b5f4e5b3415779cb5f433c6cd",
+      "size_bytes": "365",
+      "publication_class": "DERIVED_CACHE"
+    },
+    {
+      "logical_path": "source_artifacts/legacy__tvp772__monster__warlock.json",
+      "schema": "tvp3d.assets.source_artifact",
+      "version": "2.0.0",
+      "sha256": "3e48ef9d0fce4d1458b3f244b00918cee559f5bf2c6c4213d9bb70aa73736fa5",
+      "size_bytes": "363",
+      "publication_class": "DERIVED_CACHE"
+    },
+    {
+      "logical_path": "source_artifacts/legacy__tvp772__monster__wasp.json",
+      "schema": "tvp3d.assets.source_artifact",
+      "version": "2.0.0",
+      "sha256": "a21452e76bff9447a6b108c688c39623dcd24bfa920306e230df9f95c88f5713",
+      "size_bytes": "357",
+      "publication_class": "DERIVED_CACHE"
+    },
+    {
+      "logical_path": "source_artifacts/legacy__tvp772__monster__wild_warrior.json",
+      "schema": "tvp3d.assets.source_artifact",
+      "version": "2.0.0",
+      "sha256": "115104c434d10b50b6f3dad196ddcdd883af73ffebe50355935a9c6a7045987c",
+      "size_bytes": "373",
+      "publication_class": "DERIVED_CACHE"
+    },
+    {
+      "logical_path": "source_artifacts/legacy__tvp772__monster__winter_wolf.json",
+      "schema": "tvp3d.assets.source_artifact",
+      "version": "2.0.0",
+      "sha256": "6bc3e94289ee6a9d5027ed9f8d7dbc56927e45142ef8ddc700c1bebb00ee089d",
+      "size_bytes": "371",
+      "publication_class": "DERIVED_CACHE"
+    },
+    {
+      "logical_path": "source_artifacts/legacy__tvp772__monster__witch.json",
+      "schema": "tvp3d.assets.source_artifact",
+      "version": "2.0.0",
+      "sha256": "7ffedc2b6cc6458928403cd1cc38c2f7a60131c6d346136909712d956c757faa",
+      "size_bytes": "359",
+      "publication_class": "DERIVED_CACHE"
+    },
+    {
+      "logical_path": "source_artifacts/legacy__tvp772__monster__wolf.json",
+      "schema": "tvp3d.assets.source_artifact",
+      "version": "2.0.0",
+      "sha256": "ea83cf04c00a531c6b792dae9cd8c72f1a1d4795202315f83404176bfc0be32a",
+      "size_bytes": "357",
+      "publication_class": "DERIVED_CACHE"
+    },
+    {
+      "logical_path": "source_artifacts/legacy__tvp772__monster__yellow_butterfly.json",
+      "schema": "tvp3d.assets.source_artifact",
+      "version": "2.0.0",
+      "sha256": "e2c09cbba364f2f45440049c7e89aadac1416e4d30732fbee3a22ab4b80a501b",
+      "size_bytes": "381",
+      "publication_class": "DERIVED_CACHE"
+    },
+    {
+      "logical_path": "source_artifacts/legacy__tvp772__monster__yeti.json",
+      "schema": "tvp3d.assets.source_artifact",
+      "version": "2.0.0",
+      "sha256": "91d4b55d11ec6ec1af5cd41924bf378c66497c1c3a6d299d16c799de71a6a807",
+      "size_bytes": "357",
+      "publication_class": "DERIVED_CACHE"
+    },
+    {
+      "logical_path": "source_artifacts/legacy__tvp772__world-map.json",
+      "schema": "tvp3d.assets.source_artifact",
+      "version": "2.0.0",
+      "sha256": "ba86e6168f6fdcf9083ab215eaa8b80111a787f173b21077ac9ddc0329cf4ef9",
+      "size_bytes": "349",
+      "publication_class": "DERIVED_CACHE"
+    },
+    {
+      "logical_path": "validation.json",
+      "schema": "tvp3d.assets.validation_result",
+      "version": "1.0.0",
+      "sha256": "6295ddab2f762997162a0e9d3cbd6864bb7d7783580438d676d7d78c9c90b60e",
+      "size_bytes": "1578303",
+      "publication_class": "DERIVED_CACHE"
+    }
+  ],
+  "result": "SUCCESS",
+  "summary": {
+    "warnings": 2658,
+    "errors": 0,
+    "fatals": 0,
+    "unresolved": 0,
+    "ambiguous": 2657
+  }
+}

@@ -1,0 +1,11 @@
+{
+  "schema": "tvp3d.assets.source_artifact",
+  "version": "2.0.0",
+  "artifact_id": "legacy/tvp772/monster/minotaur_mage",
+  "system": "XML",
+  "source_version": "7.72",
+  "kind": "XML",
+  "repository_relative_path": "servidor/data/monster/monsters/minotaur mage.xml",
+  "sha256": "c678035c92359d4b6064594f0632487fc44659ae3b228ce6a03d5870125dea9f",
+  "size_bytes": "2344"
+}

@@ -1,0 +1,11 @@
+{
+  "schema": "tvp3d.assets.source_artifact",
+  "version": "2.0.0",
+  "artifact_id": "legacy/tvp772/monster/ancient_scarab",
+  "system": "XML",
+  "source_version": "7.72",
+  "kind": "XML",
+  "repository_relative_path": "servidor/data/monster/monsters/ancient scarab.xml",
+  "sha256": "b9b4783f7c04572a5e35b2fbc5e1a67f6188ef573c6bed0874b4e507e9181525",
+  "size_bytes": "3143"
+}

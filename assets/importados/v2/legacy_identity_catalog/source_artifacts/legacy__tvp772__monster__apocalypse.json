@@ -1,0 +1,11 @@
+{
+  "schema": "tvp3d.assets.source_artifact",
+  "version": "2.0.0",
+  "artifact_id": "legacy/tvp772/monster/apocalypse",
+  "system": "XML",
+  "source_version": "7.72",
+  "kind": "XML",
+  "repository_relative_path": "servidor/data/monster/monsters/apocalypse.xml",
+  "sha256": "fb523196e8ce610018f77332a250cc96a6f0d6d53ced3d347506b423594769c7",
+  "size_bytes": "6636"
+}

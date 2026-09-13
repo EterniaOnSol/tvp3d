@@ -1,0 +1,11 @@
+{
+  "schema": "tvp3d.assets.source_artifact",
+  "version": "2.0.0",
+  "artifact_id": "legacy/tvp772/world-map",
+  "system": "OTBM",
+  "source_version": "7.72",
+  "kind": "OTBM",
+  "repository_relative_path": "servidor/data/world/map.otbm",
+  "sha256": "f7f42f6578a0cefac27c34d4e0d542499f043c4cc8c5ca4193f89cd0adfb05ee",
+  "size_bytes": "73369596"
+}

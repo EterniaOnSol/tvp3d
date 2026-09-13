@@ -1,0 +1,11 @@
+{
+  "schema": "tvp3d.assets.source_artifact",
+  "version": "2.0.0",
+  "artifact_id": "legacy/tvp772/monster/skunk",
+  "system": "XML",
+  "source_version": "7.72",
+  "kind": "XML",
+  "repository_relative_path": "servidor/data/monster/monsters/skunk.xml",
+  "sha256": "3009cb3bf69461aaf2f4a645f2ca9e5dd531627b44b3089f3e7069867df7c57f",
+  "size_bytes": "1285"
+}

@@ -1,0 +1,11 @@
+{
+  "schema": "tvp3d.assets.source_artifact",
+  "version": "2.0.0",
+  "artifact_id": "legacy/tvp772/monster/ghost",
+  "system": "XML",
+  "source_version": "7.72",
+  "kind": "XML",
+  "repository_relative_path": "servidor/data/monster/monsters/ghost.xml",
+  "sha256": "cc148ff8995f5255d2759b0826a1cde80a68e4e29683ef3c5aa19f26089d55fd",
+  "size_bytes": "1868"
+}

@@ -1,0 +1,11 @@
+{
+  "schema": "tvp3d.assets.source_artifact",
+  "version": "2.0.0",
+  "artifact_id": "legacy/tvp772/monster/fernfang",
+  "system": "XML",
+  "source_version": "7.72",
+  "kind": "XML",
+  "repository_relative_path": "servidor/data/monster/monsters/fernfang.xml",
+  "sha256": "4caaf838bd7ffcda4f635257baf97f9518cf70365355ddbae464a1b423466872",
+  "size_bytes": "3361"
+}

@@ -1,0 +1,11 @@
+{
+  "schema": "tvp3d.assets.source_artifact",
+  "version": "2.0.0",
+  "artifact_id": "legacy/tvp772/monster/monk",
+  "system": "XML",
+  "source_version": "7.72",
+  "kind": "XML",
+  "repository_relative_path": "servidor/data/monster/monsters/monk.xml",
+  "sha256": "22d9681cca1cc8fb841c6f4a3d9f2a3a7881777d1574d3eaf0eb47a42679a2bc",
+  "size_bytes": "2320"
+}

@@ -1,0 +1,11 @@
+{
+  "schema": "tvp3d.assets.source_artifact",
+  "version": "2.0.0",
+  "artifact_id": "legacy/tvp772/monster/crypt_shambler",
+  "system": "XML",
+  "source_version": "7.72",
+  "kind": "XML",
+  "repository_relative_path": "servidor/data/monster/monsters/crypt shambler.xml",
+  "sha256": "b56ce6d1c539524e70f14b7ba206727081556e73123848c713e336173c3e77c7",
+  "size_bytes": "2011"
+}

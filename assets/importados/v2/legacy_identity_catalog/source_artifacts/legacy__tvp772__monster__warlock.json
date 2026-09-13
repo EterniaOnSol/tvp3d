@@ -1,0 +1,11 @@
+{
+  "schema": "tvp3d.assets.source_artifact",
+  "version": "2.0.0",
+  "artifact_id": "legacy/tvp772/monster/warlock",
+  "system": "XML",
+  "source_version": "7.72",
+  "kind": "XML",
+  "repository_relative_path": "servidor/data/monster/monsters/warlock.xml",
+  "sha256": "cea10d60a01614cc9a778e9b28971fa2632483e8c5a380300b1d559d624157fe",
+  "size_bytes": "3896"
+}

@@ -1,0 +1,11 @@
+{
+  "schema": "tvp3d.assets.source_artifact",
+  "version": "2.0.0",
+  "artifact_id": "legacy/tvp772/monster/morguthis",
+  "system": "XML",
+  "source_version": "7.72",
+  "kind": "XML",
+  "repository_relative_path": "servidor/data/monster/monsters/morguthis.xml",
+  "sha256": "30f4572141303c3e161b6b6b79dea5690c3cee5980e67d23bba25ecfc9d0de35",
+  "size_bytes": "3125"
+}

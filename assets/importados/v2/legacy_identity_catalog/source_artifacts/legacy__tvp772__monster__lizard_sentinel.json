@@ -1,0 +1,11 @@
+{
+  "schema": "tvp3d.assets.source_artifact",
+  "version": "2.0.0",
+  "artifact_id": "legacy/tvp772/monster/lizard_sentinel",
+  "system": "XML",
+  "source_version": "7.72",
+  "kind": "XML",
+  "repository_relative_path": "servidor/data/monster/monsters/lizard sentinel.xml",
+  "sha256": "c9368aec4349f1bd339e146dc6f87809932d5ae5681ef770f74ffe3a85ef27e9",
+  "size_bytes": "1836"
+}

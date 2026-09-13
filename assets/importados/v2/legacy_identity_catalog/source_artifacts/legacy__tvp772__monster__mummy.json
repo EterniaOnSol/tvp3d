@@ -1,0 +1,11 @@
+{
+  "schema": "tvp3d.assets.source_artifact",
+  "version": "2.0.0",
+  "artifact_id": "legacy/tvp772/monster/mummy",
+  "system": "XML",
+  "source_version": "7.72",
+  "kind": "XML",
+  "repository_relative_path": "servidor/data/monster/monsters/mummy.xml",
+  "sha256": "70ff644fba06ee9a6f44e63e5fa5e928303a6a4a3472afab6dd730e1b240f718",
+  "size_bytes": "2336"
+}

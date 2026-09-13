@@ -1,0 +1,11 @@
+{
+  "schema": "tvp3d.assets.source_artifact",
+  "version": "2.0.0",
+  "artifact_id": "legacy/tvp772/monster/fire_devil",
+  "system": "XML",
+  "source_version": "7.72",
+  "kind": "XML",
+  "repository_relative_path": "servidor/data/monster/monsters/fire devil.xml",
+  "sha256": "b7f45c7af0938181326925b4f31e3e4409d1877ab1835382e5b7d60b0f9a13d9",
+  "size_bytes": "2187"
+}

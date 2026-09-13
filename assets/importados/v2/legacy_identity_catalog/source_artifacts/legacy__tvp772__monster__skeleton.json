@@ -1,0 +1,11 @@
+{
+  "schema": "tvp3d.assets.source_artifact",
+  "version": "2.0.0",
+  "artifact_id": "legacy/tvp772/monster/skeleton",
+  "system": "XML",
+  "source_version": "7.72",
+  "kind": "XML",
+  "repository_relative_path": "servidor/data/monster/monsters/skeleton.xml",
+  "sha256": "d30ebf0dff13d95d3e6760ed8a0f4df9f341a80b658ab6a62d2dd616bac21c6d",
+  "size_bytes": "1681"
+}

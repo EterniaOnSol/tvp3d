@@ -1,0 +1,11 @@
+{
+  "schema": "tvp3d.assets.source_artifact",
+  "version": "2.0.0",
+  "artifact_id": "legacy/tvp772/monster/rotworm",
+  "system": "XML",
+  "source_version": "7.72",
+  "kind": "XML",
+  "repository_relative_path": "servidor/data/monster/monsters/rotworm.xml",
+  "sha256": "bae29e492953702885690baabac9ba1084a1871a9995214ac669aee88e9a8465",
+  "size_bytes": "1663"
+}

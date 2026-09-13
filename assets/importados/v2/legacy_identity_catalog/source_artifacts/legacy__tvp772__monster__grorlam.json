@@ -1,0 +1,11 @@
+{
+  "schema": "tvp3d.assets.source_artifact",
+  "version": "2.0.0",
+  "artifact_id": "legacy/tvp772/monster/grorlam",
+  "system": "XML",
+  "source_version": "7.72",
+  "kind": "XML",
+  "repository_relative_path": "servidor/data/monster/monsters/grorlam.xml",
+  "sha256": "5297d22926f21dc437d78b9d14a92e1d2e1715cdd1a55a859d3cb02661ee10e4",
+  "size_bytes": "2156"
+}

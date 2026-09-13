@@ -1,0 +1,11 @@
+{
+  "schema": "tvp3d.assets.source_artifact",
+  "version": "2.0.0",
+  "artifact_id": "legacy/tvp772/monster/lion",
+  "system": "XML",
+  "source_version": "7.72",
+  "kind": "XML",
+  "repository_relative_path": "servidor/data/monster/monsters/lion.xml",
+  "sha256": "8a9abf4599aec9bbd669447973e99c87632a245d75988610ef740592d8eba465",
+  "size_bytes": "1254"
+}

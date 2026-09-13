@@ -1,0 +1,11 @@
+{
+  "schema": "tvp3d.assets.source_artifact",
+  "version": "2.0.0",
+  "artifact_id": "legacy/tvp772/monster/mimic",
+  "system": "XML",
+  "source_version": "7.72",
+  "kind": "XML",
+  "repository_relative_path": "servidor/data/monster/monsters/mimic.xml",
+  "sha256": "ce06af9016b1f64a505f1caa645102640c084107b5fcbdee187612d729a60a47",
+  "size_bytes": "1204"
+}

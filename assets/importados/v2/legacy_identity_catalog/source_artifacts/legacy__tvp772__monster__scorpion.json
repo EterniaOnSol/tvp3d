@@ -1,0 +1,11 @@
+{
+  "schema": "tvp3d.assets.source_artifact",
+  "version": "2.0.0",
+  "artifact_id": "legacy/tvp772/monster/scorpion",
+  "system": "XML",
+  "source_version": "7.72",
+  "kind": "XML",
+  "repository_relative_path": "servidor/data/monster/monsters/scorpion.xml",
+  "sha256": "b6c6e1e9b9b7dfd9c686668ac2b9bfd790853ce827a1330da25c4b511d75ad43",
+  "size_bytes": "1081"
+}

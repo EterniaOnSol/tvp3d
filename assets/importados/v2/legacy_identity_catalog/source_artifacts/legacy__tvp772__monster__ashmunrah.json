@@ -1,0 +1,11 @@
+{
+  "schema": "tvp3d.assets.source_artifact",
+  "version": "2.0.0",
+  "artifact_id": "legacy/tvp772/monster/ashmunrah",
+  "system": "XML",
+  "source_version": "7.72",
+  "kind": "XML",
+  "repository_relative_path": "servidor/data/monster/monsters/ashmunrah.xml",
+  "sha256": "c1c8666e98be5d166ba1b609c59fd234597a5cbcd7ae41836c10460cc025b015",
+  "size_bytes": "3442"
+}

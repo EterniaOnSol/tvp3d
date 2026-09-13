@@ -1,0 +1,11 @@
+{
+  "schema": "tvp3d.assets.source_artifact",
+  "version": "2.0.0",
+  "artifact_id": "legacy/tvp772/monster/dwarf_soldier",
+  "system": "XML",
+  "source_version": "7.72",
+  "kind": "XML",
+  "repository_relative_path": "servidor/data/monster/monsters/dwarf soldier.xml",
+  "sha256": "3dac47c0c11637a149711600236ea8988c445e56f4cd250c8abb47dca07e82a7",
+  "size_bytes": "1964"
+}

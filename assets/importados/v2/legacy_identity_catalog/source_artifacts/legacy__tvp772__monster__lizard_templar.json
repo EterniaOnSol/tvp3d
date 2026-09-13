@@ -1,0 +1,11 @@
+{
+  "schema": "tvp3d.assets.source_artifact",
+  "version": "2.0.0",
+  "artifact_id": "legacy/tvp772/monster/lizard_templar",
+  "system": "XML",
+  "source_version": "7.72",
+  "kind": "XML",
+  "repository_relative_path": "servidor/data/monster/monsters/lizard templar.xml",
+  "sha256": "5c22a626b15b142d3ff3f70ffc540852f14b1426a489d7756fe646cf279a2250",
+  "size_bytes": "1780"
+}

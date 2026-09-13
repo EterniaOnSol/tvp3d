@@ -1,0 +1,11 @@
+{
+  "schema": "tvp3d.assets.source_artifact",
+  "version": "2.0.0",
+  "artifact_id": "legacy/tvp772/monster/carniphila",
+  "system": "XML",
+  "source_version": "7.72",
+  "kind": "XML",
+  "repository_relative_path": "servidor/data/monster/monsters/carniphila.xml",
+  "sha256": "3a82caf5bd629e7af6c3f0149d903c7f2c7cda92c34e95ff1ae903dc71c0340a",
+  "size_bytes": "2252"
+}

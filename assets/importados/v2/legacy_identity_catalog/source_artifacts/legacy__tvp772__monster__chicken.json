@@ -1,0 +1,11 @@
+{
+  "schema": "tvp3d.assets.source_artifact",
+  "version": "2.0.0",
+  "artifact_id": "legacy/tvp772/monster/chicken",
+  "system": "XML",
+  "source_version": "7.72",
+  "kind": "XML",
+  "repository_relative_path": "servidor/data/monster/monsters/chicken.xml",
+  "sha256": "b415ba5ff51bfeddced19e7d7416017ea2f592fadd487688c29171eed52630be",
+  "size_bytes": "1289"
+}

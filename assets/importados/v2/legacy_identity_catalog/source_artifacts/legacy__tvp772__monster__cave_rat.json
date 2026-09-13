@@ -1,0 +1,11 @@
+{
+  "schema": "tvp3d.assets.source_artifact",
+  "version": "2.0.0",
+  "artifact_id": "legacy/tvp772/monster/cave_rat",
+  "system": "XML",
+  "source_version": "7.72",
+  "kind": "XML",
+  "repository_relative_path": "servidor/data/monster/monsters/cave rat.xml",
+  "sha256": "d66e1a6812f1d9d8aabe0f1a1b88db321c26026c75d966eb1b60dadee2af0898",
+  "size_bytes": "1358"
+}

@@ -1,0 +1,11 @@
+{
+  "schema": "tvp3d.assets.source_artifact",
+  "version": "2.0.0",
+  "artifact_id": "legacy/tvp772/monster/red_butterfly",
+  "system": "XML",
+  "source_version": "7.72",
+  "kind": "XML",
+  "repository_relative_path": "servidor/data/monster/monsters/red butterfly.xml",
+  "sha256": "f06b28e950b1de045657ca270be4fffbfe2b14a5d88797a097adea5b591ea73f",
+  "size_bytes": "1057"
+}

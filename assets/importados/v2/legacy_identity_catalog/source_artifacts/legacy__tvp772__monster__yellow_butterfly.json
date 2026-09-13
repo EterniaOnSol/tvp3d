@@ -1,0 +1,11 @@
+{
+  "schema": "tvp3d.assets.source_artifact",
+  "version": "2.0.0",
+  "artifact_id": "legacy/tvp772/monster/yellow_butterfly",
+  "system": "XML",
+  "source_version": "7.72",
+  "kind": "XML",
+  "repository_relative_path": "servidor/data/monster/monsters/yellow butterfly.xml",
+  "sha256": "9e486d9db132483e720a6eaee47d1850662afdcb6804f51b166e92c2433cdefa",
+  "size_bytes": "1056"
+}

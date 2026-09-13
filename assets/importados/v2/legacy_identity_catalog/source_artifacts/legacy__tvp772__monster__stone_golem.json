@@ -1,0 +1,11 @@
+{
+  "schema": "tvp3d.assets.source_artifact",
+  "version": "2.0.0",
+  "artifact_id": "legacy/tvp772/monster/stone_golem",
+  "system": "XML",
+  "source_version": "7.72",
+  "kind": "XML",
+  "repository_relative_path": "servidor/data/monster/monsters/stone golem.xml",
+  "sha256": "3e538f4bec129752c10d6d7caf5e9353448e1883d65025ad17673d5d9550877e",
+  "size_bytes": "1703"
+}

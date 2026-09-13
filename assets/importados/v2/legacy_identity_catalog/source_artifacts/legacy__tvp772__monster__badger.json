@@ -1,0 +1,11 @@
+{
+  "schema": "tvp3d.assets.source_artifact",
+  "version": "2.0.0",
+  "artifact_id": "legacy/tvp772/monster/badger",
+  "system": "XML",
+  "source_version": "7.72",
+  "kind": "XML",
+  "repository_relative_path": "servidor/data/monster/monsters/badger.xml",
+  "sha256": "65edd78a4d1eaf9f26cb0c95aac1d539e46fb43beae89154194c3d527f3cf65c",
+  "size_bytes": "1140"
+}

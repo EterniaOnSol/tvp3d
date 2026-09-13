@@ -1,0 +1,11 @@
+{
+  "schema": "tvp3d.assets.source_artifact",
+  "version": "2.0.0",
+  "artifact_id": "legacy/tvp772/client-spr",
+  "system": "SPR",
+  "source_version": "7.72",
+  "kind": "SPR",
+  "repository_relative_path": "cliente3d/assets/cliente772/Tibia.spr",
+  "sha256": "86abbf5fadcf84313a03615a55a8bd626baab98671f0a78c9b36cb61cce0c64a",
+  "size_bytes": "15877515"
+}

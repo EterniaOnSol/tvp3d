@@ -1,0 +1,11 @@
+{
+  "schema": "tvp3d.assets.source_artifact",
+  "version": "2.0.0",
+  "artifact_id": "legacy/tvp772/monster/sheep",
+  "system": "XML",
+  "source_version": "7.72",
+  "kind": "XML",
+  "repository_relative_path": "servidor/data/monster/monsters/sheep.xml",
+  "sha256": "a20cb6f27f183306557c4b194eb571906acc6e50bafef1e53a7642581f70ac1a",
+  "size_bytes": "1184"
+}

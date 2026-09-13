@@ -1,0 +1,11 @@
+{
+  "schema": "tvp3d.assets.source_artifact",
+  "version": "2.0.0",
+  "artifact_id": "legacy/tvp772/monster/dworc_venomsniper",
+  "system": "XML",
+  "source_version": "7.72",
+  "kind": "XML",
+  "repository_relative_path": "servidor/data/monster/monsters/dworc venomsniper.xml",
+  "sha256": "df816cb7728a7568d2d5015827247e9b33e6fc449f6d890410d578a6468e05c4",
+  "size_bytes": "2080"
+}

@@ -1,0 +1,11 @@
+{
+  "schema": "tvp3d.assets.source_artifact",
+  "version": "2.0.0",
+  "artifact_id": "legacy/tvp772/monster/the_horned_fox",
+  "system": "XML",
+  "source_version": "7.72",
+  "kind": "XML",
+  "repository_relative_path": "servidor/data/monster/monsters/the horned fox.xml",
+  "sha256": "e1a47bd529119ac5ff843ecf5da2c2db5863f6b05a8cdd8a524edba0521d1b06",
+  "size_bytes": "2542"
+}

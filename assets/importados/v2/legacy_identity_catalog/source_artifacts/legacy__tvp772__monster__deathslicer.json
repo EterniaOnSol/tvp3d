@@ -1,0 +1,11 @@
+{
+  "schema": "tvp3d.assets.source_artifact",
+  "version": "2.0.0",
+  "artifact_id": "legacy/tvp772/monster/deathslicer",
+  "system": "XML",
+  "source_version": "7.72",
+  "kind": "XML",
+  "repository_relative_path": "servidor/data/monster/monsters/deathslicer.xml",
+  "sha256": "0c3951031bf11e3b5c41b99d3ce0f14c5957e7f446b06374e4f9b074437deabd",
+  "size_bytes": "1367"
+}

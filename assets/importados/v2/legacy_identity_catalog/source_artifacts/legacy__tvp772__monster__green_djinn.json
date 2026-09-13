@@ -1,0 +1,11 @@
+{
+  "schema": "tvp3d.assets.source_artifact",
+  "version": "2.0.0",
+  "artifact_id": "legacy/tvp772/monster/green_djinn",
+  "system": "XML",
+  "source_version": "7.72",
+  "kind": "XML",
+  "repository_relative_path": "servidor/data/monster/monsters/green djinn.xml",
+  "sha256": "15307aac8290bd57a14ca6c31f44a7ca3af8bf4029b3c28d5d5d14175f7fc7c3",
+  "size_bytes": "2575"
+}

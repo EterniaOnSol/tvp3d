@@ -1,0 +1,11 @@
+{
+  "schema": "tvp3d.assets.source_artifact",
+  "version": "2.0.0",
+  "artifact_id": "legacy/tvp772/monster/dipthrah",
+  "system": "XML",
+  "source_version": "7.72",
+  "kind": "XML",
+  "repository_relative_path": "servidor/data/monster/monsters/dipthrah.xml",
+  "sha256": "8ab4d0e4cef04fe94b48fce7fab914fd75495eed167a9e00295bc3382930b2a8",
+  "size_bytes": "3016"
+}

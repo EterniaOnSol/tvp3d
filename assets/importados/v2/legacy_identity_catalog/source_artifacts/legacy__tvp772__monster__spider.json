@@ -1,0 +1,11 @@
+{
+  "schema": "tvp3d.assets.source_artifact",
+  "version": "2.0.0",
+  "artifact_id": "legacy/tvp772/monster/spider",
+  "system": "XML",
+  "source_version": "7.72",
+  "kind": "XML",
+  "repository_relative_path": "servidor/data/monster/monsters/spider.xml",
+  "sha256": "5d594cb16c96316a74825828c203a795a47e8692a23e12d50f84f48a4a9479e7",
+  "size_bytes": "1141"
+}

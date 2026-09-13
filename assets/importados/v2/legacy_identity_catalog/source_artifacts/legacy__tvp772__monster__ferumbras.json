@@ -1,0 +1,11 @@
+{
+  "schema": "tvp3d.assets.source_artifact",
+  "version": "2.0.0",
+  "artifact_id": "legacy/tvp772/monster/ferumbras",
+  "system": "XML",
+  "source_version": "7.72",
+  "kind": "XML",
+  "repository_relative_path": "servidor/data/monster/monsters/ferumbras.xml",
+  "sha256": "a76d52ff3f13188140569c1745910501c0734cfa290ce3bf9cfbaae62009a871",
+  "size_bytes": "6919"
+}

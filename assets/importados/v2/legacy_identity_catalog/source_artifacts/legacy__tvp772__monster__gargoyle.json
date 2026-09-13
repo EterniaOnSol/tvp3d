@@ -1,0 +1,11 @@
+{
+  "schema": "tvp3d.assets.source_artifact",
+  "version": "2.0.0",
+  "artifact_id": "legacy/tvp772/monster/gargoyle",
+  "system": "XML",
+  "source_version": "7.72",
+  "kind": "XML",
+  "repository_relative_path": "servidor/data/monster/monsters/gargoyle.xml",
+  "sha256": "79485eb819335ab1c45e196b0322401f34d9b864ef25b6d617d184dd9f5bd93d",
+  "size_bytes": "2275"
+}

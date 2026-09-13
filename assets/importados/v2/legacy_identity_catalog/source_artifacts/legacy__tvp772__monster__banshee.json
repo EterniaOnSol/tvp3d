@@ -1,0 +1,11 @@
+{
+  "schema": "tvp3d.assets.source_artifact",
+  "version": "2.0.0",
+  "artifact_id": "legacy/tvp772/monster/banshee",
+  "system": "XML",
+  "source_version": "7.72",
+  "kind": "XML",
+  "repository_relative_path": "servidor/data/monster/monsters/banshee.xml",
+  "sha256": "8c43405510f9f5e6651efe462cab785f175c39093b3f92dadb40a3db62ce3a33",
+  "size_bytes": "3309"
+}
