@@ -9,7 +9,7 @@ Contrato publicado: SI
 
 - Stage 1 del catalogo determinista legacy materializado contra las fuentes
   reales Tibia 7.72. Import run:
-  sha256:f0ec4ddfed4cfc6600a679eab3ce31db43a3f4c671679df5956bd28ccccedc34.
+  sha256:b3d1b9a5246b0d86379e1b9dc1336ba61585ec5e0db426f0c7234ecd9cbb3896.
   Se publican 168 archivos derivados: 163 manifests de fuente, mappings,
   alias index, canonical index, validation e import run.
 - Resultado: 5143 identidades canonicas y mappings; 43243 aliases; 6 OTB

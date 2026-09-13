@@ -1,7 +1,7 @@
 {
   "schema": "tvp3d.assets.import_run",
   "version": "2.0.0",
-  "import_run_id": "sha256:f0ec4ddfed4cfc6600a679eab3ce31db43a3f4c671679df5956bd28ccccedc34",
+  "import_run_id": "sha256:b3d1b9a5246b0d86379e1b9dc1336ba61585ec5e0db426f0c7234ecd9cbb3896",
   "tool": {
     "id": "tvp3d.assets.legacy_identity_catalog",
     "version": "1.0.0"
@@ -661,8 +661,14 @@
     }
   ],
   "contracts": [
-    "tvp3d.assets/2.0.0",
-    "tvp3d.model/2.1.0"
+    {
+      "name": "assets",
+      "version": "2.0.0"
+    },
+    {
+      "name": "modelo-comun",
+      "version": "2.1.0"
+    }
   ],
   "normalization_profile": {
     "id": "TVP772_BASELINE",

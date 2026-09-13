@@ -711,7 +711,9 @@ def build_once(root, output_root):
         "inputs": sorted(inputs, key=lambda item: (
             item["artifact_id"].encode("utf-8"), item["sha256"].encode("utf-8"))),
         "contracts": sorted([
-            "tvp3d.assets/2.0.0", "tvp3d.model/2.1.0"]),
+            {"name": "assets", "version": ASSETS_CONTRACT},
+            {"name": "modelo-comun", "version": MODEL_CONTRACT},
+        ], key=lambda item: item["name"]),
         "normalization_profile": {
             "id": PROFILE_ID, "version": PROFILE_VERSION},
     }
