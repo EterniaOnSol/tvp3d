@@ -1,0 +1,82 @@
+{
+    "schema":  "tvp3d.qa.case",
+    "version":  "2.0.0",
+    "case_id":  "PARITY-VIP-REMOVE-001",
+    "class":  "LEGACY_PARITY",
+    "title":  "TVP 7.72 elimina silenciosamente una entrada VIP existente",
+    "owners":  [
+                   "qa"
+               ],
+    "contracts":  [
+                      {
+                          "version":  "2.1.1",
+                          "contract":  "qa"
+                      }
+                  ],
+    "input_fixture":  {
+                          "logical_path":  "qa/parity/fixtures/tvp772/vip_remove/parity-vip-remove-001.json"
+                      },
+    "expected":  {
+                     "assertions":  [
+                                        {
+                                            "operator":  "EQ",
+                                            "assertion_id":  "VIP-REMOVE-BASELINE",
+                                            "right":  {
+                                                          "literal":  true
+                                                      },
+                                            "left_path":  "/vip_remove/target_absent_before"
+                                        },
+                                        {
+                                            "operator":  "EQ",
+                                            "assertion_id":  "VIP-REMOVE-SETUP",
+                                            "right":  {
+                                                          "literal":  true
+                                                      },
+                                            "left_path":  "/vip_remove/setup_add_entry_seen"
+                                        },
+                                        {
+                                            "operator":  "EQ",
+                                            "assertion_id":  "VIP-REMOVE-SILENT",
+                                            "right":  {
+                                                          "literal":  true
+                                                      },
+                                            "left_path":  "/vip_remove/remove_had_no_success_confirmation"
+                                        },
+                                        {
+                                            "operator":  "EQ",
+                                            "assertion_id":  "VIP-REMOVE-READD",
+                                            "right":  {
+                                                          "literal":  true
+                                                      },
+                                            "left_path":  "/vip_remove/readd_after_remove_entry_seen"
+                                        },
+                                        {
+                                            "operator":  "EQ",
+                                            "assertion_id":  "VIP-REMOVE-NO-DUP",
+                                            "right":  {
+                                                          "literal":  false
+                                                      },
+                                            "left_path":  "/vip_remove/readd_duplicate_rejection_seen"
+                                        },
+                                        {
+                                            "operator":  "EQ",
+                                            "assertion_id":  "VIP-REMOVE-PERSISTED-CLEAN",
+                                            "right":  {
+                                                          "literal":  true
+                                                      },
+                                            "left_path":  "/vip_remove/target_absent_after_cleanup_reconnect"
+                                        }
+                                    ],
+                     "schema":  "tvp3d.qa.parity_expectation",
+                     "version":  "1.0.0",
+                     "mode":  "SINGLE_OBSERVATION"
+                 },
+    "mutates_external_state":  false,
+    "requires_network":  false,
+    "requires_legacy":  false,
+    "requires_secrets":  false,
+    "status_policy":  {
+                          "missing_prerequisite_status":  "BLOCKED",
+                          "assertion_mismatch_status":  "FAIL"
+                      }
+}

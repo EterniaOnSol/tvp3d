@@ -1,0 +1,20 @@
+{
+    "schema":  "tvp3d.qa.parity_fixture",
+    "version":  "2.0.0",
+    "fixture_id":  "PARITY-VIP-REMOVE-001",
+    "oracle":  "TVP_772",
+    "oracle_version":  "7.72",
+    "source_evidence":  {
+                            "logical_path":  "docs/qa/PARITY_VIP_REMOVE.md"
+                        },
+    "preconditions":  [
+                          "objetivo ausente del replay inicial",
+                          "lista bajo capacidad"
+                      ],
+    "input_action":  "alta, baja silenciosa, re-alta y baja cleanup",
+    "observed_authoritative_result":  "re-alta produce entrada fresca y tras cleanup/reconexion objetivo ausente",
+    "normalization_rules":  [
+                                "booleanos semanticos sin GUID/nombres/secretos/opcodes"
+                            ],
+    "classification":  "MATCH_EXPECTED"
+}

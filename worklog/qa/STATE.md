@@ -2,7 +2,11 @@
 
 Estado: LISTO_PARA_REVISION
 Ultimo agente: codex
-Ultima actualizacion: 2026-09-13T02:12:00-06:00
+Ultima actualizacion: 2026-09-13T07:00:00-06:00
+
+## Turno cerrado: `PARITY-VIP-REMOVE-001`
+
+LIVE CERTIFIED. Caso PASS 6/6; corpus 20 PASS, 1 NOT_RUN, 0 FAIL/BLOCKED en dos corridas deterministas. Inventarios: 21 fixtures, 21 casos, 9 RECORDED_EVIDENCE, 18 LIVE_ORACLE. Phase 2 EN CURSO; QA 2.1.1; protocolo-red 2.2.0.
 
 ## Turno en curso: `PARITY-VIP-DUPLICATE-ADD-001`
 
