@@ -2,14 +2,14 @@
 
 Estado: BLOQUEADO
 Ultimo agente: codex
-Ultima actualizacion: 2026-09-13T01:34:01-06:00
+Ultima actualizacion: 2026-09-13T02:12:00-06:00
 
 ## Turno en curso: `PARITY-VIP-DUPLICATE-ADD-001`
 
 Fixture QA dentro de Phase 2. Se rederivaron rama, HEAD/origin, inventarios, guardia anti-duplicado y cadena de origen VIP. Se preserva sin tocar el cambio ajeno servidor/gamedata/players/1/1.tvpp (SHA-256 DD36AF89B9A6FEF7945C33543D469160C674CEF64DD1CDD53677C499CA31CC8A).
 Contrato publicado: SI (`CONTRATO.md` v2.1.1, sin cambios en este turno)
 
-Bloqueo del turno: falta `TVP772_VIP_TARGET_ID`; no es posible probar la identidad esperada ni ejecutar honestamente la medicion viva. La captura termino en preflight con codigo 2 antes de abrir socket. No se agrega LIVE_ORACLE ni se altera el inventario. Accion concreta para retomar: proporcionar la variable de entorno con el GUID del personaje QA objetivo y el stack legacy disponible.
+Reanudacion bloqueada: `TVP772_VIP_TARGET_ID_AUSENTE` no pudo resolverse de forma read-only. El dump persistido local tuvo 0 coincidencias para el personaje configurado y el stack MariaDB documentado no estuvo disponible (Docker sin contenedores/respuesta). No se inventa GUID, no se abre socket, no se agregan artefactos ni LIVE_ORACLE. Accion concreta: restaurar el stack legacy y permitir la consulta read-only de la tabla `players`; no hace falta pedir un GUID manual mientras esa fuente exista.
 
 ## Turno cerrado: `PARITY-TRADE-DISCONNECT-CANCEL-001`
 
