@@ -2,9 +2,77 @@
 
 Estado: LISTO_PARA_REVISION
 Ultimo agente: claude
-Ultima actualizacion: 2026-09-12T19:30:00-06:00
+Ultima actualizacion: 2026-09-13T09:00:00-06:00
 Contrato publicado: SI
-Version publicada: 2.2.0
+Version publicada: 2.3.0
+
+## Turno cerrado: ordenes salientes de un solo byte (TVP 7.72)
+
+**`CONTRATO.md` sube de `2.2.0` a `2.3.0`.** Extension **minor** y **solo del
+perfil legacy**: Protocol V2 no cambia en nada y **no** hace falta tocar
+`modelo-comun`.
+
+Este turno **no certifica ninguna paridad** y **no** abre ninguna fase.
+
+### Que se agrego
+
+Nueve metodos semanticos salientes en `cliente3d/red/conexion772.gd`, todos de
+un solo byte y sin payload, verificados contra el dispatch del servidor:
+
+| API | Byte | Despacho |
+|---|---:|---|
+| `enviar_respuesta_ping()` | `0x1E` | `Game::playerReceivePing` |
+| `enviar_paso_norte/este/sur/oeste()` | `0x65`-`0x68` | `Game::playerMove` |
+| `enviar_giro_norte/este/sur/oeste()` | `0x6F`-`0x72` | `Game::playerTurn` |
+
+**Un metodo por direccion, a proposito.** No hay tabla de opcodes compartida
+entre sentidos, porque los nueve numeros ya significan otra cosa entrando: el
+`0x1E` es la pregunta del latido, `0x65`-`0x68` son franjas de mapa y
+`0x6F`-`0x72` es trafico de contenedores. Una tabla sin sentido de trafico
+invitaria a reusarlos al leer, y eso corromperia contenedores y mapa.
+
+El `0x1E` es el caso mas fino: comparte numero en los dos sentidos pero **no es
+un eco**. Entrando es la pregunta, saliendo es la respuesta.
+
+### Por que era deuda
+
+El giro **no tenia ningun emisor en todo el proyecto**: era la unica primitiva
+de transporte que faltaba para apuntar `aleta grav`, que lee
+`creature:getDirection()`. Con esto,
+**`HOUSE_DOOR_LIST_EDIT_TRANSPORT_READY`**. Eso es transporte, **no** una
+certificacion de gameplay de puertas ni de listas.
+
+### Verificacion
+
+`red/paso_giro_ping_self_test.gd`, **26/26 OK**, sin sockets ni servidor: los
+nueve paquetes comprobados en largo **y** en valor, la regresion de que el
+`0x1E` y el `0x6F` entrantes conservan su significado, y dos guardas de que el
+auto-camino sigue armando `0x64` y **no** se rearmo sobre los pasos simples.
+
+Los **9** self-tests previos del carril siguen en **exit 0**.
+
+Un fallo del primer intento fue **mio y de la prueba, no del codigo**: use un
+contador `int` dentro de una lambda, y GDScript captura los enteros locales por
+valor, asi que nunca se veia incrementado. Se cambio por un acumulador `Array`,
+que es lo que ya hacian los self-tests existentes.
+
+### Limites respetados
+
+**0 parsers entrantes tocados.** `estado_mundo.gd` quedo byte-identico.
+**0 cambios de framing.** **0 autoridad de gameplay**: girar transporta la
+intencion y el servidor decide. **0 keybinds, 0 camara, 0 `mundo3d.gd`.**
+**0 artefactos de QA** y **0 capturas historicas reescritas**.
+`enviar_auto_camino` no se toco.
+
+Migrados los **3** emisores crudos de `0x1E` propios del carril:
+`diagnostico_depot_ajeno.gd`, `diagnostico_mailbox.gd` y
+`diagnostico_pila_viva.gd`.
+
+**Le toca:** quien consuma el giro. `cliente` puede exponerlo si alguna vez lo
+necesita la UI; `qa` ya puede apuntar una puerta sin rearmar paquetes. Quedan
+sin migrar, **a proposito**, los emisores crudos de otros carriles: 58 sitios
+en `cliente3d/pruebas/**` (`qa`, evidencia historica) y 1 en
+`cliente3d/mundo3d.gd`, que no tiene dueño declarado en `CARRILES.md`.
 
 ## Turno cerrado: transporte de lista de acceso de casa (TVP 7.72)
 

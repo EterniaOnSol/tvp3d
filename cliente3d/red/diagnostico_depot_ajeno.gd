@@ -38,7 +38,7 @@ func _initialize() -> void:
 
 func _entrar(puerto: int) -> void:
 	_estado = ESTADO.new()
-	_estado.pedido_ping.connect(func(): _con.enviar_juego(PackedByteArray([0x1E])))
+	_estado.pedido_ping.connect(func(): _con.enviar_respuesta_ping())
 	_estado.mensaje_servidor.connect(func(texto): print("  [srv] ", texto))
 	_estado.contenedor_actualizado.connect(func(id, datos):
 		var partes: Array = []

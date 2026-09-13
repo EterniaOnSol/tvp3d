@@ -51,8 +51,7 @@ func _initialize() -> void:
 func _entrar(puerto: int) -> void:
 	_estado = ESTADO.new()
 	_estado.entramos.connect(func(): _listo = true)
-	_estado.pedido_ping.connect(func():
-		_con.enviar_juego(PackedByteArray([0x1E])))
+	_estado.pedido_ping.connect(func(): _con.enviar_respuesta_ping())
 	_con.paquete_juego.connect(func(msg):
 		# La captura se guarda ANTES de procesar: son los bytes exactos que
 		# mando el servidor, para poder reproducir el caso sin servidor.

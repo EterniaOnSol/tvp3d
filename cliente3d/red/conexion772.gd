@@ -292,6 +292,20 @@ func enviar_logout() -> void:
 	enviar_juego(PackedByteArray([0x14]))
 
 
+func enviar_respuesta_ping() -> void:
+	"""Contesta el latido del servidor (0x1E saliente).
+
+	OJO CON LA DIRECCION: el 0x1E ENTRANTE es la pregunta del servidor
+	(`sendPing`, protocolgame.cpp:1628-1638) y `estado_mundo.gd` la emite como
+	`pedido_ping`. El 0x1E SALIENTE es esta respuesta, que el servidor despacha
+	a `Game::playerReceivePing` (protocolgame.cpp:494). El mismo numero, los dos
+	sentidos, dos papeles distintos: no es un eco del mismo mensaje.
+
+	El servidor tambien usa 0x1D en el sentido inverso (`playerReceivePingBack`),
+	asi que este metodo NO sirve para ese otro par y no se debe reutilizar."""
+	enviar_juego(PackedByteArray([0x1E]))
+
+
 func enviar_cancelar_accion() -> void:
 	"""Cancela ataque/seguimiento y el auto-camino en el servidor."""
 	# 0xBE cancela ataque y follow; 0x69 detiene el auto-walk.
@@ -655,6 +669,75 @@ func _agregar_posicion(carga: PackedByteArray, posicion: Vector3i) -> void:
 	carga.append(posicion.y & 0xFF)
 	carga.append((posicion.y >> 8) & 0xFF)
 	carga.append(posicion.z & 0xFF)
+
+
+# --------------------------------------------------------------------
+#  Paso simple y giro (protocolgame.cpp:497-500 y 506-509)
+#
+#  Ocho ordenes de un solo byte, sin payload. El servidor las despacha a
+#  `Game::playerMove` y `Game::playerTurn` con la direccion ya resuelta por
+#  el numero de opcode: la direccion NO viaja como dato.
+#
+#  ESTOS NUMEROS SON DIRECCIONALES. Saliendo significan caminar y girar;
+#  entrando significan otra cosa completamente, y `estado_mundo.gd` los lee
+#  asi:
+#
+#    | Opcode | saliente (aca)  | entrante (estado_mundo.gd) |
+#    |-------:|-----------------|----------------------------|
+#    | `0x65` | paso al norte   | franja nueva por el norte  |
+#    | `0x66` | paso al este    | franja nueva por el este   |
+#    | `0x67` | paso al sur     | franja nueva por el sur    |
+#    | `0x68` | paso al oeste   | franja nueva por el oeste  |
+#    | `0x6F` | giro al norte   | se cerro un contenedor     |
+#    | `0x70` | giro al este    | entro algo a un contenedor |
+#    | `0x71` | giro al sur     | cambio algo del contenedor |
+#    | `0x72` | giro al oeste   | salio algo del contenedor  |
+#
+#  Por eso hay un metodo por direccion y NO una tabla de opcodes compartida:
+#  una tabla sin sentido de trafico invitaria a reusar estos numeros para
+#  interpretar lo que llega, y eso corromperia la lectura de contenedores.
+#
+#  Girar no mueve al personaje: solo cambia hacia donde mira. Este carril
+#  transporta la intencion; quien decide si el giro procede es el servidor.
+# --------------------------------------------------------------------
+func enviar_paso_norte() -> void:
+	"""Camina una casilla al norte (0x65 saliente)."""
+	enviar_juego(PackedByteArray([0x65]))
+
+
+func enviar_paso_este() -> void:
+	"""Camina una casilla al este (0x66 saliente)."""
+	enviar_juego(PackedByteArray([0x66]))
+
+
+func enviar_paso_sur() -> void:
+	"""Camina una casilla al sur (0x67 saliente)."""
+	enviar_juego(PackedByteArray([0x67]))
+
+
+func enviar_paso_oeste() -> void:
+	"""Camina una casilla al oeste (0x68 saliente)."""
+	enviar_juego(PackedByteArray([0x68]))
+
+
+func enviar_giro_norte() -> void:
+	"""Mira al norte sin moverse (0x6F saliente)."""
+	enviar_juego(PackedByteArray([0x6F]))
+
+
+func enviar_giro_este() -> void:
+	"""Mira al este sin moverse (0x70 saliente)."""
+	enviar_juego(PackedByteArray([0x70]))
+
+
+func enviar_giro_sur() -> void:
+	"""Mira al sur sin moverse (0x71 saliente)."""
+	enviar_juego(PackedByteArray([0x71]))
+
+
+func enviar_giro_oeste() -> void:
+	"""Mira al oeste sin moverse (0x72 saliente)."""
+	enviar_juego(PackedByteArray([0x72]))
 
 
 func enviar_auto_camino(pasos: Array) -> void:

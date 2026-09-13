@@ -1,6 +1,6 @@
 # Contrato: protocolo-red
 
-Version: 2.2.0
+Version: 2.3.0
 Estado: PUBLICADO
 Propietario: protocolo-red
 Depende de: modelo-comun 2.0.0 (obligatorio, envelopes/refs core) y
@@ -536,6 +536,8 @@ exigiria un major nuevo, no otra minor.
 | `2.1.0` | Handshake capaz de negociar explicitamente modelo-comun 2.0.0 o 2.1.0 con seleccion exacta sin inferencia SemVer, gate de registro neutral de replicacion por sesion (`COMMON_DOMAIN_REGISTRY_MISMATCH`); ningun frame, kind, envelope o estado de 2.0.0 cambio |
 | `2.2.0` | **Solo perfil legacy TVP 7.72**: documenta la ventana de lista de acceso de casa, `0x97` entrante y `0x8A` saliente, y declara normativa la colision de direccion del `0x97`. **Protocol V2 no cambia en nada**: ni frame, ni kinds, ni envelopes, ni handshake, ni estados, ni errores, ni la dependencia de modelo-comun. Es una extension minor segun la regla de versionado del propio adaptador legacy (`Compatibilidad y versionado del adaptador legacy`), porque agrega un opcode documentado que un consumidor antiguo rechaza sin desalinear el frame: el `0x97` entrante caia en la rama de opcode desconocido, que lo cuenta y corta la lectura sin reinterpretar bytes |
 
+| `2.3.0` | **Solo perfil legacy TVP 7.72**: publica las nueve ordenes salientes de un solo byte —responder el latido `0x1E`, paso `0x65`-`0x68` y giro `0x6F`-`0x72`— y declara normativa su direccionalidad frente a los significados entrantes de esos mismos numeros. **Protocol V2 no cambia en nada**: ni frame, ni kinds, ni envelopes, ni handshake, ni estados, ni errores, ni la dependencia de modelo-comun. Ningun parser entrante cambio de comportamiento. Es una extension minor segun `Compatibilidad y versionado del adaptador legacy`: solo agrega superficie saliente documentada, y un consumidor antiguo que no la llame se comporta igual que antes |
+
 Migracion:
 
 1. Protocol 1.x (modelo-comun 1.0.0) queda congelado como prototipo y fixture.
@@ -886,6 +888,49 @@ dos direcciones en una sola tabla semantica.
 Self-test con bytes exactos en `red/casa_lista_acceso_self_test.gd`, que
 incluye a proposito la regresion del `0x97` saliente y la distincion frente al
 `0x89`.
+
+### Ordenes salientes de un solo byte (agregado en 2.3.0)
+
+Nueve ordenes del cliente sin payload. El servidor resuelve la direccion por el
+NUMERO de opcode: no viaja como dato.
+
+| Direccion | Opcode | Orden | Despacho del servidor |
+|---|---:|---|---|
+| cliente -> servidor | `0x1E` | Responder el latido | `Game::playerReceivePing` (`protocolgame.cpp:494`) |
+| cliente -> servidor | `0x65` | Paso al norte | `Game::playerMove(DIRECTION_NORTH)` (`protocolgame.cpp:497`) |
+| cliente -> servidor | `0x66` | Paso al este | `Game::playerMove(DIRECTION_EAST)` (`protocolgame.cpp:498`) |
+| cliente -> servidor | `0x67` | Paso al sur | `Game::playerMove(DIRECTION_SOUTH)` (`protocolgame.cpp:499`) |
+| cliente -> servidor | `0x68` | Paso al oeste | `Game::playerMove(DIRECTION_WEST)` (`protocolgame.cpp:500`) |
+| cliente -> servidor | `0x6F` | Giro al norte | `Game::playerTurn(DIRECTION_NORTH)` (`protocolgame.cpp:506`) |
+| cliente -> servidor | `0x70` | Giro al este | `Game::playerTurn(DIRECTION_EAST)` (`protocolgame.cpp:507`) |
+| cliente -> servidor | `0x71` | Giro al sur | `Game::playerTurn(DIRECTION_SOUTH)` (`protocolgame.cpp:508`) |
+| cliente -> servidor | `0x72` | Giro al oeste | `Game::playerTurn(DIRECTION_WEST)` (`protocolgame.cpp:509`) |
+
+Cada paquete mide **exactamente un byte**. Girar cambia hacia donde mira el
+personaje y **no** lo mueve. El cliente transporta la intencion; quien decide si
+el paso o el giro proceden es el servidor.
+
+**Los nueve numeros son direccionales, y esta seccion solo gobierna el sentido
+saliente.** Entrando significan otra cosa, y el adaptador los lee asi:
+
+| Opcode | Saliente (esta seccion) | Entrante |
+|---:|---|---|
+| `0x1E` | responder el latido | el servidor **pregunta** "seguis ahi?" |
+| `0x65`-`0x68` | paso norte/este/sur/oeste | franja nueva de mapa por cada lado |
+| `0x6F`-`0x72` | giro norte/este/sur/oeste | contenedor cerrado / alta / cambio / baja |
+
+El `0x1E` merece enfasis propio: comparte numero en los dos sentidos pero **no
+es un eco**, son dos papeles distintos del mismo latido. El par inverso
+`0x1D` (`playerReceivePingBack`) es otro mensaje y no se cubre aca.
+
+Ningun consumidor puede construir una tabla de opcodes sin sentido de trafico:
+reusar estos numeros para interpretar lo que llega corromperia la lectura de
+contenedores y de mapa. Por eso el adaptador expone **un metodo por direccion
+saliente** y no una tabla compartida.
+
+Self-test con bytes exactos en `red/paso_giro_ping_self_test.gd`: los nueve
+paquetes, cada uno comprobado en largo y en valor, mas la regresion de que el
+`0x1E` y el `0x6F` **entrantes** conservan su significado.
 
 ### Comercio entre jugadores
 
