@@ -1,6 +1,6 @@
 # Estado: qa
 
-Estado: BLOQUEADO
+Estado: LISTO_PARA_REVISION
 Ultimo agente: codex
 Ultima actualizacion: 2026-09-13T02:12:00-06:00
 
@@ -9,7 +9,7 @@ Ultima actualizacion: 2026-09-13T02:12:00-06:00
 Fixture QA dentro de Phase 2. Se rederivaron rama, HEAD/origin, inventarios, guardia anti-duplicado y cadena de origen VIP. Se preserva sin tocar el cambio ajeno servidor/gamedata/players/1/1.tvpp (SHA-256 DD36AF89B9A6FEF7945C33543D469160C674CEF64DD1CDD53677C499CA31CC8A).
 Contrato publicado: SI (`CONTRATO.md` v2.1.1, sin cambios en este turno)
 
-Reanudacion bloqueada: `TVP772_VIP_TARGET_ID_AUSENTE` no pudo resolverse de forma read-only. El dump persistido local tuvo 0 coincidencias para el personaje configurado y el stack MariaDB documentado no estuvo disponible (Docker sin contenedores/respuesta). No se inventa GUID, no se abre socket, no se agregan artefactos ni LIVE_ORACLE. Accion concreta: restaurar el stack legacy y permitir la consulta read-only de la tabla `players`; no hace falta pedir un GUID manual mientras esa fuente exista.
+Reanudación completada: `TVP772_VIP_TARGET_ID_AUSENTE` resuelto mediante GUID derivado read-only de `players`, inyectado sólo al proceso de captura. `PARITY-VIP-DUPLICATE-ADD-001` LIVE CERTIFIED, PASS 4/4; corpus 19 PASS, 1 NOT_RUN, 0 FAIL/BLOCKED en dos corridas deterministas. Inventarios: 20 fixtures, 20 casos, 9 RECORDED_EVIDENCE, 17 LIVE_ORACLE. Phase 2 EN CURSO; QA 2.1.1; protocolo-red 2.2.0.
 
 ## Turno cerrado: `PARITY-TRADE-DISCONNECT-CANCEL-001`
 
@@ -2982,7 +2982,7 @@ alcance de esta fase.
 
 ## Reclasificacion del bloqueo historico Docker/casas-camas
 
-El bloqueo `Estado: BLOQUEADO` que encabezaba este archivo (retest de
+El bloqueo `Estado: LISTO_PARA_REVISION` que encabezaba este archivo (retest de
 `prueba_casa_cama_vivo.tscn` atascado por perdida de contexto Docker, con
 `owner`/`premium` pendientes de confirmar en `0`) es un bloqueo de una
 certificacion `LEGACY_LIVE_MUTATING` especifica (casas/camas TVP 7.72), NO

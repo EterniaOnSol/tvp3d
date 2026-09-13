@@ -1,0 +1,66 @@
+{
+    "schema":  "tvp3d.qa.case",
+    "version":  "2.0.0",
+    "case_id":  "PARITY-VIP-DUPLICATE-ADD-001",
+    "class":  "LEGACY_PARITY",
+    "title":  "TVP 7.72 rechaza una segunda alta VIP del mismo objetivo",
+    "owners":  [
+                   "qa"
+               ],
+    "contracts":  [
+                      {
+                          "version":  "2.1.1",
+                          "contract":  "qa"
+                      }
+                  ],
+    "input_fixture":  {
+                          "logical_path":  "qa/parity/fixtures/tvp772/vip_duplicate_add/parity-vip-duplicate-add-001.json"
+                      },
+    "expected":  {
+                     "assertions":  [
+                                        {
+                                            "operator":  "EQ",
+                                            "assertion_id":  "VIP-TARGET-ABSENT-BASELINE",
+                                            "right":  {
+                                                          "literal":  true
+                                                      },
+                                            "left_path":  "/vip_duplicate_add/target_absent_before"
+                                        },
+                                        {
+                                            "operator":  "EQ",
+                                            "assertion_id":  "VIP-FIRST-ADD-ENTRY",
+                                            "right":  {
+                                                          "literal":  true
+                                                      },
+                                            "left_path":  "/vip_duplicate_add/first_add_expected_entry"
+                                        },
+                                        {
+                                            "operator":  "EQ",
+                                            "assertion_id":  "VIP-DUPLICATE-REJECTED",
+                                            "right":  {
+                                                          "literal":  true
+                                                      },
+                                            "left_path":  "/vip_duplicate_add/duplicate_rejected"
+                                        },
+                                        {
+                                            "operator":  "EQ",
+                                            "assertion_id":  "VIP-NO-SECOND-ENTRY",
+                                            "right":  {
+                                                          "literal":  true
+                                                      },
+                                            "left_path":  "/vip_duplicate_add/additional_entry_emitted"
+                                        }
+                                    ],
+                     "schema":  "tvp3d.qa.parity_expectation",
+                     "version":  "1.0.0",
+                     "mode":  "SINGLE_OBSERVATION"
+                 },
+    "mutates_external_state":  false,
+    "requires_network":  false,
+    "requires_legacy":  false,
+    "requires_secrets":  false,
+    "status_policy":  {
+                          "missing_prerequisite_status":  "BLOCKED",
+                          "assertion_mismatch_status":  "FAIL"
+                      }
+}
