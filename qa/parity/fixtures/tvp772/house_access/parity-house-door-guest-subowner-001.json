@@ -1,0 +1,44 @@
+{
+  "schema": "tvp3d.qa.parity_fixture",
+  "version": "2.0.0",
+  "fixture_id": "PARITY-HOUSE-DOOR-GUEST-SUBOWNER-001",
+  "oracle": "TVP_772",
+  "oracle_version": "7.72",
+  "source_evidence": {
+    "logical_path": "docs/qa/PARITY_HOUSE_DOOR_GUEST_SUBOWNER.md"
+  },
+  "preconditions": [
+    "el mismo jugador normal medido en las dos mitades usa la misma puerta ordinaria de la casa",
+    "en ARM 1 el jugador medido es invitado general, no es dueno ni subdueno y no figura en la lista especifica de la puerta",
+    "en ARM 2 el mismo jugador medido es subdueno, no es dueno y la lista especifica de la misma puerta sigue vacia",
+    "la puerta esta cerrada antes de ARM 1 y el estado autoritativo de la puerta se observa en ambas mediciones",
+    "no se modifica ninguna otra puerta, casa, cuenta, premium o progresion"
+  ],
+  "input_action": "el jugador medido usa una vez la misma puerta cerrada en cada brazo; ARM 1 se mide con acceso de invitado general solamente y ARM 2 con acceso de subdueno solamente",
+  "observed_authoritative_result": "con la lista especifica vacia, el invitado general recibe el rechazo autoritativo y la puerta permanece cerrada; con la misma lista vacia, el subdueno es autorizado y la misma puerta cambia autoritativamente de cerrada a abierta",
+  "normalization_rules": [
+    "los participantes se comparan por rol y no por nombre, cuenta, guid o id de runtime",
+    "la casa, las coordenadas y los identificadores de servidor se conservan solamente en la documentacion de evidencia cruda, no como identidad normativa del fixture",
+    "server item id, client id, sprite id y door id no se colapsan en una sola identidad",
+    "la denegacion se conserva con su texto y clase observados, sin sustituirlos por una expectativa predicha",
+    "la autorizacion positiva exige una transicion autoritativa CLOSED a OPEN; ausencia de mensaje no es suficiente",
+    "se ignoran reloj de pared, host, proceso y metadata de captura"
+  ],
+  "determinism_notes": "El valor del fixture es la comparacion controlada sobre la misma puerta y el mismo actor. ARM 1 y ARM 2 mantienen vacia la lista especifica de la puerta; lo unico que cambia entre brazos es la relacion general del actor con la casa: invitado general frente a subdueno. La diferencia observada coincide con Door::canUse: owner/subowner pasan directamente y los demas requieren la lista especifica. El mensaje exacto y la transicion de tile son discriminadores autoritativos independientes.",
+  "excluded_nondeterministic_fields": [
+    "character_names",
+    "account_id",
+    "player_guid",
+    "creature_runtime_ids",
+    "house_id",
+    "house_name",
+    "house_owner",
+    "house_door_state",
+    "setup_commands",
+    "legacy_protocol_opcodes",
+    "wall_clock_timestamp",
+    "host_metadata",
+    "process_id"
+  ],
+  "classification": "MATCH_EXPECTED"
+}

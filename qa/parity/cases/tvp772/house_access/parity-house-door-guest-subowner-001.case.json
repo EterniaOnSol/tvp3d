@@ -1,0 +1,41 @@
+{
+  "schema": "tvp3d.qa.case",
+  "version": "2.0.0",
+  "case_id": "PARITY-HOUSE-DOOR-GUEST-SUBOWNER-001",
+  "class": "LEGACY_PARITY",
+  "title": "TVP 7.72 house door: guest-only denial versus subowner allowance with an empty door list",
+  "owners": ["qa"],
+  "contracts": [{"contract": "qa", "version": "2.1.1"}],
+  "requirement_refs": [{"contract": "qa", "version": "2.1.1", "section": "16", "source_fixture_id": "PARITY-HOUSE-DOOR-GUEST-SUBOWNER-001"}],
+  "preconditions": [
+    "el mismo actor normal se mide contra la misma puerta ordinaria en dos brazos",
+    "ARM 1 es invitado general sin subowner y ARM 2 es subowner sin pertenencia a la lista especifica de la puerta",
+    "la puerta especifica permanece cerrada antes del intento negativo y la medicion positiva observa su apertura autoritativa"
+  ],
+  "input_fixture": {"logical_path": "qa/parity/fixtures/tvp772/house_access/parity-house-door-guest-subowner-001.json"},
+  "expected": {
+    "schema": "tvp3d.qa.parity_expectation",
+    "version": "1.0.0",
+    "mode": "SINGLE_OBSERVATION",
+    "assertions": [
+      {"assertion_id": "HOUSE-DOOR-SAME-DOOR", "left_path": "/same_door_verified", "operator": "EQ", "right": {"literal": true}},
+      {"assertion_id": "HOUSE-DOOR-GUEST-ONLY", "left_path": "/arm1/guest_only_state_verified", "operator": "EQ", "right": {"literal": true}},
+      {"assertion_id": "HOUSE-DOOR-GUEST-DOOR-LIST-EMPTY", "left_path": "/arm1/door_specific_list_empty", "operator": "EQ", "right": {"literal": true}},
+      {"assertion_id": "HOUSE-DOOR-GUEST-DENIED", "left_path": "/arm1/guest_only_use_denied", "operator": "EQ", "right": {"literal": true}},
+      {"assertion_id": "HOUSE-DOOR-DENIAL-TEXT", "left_path": "/arm1/denial_text", "operator": "EQ", "right": {"literal": "Sorry, not possible."}},
+      {"assertion_id": "HOUSE-DOOR-DENIAL-CLASS", "left_path": "/arm1/denial_class", "operator": "EQ", "right": {"literal": 23}},
+      {"assertion_id": "HOUSE-DOOR-GUEST-CLOSED", "left_path": "/arm1/door_remained_closed_after_denial", "operator": "EQ", "right": {"literal": true}},
+      {"assertion_id": "HOUSE-DOOR-GUEST-NO-OPEN", "left_path": "/arm1/open_transition_seen", "operator": "EQ", "right": {"literal": false}},
+      {"assertion_id": "HOUSE-DOOR-SUBOWNER-STATE", "left_path": "/arm2/subowner_state_verified", "operator": "EQ", "right": {"literal": true}},
+      {"assertion_id": "HOUSE-DOOR-SUBOWNER-DOOR-LIST-EMPTY", "left_path": "/arm2/door_specific_list_empty", "operator": "EQ", "right": {"literal": true}},
+      {"assertion_id": "HOUSE-DOOR-SUBOWNER-ALLOWED", "left_path": "/arm2/subowner_use_allowed", "operator": "EQ", "right": {"literal": true}},
+      {"assertion_id": "HOUSE-DOOR-SUBOWNER-OPEN", "left_path": "/arm2/door_open_transition_seen", "operator": "EQ", "right": {"literal": true}},
+      {"assertion_id": "HOUSE-DOOR-CLEANUP", "left_path": "/cleanup/restored_baseline", "operator": "EQ", "right": {"literal": true}}
+    ]
+  },
+  "mutates_external_state": false,
+  "requires_network": false,
+  "requires_legacy": false,
+  "requires_secrets": false,
+  "status_policy": {"missing_prerequisite_status": "BLOCKED", "assertion_mismatch_status": "FAIL"}
+}

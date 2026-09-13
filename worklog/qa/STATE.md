@@ -3301,3 +3301,9 @@ contiene aquel cierre; `git push` quedo bloqueado por falta de conexion a
   corrida final se restauraron exactamente los timestamps, posicion, vida y
   duracion de condicion que tenian sus archivos al abrir este turno; los
   depots y demas cambios previos del usuario quedaron intactos.
+## 2026-09-13 - PARITY-HOUSE-DOOR-GUEST-SUBOWNER-001
+
+- Se materializo y certifico un unico fixture `LEGACY_PARITY` para House 83 / Mill Avenue 3.
+- La comparacion usa la misma puerta `(32410,32185,7)` y lista especifica vacia: ARM 1 invitado general rechazado con `Sorry, not possible.` clase `23` (`0x17`), puerta cerrada y actor afuera; ARM 2 subdueno autorizado con transicion autoritativa `CLOSED -> OPEN`.
+- Captura: metodologia `HUMAN_DRIVEN`, observacion `LIVE_ORACLE`; contrato QA `2.1.1`, protocolo-red `2.3.0`, Phase 2 sigue EN CURSO.
+- Limpieza verificada: owner `0`, listas guest/subowner/door vacias, puerta `1221 CLOSED`, `house_lists = 0 rows`. No hubo nuevas acciones legacy.
